@@ -20,7 +20,7 @@ internal class WorkManagerScheduler
             repeatInterval: Duration,
             flexDuration: Duration,
         ) {
-            (1 until RefreshBlacklistRequest.VERSION).forEach { oldVersion ->
+            for (oldVersion in 1 until RefreshBlacklistRequest.VERSION) {
                 workManager.cancelAllWorkByTag("${RefreshBlacklistRequest.WORK_NAME}_v$oldVersion")
             }
             val request =
@@ -43,7 +43,7 @@ internal class WorkManagerScheduler
         }
 
         override suspend fun setupNotificationsCheck(repeatInterval: Duration) {
-            (1 until CheckNotificationsRequest.VERSION).forEach { oldVersion ->
+            for (oldVersion in 1 until CheckNotificationsRequest.VERSION) {
                 Napier.i("Cancel CheckNotificationsRequest version=$oldVersion")
                 workManager.cancelAllWorkByTag("${CheckNotificationsRequest.WORK_NAME}_v$oldVersion")
             }
