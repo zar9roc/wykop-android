@@ -2,8 +2,8 @@ package io.github.wykopmobilny.data.cache.sqldelight
 
 import android.content.Context
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.squareup.sqldelight.ColumnAdapter
-import com.squareup.sqldelight.android.AndroidSqliteDriver
+import app.cash.sqldelight.ColumnAdapter
+import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import dagger.Module
 import dagger.Provides
 import io.github.wykopmobilny.data.cache.api.AppCache

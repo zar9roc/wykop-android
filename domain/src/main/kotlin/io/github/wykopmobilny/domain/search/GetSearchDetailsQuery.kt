@@ -1,7 +1,7 @@
 package io.github.wykopmobilny.domain.search
 
-import com.squareup.sqldelight.runtime.coroutines.asFlow
-import com.squareup.sqldelight.runtime.coroutines.mapToList
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
 import io.github.wykopmobilny.data.storage.api.AppStorage
 import io.github.wykopmobilny.domain.search.di.SearchScope
 import io.github.wykopmobilny.domain.utils.safe

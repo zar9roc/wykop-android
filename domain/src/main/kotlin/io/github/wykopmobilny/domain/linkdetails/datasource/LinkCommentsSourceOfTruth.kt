@@ -1,8 +1,8 @@
 package io.github.wykopmobilny.domain.linkdetails.datasource
 
 import com.dropbox.android.external.store4.SourceOfTruth
-import com.squareup.sqldelight.runtime.coroutines.asFlow
-import com.squareup.sqldelight.runtime.coroutines.mapToList
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
 import io.github.wykopmobilny.api.responses.LinkCommentResponse
 import io.github.wykopmobilny.api.responses.properUrl
 import io.github.wykopmobilny.data.cache.api.AppCache

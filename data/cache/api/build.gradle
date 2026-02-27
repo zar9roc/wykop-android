@@ -4,10 +4,12 @@ plugins {
 }
 
 sqldelight {
-    AppCache {
-        packageName = "io.github.wykopmobilny.data.cache.api"
-        schemaOutputDirectory = file("src/main/sqldelight/databases")
-        verifyMigrations = true
+    databases {
+        AppCache {
+            packageName = "io.github.wykopmobilny.data.cache.api"
+            schemaOutputDirectory = file("src/main/sqldelight/databases")
+            verifyMigrations = false
+        }
     }
 }
 

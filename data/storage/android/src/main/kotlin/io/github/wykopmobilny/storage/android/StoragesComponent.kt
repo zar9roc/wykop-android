@@ -1,7 +1,7 @@
 package io.github.wykopmobilny.storage.android
 
 import android.content.Context
-import com.squareup.sqldelight.android.AndroidSqliteDriver
+import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import dagger.Binds
 import dagger.BindsInstance
 import dagger.Component

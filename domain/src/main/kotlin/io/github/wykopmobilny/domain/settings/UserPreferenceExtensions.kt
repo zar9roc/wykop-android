@@ -1,7 +1,7 @@
 package io.github.wykopmobilny.domain.settings
 
-import com.squareup.sqldelight.runtime.coroutines.asFlow
-import com.squareup.sqldelight.runtime.coroutines.mapToOneOrNull
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 import io.github.wykopmobilny.data.storage.api.AppStorage
 import io.github.wykopmobilny.data.storage.api.PreferenceEntity
 import io.github.wykopmobilny.kotlin.AppDispatchers

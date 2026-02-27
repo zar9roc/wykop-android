@@ -1,9 +1,12 @@
+import kotlin.Float;
+import kotlin.Int;
+import kotlin.Boolean;
 import io.github.wykopmobilny.data.cache.api.GenderEntity;
 import io.github.wykopmobilny.data.cache.api.UserColorEntity;
 import kotlinx.datetime.Instant;
 
 CREATE TABLE profileEntity (
-    id TEXT NOT NULL UNIQUE PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     signupAt INTEGER AS Instant,
     background TEXT,
     isVerified INTEGER AS Boolean,
@@ -35,17 +38,19 @@ CREATE TABLE profileEntity (
     avatar TEXT NOT NULL
 );
 
-CREATE VIEW profileDetailsView  AS
-SELECT
-  p.*,
-  (SELECT COUNT(profileId) FROM blockedProfileEntity WHERE profileId = p.id) isBlocked,
-  (SELECT COUNT(profileId) FROM observedProfileEntity WHERE profileId = p.id) isObserved
- FROM profileEntity p
-;
+-- CREATE VIEW profileDetailsView  AS
+-- SELECT
+--   p.*,
+--   (SELECT COUNT(profileId) FROM blockedProfileEntity WHERE profileId = p.id) AS isBlocked,
+--   (SELECT COUNT(profileId) FROM observedProfileEntity WHERE profileId = p.id) AS isObserved
+--  FROM profileEntity p
+-- ;
 
 selectById:
-SELECT *
-FROM profileDetailsView
+SELECT p.*,
+  (SELECT COUNT(profileId) FROM blockedProfileEntity WHERE profileId = p.id) AS isBlocked,
+  (SELECT COUNT(profileId) FROM observedProfileEntity WHERE profileId = p.id) AS isObserved
+FROM profileEntity p
 WHERE id = ?
 ;
 

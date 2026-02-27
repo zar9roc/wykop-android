@@ -1,3 +1,6 @@
+import kotlin.Float;
+import kotlin.Int;
+import kotlin.Boolean;
 import io.github.wykopmobilny.data.cache.api.UserVote;
 
 CREATE TABLE relatedLinkEntity (

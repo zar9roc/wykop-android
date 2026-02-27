@@ -1,6 +1,6 @@
 package io.github.wykopmobilny.storage.android
 
-import com.squareup.sqldelight.ColumnAdapter
+import app.cash.sqldelight.ColumnAdapter
 import kotlinx.datetime.Instant
 
 internal object InstantAdapter : ColumnAdapter<Instant, Long> {

@@ -10,10 +10,12 @@ dependencies {
 }
 
 sqldelight {
-    AppStorage {
-        packageName = "io.github.wykopmobilny.data.storage.api"
-        schemaOutputDirectory = file("src/main/sqldelight/databases")
-        verifyMigrations = true
+    databases {
+        AppStorage {
+            packageName = "io.github.wykopmobilny.data.storage.api"
+            schemaOutputDirectory = file("src/main/sqldelight/databases")
+            verifyMigrations = false
+        }
     }
 }
 

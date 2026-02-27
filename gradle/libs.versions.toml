@@ -45,7 +45,7 @@ mavencentral-datetime = "0.6.1"
 mavencentral-store = "4.0.5"
 mavencentral-retrofit = "2.9.0"
 mavencentral-moshi = "1.15.0"
-mavencentral-sqldelight = "1.5.5"
+mavencentral-sqldelight = "2.0.2"
 mavencentral-jspoon = "1.3.2"
 mavencentral-jsoup = "1.16.1"
 mavencentral-slidr = "3.0.0"
@@ -109,8 +109,8 @@ dagger-compiler-android = { module = "com.google.dagger:dagger-android-processor
 moshi-core = { module = "com.squareup.moshi:moshi", version.ref = "mavencentral-moshi" }
 moshi-compiler = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "mavencentral-moshi" }
 
-sqldelight-android = { module = "com.squareup.sqldelight:android-driver", version.ref = "mavencentral-sqldelight" }
-sqldelight-extensions = { module = "com.squareup.sqldelight:coroutines-extensions-jvm", version.ref = "mavencentral-sqldelight" }
+sqldelight-android = { module = "app.cash.sqldelight:android-driver", version.ref = "mavencentral-sqldelight" }
+sqldelight-extensions = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "mavencentral-sqldelight" }
 
 retrofit-core = { module = "com.squareup.retrofit2:retrofit", version.ref = "mavencentral-retrofit" }
 retrofit-converter-moshi = { module = "com.squareup.retrofit2:converter-moshi", version.ref = "mavencentral-retrofit" }
@@ -159,7 +159,7 @@ google-playservices = { id = "com.google.gms.google-services", version.ref = "go
 google-firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "google-crashlytics" }
 slack-keeper = { id = "com.slack.keeper", version.ref = "gradle-keeper" }
 droidsonroids-animationdisabler = { id = "pl.droidsonroids.animation-disabler", version.ref = "gradle-animationdisabler" }
-squareup-sqldelight = { id = "com.squareup.sqldelight", version.ref = "mavencentral-sqldelight" }
+squareup-sqldelight = { id = "app.cash.sqldelight", version.ref = "mavencentral-sqldelight" }
 google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "google-ksp" }
 
 [bundles]
