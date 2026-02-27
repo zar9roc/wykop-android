@@ -9,5 +9,7 @@ interface Storages {
 
     fun jwtTokenStorage(): JwtTokenStorage
 
+    fun bearerTokenStorage(): BearerTokenStorage
+
     fun storage(): AppStorage
 }
