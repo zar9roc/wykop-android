@@ -38,19 +38,17 @@ CREATE TABLE profileEntity (
     avatar TEXT NOT NULL
 );
 
--- CREATE VIEW profileDetailsView  AS
--- SELECT
---   p.*,
---   (SELECT COUNT(profileId) FROM blockedProfileEntity WHERE profileId = p.id) AS isBlocked,
---   (SELECT COUNT(profileId) FROM observedProfileEntity WHERE profileId = p.id) AS isObserved
---  FROM profileEntity p
--- ;
-
-selectById:
-SELECT p.*,
+CREATE VIEW profileDetailsView  AS
+SELECT
+  p.*,
   (SELECT COUNT(profileId) FROM blockedProfileEntity WHERE profileId = p.id) AS isBlocked,
   (SELECT COUNT(profileId) FROM observedProfileEntity WHERE profileId = p.id) AS isObserved
-FROM profileEntity p
+ FROM profileEntity p
+;
+
+selectById:
+SELECT *
+FROM profileDetailsView
 WHERE id = ?
 ;
 
