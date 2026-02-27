@@ -5,6 +5,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.Reusable
 import io.github.wykopmobilny.api.ErrorBodyParser
+import io.github.wykopmobilny.api.ErrorBodyParserV3
 import okhttp3.Cache
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -55,6 +56,9 @@ internal class RetrofitModule {
 
     @Provides
     fun errorBodyParser(errorBodyParser: MoshiErrorBodyParser): ErrorBodyParser = errorBodyParser
+
+    @Provides
+    fun errorBodyParserV3(errorBodyParser: MoshiErrorBodyParserV3): ErrorBodyParserV3 = errorBodyParser
 
     companion object {
         private const val CACHE_SIZE = 10 * 1024 * 1024L
