@@ -61,7 +61,14 @@ Wszystkie odwołania do `GlideApp` zostały zamienione na `Glide`:
 
 ## Wersja Glide
 
-Aktualna wersja: **4.15.1** (zdefiniowana jako `mavencentral-glide` w `libs.versions.toml`).
+Aktualna wersja: **5.0.5** (zdefiniowana jako `mavencentral-glide` w `libs.versions.toml`).
+
+### Zmiany w wersji 5.0.5 (od 4.15.1)
+
+- Wymaga Java 8 i Kotlin 1.8 (projekt używa Kotlin 2.2.20 - kompatybilne)
+- Dodano adnotacje `@Nullable` i `@NonNull` do `RequestListener` (kod projektu już używa nullable types - kompatybilne)
+- Fix dla GlideUrl z adresami IPv6
+- Brak breaking changes wymagających modyfikacji kodu
 
 ## Referencje
 
