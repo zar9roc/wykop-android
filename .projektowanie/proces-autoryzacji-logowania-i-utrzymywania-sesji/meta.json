@@ -1,0 +1,10 @@
+{
+  "id": 2,
+  "name": "Proces autoryzacji logowania i utrzymywania sesji",
+  "slug": "proces-autoryzacji-logowania-i-utrzymywania-sesji",
+  "type": "flowchart",
+  "createdAt": "2026-02-27T22:56:03.710Z",
+  "updatedAt": "2026-02-27T23:10:21.209Z",
+  "parentId": null,
+  "linkedBlockId": null
+}

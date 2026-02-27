@@ -1,0 +1,106 @@
+flowchart TD
+    %% ===== START =====
+    START([Użytkownik otwiera aplikację]) --> CHECK_SESSION{Czy istnieje<br/>zapisana sesja?}
+
+    %% ===== BRAK SESJI - EKRAN LOGOWANIA =====
+    CHECK_SESSION -->|Nie| APP_AUTH["POST /v3/auth<br/>AuthRequestV3(apiKey, apiSecret)"]
+    CHECK_SESSION -->|Tak - tokeny zapisane| NORMAL_REQUEST
+
+    %% ===== APP AUTH - uzyskanie bearerToken =====
+    APP_AUTH --> APP_AUTH_RESULT{Odpowiedź<br/>serwera}
+    APP_AUTH_RESULT -->|Sukces 200| APP_AUTH_PARSE["Parsowanie AuthResponseV3:<br/>• token (bearerToken)<br/>• expiresIn"]
+    APP_AUTH_RESULT -->|Błąd| APP_AUTH_ERROR["Pokaż errorDialog<br/>z komunikatem błędu"]
+    APP_AUTH_ERROR --> APP_AUTH
+
+    APP_AUTH_PARSE --> APP_TOKEN_SAVE["Zapisz bearerToken<br/>do pamięci aplikacji"]
+    APP_TOKEN_SAVE --> CONNECT_CALL["GET /v3/connect<br/>(z Authorization: Bearer bearerToken)"]
+
+    %% ===== CONNECT - pobranie URL logowania =====
+    CONNECT_CALL --> CONNECT_RESULT{Odpowiedź<br/>serwera}
+    CONNECT_RESULT -->|Sukces 200| CONNECT_URL["Odczytaj connectUrl<br/>z odpowiedzi"]
+    CONNECT_RESULT -->|Błąd| CONNECT_ERROR["Pokaż errorDialog<br/>z komunikatem błędu"]
+    CONNECT_ERROR --> CONNECT_CALL
+
+    %% ===== WEBVIEW LOGIN =====
+    CONNECT_URL --> LOGIN_SCREEN["LoginScreenActivity<br/>Otwórz WebView<br/>z connectUrl"]
+    LOGIN_SCREEN --> USER_LOGIN["Użytkownik loguje się<br/>na stronie Wykop<br/>w WebView"]
+    USER_LOGIN --> WEBVIEW_REDIRECT{"WebView przechwytuje<br/>redirect na wykop.pl/<br/>z query params"}
+
+    WEBVIEW_REDIRECT -->|"Przechwycono<br/>?token=XXX&rtoken=XXX"| PARSE_TOKENS["Wyciągnij z URL:<br/>• token (accessToken)<br/>• rtoken (refreshToken)"]
+    WEBVIEW_REDIRECT -->|"Brak parametrów /<br/>użytkownik anulował"| LOGIN_SCREEN
+
+    PARSE_TOKENS --> CALC_EXPIRY["Oblicz expiresAt =<br/>currentTimeMillis() +<br/>(expiresIn × 1000)"]
+    CALC_EXPIRY --> SAVE_TOKENS["JwtTokenStorage.updateJwtToken()<br/>Zapis do DataStore:<br/>• jwtAccessToken (token)<br/>• jwtRefreshToken (rtoken)<br/>• jwtExpiresAt"]
+    SAVE_TOKENS --> FETCH_USER_DATA["Pobierz dane użytkownika<br/>+ czarną listę (Store)"]
+    FETCH_USER_DATA --> APP_RESTART["AppRestarter.restart()<br/>MainNavigationActivity<br/>FLAG_CLEAR_TASK"]
+
+    %% ===== NORMALNE ŻĄDANIA API =====
+    APP_RESTART --> NORMAL_REQUEST["Żądanie HTTP<br/>do API v3"]
+
+    NORMAL_REQUEST --> INTERCEPTOR_CHAIN["OkHttp Interceptor Chain:<br/>1. PathFixingInterceptor<br/>2. JwtAuthInterceptor<br/>3. SigningInterceptor"]
+
+    INTERCEPTOR_CHAIN --> JWT_CHECK{"JwtAuthInterceptor:<br/>Czy URL zaczyna się<br/>od /v3/ ?"}
+
+    JWT_CHECK -->|"Nie (/v1, /v2)"| SKIP_JWT["Pomiń JWT<br/>Użyj OAuth signing"]
+    JWT_CHECK -->|"Tak, ale /v3/auth<br/>lub /v3/connect"| SKIP_JWT_AUTH["Pomiń dodawanie<br/>tokena (endpointy auth)"]
+    JWT_CHECK -->|Tak| ADD_BEARER["Pobierz token z JwtTokenStorage<br/>(runBlocking)<br/>Dodaj header:<br/>Authorization: Bearer accessToken"]
+
+    ADD_BEARER --> SEND_REQUEST[Wyślij żądanie<br/>do serwera]
+    SKIP_JWT --> SEND_REQUEST
+    SKIP_JWT_AUTH --> SEND_REQUEST
+
+    %% ===== OBSŁUGA ODPOWIEDZI =====
+    SEND_REQUEST --> RESPONSE_CHECK{Kod odpowiedzi<br/>serwera}
+
+    RESPONSE_CHECK -->|200 OK| SUCCESS([Sukces -<br/>przetwórz odpowiedź])
+    RESPONSE_CHECK -->|401 Unauthorized| AUTHENTICATOR["TokenRefreshAuthenticator<br/>(OkHttp Authenticator)"]
+
+    %% ===== TOKEN REFRESH =====
+    AUTHENTICATOR --> AUTH_SKIP{"Czy endpoint<br/>to /v3/auth<br/>lub /v3/connect?"}
+    AUTH_SKIP -->|Tak| REFRESH_ABORT([Nie odświeżaj -<br/>zwróć błąd])
+
+    AUTH_SKIP -->|Nie| TOKEN_COMPARE{"Czy token w żądaniu<br/>= aktualny token<br/>w storage?"}
+    TOKEN_COMPARE -->|"Nie (inny wątek<br/>już odświeżył)"| RETRY_NEW["Ponów żądanie<br/>z nowym tokenem"]
+    RETRY_NEW --> SEND_REQUEST
+
+    TOKEN_COMPARE -->|Tak| SYNC_BLOCK["synchronized block<br/>(thread-safe)"]
+    SYNC_BLOCK --> DOUBLE_CHECK{"Double-check:<br/>Czy token zmienił<br/>się w międzyczasie?"}
+    DOUBLE_CHECK -->|Tak| RETRY_NEW
+
+    DOUBLE_CHECK -->|Nie| REFRESH_CALL["POST /v3/auth/refresh<br/>RefreshTokenRequestV3(refreshToken)"]
+
+    REFRESH_CALL --> REFRESH_RESULT{Wynik<br/>odświeżania}
+
+    REFRESH_RESULT -->|Sukces| REFRESH_SAVE["Oblicz nowy expiresAt<br/>Zapisz nowe tokeny<br/>do JwtTokenStorage"]
+    REFRESH_SAVE --> RETRY_REFRESHED["Ponów oryginalne żądanie<br/>z nowym accessToken"]
+    RETRY_REFRESHED --> SEND_REQUEST
+
+    REFRESH_RESULT -->|"Błąd<br/>(HttpException /<br/>IOException)"| REFRESH_FAIL["Log warning<br/>Wyczyść tokeny:<br/>jwtTokenStorage.updateJwtToken(null)"]
+    REFRESH_FAIL --> FORCE_RELOGIN([Żądanie zwraca błąd<br/>→ Użytkownik musi się<br/>zalogować ponownie])
+
+    %% ===== WYLOGOWANIE =====
+    NORMAL_REQUEST -.->|"Menu nawigacji<br/>→ Wyloguj"| LOGOUT_CONFIRM{"Dialog potwierdzenia:<br/>Czy na pewno?"}
+    LOGOUT_CONFIRM -->|Anuluj| NORMAL_REQUEST
+    LOGOUT_CONFIRM -->|OK| LOGOUT_PROCESS["UserManager.logoutUser()<br/>withContext(IO)"]
+
+    LOGOUT_PROCESS --> CLEAR_DATA["1. blacklistQueries.deleteAll()<br/>2. sessionStorage.updateSession(null)<br/>3. userInfoStorage.updateLoggedUser(null)<br/>4. jwtTokenStorage.updateJwtToken(null)"]
+    CLEAR_DATA --> WAIT_STATE["userInfo.first { it == null }<br/>Czekaj na propagację stanu"]
+    WAIT_STATE --> RESTART_ACTIVITY["restartActivity()<br/>→ MainNavigationActivity"]
+    RESTART_ACTIVITY --> CHECK_SESSION
+
+    %% ===== STYLE =====
+    classDef storage fill:#4a90d9,stroke:#2c5f8a,color:#fff
+    classDef api fill:#e8744f,stroke:#b85636,color:#fff
+    classDef decision fill:#f5c542,stroke:#c49a30,color:#333
+    classDef success fill:#5cb85c,stroke:#449d44,color:#fff
+    classDef error fill:#d9534f,stroke:#b52b27,color:#fff
+    classDef ui fill:#9b59b6,stroke:#7d3c98,color:#fff
+    classDef interceptor fill:#1abc9c,stroke:#16a085,color:#fff
+
+    class SAVE_TOKENS,APP_TOKEN_SAVE,REFRESH_SAVE,CLEAR_DATA storage
+    class APP_AUTH,CONNECT_CALL,REFRESH_CALL,SEND_REQUEST api
+    class CHECK_SESSION,JWT_CHECK,RESPONSE_CHECK,AUTH_SKIP,TOKEN_COMPARE,DOUBLE_CHECK,REFRESH_RESULT,LOGOUT_CONFIRM,WEBVIEW_REDIRECT,APP_AUTH_RESULT,CONNECT_RESULT decision
+    class SUCCESS,APP_RESTART success
+    class APP_AUTH_ERROR,CONNECT_ERROR,REFRESH_FAIL,FORCE_RELOGIN,REFRESH_ABORT error
+    class LOGIN_SCREEN,USER_LOGIN ui
+    class INTERCEPTOR_CHAIN,ADD_BEARER,AUTHENTICATOR,SYNC_BLOCK interceptor
