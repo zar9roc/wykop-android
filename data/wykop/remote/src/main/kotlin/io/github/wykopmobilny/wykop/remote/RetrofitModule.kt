@@ -5,7 +5,6 @@ import dagger.Module
 import dagger.Provides
 import dagger.Reusable
 import io.github.wykopmobilny.api.ErrorBodyParser
-import io.github.wykopmobilny.api.responses.v3.adapters.DateTimeAdapter
 import okhttp3.Cache
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -27,7 +26,6 @@ internal class RetrofitModule {
             .Builder()
             .apply {
                 add(InstantAdapter())
-                add(DateTimeAdapter())
             }.build()
 
     @Reusable

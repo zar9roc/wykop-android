@@ -19,6 +19,6 @@ object SurveyMapperV3 : Mapper<SurveyResponseV3, Survey> {
             id = answer.id,
             answer = answer.answer,
             count = answer.count,
-            percentage = answer.percentage.toFloat(),
+            percentage = answer.percentage,
         )
 }

@@ -8,9 +8,11 @@ import io.github.wykopmobilny.models.mapper.Mapper
 
 object MediaMapperV3 : Mapper<MediaResponseV3, Embed?> {
     override fun map(value: MediaResponseV3): Embed? {
+        val photo = value.photo
+        val embed = value.embed
         return when {
-            value.photo != null -> mapPhoto(value.photo)
-            value.embed != null -> mapEmbed(value.embed)
+            photo != null -> mapPhoto(photo)
+            embed != null -> mapEmbed(embed)
             else -> null
         }
     }

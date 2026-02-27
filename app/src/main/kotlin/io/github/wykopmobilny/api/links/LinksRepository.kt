@@ -39,10 +39,7 @@ class LinksRepository
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformer())
                 .map { response ->
-                    io.github.wykopmobilny.models.mapper.apiv3.filterLinksV3(
-                        response.data.orEmpty(),
-                        owmContentFilter = owmContentFilter,
-                    )
+                    response.data.orEmpty().filterLinksV3(owmContentFilter)
                 }
 
         override fun getUpcoming(
@@ -52,10 +49,7 @@ class LinksRepository
             .retryWhen(userTokenRefresher)
             .compose(ErrorHandlerTransformer())
             .map { response ->
-                io.github.wykopmobilny.models.mapper.apiv3.filterLinksV3(
-                    response.data.orEmpty(),
-                    owmContentFilter = owmContentFilter,
-                )
+                response.data.orEmpty().filterLinksV3(owmContentFilter)
             }
 
         override fun getObserved(page: Int) =
@@ -63,10 +57,7 @@ class LinksRepository
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformer())
                 .map { response ->
-                    io.github.wykopmobilny.models.mapper.apiv3.filterLinksV3(
-                        response.data.orEmpty(),
-                        owmContentFilter = owmContentFilter,
-                    )
+                    response.data.orEmpty().filterLinksV3(owmContentFilter)
                 }
 
         override fun getLinkComments(
@@ -100,12 +91,8 @@ class LinksRepository
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformer())
                 .map { response ->
-                    response.data?.let {
-                        io.github.wykopmobilny.models.mapper.apiv3.filterLinkV3(
-                            it,
-                            owmContentFilter = owmContentFilter,
-                        )
-                    } ?: throw IllegalStateException("Link not found")
+                    response.data?.filterLinkV3(owmContentFilter)
+                        ?: throw IllegalStateException("Link not found")
                 }
 
         override fun commentVoteUp(
@@ -272,7 +259,10 @@ class LinksRepository
                 .compose(ErrorHandlerTransformer())
                 .map { response ->
                     response.data.orEmpty().map { userResponse ->
-                        io.github.wykopmobilny.models.mapper.apiv3.VoterMapperV3.map(userResponse)
+                        io.github.wykopmobilny.models.dataclass.Downvoter(
+                            author = io.github.wykopmobilny.models.mapper.apiv3.AuthorMapperV3.map(userResponse),
+                            date = "",
+                        )
                     }
                 }
 
@@ -282,7 +272,10 @@ class LinksRepository
                 .compose(ErrorHandlerTransformer())
                 .map { response ->
                     response.data.orEmpty().map { userResponse ->
-                        io.github.wykopmobilny.models.mapper.apiv3.VoterMapperV3.map(userResponse)
+                        io.github.wykopmobilny.models.dataclass.Upvoter(
+                            author = io.github.wykopmobilny.models.mapper.apiv3.AuthorMapperV3.map(userResponse),
+                            date = "",
+                        )
                     }
                 }
 

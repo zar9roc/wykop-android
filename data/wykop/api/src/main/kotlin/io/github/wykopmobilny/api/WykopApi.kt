@@ -13,6 +13,8 @@ import io.github.wykopmobilny.api.endpoints.ProfileRetrofitApi
 import io.github.wykopmobilny.api.endpoints.SearchRetrofitApi
 import io.github.wykopmobilny.api.endpoints.SuggestRetrofitApi
 import io.github.wykopmobilny.api.endpoints.TagRetrofitApi
+import io.github.wykopmobilny.api.endpoints.v3.EntriesV3RetrofitApi
+import io.github.wykopmobilny.api.endpoints.v3.LinksV3RetrofitApi
 
 interface WykopApi {
     fun addLinkRetrofitApi(): AddLinkRetrofitApi
@@ -40,6 +42,10 @@ interface WykopApi {
     fun suggestRetrofitApi(): SuggestRetrofitApi
 
     fun tagRetrofitApi(): TagRetrofitApi
+
+    fun entriesV3RetrofitApi(): EntriesV3RetrofitApi
+
+    fun linksV3RetrofitApi(): LinksV3RetrofitApi
 
     fun errorBodyParser(): ErrorBodyParser
 }
