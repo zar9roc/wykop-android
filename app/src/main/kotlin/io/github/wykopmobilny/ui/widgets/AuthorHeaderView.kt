@@ -35,9 +35,10 @@ class AuthorHeaderView(
             binding.authorAvatarView.setOnClickListener { openProfile(author.nick) }
             binding.patronBadgeTextView.isVisible = author.badge != null
             author.badge?.let { badge ->
+                @Suppress("TooGenericExceptionCaught") // Unknown badge rendering exceptions
                 try {
                     badge.drawBadge(binding.patronBadgeTextView)
-                } catch (exception: Throwable) {
+                } catch (exception: Exception) {
                     Napier.w("Couldn't draw badge", exception)
                 }
             }

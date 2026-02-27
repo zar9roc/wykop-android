@@ -39,7 +39,7 @@ class EditEntryCommentActivity :
 
     override val entryId by lazy { intent.getLongExtra(EXTRA_ENTRY_ID, 0) }
     override val commentId by lazy { intent.getLongExtra(EXTRA_COMMENT_ID, 0) }
-    override val embed by lazy { intent.getParcelableExtra(EXTRA_EMBED) as Embed? }
+    override val embed by lazy { intent.getParcelableExtra(EXTRA_EMBED) as? Embed }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

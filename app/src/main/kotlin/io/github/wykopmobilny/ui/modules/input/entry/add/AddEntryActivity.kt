@@ -52,7 +52,7 @@ class AddEntryActivity :
                     textBody = text
                 }
             } else if (intent.type?.startsWith("image/") == true) {
-                val imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM) as Uri?
+                val imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM) as? Uri
                 imageUri?.let {
                     binding.markupToolbar.photo = imageUri
                     Napier.d("Image uri $imageUri")

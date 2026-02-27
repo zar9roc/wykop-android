@@ -8,6 +8,7 @@ import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.util.HumanReadables
 import junit.framework.AssertionFailedError
 
+@Suppress("SwallowedException") // Intentional retry mechanism for Espresso tests
 internal fun ViewInteraction.waitVisible(timeout: Long = 3000L): ViewInteraction {
     val startTime = System.currentTimeMillis()
     val endTime = startTime + timeout
@@ -26,6 +27,7 @@ internal fun ViewInteraction.waitVisible(timeout: Long = 3000L): ViewInteraction
     return check(matches(isDisplayed()))
 }
 
+@Suppress("SwallowedException") // Intentional retry mechanism for Espresso tests
 internal fun ViewInteraction.waitNotVisible(timeout: Long = 3000L): ViewInteraction {
     val startTime = System.currentTimeMillis()
     val endTime = startTime + timeout

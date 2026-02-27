@@ -156,6 +156,7 @@ class NewNavigator
             intentCreator: () -> Intent,
             actionName: String,
         ) {
+            @Suppress("TooGenericExceptionCaught") // Various activity start failures possible
             try {
                 val intent = intentCreator()
                 context.startActivity(intent)

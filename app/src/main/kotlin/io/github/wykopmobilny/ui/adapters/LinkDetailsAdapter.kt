@@ -51,6 +51,7 @@ class LinkDetailsAdapter
             holder: RecyclerView.ViewHolder,
             position: Int,
         ) {
+            @Suppress("TooGenericExceptionCaught") // Defensive: various binding errors possible
             try {
                 // Suppresing, need more information to reproduce this crash.
                 if (holder.itemViewType == LinkHeaderViewHolder.TYPE_HEADER) {

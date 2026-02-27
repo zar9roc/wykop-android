@@ -90,6 +90,12 @@ class Link(
 
     override fun hashCode(): Int = this.id.hashCode()
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Link) return false
+        return id == other.id
+    }
+
     val date: String
         get() = this.fullDate.toPrettyDate()
 

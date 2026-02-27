@@ -32,13 +32,14 @@ class ViewHolderDependentItemDecorator(
         parent: RecyclerView,
         state: RecyclerView.State,
     ) {
+        @Suppress("TooGenericExceptionCaught") // Defensive: RecyclerView state exceptions
         try {
             if (view.tag == RecyclableViewHolder.SEPARATOR_NORMAL) {
                 outRect.set(0, 0, 0, largeHeight)
             } else {
                 outRect.set(0, 0, 0, normalHeight)
             }
-        } catch (exception: Throwable) {
+        } catch (exception: Exception) {
             Napier.w("Couldn't get item offset", exception)
         }
     }
