@@ -2,6 +2,9 @@ package io.github.wykopmobilny.utils.usermanager
 
 import android.content.Context
 import io.github.wykopmobilny.api.responses.LoginResponse
+import io.github.wykopmobilny.api.responses.v3.auth.AuthResponseV3
+import io.github.wykopmobilny.storage.api.JwtToken
+import io.github.wykopmobilny.storage.api.JwtTokenStorage
 import io.github.wykopmobilny.storage.api.LoggedUserInfo
 import io.github.wykopmobilny.storage.api.SessionStorage
 import io.github.wykopmobilny.storage.api.UserInfoStorage
@@ -34,6 +37,15 @@ interface UserManagerApi : SimpleUserManagerApi {
 
     suspend fun saveCredentials(credentials: LoginResponse)
 
+    suspend fun saveJwtCredentials(
+        username: String,
+        authResponse: AuthResponseV3,
+    )
+
+    suspend fun getJwtToken(): JwtToken?
+
+    suspend fun isJwtAuthorized(): Boolean
+
     fun runIfLoggedIn(
         context: Context,
         callback: () -> Unit,
@@ -48,6 +60,7 @@ class UserManager
     constructor(
         private val sessionStorage: SessionStorage,
         private val userInfoStorage: UserInfoStorage,
+        private val jwtTokenStorage: JwtTokenStorage,
         private val appScopes: AppScopes,
     ) : UserManagerApi {
         private val userInfo =
@@ -57,6 +70,7 @@ class UserManager
         override suspend fun logoutUser() {
             sessionStorage.updateSession(null)
             userInfoStorage.updateLoggedUser(null)
+            jwtTokenStorage.updateJwtToken(null)
             userInfo.first { it == null }
         }
 
@@ -71,6 +85,26 @@ class UserManager
                     ),
             )
         }
+
+        override suspend fun saveJwtCredentials(
+            username: String,
+            authResponse: AuthResponseV3,
+        ) {
+            val expiresAt = System.currentTimeMillis() + (authResponse.expiresIn * 1000)
+            jwtTokenStorage.updateJwtToken(
+                JwtToken(
+                    accessToken = authResponse.token,
+                    refreshToken = authResponse.refreshToken,
+                    expiresAt = expiresAt,
+                ),
+            )
+            // TODO: Fetch user profile using JWT and save to userInfoStorage
+            // For now, we only save JWT token
+        }
+
+        override suspend fun getJwtToken(): JwtToken? = jwtTokenStorage.jwtToken.first()
+
+        override suspend fun isJwtAuthorized(): Boolean = jwtTokenStorage.jwtToken.first() != null
 
         override fun getUserCredentials(): UserCredentials? =
             userInfo.value?.let {

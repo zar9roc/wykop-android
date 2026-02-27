@@ -3,6 +3,7 @@ package io.github.wykopmobilny.wykop.remote
 import dagger.BindsInstance
 import dagger.Component
 import io.github.wykopmobilny.api.WykopApi
+import io.github.wykopmobilny.storage.api.JwtTokenStorage
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import java.io.File
@@ -19,6 +20,7 @@ interface WykopComponent : WykopApi {
             appKey: () -> String,
             @BindsInstance @SigningInterceptor
             signingInterceptor: Interceptor,
+            @BindsInstance jwtTokenStorage: JwtTokenStorage,
             @BindsInstance cacheDir: File,
         ): WykopComponent
     }

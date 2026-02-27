@@ -9,6 +9,7 @@ import dagger.Module
 import dagger.Provides
 import io.github.wykopmobilny.data.storage.api.AppStorage
 import io.github.wykopmobilny.data.storage.api.ReadNotificationEntity
+import io.github.wykopmobilny.storage.api.JwtTokenStorage
 import io.github.wykopmobilny.storage.api.SessionStorage
 import io.github.wykopmobilny.storage.api.Storages
 import io.github.wykopmobilny.storage.api.UserInfoStorage
@@ -55,4 +56,7 @@ internal abstract class StoragesModule {
 
     @Binds
     abstract fun userInfoStorage(impl: CredentialsPreferences): UserInfoStorage
+
+    @Binds
+    abstract fun jwtTokenStorage(impl: CredentialsPreferences): JwtTokenStorage
 }

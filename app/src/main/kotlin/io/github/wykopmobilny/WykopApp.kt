@@ -240,13 +240,14 @@ open class WykopApp :
             okHttpClient = okHttpClient,
             baseUrl = WYKOP_API_URL,
             appKey = { FirebaseRemoteConfig.getInstance().getString(RemoteConfigKeys.API_APP_KEY) },
-            cacheDir = cacheDir.resolve("okhttp/wykop"),
             signingInterceptor =
                 ApiSignInterceptor(
                     object : SimpleUserManagerApi {
                         override fun getUserCredentials(): UserCredentials? = userManagerApi.get().getUserCredentials()
                     },
                 ),
+            jwtTokenStorage = storages.jwtTokenStorage(),
+            cacheDir = cacheDir.resolve("okhttp/wykop"),
         )
     }
 

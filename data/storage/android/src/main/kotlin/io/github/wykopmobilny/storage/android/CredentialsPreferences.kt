@@ -3,10 +3,13 @@ package io.github.wykopmobilny.storage.android
 import android.content.Context
 import androidx.datastore.preferences.SharedPreferencesMigration
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.Reusable
 import io.github.aakira.napier.Napier
+import io.github.wykopmobilny.storage.api.JwtToken
+import io.github.wykopmobilny.storage.api.JwtTokenStorage
 import io.github.wykopmobilny.storage.api.LoggedUserInfo
 import io.github.wykopmobilny.storage.api.SessionStorage
 import io.github.wykopmobilny.storage.api.UserInfoStorage
@@ -25,12 +28,16 @@ internal class CredentialsPreferences
     constructor(
         private val context: Context,
     ) : SessionStorage,
-        UserInfoStorage {
+        UserInfoStorage,
+        JwtTokenStorage {
         private val login = stringPreferencesKey(name = "login")
         private val userKey = stringPreferencesKey(name = "userKey")
         private val userToken = stringPreferencesKey(name = "userToken")
         private val avatarUrl = stringPreferencesKey(name = "avatarUrl")
         private val backgroundUrl = stringPreferencesKey(name = "backgroundUrl")
+        private val jwtAccessToken = stringPreferencesKey(name = "jwtAccessToken")
+        private val jwtRefreshToken = stringPreferencesKey(name = "jwtRefreshToken")
+        private val jwtExpiresAt = longPreferencesKey(name = "jwtExpiresAt")
 
         override val session =
             context.dataStore.data
@@ -78,6 +85,31 @@ internal class CredentialsPreferences
                     prefs[userToken] = value.userToken
                     prefs[avatarUrl] = value.avatarUrl
                     value.backgroundUrl?.let { prefs[backgroundUrl] = it } ?: prefs.remove(backgroundUrl)
+                }
+            }
+        }
+
+        override val jwtToken =
+            context.dataStore.data
+                .map { prefs ->
+                    JwtToken(
+                        accessToken = prefs[jwtAccessToken] ?: return@map null,
+                        refreshToken = prefs[jwtRefreshToken] ?: return@map null,
+                        expiresAt = prefs[jwtExpiresAt] ?: return@map null,
+                    )
+                }.catch { Napier.e("Exception when reading JWT token", it) }
+                .distinctUntilChanged()
+
+        override suspend fun updateJwtToken(value: JwtToken?) {
+            context.dataStore.edit { prefs ->
+                if (value == null) {
+                    prefs -= jwtAccessToken
+                    prefs -= jwtRefreshToken
+                    prefs -= jwtExpiresAt
+                } else {
+                    prefs[jwtAccessToken] = value.accessToken
+                    prefs[jwtRefreshToken] = value.refreshToken
+                    prefs[jwtExpiresAt] = value.expiresAt
                 }
             }
         }

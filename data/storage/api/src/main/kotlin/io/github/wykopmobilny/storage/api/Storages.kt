@@ -7,5 +7,7 @@ interface Storages {
 
     fun userInfoStorage(): UserInfoStorage
 
+    fun jwtTokenStorage(): JwtTokenStorage
+
     fun storage(): AppStorage
 }
