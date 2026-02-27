@@ -9,9 +9,9 @@ import kotlinx.coroutines.flow.flowOf
 internal fun BaseScreenshotTest.registerBlacklist(blacklist: () -> BlacklistedDetailsUi = { error("unsupported") }) =
     registerDependencies<BlacklistDependencies>(
         object : BlacklistDependencies {
-
-            override fun blacklistDetails() = object : GetBlacklistDetails {
-                override fun invoke() = flowOf(blacklist())
-            }
+            override fun blacklistDetails() =
+                object : GetBlacklistDetails {
+                    override fun invoke() = flowOf(blacklist())
+                }
         },
     )

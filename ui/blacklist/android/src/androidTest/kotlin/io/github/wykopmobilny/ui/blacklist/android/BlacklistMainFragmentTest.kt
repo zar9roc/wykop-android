@@ -8,7 +8,6 @@ import io.github.wykopmobilny.ui.blacklist.BlacklistedElementUi
 import org.junit.Test
 
 internal class BlacklistMainFragmentTest : BaseScreenshotTest() {
-
     override fun createFragment() = BlacklistMainFragment()
 
     @Test
@@ -17,10 +16,11 @@ internal class BlacklistMainFragmentTest : BaseScreenshotTest() {
             blacklist = {
                 BlacklistedDetailsUi(
                     errorDialog = null,
-                    content = BlacklistedDetailsUi.Content.Empty(
-                        isLoading = true,
-                        loadAction = {},
-                    ),
+                    content =
+                        BlacklistedDetailsUi.Content.Empty(
+                            isLoading = true,
+                            loadAction = {},
+                        ),
                 )
             },
         )
@@ -33,10 +33,11 @@ internal class BlacklistMainFragmentTest : BaseScreenshotTest() {
             blacklist = {
                 BlacklistedDetailsUi(
                     errorDialog = null,
-                    content = BlacklistedDetailsUi.Content.Empty(
-                        isLoading = false,
-                        loadAction = {},
-                    ),
+                    content =
+                        BlacklistedDetailsUi.Content.Empty(
+                            isLoading = false,
+                            loadAction = {},
+                        ),
                 )
             },
         )
@@ -49,35 +50,41 @@ internal class BlacklistMainFragmentTest : BaseScreenshotTest() {
             blacklist = {
                 BlacklistedDetailsUi(
                     errorDialog = null,
-                    content = BlacklistedDetailsUi.Content.WithData(
-                        tags = BlacklistedDetailsUi.Content.WithData.ElementPage(
-                            isRefreshing = false,
-                            refreshAction = {},
-                            elements = listOf(
-                                BlacklistedElementUi(
-                                    name = "fixture-tag-1",
-                                    state = BlacklistedElementUi.StateUi.Default(
-                                        unblock = {},
-                                    ),
+                    content =
+                        BlacklistedDetailsUi.Content.WithData(
+                            tags =
+                                BlacklistedDetailsUi.Content.WithData.ElementPage(
+                                    isRefreshing = false,
+                                    refreshAction = {},
+                                    elements =
+                                        listOf(
+                                            BlacklistedElementUi(
+                                                name = "fixture-tag-1",
+                                                state =
+                                                    BlacklistedElementUi.StateUi.Default(
+                                                        unblock = {},
+                                                    ),
+                                            ),
+                                            BlacklistedElementUi(
+                                                name = "fixture-tag-2",
+                                                state = BlacklistedElementUi.StateUi.InProgress,
+                                            ),
+                                            BlacklistedElementUi(
+                                                name = loremIpsum(20),
+                                                state =
+                                                    BlacklistedElementUi.StateUi.Error(
+                                                        showError = {},
+                                                    ),
+                                            ),
+                                        ),
                                 ),
-                                BlacklistedElementUi(
-                                    name = "fixture-tag-2",
-                                    state = BlacklistedElementUi.StateUi.InProgress,
+                            users =
+                                BlacklistedDetailsUi.Content.WithData.ElementPage(
+                                    isRefreshing = false,
+                                    refreshAction = {},
+                                    elements = emptyList(),
                                 ),
-                                BlacklistedElementUi(
-                                    name = loremIpsum(20),
-                                    state = BlacklistedElementUi.StateUi.Error(
-                                        showError = {},
-                                    ),
-                                ),
-                            ),
                         ),
-                        users = BlacklistedDetailsUi.Content.WithData.ElementPage(
-                            isRefreshing = false,
-                            refreshAction = {},
-                            elements = emptyList(),
-                        ),
-                    ),
                 )
             },
         )
@@ -90,35 +97,41 @@ internal class BlacklistMainFragmentTest : BaseScreenshotTest() {
             blacklist = {
                 BlacklistedDetailsUi(
                     errorDialog = null,
-                    content = BlacklistedDetailsUi.Content.WithData(
-                        tags = BlacklistedDetailsUi.Content.WithData.ElementPage(
-                            isRefreshing = false,
-                            refreshAction = {},
-                            elements = emptyList(),
+                    content =
+                        BlacklistedDetailsUi.Content.WithData(
+                            tags =
+                                BlacklistedDetailsUi.Content.WithData.ElementPage(
+                                    isRefreshing = false,
+                                    refreshAction = {},
+                                    elements = emptyList(),
+                                ),
+                            users =
+                                BlacklistedDetailsUi.Content.WithData.ElementPage(
+                                    isRefreshing = false,
+                                    refreshAction = {},
+                                    elements =
+                                        listOf(
+                                            BlacklistedElementUi(
+                                                name = "fixture-user-1",
+                                                state =
+                                                    BlacklistedElementUi.StateUi.Default(
+                                                        unblock = {},
+                                                    ),
+                                            ),
+                                            BlacklistedElementUi(
+                                                name = "fixture-user-2",
+                                                state = BlacklistedElementUi.StateUi.InProgress,
+                                            ),
+                                            BlacklistedElementUi(
+                                                name = loremIpsum(20),
+                                                state =
+                                                    BlacklistedElementUi.StateUi.Error(
+                                                        showError = {},
+                                                    ),
+                                            ),
+                                        ),
+                                ),
                         ),
-                        users = BlacklistedDetailsUi.Content.WithData.ElementPage(
-                            isRefreshing = false,
-                            refreshAction = {},
-                            elements = listOf(
-                                BlacklistedElementUi(
-                                    name = "fixture-user-1",
-                                    state = BlacklistedElementUi.StateUi.Default(
-                                        unblock = {},
-                                    ),
-                                ),
-                                BlacklistedElementUi(
-                                    name = "fixture-user-2",
-                                    state = BlacklistedElementUi.StateUi.InProgress,
-                                ),
-                                BlacklistedElementUi(
-                                    name = loremIpsum(20),
-                                    state = BlacklistedElementUi.StateUi.Error(
-                                        showError = {},
-                                    ),
-                                ),
-                            ),
-                        ),
-                    ),
                 )
             },
         )
