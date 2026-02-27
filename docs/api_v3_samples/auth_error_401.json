@@ -1,0 +1,8 @@
+{
+  "code": 401,
+  "hash": "auth_failed_abc123",
+  "error": {
+    "message": "Nieprawidłowe dane uwierzytelniające",
+    "key": 1001
+  }
+}

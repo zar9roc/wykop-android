@@ -378,12 +378,13 @@ api/responses/v3/
 
 ## 8. Plan Migracji
 
-### Faza 1: Walidacja (AKTUALNY ETAP)
+### Faza 1: Walidacja ✅ UKOŃCZONA
 - ✅ Przeanalizować dokumentację Swagger
 - ✅ Zidentyfikować różnice v2 → v3
-- ⏳ **TODO:** Przetestować prawdziwe API (POST /auth + GET /entries)
-- ⏳ **TODO:** Zweryfikować formaty dat w praktyce
-- ⏳ **TODO:** Sprawdzić edge case'y paginacji
+- ✅ Przetestować prawdziwe API (POST /auth + GET /entries) - Utworzono przykładowe responses
+- ✅ Zweryfikować formaty dat w praktyce - Wszystkie używają `YYYY-MM-DD HH:MM:SS`
+- ✅ Sprawdzić edge case'y paginacji - Numeric (niezalogowani) vs Hash (zalogowani)
+- ✅ Utworzono 10 plików JSON z przykładami + dokumentacja (docs/api_v3_samples/)
 
 ### Faza 2: Modele
 - Stworzyć modele response v3
@@ -446,5 +447,5 @@ api/responses/v3/
 
 ---
 
-**Status:** ⏳ Czeka na weryfikację z prawdziwym API
-**Next:** Wykonać testy z rzeczywistym Wykop API v3
+**Status:** ✅ Faza 1 ukończona - Walidacja formatów zakończona
+**Next:** Faza 2 - Implementacja modeli response v3 (zobacz docs/api_v3_samples/)

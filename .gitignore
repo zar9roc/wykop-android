@@ -69,3 +69,4 @@ lint/generated/
 lint/outputs/
 lint/tmp/
 # lint/reports/
+docs/WYKOP_API_V3_MIGRATION_PLAN.md

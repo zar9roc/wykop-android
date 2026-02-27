@@ -1,0 +1,74 @@
+{
+  "data": {
+    "id": 345678,
+    "author": {
+      "username": "survey_creator",
+      "avatar": "https://wykop.pl/cdn/c3397993/avatar/survey_creator.jpg",
+      "color": "orange",
+      "gender": "male",
+      "verified": true,
+      "sponsor": false,
+      "online": true
+    },
+    "device": "web",
+    "created_at": "2026-02-27 11:30:00",
+    "voted": 1,
+    "content": "Ankieta: Która wersja Kotlin jest najlepsza? #ankieta #kotlin #programowanie",
+    "media": null,
+    "adult": false,
+    "tags": ["ankieta", "kotlin", "programowanie"],
+    "favourite": false,
+    "deletable": false,
+    "slug": "ankieta-kotlin-wersja",
+    "votes": {
+      "up": 156,
+      "down": 4
+    },
+    "comments": {
+      "count": 67,
+      "items": []
+    },
+    "survey": {
+      "question": "Która wersja Kotlin jest najlepsza?",
+      "answers": [
+        {
+          "id": 1,
+          "answer": "Kotlin 1.9",
+          "count": 45,
+          "percentage": 15.5
+        },
+        {
+          "id": 2,
+          "answer": "Kotlin 2.0",
+          "count": 189,
+          "percentage": 65.2
+        },
+        {
+          "id": 3,
+          "answer": "Kotlin 2.1+",
+          "count": 56,
+          "percentage": 19.3
+        }
+      ],
+      "votes_count": 290,
+      "user_answer": 2
+    },
+    "parent_id": null,
+    "resource": "entry",
+    "actions": {
+      "update": false,
+      "delete": false,
+      "vote_up": true,
+      "vote_down": true,
+      "comment": true,
+      "report": true,
+      "favourite": true,
+      "survey_vote": false
+    },
+    "archive": false,
+    "deleted": false,
+    "observed_discussion": false,
+    "pinnable": false,
+    "card": null
+  }
+}

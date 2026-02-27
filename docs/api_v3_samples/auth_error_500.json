@@ -1,0 +1,8 @@
+{
+  "code": 500,
+  "hash": "internal_error_ghi789",
+  "error": {
+    "message": "Wewnętrzny błąd serwera. Spróbuj ponownie później.",
+    "key": 5000
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MDkwNTMyMjAsImV4cCI6MTcwOTA1NjgyMCwicm9sZXMiOlsidXNlciJdLCJ1c2VybmFtZSI6InRlc3R1c2VyMTIzIiwidXNlci1hZ2VudCI6Ik1vemlsbGEvNS4wIChMaW51eDsgQW5kcm9pZCAxMCkgQXBwbGVXZWJLaXQvNTM3LjM2IiwidXNlcl9pcCI6IjE5Mi4xNjguMS4xMDAiLCJpZCI6MTIzNDU2fQ.exampleSignatureHashHere123456789"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "code": 403,
+  "hash": "forbidden_access_def456",
+  "error": {
+    "message": "Brak uprawnień do wykonania tej operacji",
+    "key": 1003
+  }
+}

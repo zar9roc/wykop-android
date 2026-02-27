@@ -1,0 +1,268 @@
+{
+  "data": [
+    {
+      "id": 123456,
+      "author": {
+        "username": "example_user",
+        "avatar": "https://wykop.pl/cdn/c3397993/avatar/example_user.jpg",
+        "color": "orange",
+        "gender": "male",
+        "verified": true,
+        "sponsor": false,
+        "online": false
+      },
+      "device": "android",
+      "created_at": "2026-02-27 14:30:45",
+      "voted": 0,
+      "content": "To jest przykładowy wpis na Wykop.pl #programowanie #android\n\nTreść wpisu może zawierać **markdown** i [linki](https://example.com).",
+      "media": {
+        "photo": {
+          "url": "https://wykop.pl/cdn/c3397993/photo123456.jpg",
+          "key": "photo123456",
+          "label": "Zdjęcie",
+          "mime_type": "image/jpeg",
+          "source": null,
+          "plus18": false,
+          "width": 1920,
+          "height": 1080
+        }
+      },
+      "adult": false,
+      "tags": ["programowanie", "android", "kotlin"],
+      "favourite": false,
+      "deletable": false,
+      "slug": "przykladowy-wpis-na-wykop",
+      "votes": {
+        "up": 42,
+        "down": 3
+      },
+      "comments": {
+        "count": 15,
+        "items": []
+      },
+      "parent_id": null,
+      "resource": "entry",
+      "actions": {
+        "update": false,
+        "delete": false,
+        "vote_up": true,
+        "vote_down": false,
+        "comment": true,
+        "report": true,
+        "favourite": true
+      },
+      "archive": false,
+      "deleted": false,
+      "observed_discussion": false,
+      "pinnable": false,
+      "card": null
+    },
+    {
+      "id": 123457,
+      "author": {
+        "username": "another_user",
+        "avatar": "https://wykop.pl/cdn/c3397993/avatar/another_user.jpg",
+        "color": "green",
+        "gender": "female",
+        "verified": false,
+        "sponsor": true,
+        "online": true
+      },
+      "device": "web",
+      "created_at": "2026-02-27 13:15:22",
+      "voted": 0,
+      "content": "Drugi przykładowy wpis z embedem YouTube #video #tutorial",
+      "media": {
+        "embed": {
+          "type": "youtube",
+          "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          "key": "dQw4w9WgXcQ",
+          "plus18": false,
+          "thumbnail": "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"
+        }
+      },
+      "adult": false,
+      "tags": ["video", "tutorial", "youtube"],
+      "favourite": false,
+      "deletable": false,
+      "slug": "drugi-przykladowy-wpis",
+      "votes": {
+        "up": 128,
+        "down": 5
+      },
+      "comments": {
+        "count": 47,
+        "items": []
+      },
+      "parent_id": null,
+      "resource": "entry",
+      "actions": {
+        "update": false,
+        "delete": false,
+        "vote_up": true,
+        "vote_down": false,
+        "comment": true,
+        "report": true,
+        "favourite": true
+      },
+      "archive": false,
+      "deleted": false,
+      "observed_discussion": false,
+      "pinnable": false,
+      "card": null
+    },
+    {
+      "id": 123458,
+      "author": {
+        "username": "tech_enthusiast",
+        "avatar": "https://wykop.pl/cdn/c3397993/avatar/tech_enthusiast.jpg",
+        "color": "blue",
+        "gender": "unknown",
+        "verified": true,
+        "sponsor": false,
+        "online": false
+      },
+      "device": "ios",
+      "created_at": "2026-02-27 12:05:10",
+      "voted": 0,
+      "content": "Wpis bez mediów, tylko tekst #tekstowy #mikroblog",
+      "media": null,
+      "adult": false,
+      "tags": ["tekstowy", "mikroblog"],
+      "favourite": false,
+      "deletable": false,
+      "slug": "wpis-bez-mediow",
+      "votes": {
+        "up": 18,
+        "down": 1
+      },
+      "comments": {
+        "count": 3,
+        "items": []
+      },
+      "parent_id": null,
+      "resource": "entry",
+      "actions": {
+        "update": false,
+        "delete": false,
+        "vote_up": true,
+        "vote_down": false,
+        "comment": true,
+        "report": true,
+        "favourite": true
+      },
+      "archive": false,
+      "deleted": false,
+      "observed_discussion": false,
+      "pinnable": false,
+      "card": null
+    },
+    {
+      "id": 123459,
+      "author": {
+        "username": "deleted_user",
+        "avatar": "https://wykop.pl/cdn/default_avatar.jpg",
+        "color": "gray",
+        "gender": "unknown",
+        "verified": false,
+        "sponsor": false,
+        "online": false
+      },
+      "device": "android",
+      "created_at": "2026-02-27 10:45:33",
+      "voted": 0,
+      "content": "[usunięte]",
+      "media": null,
+      "adult": false,
+      "tags": [],
+      "favourite": false,
+      "deletable": false,
+      "slug": "deleted-entry",
+      "votes": {
+        "up": 0,
+        "down": 0
+      },
+      "comments": {
+        "count": 0,
+        "items": []
+      },
+      "parent_id": null,
+      "resource": "entry",
+      "actions": {
+        "update": false,
+        "delete": false,
+        "vote_up": false,
+        "vote_down": false,
+        "comment": false,
+        "report": false,
+        "favourite": false
+      },
+      "archive": false,
+      "deleted": true,
+      "observed_discussion": false,
+      "pinnable": false,
+      "card": null
+    },
+    {
+      "id": 123460,
+      "author": {
+        "username": "adult_content_user",
+        "avatar": "https://wykop.pl/cdn/c3397993/avatar/adult_content_user.jpg",
+        "color": "red",
+        "gender": "male",
+        "verified": false,
+        "sponsor": false,
+        "online": true
+      },
+      "device": "web",
+      "created_at": "2026-02-27 09:20:15",
+      "voted": 0,
+      "content": "Wpis z treścią dla dorosłych (NSFW) #nsfw #plus18",
+      "media": {
+        "photo": {
+          "url": "https://wykop.pl/cdn/c3397993/photo_nsfw_123460.jpg",
+          "key": "photo_nsfw_123460",
+          "label": "Zdjęcie +18",
+          "mime_type": "image/jpeg",
+          "source": null,
+          "plus18": true,
+          "width": 1280,
+          "height": 720
+        }
+      },
+      "adult": true,
+      "tags": ["nsfw", "plus18"],
+      "favourite": false,
+      "deletable": false,
+      "slug": "wpis-plus18",
+      "votes": {
+        "up": 87,
+        "down": 12
+      },
+      "comments": {
+        "count": 28,
+        "items": []
+      },
+      "parent_id": null,
+      "resource": "entry",
+      "actions": {
+        "update": false,
+        "delete": false,
+        "vote_up": true,
+        "vote_down": false,
+        "comment": true,
+        "report": true,
+        "favourite": true
+      },
+      "archive": false,
+      "deleted": false,
+      "observed_discussion": false,
+      "pinnable": false,
+      "card": null
+    }
+  ],
+  "pagination": {
+    "per_page": 5,
+    "total": 450
+  }
+}

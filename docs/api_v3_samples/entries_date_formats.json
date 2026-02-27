@@ -1,0 +1,146 @@
+{
+  "data": [
+    {
+      "id": 456789,
+      "author": {
+        "username": "time_tester",
+        "avatar": "https://wykop.pl/cdn/c3397993/avatar/time_tester.jpg",
+        "color": "blue",
+        "gender": "unknown",
+        "verified": false,
+        "sponsor": false,
+        "online": false
+      },
+      "device": "android",
+      "created_at": "2026-02-27 00:00:00",
+      "voted": 0,
+      "content": "Wpis o północy #midnight #time",
+      "media": null,
+      "adult": false,
+      "tags": ["midnight", "time"],
+      "favourite": false,
+      "deletable": false,
+      "slug": "wpis-o-polnocy",
+      "votes": {
+        "up": 5,
+        "down": 0
+      },
+      "comments": {
+        "count": 0,
+        "items": []
+      },
+      "parent_id": null,
+      "resource": "entry",
+      "actions": {
+        "update": false,
+        "delete": false,
+        "vote_up": true,
+        "vote_down": false,
+        "comment": true,
+        "report": true,
+        "favourite": true
+      },
+      "archive": false,
+      "deleted": false,
+      "observed_discussion": false,
+      "pinnable": false,
+      "card": null
+    },
+    {
+      "id": 456790,
+      "author": {
+        "username": "time_tester",
+        "avatar": "https://wykop.pl/cdn/c3397993/avatar/time_tester.jpg",
+        "color": "blue",
+        "gender": "unknown",
+        "verified": false,
+        "sponsor": false,
+        "online": false
+      },
+      "device": "android",
+      "created_at": "2026-02-27 23:59:59",
+      "voted": 0,
+      "content": "Wpis tuż przed północą #lastminute #time",
+      "media": null,
+      "adult": false,
+      "tags": ["lastminute", "time"],
+      "favourite": false,
+      "deletable": false,
+      "slug": "wpis-przed-polnoca",
+      "votes": {
+        "up": 3,
+        "down": 0
+      },
+      "comments": {
+        "count": 0,
+        "items": []
+      },
+      "parent_id": null,
+      "resource": "entry",
+      "actions": {
+        "update": false,
+        "delete": false,
+        "vote_up": true,
+        "vote_down": false,
+        "comment": true,
+        "report": true,
+        "favourite": true
+      },
+      "archive": false,
+      "deleted": false,
+      "observed_discussion": false,
+      "pinnable": false,
+      "card": null
+    },
+    {
+      "id": 456791,
+      "author": {
+        "username": "old_user",
+        "avatar": "https://wykop.pl/cdn/c3397993/avatar/old_user.jpg",
+        "color": "gray",
+        "gender": "male",
+        "verified": true,
+        "sponsor": false,
+        "online": false
+      },
+      "device": "web",
+      "created_at": "2019-02-25 20:35:18",
+      "voted": 0,
+      "content": "Stary wpis z 2019 roku #old #archive",
+      "media": null,
+      "adult": false,
+      "tags": ["old", "archive"],
+      "favourite": false,
+      "deletable": false,
+      "slug": "stary-wpis-2019",
+      "votes": {
+        "up": 1024,
+        "down": 15
+      },
+      "comments": {
+        "count": 342,
+        "items": []
+      },
+      "parent_id": null,
+      "resource": "entry",
+      "actions": {
+        "update": false,
+        "delete": false,
+        "vote_up": false,
+        "vote_down": false,
+        "comment": false,
+        "report": false,
+        "favourite": true
+      },
+      "archive": true,
+      "deleted": false,
+      "observed_discussion": false,
+      "pinnable": false,
+      "card": null
+    }
+  ],
+  "pagination": {
+    "per_page": 3,
+    "total": 450
+  }
+}

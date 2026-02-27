@@ -1,0 +1,8 @@
+{
+  "code": 400,
+  "hash": "limit_exceeded_xyz789",
+  "error": {
+    "message": "Search does not serve more than 100th results for query.",
+    "key": "limit_exceeded"
+  }
+}

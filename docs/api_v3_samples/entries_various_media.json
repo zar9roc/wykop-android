@@ -1,0 +1,225 @@
+{
+  "data": [
+    {
+      "id": 567890,
+      "author": {
+        "username": "media_user",
+        "avatar": "https://wykop.pl/cdn/c3397993/avatar/media_user.jpg",
+        "color": "red",
+        "gender": "female",
+        "verified": true,
+        "sponsor": false,
+        "online": true
+      },
+      "device": "android",
+      "created_at": "2026-02-27 17:45:30",
+      "voted": 0,
+      "content": "Wpis z Coub #coub #video #loop",
+      "media": {
+        "embed": {
+          "type": "coub",
+          "url": "https://coub.com/view/example123",
+          "key": "example123",
+          "plus18": false,
+          "thumbnail": "https://coub-anubis-a.akamaihd.net/coub_storage/example123/image_versions/example.jpg"
+        }
+      },
+      "adult": false,
+      "tags": ["coub", "video", "loop"],
+      "favourite": false,
+      "deletable": false,
+      "slug": "wpis-z-coub",
+      "votes": {
+        "up": 67,
+        "down": 2
+      },
+      "comments": {
+        "count": 12,
+        "items": []
+      },
+      "parent_id": null,
+      "resource": "entry",
+      "actions": {
+        "update": false,
+        "delete": false,
+        "vote_up": true,
+        "vote_down": false,
+        "comment": true,
+        "report": true,
+        "favourite": true
+      },
+      "archive": false,
+      "deleted": false,
+      "observed_discussion": false,
+      "pinnable": false,
+      "card": null
+    },
+    {
+      "id": 567891,
+      "author": {
+        "username": "gif_lover",
+        "avatar": "https://wykop.pl/cdn/c3397993/avatar/gif_lover.jpg",
+        "color": "green",
+        "gender": "male",
+        "verified": false,
+        "sponsor": true,
+        "online": false
+      },
+      "device": "web",
+      "created_at": "2026-02-27 16:20:15",
+      "voted": 0,
+      "content": "Wpis z Gfycat GIF #gfycat #gif #animated",
+      "media": {
+        "embed": {
+          "type": "gfycat",
+          "url": "https://gfycat.com/examplegif123",
+          "key": "examplegif123",
+          "plus18": false,
+          "thumbnail": "https://thumbs.gfycat.com/ExampleGif123-mobile.jpg"
+        }
+      },
+      "adult": false,
+      "tags": ["gfycat", "gif", "animated"],
+      "favourite": false,
+      "deletable": false,
+      "slug": "wpis-z-gfycat",
+      "votes": {
+        "up": 89,
+        "down": 3
+      },
+      "comments": {
+        "count": 24,
+        "items": []
+      },
+      "parent_id": null,
+      "resource": "entry",
+      "actions": {
+        "update": false,
+        "delete": false,
+        "vote_up": true,
+        "vote_down": false,
+        "comment": true,
+        "report": true,
+        "favourite": true
+      },
+      "archive": false,
+      "deleted": false,
+      "observed_discussion": false,
+      "pinnable": false,
+      "card": null
+    },
+    {
+      "id": 567892,
+      "author": {
+        "username": "streamer",
+        "avatar": "https://wykop.pl/cdn/c3397993/avatar/streamer.jpg",
+        "color": "purple",
+        "gender": "unknown",
+        "verified": true,
+        "sponsor": false,
+        "online": true
+      },
+      "device": "ios",
+      "created_at": "2026-02-27 15:05:42",
+      "voted": 0,
+      "content": "Wpis z Streamable #streamable #video #clip",
+      "media": {
+        "embed": {
+          "type": "streamable",
+          "url": "https://streamable.com/example456",
+          "key": "example456",
+          "plus18": false,
+          "thumbnail": "https://cdn-cf-east.streamable.com/image/example456.jpg"
+        }
+      },
+      "adult": false,
+      "tags": ["streamable", "video", "clip"],
+      "favourite": false,
+      "deletable": false,
+      "slug": "wpis-z-streamable",
+      "votes": {
+        "up": 145,
+        "down": 7
+      },
+      "comments": {
+        "count": 56,
+        "items": []
+      },
+      "parent_id": null,
+      "resource": "entry",
+      "actions": {
+        "update": false,
+        "delete": false,
+        "vote_up": true,
+        "vote_down": false,
+        "comment": true,
+        "report": true,
+        "favourite": true
+      },
+      "archive": false,
+      "deleted": false,
+      "observed_discussion": false,
+      "pinnable": false,
+      "card": null
+    },
+    {
+      "id": 567893,
+      "author": {
+        "username": "link_sharer",
+        "avatar": "https://wykop.pl/cdn/c3397993/avatar/link_sharer.jpg",
+        "color": "cyan",
+        "gender": "male",
+        "verified": false,
+        "sponsor": false,
+        "online": false
+      },
+      "device": "android",
+      "created_at": "2026-02-27 14:30:18",
+      "voted": 0,
+      "content": "Wpis z kartą podglądu linku #link #preview #card",
+      "media": null,
+      "adult": false,
+      "tags": ["link", "preview", "card"],
+      "favourite": false,
+      "deletable": false,
+      "slug": "wpis-z-karta-podgladu",
+      "votes": {
+        "up": 34,
+        "down": 1
+      },
+      "comments": {
+        "count": 8,
+        "items": []
+      },
+      "parent_id": null,
+      "resource": "entry",
+      "actions": {
+        "update": false,
+        "delete": false,
+        "vote_up": true,
+        "vote_down": false,
+        "comment": true,
+        "report": true,
+        "favourite": true
+      },
+      "archive": false,
+      "deleted": false,
+      "observed_discussion": false,
+      "pinnable": false,
+      "card": {
+        "title": "Przykładowy artykuł o programowaniu",
+        "description": "To jest opis artykułu który został udostępniony w wpisie. Karta zawiera podgląd treści.",
+        "url": "https://example.com/article/programming-best-practices",
+        "image": "https://example.com/article/programming-best-practices/og-image.jpg",
+        "source": {
+          "label": "example.com",
+          "url": "https://example.com"
+        }
+      }
+    }
+  ],
+  "pagination": {
+    "per_page": 4,
+    "total": 450
+  }
+}
