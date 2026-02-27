@@ -57,8 +57,11 @@ allprojects {
         android {
             namespace "io.github.wykopmobilny${path.replace(":", ".").replace("-", "_")}"
         }
-        android.variantFilter {
-            ignore = buildType.name != "debug"
+        // AGP 9.0: variantFilter replaced with androidComponents API
+        androidComponents {
+            beforeVariants(selector().all()) { variantBuilder ->
+                variantBuilder.enable = variantBuilder.buildType == "debug"
+            }
         }
     }
     pluginManager.withPlugin("com.android.application") {

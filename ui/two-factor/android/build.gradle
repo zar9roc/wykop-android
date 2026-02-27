@@ -1,7 +1,7 @@
 plugins {
     id("com.starter.library.android")
     alias(libs.plugins.google.devtools.ksp)
-    id("io.github.wykopmobilny.screenshots")
+    //     id("io.github.wykopmobilny.screenshots")  // Disabled - not compatible with AGP 9.0
 }
 
 android {

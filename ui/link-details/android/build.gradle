@@ -1,6 +1,6 @@
 plugins {
     id("com.starter.library.android")
-    id("io.github.wykopmobilny.screenshots")
+    //     id("io.github.wykopmobilny.screenshots")  // Disabled - not compatible with AGP 9.0
 }
 
 android {

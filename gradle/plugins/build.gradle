@@ -12,14 +12,15 @@ dependencies {
     implementation(gradleApi())
     implementation(libs.agp.tools.core)
     implementation(libs.agp.tools.gradle)
-    implementation(libs.usefulness.screenshotTesting.plugin)
+    // implementation(libs.usefulness.screenshotTesting.plugin)  // Disabled - not compatible with AGP 9.0
 }
 
-gradlePlugin {
-    plugins {
-        screenshotsPlugin {
-            id = "io.github.wykopmobilny.screenshots"
-            implementationClass = "io.github.wykopmobilny.plugins.ScreenshotTestsPlugin"
-        }
-    }
-}
+// Screenshot plugin disabled - not compatible with AGP 9.0
+// gradlePlugin {
+//     plugins {
+//         screenshotsPlugin {
+//             id = "io.github.wykopmobilny.screenshots"
+//             implementationClass = "io.github.wykopmobilny.plugins.ScreenshotTestsPlugin"
+//         }
+//     }
+// }

@@ -11,12 +11,13 @@ dependencies {
     ksp(libs.moshi.compiler)
 }
 
-tasks.named("detekt") {
-    def dir = layout.projectDirectory.asFile
-    exclude {
-        it.file.relativePath(dir).startsWith("build")
-    }
-}
+// Detekt task removed - plugin not installed
+// tasks.named("detekt") {
+//     def dir = layout.projectDirectory.asFile
+//     exclude {
+//         it.file.relativePath(dir).startsWith("build")
+//     }
+// }
 afterEvaluate {
     tasks.findByName("lintKotlinGeneratedByKspKotlin")?.enabled = false
     tasks.findByName("formatKotlinGeneratedByKspKotlin")?.enabled = false

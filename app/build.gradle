@@ -1,15 +1,14 @@
-import com.slack.keeper.KeeperVariantMarker
-import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
+// import com.slack.keeper.KeeperVariantMarker  // Disabled - not compatible with AGP 9.0
 
 plugins {
     id("com.starter.application.android")
     id("com.starter.easylauncher")
     alias(libs.plugins.google.devtools.ksp)
-    id("kotlin-kapt")
+    // kotlin-kapt removed - migrated to KSP for AGP 9.0+
     id("org.jetbrains.kotlin.plugin.parcelize")
     alias(libs.plugins.google.playservices)
     alias(libs.plugins.google.firebase.crashlytics)
-    alias(libs.plugins.slack.keeper)
+    // alias(libs.plugins.slack.keeper)  // Disabled - not compatible with AGP 9.0
     alias(libs.plugins.droidsonroids.animationdisabler)
 }
 
@@ -22,14 +21,14 @@ def findProperty(key) {
 }
 
 android {
-    compileSdk 34
+    compileSdk 36
 
     buildFeatures {
         buildConfig = true
     }
     defaultConfig {
         applicationId "io.github.wykopmobilny"
-        targetSdk 34
+        targetSdk 36
 
         testInstrumentationRunner = "io.github.wykopmobilny.DefaultTestRunner"
         buildConfigField 'String', 'APP_SECRET', "\"${findProperty("wykop.secretKey")}\""
@@ -67,13 +66,13 @@ android {
         named("release") {
             minifyEnabled true
             signingConfig signingConfigs.getByName("release")
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             firebaseCrashlytics.mappingFileUploadEnabled findProperty("uploadMapping") == "true"
         }
         register("releaseTest") {
             minifyEnabled true
             signingConfig signingConfigs.getByName("debug")
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             testProguardFile "proguard-rules-test.pro"
             firebaseCrashlytics.mappingFileUploadEnabled false
         }
@@ -103,16 +102,17 @@ android {
 }
 
 
-androidComponents {
-    beforeVariants(selector().withBuildType("releaseTest")) { builder ->
-        builder.registerExtension(KeeperVariantMarker.class, KeeperVariantMarker.INSTANCE)
-    }
-}
-
-keeper {
-    automaticR8RepoManagement = false
-    traceReferences {}
-}
+// Keeper configuration disabled - not compatible with AGP 9.0
+// androidComponents {
+//     beforeVariants(selector().withBuildType("releaseTest")) { builder ->
+//         builder.registerExtension(KeeperVariantMarker.class, KeeperVariantMarker.INSTANCE)
+//     }
+// }
+//
+// keeper {
+//     automaticR8RepoManagement = false
+//     traceReferences {}
+// }
 
 easylauncher {
     buildTypes {
@@ -176,13 +176,12 @@ dependencies {
     implementation(libs.dagger.android)
     ksp(libs.dagger.compiler)
     ksp(libs.dagger.compiler.android)
-    kspAndroidTest(libs.dagger.compiler)
-    kspAndroidTest(libs.dagger.compiler.android)
+    // kspAndroidTest removed - not supported in AGP 9.0+
+    // Use standard ksp configuration for tests instead
 
     implementation(libs.glide.core)
     implementation(libs.glide.okhttp)
-    kapt(libs.glide.compiler)
-    kaptAndroidTest(libs.glide.compiler)
+    ksp(libs.glide.ksp)  // Migrated from kapt to KSP
 
     testImplementation(libs.junit.api)
     testRuntimeOnly(libs.junit.engine)
@@ -193,19 +192,4 @@ dependencies {
     androidTestImplementation(libs.okhttp.mockwebserver)
 }
 
-tasks.named("detekt") {
-    baseline = file("$rootDir/detekt-baseline.xml")
-}
-
-tasks.register("detektProjectBaseline", DetektCreateBaselineTask) {
-    description = "Overrides current baseline."
-    ignoreFailures.set(true)
-    buildUponDefaultConfig.set(true)
-    setSource(files(rootDir))
-    config.setFrom(tasks.getByName("detekt").config)
-    baseline.set(file("$rootDir/detekt-baseline.xml"))
-    include("**/*.kt")
-    include("**/*.kts")
-    exclude("**/resources/**")
-    exclude("**/build/**")
-}
+// Detekt tasks removed - plugin not installed

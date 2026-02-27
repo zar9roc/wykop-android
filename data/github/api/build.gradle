@@ -10,8 +10,7 @@ dependencies {
     ksp(libs.moshi.compiler)
 }
 
-tasks.whenTaskAdded {task ->
-    if(task.name.contains("lintKotlinGeneratedByKspKotlin")) {
-        task.enabled = false
-    }
+afterEvaluate {
+    tasks.findByName("lintKotlinGeneratedByKspKotlin")?.enabled = false
+    tasks.findByName("formatKotlinGeneratedByKspKotlin")?.enabled = false
 }
