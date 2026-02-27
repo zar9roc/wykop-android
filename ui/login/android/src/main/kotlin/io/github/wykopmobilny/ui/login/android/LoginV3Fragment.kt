@@ -1,0 +1,126 @@
+package io.github.wykopmobilny.ui.login.android
+
+import android.content.Context
+import android.os.Bundle
+import android.view.View
+import android.widget.Toast
+import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import io.github.wykopmobilny.ui.login.LoginDependencies
+import io.github.wykopmobilny.ui.login.LoginV3
+import io.github.wykopmobilny.ui.login.android.databinding.FragmentLoginV3Binding
+import io.github.wykopmobilny.utils.bindings.collectErrorDialog
+import io.github.wykopmobilny.utils.requireDependency
+import io.github.wykopmobilny.utils.viewBinding
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+
+fun loginV3Fragment(): Fragment = LoginV3Fragment()
+
+internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
+    private val binding by viewBinding(FragmentLoginV3Binding::bind)
+    private lateinit var loginV3: LoginV3
+
+    override fun onAttach(context: Context) {
+        loginV3 = context.requireDependency<LoginDependencies>().loginV3()
+        super.onAttach(context)
+    }
+
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
+        super.onViewCreated(view, savedInstanceState)
+
+        setupClickListeners()
+        observeState()
+    }
+
+    private fun setupClickListeners() {
+        binding.loginButton.setOnClickListener {
+            val username =
+                binding.usernameEditText.text
+                    ?.toString()
+                    ?.trim()
+            val password = binding.passwordEditText.text?.toString()
+
+            when {
+                username.isNullOrBlank() -> {
+                    binding.usernameLayout.error = getString(R.string.username_required)
+                }
+
+                password.isNullOrBlank() -> {
+                    binding.passwordLayout.error = getString(R.string.password_required)
+                }
+
+                else -> {
+                    binding.usernameLayout.error = null
+                    binding.passwordLayout.error = null
+                    loginV3.login(username, password)
+                }
+            }
+        }
+
+        binding.switchToOAuthButton.setOnClickListener {
+            // Switch back to OAuth login
+            val containerId = (requireView().parent as? View)?.id ?: return@setOnClickListener
+            parentFragmentManager
+                .beginTransaction()
+                .replace(containerId, loginFragment())
+                .commit()
+        }
+
+        // Clear errors on text change
+        binding.usernameEditText.doAfterTextChanged {
+            binding.usernameLayout.error = null
+        }
+
+        binding.passwordEditText.doAfterTextChanged {
+            binding.passwordLayout.error = null
+        }
+    }
+
+    private fun observeState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                val sharedFlow = loginV3().stateIn(this)
+
+                launch {
+                    sharedFlow
+                        .map { it.isLoading }
+                        .distinctUntilChanged()
+                        .collect { isLoading ->
+                            binding.fullScreenProgress.isVisible = isLoading
+                            binding.loginButton.isEnabled = !isLoading
+                            binding.usernameEditText.isEnabled = !isLoading
+                            binding.passwordEditText.isEnabled = !isLoading
+                        }
+                }
+
+                launch {
+                    sharedFlow
+                        .map { it.errorDialog }
+                        .collectErrorDialog(requireContext())
+                }
+
+                launch {
+                    sharedFlow
+                        .map { it.isLoggedIn }
+                        .distinctUntilChanged()
+                        .collect { isLoggedIn ->
+                            if (isLoggedIn) {
+                                Toast.makeText(requireContext(), "Zalogowano pomyślnie!", Toast.LENGTH_SHORT).show()
+                                requireActivity().finish()
+                            }
+                        }
+                }
+            }
+        }
+    }
+}

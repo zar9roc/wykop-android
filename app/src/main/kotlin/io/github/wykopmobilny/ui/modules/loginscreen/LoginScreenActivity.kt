@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import io.github.wykopmobilny.base.ThemableActivity
 import io.github.wykopmobilny.databinding.ActivityContainerBinding
-import io.github.wykopmobilny.ui.login.android.loginFragment
+import io.github.wykopmobilny.ui.login.android.loginV3Fragment
 import io.github.wykopmobilny.utils.viewBinding
 
 internal class LoginScreenActivity : ThemableActivity() {
@@ -17,7 +17,7 @@ internal class LoginScreenActivity : ThemableActivity() {
         if (savedInstanceState == null) {
             supportFragmentManager
                 .beginTransaction()
-                .replace(binding.fragmentContainer.id, loginFragment())
+                .replace(binding.fragmentContainer.id, loginV3Fragment())
                 .commit()
         }
     }
