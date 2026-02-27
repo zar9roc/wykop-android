@@ -25,3 +25,10 @@ tasks.named("lintKotlinMain") {
 tasks.named("formatKotlinMain") {
     source = project.file("src/main/kotlin")
 }
+
+// Disable verification tasks due to Windows native library issues (SQLDelight #5129)
+tasks.configureEach {
+    if (name.contains("verify") && name.contains("Migration")) {
+        enabled = false
+    }
+}
