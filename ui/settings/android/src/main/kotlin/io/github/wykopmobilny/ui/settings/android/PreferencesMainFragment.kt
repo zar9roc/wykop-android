@@ -13,10 +13,12 @@ import io.github.wykopmobilny.utils.viewBinding
 fun preferencesMainFragment(): Fragment = PreferencesMainFragment()
 
 internal class PreferencesMainFragment : Fragment(R.layout.fragment_settings) {
-
     val binding by viewBinding(FragmentSettingsBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         binding.toolbar.bindBackButton(activity = activity)
@@ -28,7 +30,8 @@ internal class PreferencesMainFragment : Fragment(R.layout.fragment_settings) {
         }
 
         if (savedInstanceState == null) {
-            childFragmentManager.beginTransaction()
+            childFragmentManager
+                .beginTransaction()
                 .replace(binding.container.id, GeneralPreferencesFragment())
                 .commit()
         }

@@ -13,8 +13,10 @@ import io.github.wykopmobilny.utils.bindings.setOnClick
 import androidx.appcompat.R as AppcompatR
 import io.github.wykopmobilny.ui.base.android.R as BaseR
 
-class LinkVoteButton(context: Context, attrs: AttributeSet?) : LinearLayout(context, attrs) {
-
+class LinkVoteButton(
+    context: Context,
+    attrs: AttributeSet?,
+) : LinearLayout(context, attrs) {
     init {
         inflate(context, R.layout.view_link_vote_button, this)
         orientation = HORIZONTAL

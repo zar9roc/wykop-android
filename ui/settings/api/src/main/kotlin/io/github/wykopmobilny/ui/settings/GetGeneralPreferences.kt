@@ -8,13 +8,11 @@ data class GeneralPreferencesUi(
     val notifications: NotificationsUi,
     val filtering: FilteringUi,
 ) {
-
     data class NotificationsUi(
         val notificationsEnabled: Setting,
         val notificationRefreshPeriod: ListSetting<RefreshPeriodUi>,
         val exitConfirmation: Setting,
     ) {
-
         enum class RefreshPeriodUi {
             FifteenMinutes,
             ThirtyMinutes,

@@ -9,12 +9,14 @@ import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-suspend fun Flow<TextInputUi>.collectUserInput(editText: EditText) = coroutineScope {
-    val state = stateIn(this)
-    editText.doAfterTextChanged { text ->
-        state.value.onChanged(text?.toString().orEmpty())
+suspend fun Flow<TextInputUi>.collectUserInput(editText: EditText) =
+    coroutineScope {
+        val state = stateIn(this)
+        editText.doAfterTextChanged { text ->
+            state.value.onChanged(text?.toString().orEmpty())
+        }
+        state
+            .map { it.text }
+            .filterNot { it == editText.text.toString() }
+            .collect(editText::setText)
     }
-    state.map { it.text }
-        .filterNot { it == editText.text.toString() }
-        .collect(editText::setText)
-}

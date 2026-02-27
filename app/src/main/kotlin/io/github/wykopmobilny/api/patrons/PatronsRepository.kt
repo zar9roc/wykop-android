@@ -8,24 +8,25 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class PatronsRepository @Inject constructor(
-    private val patronsApi: PatronsRetrofitApi,
-) : PatronsApi {
+class PatronsRepository
+    @Inject
+    constructor(
+        private val patronsApi: PatronsRetrofitApi,
+    ) : PatronsApi {
+        private var _patrons: List<Patron>? = null
+        override val patrons: List<Patron>
+            get() = _patrons.orEmpty()
 
-    private var _patrons: List<Patron>? = null
-    override val patrons: List<Patron>
-        get() = _patrons.orEmpty()
-
-    override fun <T : Any> ensurePatrons(continuation: T): Single<T> {
-        return rxSingle {
-            if (_patrons == null) {
-                getPatronsOrEmpty()
+        override fun <T : Any> ensurePatrons(continuation: T): Single<T> =
+            rxSingle {
+                if (_patrons == null) {
+                    getPatronsOrEmpty()
+                }
+                continuation
             }
-            continuation
-        }
-    }
 
-    private suspend fun getPatronsOrEmpty() = runCatching { patronsApi.getPatrons().patrons }
-        .getOrDefault(emptyList())
-        .also { _patrons = it }
-}
+        private suspend fun getPatronsOrEmpty() =
+            runCatching { patronsApi.getPatrons().patrons }
+                .getOrDefault(emptyList())
+                .also { _patrons = it }
+    }

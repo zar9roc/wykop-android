@@ -7,7 +7,9 @@ import io.reactivex.Single
 
 interface AddLinkApi {
     fun getDraft(url: String): Single<NewLinkResponse>
+
     fun getImages(key: String): Single<List<AddLinkPreviewImage>>
+
     fun publishLink(
         key: String,
         title: String,

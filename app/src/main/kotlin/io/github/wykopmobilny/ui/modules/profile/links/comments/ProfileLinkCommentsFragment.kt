@@ -6,8 +6,9 @@ import io.github.wykopmobilny.base.BaseLinkCommentFragment
 import io.github.wykopmobilny.ui.modules.profile.ProfileActivity
 import javax.inject.Inject
 
-class ProfileLinkCommentsFragment : BaseLinkCommentFragment(), ProfileLinkCommentsView {
-
+class ProfileLinkCommentsFragment :
+    BaseLinkCommentFragment(),
+    ProfileLinkCommentsView {
     @Inject
     lateinit var presenter: ProfileLinksFragmentPresenter
 
@@ -18,7 +19,10 @@ class ProfileLinkCommentsFragment : BaseLinkCommentFragment(), ProfileLinkCommen
         fun newInstance() = ProfileLinkCommentsFragment()
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         presenter.subscribe(this)
         presenter.username = username

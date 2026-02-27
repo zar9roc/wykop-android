@@ -10,10 +10,8 @@ import io.github.wykopmobilny.notification.NotificationsApi
 
 @Component(modules = [NotificationsModule::class])
 interface NotificationsComponent : NotificationsApi {
-
     @Component.Factory
     interface Factory {
-
         fun create(
             @BindsInstance context: Context,
             @BindsInstance dependencies: NotificationDependencies,

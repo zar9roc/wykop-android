@@ -12,8 +12,10 @@ fun String.removeHtml() = HtmlCompat.fromHtml(this, HtmlCompat.FROM_HTML_MODE_LE
 
 fun String.removeSpoilerHtml(): String {
     val regexBegin = "<a href=\"spoiler:"
-    val matcher = Pattern.compile("($regexBegin).*?\">\\[pokaż spoiler]</a>")
-        .matcher(this)
+    val matcher =
+        Pattern
+            .compile("($regexBegin).*?\">\\[pokaż spoiler]</a>")
+            .matcher(this)
     val matches = ArrayList<String>()
     var fullstring = this
     while (matcher.find()) {
@@ -21,20 +23,21 @@ fun String.removeSpoilerHtml(): String {
     }
 
     matches.forEach {
-        val text = "! " + URLDecoder.decode(
-            it.replace(regexBegin, "").replace("\">[pokaż spoiler]</a>", ""),
-            "UTF-8",
-        )
+        val text =
+            "! " +
+                URLDecoder.decode(
+                    it.replace(regexBegin, "").replace("\">[pokaż spoiler]</a>", ""),
+                    "UTF-8",
+                )
         fullstring = fullstring.replaceFirst(it, text)
     }
 
     return fullstring
 }
 
-fun String.stripWykopFormatting(): String {
-    return if (contains("<a href=\"spoiler:")) {
+fun String.stripWykopFormatting(): String =
+    if (contains("<a href=\"spoiler:")) {
         removeSpoilerHtml().removeHtml()
     } else {
         removeHtml()
     }
-}

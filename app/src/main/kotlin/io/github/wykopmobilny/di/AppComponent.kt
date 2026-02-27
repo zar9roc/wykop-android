@@ -32,10 +32,8 @@ import javax.inject.Singleton
     ],
 )
 interface AppComponent : AndroidInjector<WykopApp> {
-
     @Component.Factory
     interface Factory {
-
         fun create(
             @BindsInstance instance: WykopApp,
             @BindsInstance okHttpClient: OkHttpClient,

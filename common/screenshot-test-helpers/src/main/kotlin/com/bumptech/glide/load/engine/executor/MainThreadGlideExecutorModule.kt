@@ -23,13 +23,19 @@ import java.util.concurrent.TimeUnit
  */
 @GlideModule
 class MainThreadGlideExecutorModule : AppGlideModule() {
-
-    override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
+    override fun registerComponents(
+        context: Context,
+        glide: Glide,
+        registry: Registry,
+    ) {
         registry.replace(GlideUrl::class.java, InputStream::class.java, AssetLoadingLoaderFactory(context))
     }
 
     @SuppressLint("VisibleForTests")
-    override fun applyOptions(context: Context, builder: GlideBuilder) {
+    override fun applyOptions(
+        context: Context,
+        builder: GlideBuilder,
+    ) {
         val executor = GlideExecutor(DirectExecutorService())
 
         builder.apply {
@@ -40,23 +46,28 @@ class MainThreadGlideExecutorModule : AppGlideModule() {
     }
 }
 
-private class AssetLoadingLoaderFactory(private val context: Context) : ModelLoaderFactory<GlideUrl, InputStream> {
+private class AssetLoadingLoaderFactory(
+    private val context: Context,
+) : ModelLoaderFactory<GlideUrl, InputStream> {
+    override fun build(multiFactory: MultiModelLoaderFactory) =
+        object : ModelLoader<GlideUrl, InputStream> {
+            override fun buildLoadData(
+                model: GlideUrl,
+                width: Int,
+                height: Int,
+                options: Options,
+            ) = ModelLoader.LoadData(
+                ObjectKey(model),
+                StreamAssetPathFetcher(context.assets, model.toStringUrl().replaceFirst("https://www.wykop.pl/cdn/", "responses/")),
+            )
 
-    override fun build(multiFactory: MultiModelLoaderFactory) = object : ModelLoader<GlideUrl, InputStream> {
-
-        override fun buildLoadData(model: GlideUrl, width: Int, height: Int, options: Options) = ModelLoader.LoadData(
-            ObjectKey(model),
-            StreamAssetPathFetcher(context.assets, model.toStringUrl().replaceFirst("https://www.wykop.pl/cdn/", "responses/")),
-        )
-
-        override fun handles(model: GlideUrl) = true
-    }
+            override fun handles(model: GlideUrl) = true
+        }
 
     override fun teardown() = Unit
 }
 
 private class DirectExecutorService : AbstractExecutorService() {
-
     @Volatile
     private var terminated: Boolean = false
 
@@ -75,5 +86,8 @@ private class DirectExecutorService : AbstractExecutorService() {
 
     override fun isShutdown() = terminated
 
-    override fun awaitTermination(timeout: Long, unit: TimeUnit?) = terminated
+    override fun awaitTermination(
+        timeout: Long,
+        unit: TimeUnit?,
+    ) = terminated
 }

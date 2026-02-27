@@ -22,55 +22,63 @@ import javax.inject.Singleton
 
 @Module
 internal class AppCacheModule {
-
     @Singleton
     @Provides
-    fun database(context: Context) = AppCache(
-        driver = AndroidSqliteDriver(
-            schema = AppCache.Schema,
-            context = context,
-            name = null,
-            callback = object : AndroidSqliteDriver.Callback(AppCache.Schema) {
-                override fun onOpen(db: SupportSQLiteDatabase) {
-                    db.execSQL("PRAGMA foreign_keys=ON;")
-                }
-            },
-        ),
-        profileEntityAdapter = ProfileEntity.Adapter(
-            signupAtAdapter = InstantAdapter,
-            colorAdapter = EnumAdapter(UserColorEntity.entries),
-            genderAdapter = EnumAdapter(GenderEntity.entries),
-        ),
-        linkEntityAdapter = LinkEntity.Adapter(
-            postedAtAdapter = InstantAdapter,
-            userVoteAdapter = EnumAdapter(UserVote.entries),
-        ),
-        entryEntityAdapter = EntryEntity.Adapter(
-            postedAtAdapter = InstantAdapter,
-            userVoteAdapter = EnumAdapter(UserVote.entries),
-        ),
-        embedAdapter = Embed.Adapter(
-            typeAdapter = EnumAdapter(EmbedType.entries),
-        ),
-        linkCommentsEntityAdapter = LinkCommentsEntity.Adapter(
-            postedAtAdapter = InstantAdapter,
-            userVoteAdapter = EnumAdapter(UserVote.entries),
-        ),
-        relatedLinkEntityAdapter = RelatedLinkEntity.Adapter(
-            userVoteAdapter = EnumAdapter(UserVote.entries),
-        ),
-    )
+    fun database(context: Context) =
+        AppCache(
+            driver =
+                AndroidSqliteDriver(
+                    schema = AppCache.Schema,
+                    context = context,
+                    name = null,
+                    callback =
+                        object : AndroidSqliteDriver.Callback(AppCache.Schema) {
+                            override fun onOpen(db: SupportSQLiteDatabase) {
+                                db.execSQL("PRAGMA foreign_keys=ON;")
+                            }
+                        },
+                ),
+            profileEntityAdapter =
+                ProfileEntity.Adapter(
+                    signupAtAdapter = InstantAdapter,
+                    colorAdapter = EnumAdapter(UserColorEntity.entries),
+                    genderAdapter = EnumAdapter(GenderEntity.entries),
+                ),
+            linkEntityAdapter =
+                LinkEntity.Adapter(
+                    postedAtAdapter = InstantAdapter,
+                    userVoteAdapter = EnumAdapter(UserVote.entries),
+                ),
+            entryEntityAdapter =
+                EntryEntity.Adapter(
+                    postedAtAdapter = InstantAdapter,
+                    userVoteAdapter = EnumAdapter(UserVote.entries),
+                ),
+            embedAdapter =
+                Embed.Adapter(
+                    typeAdapter = EnumAdapter(EmbedType.entries),
+                ),
+            linkCommentsEntityAdapter =
+                LinkCommentsEntity.Adapter(
+                    postedAtAdapter = InstantAdapter,
+                    userVoteAdapter = EnumAdapter(UserVote.entries),
+                ),
+            relatedLinkEntityAdapter =
+                RelatedLinkEntity.Adapter(
+                    userVoteAdapter = EnumAdapter(UserVote.entries),
+                ),
+        )
 }
 
 internal object InstantAdapter : ColumnAdapter<Instant, Long> {
-
     override fun decode(databaseValue: Long) = Instant.fromEpochMilliseconds(databaseValue)
 
     override fun encode(value: Instant) = value.toEpochMilliseconds()
 }
 
-class EnumAdapter<T : Enum<T>>(private val values: List<T>) : ColumnAdapter<T, Long> {
-
+class EnumAdapter<T : Enum<T>>(
+    private val values: List<T>,
+) : ColumnAdapter<T, Long> {
     override fun decode(databaseValue: Long) = values[databaseValue.toInt()]
 
     override fun encode(value: T) = value.ordinal.toLong()

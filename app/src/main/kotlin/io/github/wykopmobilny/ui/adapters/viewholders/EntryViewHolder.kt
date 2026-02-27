@@ -39,7 +39,6 @@ class EntryViewHolder(
     private val entryActionListener: EntryActionListener,
     private val replyListener: EntryListener?,
 ) : RecyclableViewHolder(binding.root) {
-
     companion object {
         const val TYPE_SURVEY = 4
         const val TYPE_EMBED = 5
@@ -59,26 +58,34 @@ class EntryViewHolder(
             entryActionListener: EntryActionListener,
             replyListener: EntryListener?,
         ): EntryViewHolder {
-            val view = EntryViewHolder(
-                EntryListItemBinding.inflate(parent.layoutInflater, parent, false),
-                userManagerApi,
-                navigator,
-                linkHandler,
-                entryActionListener,
-                replyListener,
-            )
+            val view =
+                EntryViewHolder(
+                    EntryListItemBinding.inflate(parent.layoutInflater, parent, false),
+                    userManagerApi,
+                    navigator,
+                    linkHandler,
+                    entryActionListener,
+                    replyListener,
+                )
 
-            view.itemView.tag = if (replyListener == null) {
-                SEPARATOR_SMALL
-            } else {
-                SEPARATOR_NORMAL
-            }
+            view.itemView.tag =
+                if (replyListener == null) {
+                    SEPARATOR_SMALL
+                } else {
+                    SEPARATOR_NORMAL
+                }
 
             view.type = viewType
 
             when (viewType) {
-                TYPE_SURVEY -> view.inflateSurvey()
-                TYPE_EMBED -> view.inflateEmbed()
+                TYPE_SURVEY -> {
+                    view.inflateSurvey()
+                }
+
+                TYPE_EMBED -> {
+                    view.inflateEmbed()
+                }
+
                 TYPE_EMBED_SURVEY -> {
                     view.inflateEmbed()
                     view.inflateSurvey()
@@ -87,8 +94,8 @@ class EntryViewHolder(
             return view
         }
 
-        fun getViewTypeForEntry(entry: Entry): Int {
-            return if (entry.isBlocked) {
+        fun getViewTypeForEntry(entry: Entry): Int =
+            if (entry.isBlocked) {
                 TYPE_BLOCKED
             } else if (entry.embed != null && entry.survey != null) {
                 TYPE_EMBED_SURVEY
@@ -99,7 +106,6 @@ class EntryViewHolder(
             } else {
                 TYPE_NORMAL
             }
-        }
     }
 
     var type: Int = TYPE_NORMAL
@@ -260,11 +266,12 @@ class EntryViewHolder(
             val localDateTime = Instant.ofEpochMilli(entry.fullDate.toEpochMilliseconds()).atZone(ZoneId.systemDefault())
             date.text = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd kk:mm:ss"))
             entry.app?.let {
-                date.text = activityContext.getString(
-                    R.string.date_with_user_app,
-                    entry.fullDate,
-                    entry.app,
-                )
+                date.text =
+                    activityContext.getString(
+                        R.string.date_with_user_app,
+                        entry.fullDate,
+                        entry.app,
+                    )
             }
 
             entryMenuCopy.setOnClickListener {

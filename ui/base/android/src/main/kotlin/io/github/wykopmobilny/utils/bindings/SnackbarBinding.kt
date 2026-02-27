@@ -13,11 +13,12 @@ suspend fun Flow<String?>.collectSnackbar(target: View) {
         .flowOn(AppDispatchers.Default)
         .collect { message ->
             snack?.dismiss()
-            snack = if (message == null) {
-                null
-            } else {
-                Snackbar.make(target, message, Snackbar.LENGTH_INDEFINITE)
-            }
+            snack =
+                if (message == null) {
+                    null
+                } else {
+                    Snackbar.make(target, message, Snackbar.LENGTH_INDEFINITE)
+                }
             snack?.show()
         }
 }

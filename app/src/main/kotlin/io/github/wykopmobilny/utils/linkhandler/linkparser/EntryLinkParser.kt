@@ -1,7 +1,6 @@
 package io.github.wykopmobilny.utils.linkhandler.linkparser
 
 object EntryLinkParser {
-
     fun getEntryId(url: String): Long? {
         if (url.contains("/wpis/")) {
             return url.substringAfter("/wpis/").substringBefore("/").toLongOrNull()

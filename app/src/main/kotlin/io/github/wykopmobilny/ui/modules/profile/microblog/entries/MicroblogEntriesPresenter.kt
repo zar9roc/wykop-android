@@ -15,14 +15,15 @@ class MicroblogEntriesPresenter(
     val profileApi: ProfileApi,
     val entriesApi: EntriesApi,
     val entriesInteractor: EntriesInteractor,
-) : BasePresenter<MicroblogEntriesView>(), EntryActionListener {
-
+) : BasePresenter<MicroblogEntriesView>(),
+    EntryActionListener {
     var page = 1
     lateinit var username: String
 
     fun loadData(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
-        profileApi.getEntries(username, page)
+        profileApi
+            .getEntries(username, page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -35,8 +36,7 @@ class MicroblogEntriesPresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     override fun voteEntry(entry: Entry) {
@@ -55,13 +55,17 @@ class MicroblogEntriesPresenter(
         entriesInteractor.deleteEntry(entry).processEntrySingle(entry)
     }
 
-    override fun voteSurvey(entry: Entry, index: Int) {
+    override fun voteSurvey(
+        entry: Entry,
+        index: Int,
+    ) {
         entriesInteractor.voteSurvey(entry, index).processEntrySingle(entry)
     }
 
     override fun getVoters(entry: Entry) {
         view?.openVotersMenu()
-        entriesApi.getEntryVoters(entry.id)
+        entriesApi
+            .getEntryVoters(entry.id)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -71,8 +75,7 @@ class MicroblogEntriesPresenter(
                 {
                     view?.showErrorDialog(it)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     private fun Single<Entry>.processEntrySingle(entry: Entry) {
@@ -85,7 +88,6 @@ class MicroblogEntriesPresenter(
                     view?.showErrorDialog(it)
                     view?.updateEntry(entry)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

@@ -11,7 +11,6 @@ import retrofit2.http.Headers
 import retrofit2.http.POST
 
 interface LoginRetrofitApi {
-
     @Headers("@: $REMOVE_USERKEY_HEADER")
     @FormUrlEncoded
     @POST("/login/index/appkey/$APP_KEY")
@@ -22,5 +21,7 @@ interface LoginRetrofitApi {
 
     @FormUrlEncoded
     @POST("/login/2fa/appkey/$APP_KEY")
-    suspend fun autorizeWith2FA(@Field("code") code: String): WykopApiResponse<List<TwoFactorAuthorizationResponse>>
+    suspend fun autorizeWith2FA(
+        @Field("code") code: String,
+    ): WykopApiResponse<List<TwoFactorAuthorizationResponse>>
 }

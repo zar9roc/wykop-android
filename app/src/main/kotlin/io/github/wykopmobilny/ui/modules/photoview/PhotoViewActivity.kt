@@ -24,12 +24,14 @@ import javax.inject.Inject
 import io.github.wykopmobilny.ui.base.android.R as BaseR
 
 internal class PhotoViewActivity : BaseActivity() {
-
     companion object {
         const val URL_EXTRA = "URL"
         const val SHARE_REQUEST_CODE = 1
 
-        fun createIntent(context: Context, imageUrl: String) = Intent(context, PhotoViewActivity::class.java).apply {
+        fun createIntent(
+            context: Context,
+            imageUrl: String,
+        ) = Intent(context, PhotoViewActivity::class.java).apply {
             putExtra(URL_EXTRA, imageUrl)
         }
     }
@@ -84,10 +86,16 @@ internal class PhotoViewActivity : BaseActivity() {
         binding.image.setMinimumDpi(70)
         binding.image.setMinimumTileDpi(240)
         binding.gif.isVisible = false
-        GlideApp.with(this).downloadOnly().load(url)
+        GlideApp
+            .with(this)
+            .downloadOnly()
+            .load(url)
             .into(
                 object : CustomTarget<File>() {
-                    override fun onResourceReady(resource: File, transition: Transition<in File>?) {
+                    override fun onResourceReady(
+                        resource: File,
+                        transition: Transition<in File>?,
+                    ) {
                         binding.loadingView.isVisible = false
                         binding.image.setImage(ImageSource.uri(resource.absolutePath))
                     }
@@ -100,7 +108,9 @@ internal class PhotoViewActivity : BaseActivity() {
     private fun loadGif() {
         binding.image.isVisible = false
         binding.gif.isVisible = true
-        GlideApp.with(this).load(url)
+        GlideApp
+            .with(this)
+            .load(url)
             .listener(KotlinGlideRequestListener({ binding.loadingView.isVisible = false }, { binding.loadingView.isVisible = false }))
             .dontTransform()
             .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)

@@ -9,10 +9,10 @@ import javax.inject.Singleton
 @Singleton
 @Component(modules = [AppCacheModule::class])
 interface ApplicationCacheComponent : ApplicationCache {
-
     @Component.Factory
     interface Factory {
-
-        fun create(@BindsInstance context: Context): ApplicationCacheComponent
+        fun create(
+            @BindsInstance context: Context,
+        ): ApplicationCacheComponent
     }
 }

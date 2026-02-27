@@ -6,7 +6,6 @@ import dagger.Module
 
 @Module
 abstract class ProfileModule {
-
     @Binds
     abstract fun activity(impl: ProfileActivity): Activity
 }

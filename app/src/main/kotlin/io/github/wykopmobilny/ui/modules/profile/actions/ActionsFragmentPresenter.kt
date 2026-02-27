@@ -19,12 +19,14 @@ class ActionsFragmentPresenter(
     val entriesInteractor: EntriesInteractor,
     val linksInteractor: LinksInteractor,
     val entriesApi: EntriesApi,
-) : BasePresenter<ActionsView>(), LinkActionListener, EntryActionListener {
-
+) : BasePresenter<ActionsView>(),
+    LinkActionListener,
+    EntryActionListener {
     lateinit var username: String
 
     fun getActions() {
-        profileApi.getActions(username)
+        profileApi
+            .getActions(username)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -33,8 +35,7 @@ class ActionsFragmentPresenter(
                     view?.disableLoading()
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     override fun voteEntry(entry: Entry) = entriesInteractor.voteEntry(entry).processEntrySingle(entry)
@@ -45,11 +46,15 @@ class ActionsFragmentPresenter(
 
     override fun deleteEntry(entry: Entry) = entriesInteractor.deleteEntry(entry).processEntrySingle(entry)
 
-    override fun voteSurvey(entry: Entry, index: Int) = entriesInteractor.voteSurvey(entry, index).processEntrySingle(entry)
+    override fun voteSurvey(
+        entry: Entry,
+        index: Int,
+    ) = entriesInteractor.voteSurvey(entry, index).processEntrySingle(entry)
 
     override fun getVoters(entry: Entry) {
         view?.openVotersMenu()
-        entriesApi.getEntryVoters(entry.id)
+        entriesApi
+            .getEntryVoters(entry.id)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -59,8 +64,7 @@ class ActionsFragmentPresenter(
                 {
                     view?.showErrorDialog(it)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     override fun dig(link: Link) = linksInteractor.dig(link).processLinkSingle(link)
@@ -77,8 +81,7 @@ class ActionsFragmentPresenter(
                     view?.showErrorDialog(it)
                     view?.updateEntry(entry)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     private fun Single<Link>.processLinkSingle(link: Link) {
@@ -91,7 +94,6 @@ class ActionsFragmentPresenter(
                     view?.showErrorDialog(it)
                     view?.updateLink(link)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

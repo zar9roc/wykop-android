@@ -8,6 +8,8 @@ import io.github.wykopmobilny.base.Schedulers
 @Module
 class HashTagsNotificationsListFragmentModule {
     @Provides
-    fun providesHashTagsNotificationsListPresenter(schedulers: Schedulers, notificationsApi: NotificationsApi) =
-        HashTagsNotificationsListPresenter(schedulers, notificationsApi)
+    fun providesHashTagsNotificationsListPresenter(
+        schedulers: Schedulers,
+        notificationsApi: NotificationsApi,
+    ) = HashTagsNotificationsListPresenter(schedulers, notificationsApi)
 }

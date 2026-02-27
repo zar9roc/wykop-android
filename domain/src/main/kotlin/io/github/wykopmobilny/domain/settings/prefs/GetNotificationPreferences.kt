@@ -11,38 +11,42 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
-internal class GetNotificationPreferences @Inject constructor(
-    private val appStorage: AppStorage,
-    private val appConfig: AppConfig,
-) {
+internal class GetNotificationPreferences
+    @Inject
+    constructor(
+        private val appStorage: AppStorage,
+        private val appConfig: AppConfig,
+    ) {
+        operator fun invoke() =
+            combine(
+                appStorage.get(UserSettings.notificationsEnabled),
+                appStorage.get(UserSettings.notificationsRefreshPeriod),
+                appStorage.get(UserSettings.exitConfirmation),
+            ) { notificationsEnabled, notificationRefreshPeriod, exitConfirmation ->
+                NotificationsPreferences(
+                    notificationsEnabled = notificationsEnabled ?: appConfig.notificationsEnabled,
+                    notificationRefreshPeriod =
+                        notificationRefreshPeriod?.let(::findRefreshPeriod)
+                            ?: NotificationsPreferences.RefreshPeriod.FifteenMinutes,
+                    exitConfirmation = exitConfirmation ?: true,
+                )
+            }.distinctUntilChanged()
 
-    operator fun invoke() = combine(
-        appStorage.get(UserSettings.notificationsEnabled),
-        appStorage.get(UserSettings.notificationsRefreshPeriod),
-        appStorage.get(UserSettings.exitConfirmation),
-    ) { notificationsEnabled, notificationRefreshPeriod, exitConfirmation ->
-        NotificationsPreferences(
-            notificationsEnabled = notificationsEnabled ?: appConfig.notificationsEnabled,
-            notificationRefreshPeriod = notificationRefreshPeriod?.let(::findRefreshPeriod)
-                ?: NotificationsPreferences.RefreshPeriod.FifteenMinutes,
-            exitConfirmation = exitConfirmation ?: true,
-        )
+        private fun findRefreshPeriod(duration: Duration) =
+            NotificationsPreferences.RefreshPeriod.entries
+                .sortedByDescending { it.duration }
+                .firstOrNull { it.duration <= duration }
     }
-        .distinctUntilChanged()
-
-    private fun findRefreshPeriod(duration: Duration) = NotificationsPreferences.RefreshPeriod.entries
-        .sortedByDescending { it.duration }
-        .firstOrNull { it.duration <= duration }
-}
 
 internal data class NotificationsPreferences(
     val notificationsEnabled: Boolean,
     val notificationRefreshPeriod: RefreshPeriod,
     val exitConfirmation: Boolean,
 ) {
-
     @Suppress("MagicNumber")
-    enum class RefreshPeriod(val duration: Duration) {
+    enum class RefreshPeriod(
+        val duration: Duration,
+    ) {
         FifteenMinutes(15.minutes),
         ThirtyMinutes(30.minutes),
         OneHour(1.hours),

@@ -25,68 +25,79 @@ import io.github.wykopmobilny.kotlin.AppDispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 
-internal fun profileSourceOfTruth(profileId: String, cache: AppCache) = SourceOfTruth.of<Int, List<EntryLinkResponse>, List<ProfileAction>>(
+internal fun profileSourceOfTruth(
+    profileId: String,
+    cache: AppCache,
+) = SourceOfTruth.of<Int, List<EntryLinkResponse>, List<ProfileAction>>(
     reader = { page ->
-        val linksStream = cache.profileActionsQueries.selectLinksPage(profileId = profileId, page = page)
-            .asFlow()
-            .mapToList(AppDispatchers.IO)
-            .map { links ->
-                links.map { link ->
-                    val entry = LinkInfo(
-                        id = link.id,
-                        title = link.title,
-                        isHot = link.isHot,
-                        description = link.description,
-                        tags = link.tags.split(" "),
-                        sourceUrl = link.sourceUrl,
-                        previewImageUrl = link.previewImageUrl,
-                        fullImageUrl = link.fullImageUrl,
-                        author = UserInfo(
-                            profileId = link.profileId,
-                            avatarUrl = link.avatar,
-                            rank = link.rank,
-                            gender = link.gender?.toGenderDomain(),
-                            color = link.color.toColorDomain(),
-                        ),
-                        commentsCount = link.commentsCount,
-                        voteCount = link.voteCount,
-                        buryCount = link.buryCount,
-                        relatedCount = link.relatedCount,
-                        postedAt = link.postedAt,
-                        app = link.app,
-                        userAction = link.userVote,
-                        userFavorite = link.userFavorite,
-                    )
-                    entry to link.orderOnPage
+        val linksStream =
+            cache.profileActionsQueries
+                .selectLinksPage(profileId = profileId, page = page)
+                .asFlow()
+                .mapToList(AppDispatchers.IO)
+                .map { links ->
+                    links.map { link ->
+                        val entry =
+                            LinkInfo(
+                                id = link.id,
+                                title = link.title,
+                                isHot = link.isHot,
+                                description = link.description,
+                                tags = link.tags.split(" "),
+                                sourceUrl = link.sourceUrl,
+                                previewImageUrl = link.previewImageUrl,
+                                fullImageUrl = link.fullImageUrl,
+                                author =
+                                    UserInfo(
+                                        profileId = link.profileId,
+                                        avatarUrl = link.avatar,
+                                        rank = link.rank,
+                                        gender = link.gender?.toGenderDomain(),
+                                        color = link.color.toColorDomain(),
+                                    ),
+                                commentsCount = link.commentsCount,
+                                voteCount = link.voteCount,
+                                buryCount = link.buryCount,
+                                relatedCount = link.relatedCount,
+                                postedAt = link.postedAt,
+                                app = link.app,
+                                userAction = link.userVote,
+                                userFavorite = link.userFavorite,
+                            )
+                        entry to link.orderOnPage
+                    }
                 }
-            }
 
-        val entriesStream = cache.profileActionsQueries.selectEntriesPage(profileId = profileId, page = page)
-            .asFlow()
-            .mapToList(AppDispatchers.IO)
-            .map { entities ->
-                entities.map { action ->
-                    val entry = EntryInfo(
-                        id = action.id,
-                        postedAt = action.postedAt,
-                        body = action.body,
-                        voteCount = action.voteCount,
-                        previewImageUrl = action.preview,
-                        commentsCount = action.commentsCount,
-                        author = UserInfo(
-                            profileId = action.profileId,
-                            avatarUrl = action.avatar,
-                            rank = action.rank,
-                            gender = action.gender?.toGenderDomain(),
-                            color = action.color.toColorDomain(),
-                        ),
-                        app = action.app,
-                        userAction = action.userVote,
-                        isFavorite = action.isFavorite,
-                    )
-                    entry to action.orderOnPage
+        val entriesStream =
+            cache.profileActionsQueries
+                .selectEntriesPage(profileId = profileId, page = page)
+                .asFlow()
+                .mapToList(AppDispatchers.IO)
+                .map { entities ->
+                    entities.map { action ->
+                        val entry =
+                            EntryInfo(
+                                id = action.id,
+                                postedAt = action.postedAt,
+                                body = action.body,
+                                voteCount = action.voteCount,
+                                previewImageUrl = action.preview,
+                                commentsCount = action.commentsCount,
+                                author =
+                                    UserInfo(
+                                        profileId = action.profileId,
+                                        avatarUrl = action.avatar,
+                                        rank = action.rank,
+                                        gender = action.gender?.toGenderDomain(),
+                                        color = action.color.toColorDomain(),
+                                    ),
+                                app = action.app,
+                                userAction = action.userVote,
+                                isFavorite = action.isFavorite,
+                            )
+                        entry to action.orderOnPage
+                    }
                 }
-            }
         combine(
             linksStream,
             entriesStream,
@@ -178,14 +189,16 @@ internal fun ProfileQueries.upsert(author: AuthorResponse) {
     )
 }
 
-internal fun String?.asUserVote() = when (this) {
-    "dig" -> UserVote.Up
-    "bury" -> UserVote.Down
-    else -> null
-}
+internal fun String?.asUserVote() =
+    when (this) {
+        "dig" -> UserVote.Up
+        "bury" -> UserVote.Down
+        else -> null
+    }
 
-internal fun Int.asUserVote() = when {
-    this > 0 -> UserVote.Up
-    this < 0 -> UserVote.Down
-    else -> null
-}
+internal fun Int.asUserVote() =
+    when {
+        this > 0 -> UserVote.Up
+        this < 0 -> UserVote.Down
+        else -> null
+    }

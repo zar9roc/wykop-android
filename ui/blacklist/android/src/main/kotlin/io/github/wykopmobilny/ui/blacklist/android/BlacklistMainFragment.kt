@@ -27,7 +27,6 @@ import kotlinx.coroutines.launch
 fun blacklistMainFragment(): Fragment = BlacklistMainFragment()
 
 internal class BlacklistMainFragment : Fragment(R.layout.fragment_blacklist_main) {
-
     lateinit var getBlacklistDetails: GetBlacklistDetails
 
     override fun onAttach(context: Context) {
@@ -35,7 +34,10 @@ internal class BlacklistMainFragment : Fragment(R.layout.fragment_blacklist_main
         super.onAttach(context)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         val binding = FragmentBlacklistMainBinding.bind(view)
         binding.toolbar.bindBackButton(activity = activity)
@@ -48,8 +50,7 @@ internal class BlacklistMainFragment : Fragment(R.layout.fragment_blacklist_main
                 binding.viewPager.adapter = blacklistAdapter
                 TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
                     tab.setText(blacklistAdapter.getTitle(position))
-                }
-                    .attach()
+                }.attach()
                 launch { shared.map { it.errorDialog }.collectErrorDialog(requireContext()) }
                 launch { shared.map { it.snackbar }.collectSnackbar(binding.root) }
                 launch { shared.bindContent(binding) }

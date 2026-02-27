@@ -8,12 +8,14 @@ import io.github.wykopmobilny.ui.fragments.entries.EntriesInteractor
 
 @Module
 class EntryFavoriteFragmentModule {
-
     @Provides
-    fun provideLinksFavoritePresenter(schedulers: Schedulers, entriesApi: EntriesApi, entriesInteractor: EntriesInteractor) =
-        EntryFavoritePresenter(
-            schedulers,
-            entriesInteractor,
-            entriesApi,
-        )
+    fun provideLinksFavoritePresenter(
+        schedulers: Schedulers,
+        entriesApi: EntriesApi,
+        entriesInteractor: EntriesInteractor,
+    ) = EntryFavoritePresenter(
+        schedulers,
+        entriesInteractor,
+        entriesApi,
+    )
 }

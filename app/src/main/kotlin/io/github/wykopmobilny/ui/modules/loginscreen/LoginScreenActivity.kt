@@ -9,21 +9,20 @@ import io.github.wykopmobilny.ui.login.android.loginFragment
 import io.github.wykopmobilny.utils.viewBinding
 
 internal class LoginScreenActivity : ThemableActivity() {
-
     private val binding by viewBinding(ActivityContainerBinding::inflate)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
+            supportFragmentManager
+                .beginTransaction()
                 .replace(binding.fragmentContainer.id, loginFragment())
                 .commit()
         }
     }
 
     companion object {
-
         fun createIntent(context: Context) = Intent(context, LoginScreenActivity::class.java)
     }
 }

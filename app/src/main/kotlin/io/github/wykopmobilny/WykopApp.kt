@@ -88,10 +88,11 @@ import kotlin.reflect.KClass
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-open class WykopApp : DaggerApplication(), ApplicationInjector, AppScopes {
-
+open class WykopApp :
+    DaggerApplication(),
+    ApplicationInjector,
+    AppScopes {
     companion object {
-
         const val WYKOP_API_URL = "https://a2.wykop.pl"
     }
 
@@ -103,17 +104,18 @@ open class WykopApp : DaggerApplication(), ApplicationInjector, AppScopes {
 
     override val applicationScope = CoroutineScope(Job() + Dispatchers.Default)
 
-    val okHttpClient = OkHttpClient.Builder()
-        .retryOnConnectionFailure(true)
-        // https://github.com/square/okhttp/issues/3146
-        .connectionPool(
-            ConnectionPool(
-                maxIdleConnections = 0,
-                keepAliveDuration = 1,
-                timeUnit = TimeUnit.NANOSECONDS,
-            ),
-        )
-        .build()
+    val okHttpClient =
+        OkHttpClient
+            .Builder()
+            .retryOnConnectionFailure(true)
+            // https://github.com/square/okhttp/issues/3146
+            .connectionPool(
+                ConnectionPool(
+                    maxIdleConnections = 0,
+                    keepAliveDuration = 1,
+                    timeUnit = TimeUnit.NANOSECONDS,
+                ),
+            ).build()
 
     override fun onCreate() {
         super.onCreate()
@@ -122,21 +124,24 @@ open class WykopApp : DaggerApplication(), ApplicationInjector, AppScopes {
 
         applicationScope.launch { domainComponent.initializeApp().invoke() }
         applicationScope.launch {
-            storages.userInfoStorage().loggedUser
+            storages
+                .userInfoStorage()
+                .loggedUser
                 .mapNotNull { it?.id }
                 .collect { FirebaseCrashlytics.getInstance().setUserId(it) }
         }
     }
 
-    override fun applicationInjector(): AndroidInjector<out DaggerApplication> = DaggerAppComponent.factory().create(
-        instance = this,
-        okHttpClient = okHttpClient,
-        wykop = wykopApi,
-        patrons = patrons,
-        scraper = scraper,
-        storages = storages,
-        settingsInterop = domainComponent.settingsApiInterop(),
-    )
+    override fun applicationInjector(): AndroidInjector<out DaggerApplication> =
+        DaggerAppComponent.factory().create(
+            instance = this,
+            okHttpClient = okHttpClient,
+            wykop = wykopApi,
+            patrons = patrons,
+            scraper = scraper,
+            storages = storages,
+            settingsInterop = domainComponent.settingsApiInterop(),
+        )
 
     protected open val domainComponent: DomainComponent by lazy {
         daggerDomain().create(
@@ -157,36 +162,43 @@ open class WykopApp : DaggerApplication(), ApplicationInjector, AppScopes {
         )
     }
 
-    val appConfig = object : AppConfig {
-
-        private val firebase
-            get() = FirebaseRemoteConfig.getInstance()
-        override val blacklistRefreshInterval: Duration
-            get() = firebase.getLong(RemoteConfigKeys.BLACKLIST_REFRESH_INTERVAL).milliseconds
-        override val blacklistFlexInterval: Duration
-            get() = firebase.getLong(RemoteConfigKeys.BLACKLIST_FLEX_INTERVAL).milliseconds
-        override val notificationsEnabled: Boolean
-            get() = firebase.getBoolean(RemoteConfigKeys.NOTIFICATIONS_ENABLED)
-        override val youtubeKey
-            get() = firebase.getString(RemoteConfigKeys.YOUTUBE_KEY)
-    }
+    val appConfig =
+        object : AppConfig {
+            private val firebase
+                get() = FirebaseRemoteConfig.getInstance()
+            override val blacklistRefreshInterval: Duration
+                get() = firebase.getLong(RemoteConfigKeys.BLACKLIST_REFRESH_INTERVAL).milliseconds
+            override val blacklistFlexInterval: Duration
+                get() = firebase.getLong(RemoteConfigKeys.BLACKLIST_FLEX_INTERVAL).milliseconds
+            override val notificationsEnabled: Boolean
+                get() = firebase.getBoolean(RemoteConfigKeys.NOTIFICATIONS_ENABLED)
+            override val youtubeKey
+                get() = firebase.getString(RemoteConfigKeys.YOUTUBE_KEY)
+        }
 
     protected open val notifications by lazy {
         DaggerNotificationsComponent.factory().create(
             context = this,
             interopIntentHandler = { type ->
                 when (type) {
-                    is Notifications.SingleMessage -> WykopLinkHandler.getLinkIntent(type.interopUrl, this)
-                        ?: MainNavigationActivity.getIntent(this)
-                            .also { Napier.e("Invalid deeplink for url=${type.interopUrl}") }
-                    Notifications.MultipleNotifications -> Intent(applicationContext, NotificationsListActivity::class.java)
+                    is Notifications.SingleMessage -> {
+                        WykopLinkHandler.getLinkIntent(type.interopUrl, this)
+                            ?: MainNavigationActivity
+                                .getIntent(this)
+                                .also { Napier.e("Invalid deeplink for url=${type.interopUrl}") }
+                    }
+
+                    Notifications.MultipleNotifications -> {
+                        Intent(applicationContext, NotificationsListActivity::class.java)
+                    }
                 }
             },
-            dependencies = object : NotificationDependencies {
-                val lazyDependencies by lazy { requireDependency<NotificationDependencies>() }
+            dependencies =
+                object : NotificationDependencies {
+                    val lazyDependencies by lazy { requireDependency<NotificationDependencies>() }
 
-                override fun handleNotificationDismissed() = lazyDependencies.handleNotificationDismissed()
-            },
+                    override fun handleNotificationDismissed() = lazyDependencies.handleNotificationDismissed()
+                },
         )
     }
 
@@ -214,9 +226,11 @@ open class WykopApp : DaggerApplication(), ApplicationInjector, AppScopes {
 
     protected open val patrons by lazy {
         daggerPatrons().create(
-            okHttpClient = okHttpClient.newBuilder()
-                .cache(Cache(cacheDir.resolve("okhttp/patrons"), maxSize = 5 * 1024 * 1024L))
-                .build(),
+            okHttpClient =
+                okHttpClient
+                    .newBuilder()
+                    .cache(Cache(cacheDir.resolve("okhttp/patrons"), maxSize = 5 * 1024 * 1024L))
+                    .build(),
             baseUrl = "https://raw.githubusercontent.com/",
         )
     }
@@ -227,12 +241,12 @@ open class WykopApp : DaggerApplication(), ApplicationInjector, AppScopes {
             baseUrl = WYKOP_API_URL,
             appKey = { FirebaseRemoteConfig.getInstance().getString(RemoteConfigKeys.API_APP_KEY) },
             cacheDir = cacheDir.resolve("okhttp/wykop"),
-            signingInterceptor = ApiSignInterceptor(
-                object : SimpleUserManagerApi {
-
-                    override fun getUserCredentials(): UserCredentials? = userManagerApi.get().getUserCredentials()
-                },
-            ),
+            signingInterceptor =
+                ApiSignInterceptor(
+                    object : SimpleUserManagerApi {
+                        override fun getUserCredentials(): UserCredentials? = userManagerApi.get().getUserCredentials()
+                    },
+                ),
         )
     }
 
@@ -258,43 +272,84 @@ open class WykopApp : DaggerApplication(), ApplicationInjector, AppScopes {
 
     // TODO @mk : 25/07/2021 I don't know where I'm going here yet. Will figure something out 👀
     @Suppress("UNCHECKED_CAST")
-    override fun <T : Any> getDependency(clazz: KClass<T>, scopeId: Any?): T = when (clazz) {
-        LoginDependencies::class -> getOrPutScope<LoginScope>(scopeId) { domainComponent.login() }
-        StylesDependencies::class -> getOrPutScope<StylesScope>(scopeId) { domainComponent.styles() }
-        SettingsDependencies::class -> getOrPutScope<SettingsScope>(scopeId) { domainComponent.settings() }
-        BlacklistDependencies::class -> getOrPutScope<BlacklistScope>(scopeId) { domainComponent.blacklist() }
-        WorkDependencies::class -> getOrPutScope<WorkScope>(scopeId) { domainComponent.work() }
-        SearchDependencies::class -> getOrPutScope<SearchScope>(scopeId) { domainComponent.search() }
-        NotificationDependencies::class -> getOrPutScope<NotificationsScope>(scopeId) { domainComponent.notifications() }
-        TwoFactorAuthDependencies::class -> getOrPutScope<TwoFactorAuthScope>(scopeId) { domainComponent.twoFactor() }
-        LinkDetailsDependencies::class -> {
-            scopeId as LinkDetailsKey
-            getOrPutScope<LinkDetailsScope>(scopeId) { domainComponent.linkDetails().create(key = scopeId) }
-        }
-        ProfileDependencies::class -> {
-            scopeId as String
-            getOrPutScope<ProfileScope>(scopeId) { domainComponent.profile().create(profileId = scopeId) }
-        }
-        else -> error("Unknown dependency type $clazz")
-    }.dependencyContainer as T
+    override fun <T : Any> getDependency(
+        clazz: KClass<T>,
+        scopeId: Any?,
+    ): T =
+        when (clazz) {
+            LoginDependencies::class -> {
+                getOrPutScope<LoginScope>(scopeId) { domainComponent.login() }
+            }
+
+            StylesDependencies::class -> {
+                getOrPutScope<StylesScope>(scopeId) { domainComponent.styles() }
+            }
+
+            SettingsDependencies::class -> {
+                getOrPutScope<SettingsScope>(scopeId) { domainComponent.settings() }
+            }
+
+            BlacklistDependencies::class -> {
+                getOrPutScope<BlacklistScope>(scopeId) { domainComponent.blacklist() }
+            }
+
+            WorkDependencies::class -> {
+                getOrPutScope<WorkScope>(scopeId) { domainComponent.work() }
+            }
+
+            SearchDependencies::class -> {
+                getOrPutScope<SearchScope>(scopeId) { domainComponent.search() }
+            }
+
+            NotificationDependencies::class -> {
+                getOrPutScope<NotificationsScope>(scopeId) { domainComponent.notifications() }
+            }
+
+            TwoFactorAuthDependencies::class -> {
+                getOrPutScope<TwoFactorAuthScope>(scopeId) { domainComponent.twoFactor() }
+            }
+
+            LinkDetailsDependencies::class -> {
+                scopeId as LinkDetailsKey
+                getOrPutScope<LinkDetailsScope>(scopeId) { domainComponent.linkDetails().create(key = scopeId) }
+            }
+
+            ProfileDependencies::class -> {
+                scopeId as String
+                getOrPutScope<ProfileScope>(scopeId) { domainComponent.profile().create(profileId = scopeId) }
+            }
+
+            else -> {
+                error("Unknown dependency type $clazz")
+            }
+        }.dependencyContainer as T
 
     private inline fun <reified T : Any> scopeKey(id: Any?) = scopeKey(T::class, id)
 
-    private fun <T : Any> scopeKey(clazz: KClass<T>, id: Any?) = "${clazz.qualifiedName}=$id"
+    private fun <T : Any> scopeKey(
+        clazz: KClass<T>,
+        id: Any?,
+    ) = "${clazz.qualifiedName}=$id"
 
-    private inline fun <reified T : Any> getOrPutScope(id: Any?, container: () -> Any) =
-        scopes.getOrPut(scopeKey<T>(id)) { initScope(container()) }
+    private inline fun <reified T : Any> getOrPutScope(
+        id: Any?,
+        container: () -> Any,
+    ) = scopes.getOrPut(scopeKey<T>(id)) { initScope(container()) }
 
-    private fun <T> initScope(container: T) = SubScope(
-        dependencyContainer = container,
-        coroutineScope = CoroutineScope(Job(applicationScope.coroutineContext[Job]) + Dispatchers.Default),
-    ).apply {
-        if (container is HasScopeInitializer) {
-            coroutineScope.launch { container.initializer().initialize() }
+    private fun <T> initScope(container: T) =
+        SubScope(
+            dependencyContainer = container,
+            coroutineScope = CoroutineScope(Job(applicationScope.coroutineContext[Job]) + Dispatchers.Default),
+        ).apply {
+            if (container is HasScopeInitializer) {
+                coroutineScope.launch { container.initializer().initialize() }
+            }
         }
-    }
 
-    override fun <T : Any> destroyDependency(clazz: KClass<T>, scopeId: Any?) {
+    override fun <T : Any> destroyDependency(
+        clazz: KClass<T>,
+        scopeId: Any?,
+    ) {
         Napier.i("Destroying dependency name=${clazz.java.name}")
         when (clazz) {
             LoginDependencies::class -> scopes.remove(scopeKey<LoginScope>(scopeId))
@@ -311,7 +366,11 @@ open class WykopApp : DaggerApplication(), ApplicationInjector, AppScopes {
         }?.coroutineScope?.cancel()
     }
 
-    override fun <T : Any> launchScoped(clazz: KClass<T>, id: Any?, block: suspend CoroutineScope.() -> Unit) {
+    override fun <T : Any> launchScoped(
+        clazz: KClass<T>,
+        id: Any?,
+        block: suspend CoroutineScope.() -> Unit,
+    ) {
         val key = scopeKey(clazz, id)
         scopes[key]?.coroutineScope?.launch(block = block) ?: return Napier.w("launchScoped didn't find scope for key=$key")
     }
@@ -321,7 +380,10 @@ open class WykopApp : DaggerApplication(), ApplicationInjector, AppScopes {
             var currentActivity: Activity? = null
             registerActivityLifecycleCallbacks(
                 object : ActivityLifecycleCallbacks {
-                    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
+                    override fun onActivityCreated(
+                        activity: Activity,
+                        savedInstanceState: Bundle?,
+                    ) = Unit
 
                     override fun onActivityStarted(activity: Activity) = Unit
 
@@ -335,7 +397,10 @@ open class WykopApp : DaggerApplication(), ApplicationInjector, AppScopes {
 
                     override fun onActivityStopped(activity: Activity) = Unit
 
-                    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
+                    override fun onActivitySaveInstanceState(
+                        activity: Activity,
+                        outState: Bundle,
+                    ) = Unit
 
                     override fun onActivityDestroyed(activity: Activity) = Unit
                 },
@@ -343,24 +408,30 @@ open class WykopApp : DaggerApplication(), ApplicationInjector, AppScopes {
             domainComponent.navigation().request.collect {
                 val context = currentActivity ?: return@collect
                 when (it) {
-                    InteropRequest.BlackListScreen -> context.startActivity(
-                        BlacklistActivity.createIntent(
-                            context,
-                        ),
-                    )
+                    InteropRequest.BlackListScreen -> {
+                        context.startActivity(
+                            BlacklistActivity.createIntent(
+                                context,
+                            ),
+                        )
+                    }
+
                     is InteropRequest.ShowToast -> {
                         withContext(AppDispatchers.Main) {
                             Toast.makeText(context, it.message, Toast.LENGTH_LONG).show()
                         }
                     }
-                    is InteropRequest.PrivateMessage ->
+
+                    is InteropRequest.PrivateMessage -> {
                         context.startActivity(
                             ConversationActivity.createIntent(
                                 context,
                                 it.profileId,
                             ),
                         )
-                    is InteropRequest.NewEntry ->
+                    }
+
+                    is InteropRequest.NewEntry -> {
                         context.startActivity(
                             AddEntryActivity.createIntent(
                                 context,
@@ -368,10 +439,16 @@ open class WykopApp : DaggerApplication(), ApplicationInjector, AppScopes {
                                 "@${it.profileId}: ",
                             ),
                         )
-                    is InteropRequest.Profile ->
+                    }
+
+                    is InteropRequest.Profile -> {
                         context.startActivity(ProfileActivity.createIntent(context, it.profileId))
-                    is InteropRequest.Tag ->
+                    }
+
+                    is InteropRequest.Tag -> {
                         context.startActivity(TagActivity.createIntent(context, it.tagId))
+                    }
+
                     is InteropRequest.WebBrowser -> {
                         val navigator = NewNavigator(context, settingsPreferencesApi.get())
                         if (it.force) {
@@ -380,24 +457,44 @@ open class WykopApp : DaggerApplication(), ApplicationInjector, AppScopes {
                             WykopLinkHandler(context, navigator).handleUrl(it.url)
                         }
                     }
+
                     is InteropRequest.Share -> {
-                        val type = when (it.type) {
-                            InteropRequest.Share.Type.TextPlain -> "text/plain"
-                        }
-                        ShareCompat.IntentBuilder(context)
+                        val type =
+                            when (it.type) {
+                                InteropRequest.Share.Type.TextPlain -> "text/plain"
+                            }
+                        ShareCompat
+                            .IntentBuilder(context)
                             .setType(type)
                             .setChooserTitle(it.title)
                             .setText(it.url)
                             .startChooser()
                     }
-                    is InteropRequest.DownvotersList -> context.startActivity(DownvotersActivity.createIntent(it.linkId, context))
-                    is InteropRequest.UpvotersList -> context.startActivity(UpvotersActivity.createIntent(it.linkId, context))
-                    is InteropRequest.OpenPlayer -> context.startActivity(EmbedViewActivity.createIntent(context, it.url))
-                    is InteropRequest.OpenYoutube -> context.startActivity(YoutubeActivity.createIntent(context, it.url))
-                    is InteropRequest.ShowGif -> context.startActivity(PhotoViewActivity.createIntent(context, it.url))
-                    is InteropRequest.ShowImage -> context.startActivity(PhotoViewActivity.createIntent(context, it.url))
-                }
-                    .run { }
+
+                    is InteropRequest.DownvotersList -> {
+                        context.startActivity(DownvotersActivity.createIntent(it.linkId, context))
+                    }
+
+                    is InteropRequest.UpvotersList -> {
+                        context.startActivity(UpvotersActivity.createIntent(it.linkId, context))
+                    }
+
+                    is InteropRequest.OpenPlayer -> {
+                        context.startActivity(EmbedViewActivity.createIntent(context, it.url))
+                    }
+
+                    is InteropRequest.OpenYoutube -> {
+                        context.startActivity(YoutubeActivity.createIntent(context, it.url))
+                    }
+
+                    is InteropRequest.ShowGif -> {
+                        context.startActivity(PhotoViewActivity.createIntent(context, it.url))
+                    }
+
+                    is InteropRequest.ShowImage -> {
+                        context.startActivity(PhotoViewActivity.createIntent(context, it.url))
+                    }
+                }.run { }
             }
         }
     }

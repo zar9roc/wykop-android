@@ -9,7 +9,6 @@ import io.github.wykopmobilny.ui.fragments.entrycomments.EntryCommentInteractor
 
 @Module
 class MicroblogCommentsModule {
-
     @Provides
     fun providesPresenter(
         schedulers: Schedulers,

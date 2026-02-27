@@ -5,8 +5,10 @@ import io.github.wykopmobilny.api.responses.EntryCommentResponse
 import io.github.wykopmobilny.models.dataclass.EntryComment
 
 object EntryCommentMapper {
-
-    fun map(value: EntryCommentResponse, owmContentFilter: OWMContentFilter) = owmContentFilter.filterEntryComment(
+    fun map(
+        value: EntryCommentResponse,
+        owmContentFilter: OWMContentFilter,
+    ) = owmContentFilter.filterEntryComment(
         EntryComment(
             id = value.id,
             entryId = value.entryId ?: 0,

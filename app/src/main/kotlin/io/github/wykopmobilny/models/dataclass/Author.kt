@@ -24,7 +24,10 @@ class Author(
         parcel.readParcelable(AndroidPatronBadge::class.java.classLoader),
     )
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
+    override fun writeToParcel(
+        parcel: Parcel,
+        flags: Int,
+    ) {
         parcel.writeString(nick)
         parcel.writeString(avatarUrl)
         parcel.writeInt(group)
@@ -32,26 +35,21 @@ class Author(
         parcel.writeParcelable(badge, flags)
     }
 
-    override fun describeContents(): Int {
-        return 0
-    }
+    override fun describeContents(): Int = 0
 
     companion object CREATOR : Parcelable.Creator<Author> {
-        override fun createFromParcel(parcel: Parcel): Author {
-            return Author(parcel)
-        }
+        override fun createFromParcel(parcel: Parcel): Author = Author(parcel)
 
-        override fun newArray(size: Int): Array<Author?> {
-            return arrayOfNulls(size)
-        }
+        override fun newArray(size: Int): Array<Author?> = arrayOfNulls(size)
     }
 }
 
 fun AndroidPatronBadge.drawBadge(view: TextView) {
-    val shape = GradientDrawable(
-        GradientDrawable.Orientation.LEFT_RIGHT,
-        intArrayOf(Color.parseColor(hexColor), Color.parseColor(hexColor)),
-    )
+    val shape =
+        GradientDrawable(
+            GradientDrawable.Orientation.LEFT_RIGHT,
+            intArrayOf(Color.parseColor(hexColor), Color.parseColor(hexColor)),
+        )
     view.setOnClickListener {
         view.getActivityContext()?.openBrowser("https://patronite.pl/wykop-mobilny")
     }

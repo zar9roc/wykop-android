@@ -6,8 +6,15 @@ import io.github.wykopmobilny.models.dataclass.Voter
 
 interface EntriesFragmentView : BaseView {
     fun updateEntry(entry: Entry)
+
     fun showVoters(voters: List<Voter>)
+
     fun openVotersMenu()
+
     fun disableLoading()
-    fun addItems(items: List<Entry>, shouldRefresh: Boolean = false)
+
+    fun addItems(
+        items: List<Entry>,
+        shouldRefresh: Boolean = false,
+    )
 }

@@ -14,7 +14,6 @@ class Embed(
     var isResize: Boolean = false,
     var isRevealed: Boolean = false,
 ) : Parcelable {
-
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
         parcel.readString()!!,
@@ -27,7 +26,10 @@ class Embed(
         parcel.readByte() != 0.toByte(),
     )
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
+    override fun writeToParcel(
+        parcel: Parcel,
+        flags: Int,
+    ) {
         parcel.writeString(type)
         parcel.writeString(preview)
         parcel.writeString(url)
@@ -39,17 +41,11 @@ class Embed(
         parcel.writeByte(if (isRevealed) 1 else 0)
     }
 
-    override fun describeContents(): Int {
-        return 0
-    }
+    override fun describeContents(): Int = 0
 
     companion object CREATOR : Parcelable.Creator<Embed> {
-        override fun createFromParcel(parcel: Parcel): Embed {
-            return Embed(parcel)
-        }
+        override fun createFromParcel(parcel: Parcel): Embed = Embed(parcel)
 
-        override fun newArray(size: Int): Array<Embed?> {
-            return arrayOfNulls(size)
-        }
+        override fun newArray(size: Int): Array<Embed?> = arrayOfNulls(size)
     }
 }

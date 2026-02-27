@@ -1,7 +1,6 @@
 package io.github.wykopmobilny.utils.linkhandler.linkparser
 
 object TagLinkParser {
-
     fun getTag(url: String): String {
         val data = url.substringAfter("/tag/")
         return when (getTagType(url)) {

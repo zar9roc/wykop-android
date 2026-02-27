@@ -21,8 +21,10 @@ import io.github.wykopmobilny.storage.api.SettingsPreferencesApi
 import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 import javax.inject.Inject
 
-class HotFragment : BaseFragment(R.layout.hot_fragment), BaseNavigationView, HotView {
-
+class HotFragment :
+    BaseFragment(R.layout.hot_fragment),
+    BaseNavigationView,
+    HotView {
     companion object {
         fun newInstance() = HotFragment()
     }
@@ -48,7 +50,10 @@ class HotFragment : BaseFragment(R.layout.hot_fragment), BaseNavigationView, Hot
         setHasOptionsMenu(true)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         fab.setOnClickListener { navigatorApi.openAddEntryActivity(requireActivity()) }
         navigation.activityToolbar.overflowIcon = ContextCompat.getDrawable(requireActivity(), R.drawable.ic_hot)
@@ -66,9 +71,15 @@ class HotFragment : BaseFragment(R.layout.hot_fragment), BaseNavigationView, Hot
 
     override fun disableLoading() = entriesFragment.disableLoading()
 
-    override fun showHotEntries(entries: List<Entry>, isRefreshing: Boolean) = entriesFragment.addItems(entries, isRefreshing)
+    override fun showHotEntries(
+        entries: List<Entry>,
+        isRefreshing: Boolean,
+    ) = entriesFragment.addItems(entries, isRefreshing)
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(
+        menu: Menu,
+        inflater: MenuInflater,
+    ) {
         inflater.inflate(R.menu.hot_period, menu)
         navigation.activityToolbar.setTitle(
             when (presenter.period) {
@@ -87,18 +98,22 @@ class HotFragment : BaseFragment(R.layout.hot_fragment), BaseNavigationView, Hot
                 presenter.period = "6"
                 navigation.activityToolbar.setTitle(R.string.period6)
             }
+
             R.id.period12 -> {
                 presenter.period = "12"
                 navigation.activityToolbar.setTitle(R.string.period12)
             }
+
             R.id.period24 -> {
                 presenter.period = "24"
                 navigation.activityToolbar.setTitle(R.string.period24)
             }
+
             R.id.active -> {
                 presenter.period = "active"
                 navigation.activityToolbar.setTitle(R.string.active_entries)
             }
+
             R.id.newest -> {
                 presenter.period = "newest"
                 navigation.activityToolbar.setTitle(R.string.newest_entries)
@@ -110,7 +125,11 @@ class HotFragment : BaseFragment(R.layout.hot_fragment), BaseNavigationView, Hot
         return true
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         // TODO: get this callback work on hot/mywkop to update edited entry
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {

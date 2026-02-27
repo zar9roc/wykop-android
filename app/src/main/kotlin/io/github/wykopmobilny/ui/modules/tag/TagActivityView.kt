@@ -6,5 +6,6 @@ import io.github.wykopmobilny.base.BaseView
 
 interface TagActivityView : BaseView {
     fun setMeta(tagMeta: TagMetaResponse)
+
     fun setObserveState(tagState: ObserveStateResponse)
 }

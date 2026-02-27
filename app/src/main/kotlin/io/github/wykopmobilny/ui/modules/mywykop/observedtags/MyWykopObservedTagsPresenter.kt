@@ -9,9 +9,9 @@ class MyWykopObservedTagsPresenter(
     val schedulers: Schedulers,
     private val tagsApi: TagApi,
 ) : BasePresenter<MyWykopObservedTagsView>() {
-
     fun loadTags() {
-        tagsApi.getObservedTags()
+        tagsApi
+            .getObservedTags()
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe({ view?.showTags(it) }, { view?.showErrorDialog(it) })

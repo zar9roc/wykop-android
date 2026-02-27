@@ -11,31 +11,36 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-internal class GetMediaPreferences @Inject constructor(
-    private val appStorage: AppStorage,
-    private val appGateway: AppGateway,
-) {
-
-    operator fun invoke() = combine(
-        canUseYoutubePlayer(),
-        appStorage.get(UserSettings.useEmbeddedPlayer),
-    ) { useYoutubePlayer, useEmbeddedPlayer ->
-        MediaPlayerPreferences(
-            useYoutubePlayer = useYoutubePlayer,
-            useEmbeddedPlayer = useEmbeddedPlayer ?: true,
-        )
-    }
-
-    private fun canUseYoutubePlayer() = appStorage.get(UserSettings.useYoutubePlayer)
-        .flatMapLatest { savedValue ->
-            if (savedValue == null) {
-                appGateway.getInstalledYoutubeApps()
-                    .map { apps -> apps.singleOrNull() == YoutubeApp.Official }
-            } else {
-                flowOf(savedValue)
+internal class GetMediaPreferences
+    @Inject
+    constructor(
+        private val appStorage: AppStorage,
+        private val appGateway: AppGateway,
+    ) {
+        operator fun invoke() =
+            combine(
+                canUseYoutubePlayer(),
+                appStorage.get(UserSettings.useEmbeddedPlayer),
+            ) { useYoutubePlayer, useEmbeddedPlayer ->
+                MediaPlayerPreferences(
+                    useYoutubePlayer = useYoutubePlayer,
+                    useEmbeddedPlayer = useEmbeddedPlayer ?: true,
+                )
             }
-        }
-}
+
+        private fun canUseYoutubePlayer() =
+            appStorage
+                .get(UserSettings.useYoutubePlayer)
+                .flatMapLatest { savedValue ->
+                    if (savedValue == null) {
+                        appGateway
+                            .getInstalledYoutubeApps()
+                            .map { apps -> apps.singleOrNull() == YoutubeApp.Official }
+                    } else {
+                        flowOf(savedValue)
+                    }
+                }
+    }
 
 internal data class MediaPlayerPreferences(
     val useYoutubePlayer: Boolean,

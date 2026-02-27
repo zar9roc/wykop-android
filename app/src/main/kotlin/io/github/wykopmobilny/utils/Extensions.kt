@@ -24,7 +24,11 @@ import java.util.Date
 import java.util.Locale
 import kotlin.time.Duration.Companion.seconds
 
-fun SpannableStringBuilder.appendNewSpan(text: CharSequence, what: Any, flags: Int): SpannableStringBuilder {
+fun SpannableStringBuilder.appendNewSpan(
+    text: CharSequence,
+    what: Any,
+    flags: Int,
+): SpannableStringBuilder {
     val start = length
     append(text)
     setSpan(what, start, length, flags)
@@ -54,19 +58,23 @@ fun RecyclerView.prepareNoDivider() {
     layoutManager = LinearLayoutManager(context)
 }
 
-fun ImageView.loadImage(url: String, signature: Int? = null) {
+fun ImageView.loadImage(
+    url: String,
+    signature: Int? = null,
+) {
     if (signature == null) {
-        GlideApp.with(context)
+        GlideApp
+            .with(context)
             .load(url)
             .into(this)
     } else {
-        GlideApp.with(context)
+        GlideApp
+            .with(context)
             .load(url)
             .apply(
                 RequestOptions()
                     .signature(ObjectKey(signature)),
-            )
-            .into(this)
+            ).into(this)
     }
 }
 
@@ -77,13 +85,14 @@ fun Instant.toPrettyDate(): String = PrettyTime(Locale("pl")).format(Date(toEpoc
 fun Uri.queryFileName(contentResolver: ContentResolver): String {
     var result: String? = null
     if (scheme == "content") {
-        result = contentResolver.query(this, null, null, null, null)?.use { cursor ->
-            if (cursor.moveToFirst()) {
-                cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
-            } else {
-                null
+        result =
+            contentResolver.query(this, null, null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
+                } else {
+                    null
+                }
             }
-        }
     }
     if (result == null) {
         result = path

@@ -31,58 +31,70 @@ interface SimpleUserManagerApi {
 
 interface UserManagerApi : SimpleUserManagerApi {
     suspend fun logoutUser()
+
     suspend fun saveCredentials(credentials: LoginResponse)
-    fun runIfLoggedIn(context: Context, callback: () -> Unit)
+
+    fun runIfLoggedIn(
+        context: Context,
+        callback: () -> Unit,
+    )
 }
 
 fun UserManagerApi.isUserAuthorized() = getUserCredentials() != null
 
 @Singleton
-class UserManager @Inject constructor(
-    private val sessionStorage: SessionStorage,
-    private val userInfoStorage: UserInfoStorage,
-    private val appScopes: AppScopes,
-) : UserManagerApi {
+class UserManager
+    @Inject
+    constructor(
+        private val sessionStorage: SessionStorage,
+        private val userInfoStorage: UserInfoStorage,
+        private val appScopes: AppScopes,
+    ) : UserManagerApi {
+        private val userInfo =
+            userInfoStorage.loggedUser
+                .stateIn(appScopes.applicationScope, SharingStarted.Eagerly, null)
 
-    private val userInfo = userInfoStorage.loggedUser
-        .stateIn(appScopes.applicationScope, SharingStarted.Eagerly, null)
+        override suspend fun logoutUser() {
+            sessionStorage.updateSession(null)
+            userInfoStorage.updateLoggedUser(null)
+            userInfo.first { it == null }
+        }
 
-    override suspend fun logoutUser() {
-        sessionStorage.updateSession(null)
-        userInfoStorage.updateLoggedUser(null)
-        userInfo.first { it == null }
-    }
+        override suspend fun saveCredentials(credentials: LoginResponse) {
+            userInfoStorage.updateLoggedUser(
+                value =
+                    LoggedUserInfo(
+                        id = credentials.profile.id,
+                        userToken = credentials.userkey,
+                        avatarUrl = credentials.profile.avatar,
+                        backgroundUrl = credentials.profile.background,
+                    ),
+            )
+        }
 
-    override suspend fun saveCredentials(credentials: LoginResponse) {
-        userInfoStorage.updateLoggedUser(
-            value = LoggedUserInfo(
-                id = credentials.profile.id,
-                userToken = credentials.userkey,
-                avatarUrl = credentials.profile.avatar,
-                backgroundUrl = credentials.profile.background,
-            ),
-        )
-    }
+        override fun getUserCredentials(): UserCredentials? =
+            userInfo.value?.let {
+                UserCredentials(
+                    login = it.id,
+                    avatarUrl = it.avatarUrl,
+                    backgroundUrl = it.backgroundUrl,
+                    userKey = it.userToken,
+                )
+            }
 
-    override fun getUserCredentials(): UserCredentials? = userInfo.value?.let {
-        UserCredentials(
-            login = it.id,
-            avatarUrl = it.avatarUrl,
-            backgroundUrl = it.backgroundUrl,
-            userKey = it.userToken,
-        )
-    }
-
-    override fun runIfLoggedIn(context: Context, callback: () -> Unit) {
-        appScopes.applicationScope.launch(Dispatchers.Main, start = CoroutineStart.UNDISPATCHED) {
-            val isLoggedIn = sessionStorage.session.first()
-            if (isLoggedIn != null) {
-                callback.invoke()
-            } else {
-                withContext(AppDispatchers.Main) {
-                    userNotLoggedInDialog(context)?.show()
+        override fun runIfLoggedIn(
+            context: Context,
+            callback: () -> Unit,
+        ) {
+            appScopes.applicationScope.launch(Dispatchers.Main, start = CoroutineStart.UNDISPATCHED) {
+                val isLoggedIn = sessionStorage.session.first()
+                if (isLoggedIn != null) {
+                    callback.invoke()
+                } else {
+                    withContext(AppDispatchers.Main) {
+                        userNotLoggedInDialog(context)?.show()
+                    }
                 }
             }
         }
     }
-}

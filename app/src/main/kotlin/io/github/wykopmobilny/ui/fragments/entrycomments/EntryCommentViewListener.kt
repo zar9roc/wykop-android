@@ -5,5 +5,6 @@ import io.github.wykopmobilny.models.dataclass.EntryComment
 
 interface EntryCommentViewListener {
     fun addReply(author: Author)
+
     fun quoteComment(comment: EntryComment)
 }

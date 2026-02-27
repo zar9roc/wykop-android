@@ -9,6 +9,9 @@ import io.github.wykopmobilny.ui.fragments.links.LinksInteractor
 @Module
 class TagLinksFragmentModule {
     @Provides
-    fun provideTagLinksPresenter(schedulers: Schedulers, tagApi: TagApi, linksInteractor: LinksInteractor) =
-        TagLinksPresenter(schedulers, tagApi, linksInteractor)
+    fun provideTagLinksPresenter(
+        schedulers: Schedulers,
+        tagApi: TagApi,
+        linksInteractor: LinksInteractor,
+    ) = TagLinksPresenter(schedulers, tagApi, linksInteractor)
 }

@@ -30,7 +30,6 @@ class Link(
     var gotSelected: Boolean,
     var isBlocked: Boolean = false,
 ) : Parcelable {
-
     val url = "https://www.wykop.pl/link/$id"
 
     constructor(parcel: Parcel) : this(
@@ -59,7 +58,10 @@ class Link(
         parcel.readByte() != 0.toByte(),
     )
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
+    override fun writeToParcel(
+        parcel: Parcel,
+        flags: Int,
+    ) {
         parcel.writeLong(id)
         parcel.writeString(title)
         parcel.writeString(description)
@@ -84,24 +86,16 @@ class Link(
         parcel.writeByte(if (isBlocked) 1 else 0)
     }
 
-    override fun describeContents(): Int {
-        return 0
-    }
+    override fun describeContents(): Int = 0
 
-    override fun hashCode(): Int {
-        return this.id.hashCode()
-    }
+    override fun hashCode(): Int = this.id.hashCode()
 
     val date: String
         get() = this.fullDate.toPrettyDate()
 
     companion object CREATOR : Parcelable.Creator<Link> {
-        override fun createFromParcel(parcel: Parcel): Link {
-            return Link(parcel)
-        }
+        override fun createFromParcel(parcel: Parcel): Link = Link(parcel)
 
-        override fun newArray(size: Int): Array<Link?> {
-            return arrayOfNulls(size)
-        }
+        override fun newArray(size: Int): Array<Link?> = arrayOfNulls(size)
     }
 }

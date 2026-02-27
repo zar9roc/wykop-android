@@ -9,6 +9,9 @@ import io.github.wykopmobilny.ui.fragments.links.LinksInteractor
 @Module
 class UpcomingModule {
     @Provides
-    fun provideUpcomingPresenter(schedulers: Schedulers, linksApi: LinksApi, linksInteractor: LinksInteractor) =
-        UpcomingPresenter(schedulers, linksInteractor, linksApi)
+    fun provideUpcomingPresenter(
+        schedulers: Schedulers,
+        linksApi: LinksApi,
+        linksInteractor: LinksInteractor,
+    ) = UpcomingPresenter(schedulers, linksInteractor, linksApi)
 }

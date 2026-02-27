@@ -9,13 +9,14 @@ import io.github.wykopmobilny.utils.bindings.setOnClick
 
 fun TextView.setUserNick(userInfoUi: UserInfoUi?) {
     isVisible = userInfoUi != null
-    text = userInfoUi?.let { info ->
-        buildSpannedString {
-            color(info.color.toColorInt(context).defaultColor) {
-                append("@")
-                append(info.name)
+    text =
+        userInfoUi?.let { info ->
+            buildSpannedString {
+                color(info.color.toColorInt(context).defaultColor) {
+                    append("@")
+                    append(info.name)
+                }
             }
         }
-    }
     setOnClick(userInfoUi?.avatar?.onClicked)
 }

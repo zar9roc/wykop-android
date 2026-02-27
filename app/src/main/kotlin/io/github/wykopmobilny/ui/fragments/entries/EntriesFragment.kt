@@ -7,11 +7,13 @@ import javax.inject.Inject
 
 // This fragment shows list of provided entries
 class EntriesFragment : BaseEntriesFragment() {
-
     @Inject
     lateinit var presenter: EntriesFragmentPresenter
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         presenter.subscribe(this)
         entriesAdapter.entryActionListener = presenter

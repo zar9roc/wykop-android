@@ -59,8 +59,11 @@ import javax.inject.Inject
 
 interface MainNavigationInterface {
     val activityToolbar: Toolbar
+
     fun openFragment(fragment: Fragment)
+
     val floatingButton: View
+
     fun forceRefreshNotifications()
 }
 
@@ -69,12 +72,14 @@ class MainNavigationActivity :
     MainNavigationView,
     NavigationView.OnNavigationItemSelectedListener,
     MainNavigationInterface {
-
     companion object {
         const val TARGET_FRAGMENT_KEY = "TARGET_FRAGMENT"
         const val TARGET_NOTIFICATIONS = "TARGET_NOTIFICATIONS"
 
-        fun getIntent(context: Context, targetFragment: String? = null): Intent {
+        fun getIntent(
+            context: Context,
+            targetFragment: String? = null,
+        ): Intent {
             val intent = Intent(context, MainNavigationActivity::class.java)
             targetFragment?.let {
                 intent.putExtra(TARGET_FRAGMENT_KEY, targetFragment)
@@ -133,18 +138,54 @@ class MainNavigationActivity :
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.nav_mikroblog -> openFragment(HotFragment.newInstance())
-            R.id.login -> navigator.openLoginScreen()
-            R.id.messages -> openFragment(ConversationsListFragment.newInstance())
-            R.id.nav_settings -> navigator.openSettingsActivity()
-            R.id.nav_mojwykop -> openFragment(MyWykopFragment.newInstance())
-            R.id.nav_home -> openFragment(PromotedFragment.newInstance())
-            R.id.search -> openFragment(SearchFragment.newInstance())
-            R.id.favourite -> openFragment(FavoriteFragment.newInstance())
-            R.id.your_profile -> startActivity(ProfileActivity.createIntent(this, userManagerApi.getUserCredentials()!!.login))
-            R.id.nav_wykopalisko -> openFragment(UpcomingFragment.newInstance())
-            R.id.hits -> openFragment(HitsFragment.newInstance())
-            R.id.about -> openAboutSheet()
+            R.id.nav_mikroblog -> {
+                openFragment(HotFragment.newInstance())
+            }
+
+            R.id.login -> {
+                navigator.openLoginScreen()
+            }
+
+            R.id.messages -> {
+                openFragment(ConversationsListFragment.newInstance())
+            }
+
+            R.id.nav_settings -> {
+                navigator.openSettingsActivity()
+            }
+
+            R.id.nav_mojwykop -> {
+                openFragment(MyWykopFragment.newInstance())
+            }
+
+            R.id.nav_home -> {
+                openFragment(PromotedFragment.newInstance())
+            }
+
+            R.id.search -> {
+                openFragment(SearchFragment.newInstance())
+            }
+
+            R.id.favourite -> {
+                openFragment(FavoriteFragment.newInstance())
+            }
+
+            R.id.your_profile -> {
+                startActivity(ProfileActivity.createIntent(this, userManagerApi.getUserCredentials()!!.login))
+            }
+
+            R.id.nav_wykopalisko -> {
+                openFragment(UpcomingFragment.newInstance())
+            }
+
+            R.id.hits -> {
+                openFragment(HitsFragment.newInstance())
+            }
+
+            R.id.about -> {
+                openAboutSheet()
+            }
+
             R.id.logout -> {
                 confirmationDialog(this) {
                     lifecycleScope.launch {
@@ -158,7 +199,10 @@ class MainNavigationActivity :
                     }
                 }.show()
             }
-            else -> showNotImplementedToast()
+
+            else -> {
+                showNotImplementedToast()
+            }
         }
 
         item.isChecked = true
@@ -331,7 +375,11 @@ class MainNavigationActivity :
         deselectItems()
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == NewNavigator.STARTED_FROM_NOTIFICATIONS_CODE) {
             if (!presenter.isSubscribed) {
@@ -400,13 +448,14 @@ class MainNavigationActivity :
                 linkHandler.handleUrl("https://wykop.pl/ludzie/" + badge.username)
             }
             item.nickname.text = badge.username
-            item.tierTextView.text = when (badge.tier) {
-                "patron50" -> "Patron próg \"Białkowy\""
-                "patron25" -> "Patron próg \"Bordowy\""
-                "patron10" -> "Patron próg \"Pomaranczowy\""
-                "patron5" -> "Patron próg \"Zielony\""
-                else -> "Patron"
-            }
+            item.tierTextView.text =
+                when (badge.tier) {
+                    "patron50" -> "Patron próg \"Białkowy\""
+                    "patron25" -> "Patron próg \"Bordowy\""
+                    "patron10" -> "Patron próg \"Pomaranczowy\""
+                    "patron5" -> "Patron próg \"Zielony\""
+                    else -> "Patron"
+                }
             badgesDialogView2.patronsList.addView(item.root)
         }
         patronsDialog.show()

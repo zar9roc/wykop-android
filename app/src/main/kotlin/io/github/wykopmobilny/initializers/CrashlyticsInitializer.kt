@@ -6,7 +6,6 @@ import com.google.firebase.crashlytics.BuildConfig
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 
 internal class CrashlyticsInitializer : Initializer<FirebaseCrashlytics> {
-
     override fun create(context: Context): FirebaseCrashlytics {
         val crashlytics = FirebaseCrashlytics.getInstance()
         crashlytics.setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG)

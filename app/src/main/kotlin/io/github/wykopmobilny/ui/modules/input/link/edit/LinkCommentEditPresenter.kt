@@ -11,12 +11,12 @@ class LinkCommentEditPresenter(
     val schedulers: Schedulers,
     val linksApi: LinksApi,
 ) : InputPresenter<BaseInputView>() {
-
     var linkCommentId: Long = -1
 
     private fun editLinkComment() {
         view?.showProgressBar = true
-        linksApi.commentEdit(view?.textBody!!, linkCommentId)
+        linksApi
+            .commentEdit(view?.textBody!!, linkCommentId)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -25,11 +25,16 @@ class LinkCommentEditPresenter(
                     view?.showProgressBar = false
                     view?.showErrorDialog(it)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
-    override fun sendWithPhoto(photo: WykopImageFile, containsAdultContent: Boolean) = editLinkComment()
+    override fun sendWithPhoto(
+        photo: WykopImageFile,
+        containsAdultContent: Boolean,
+    ) = editLinkComment()
 
-    override fun sendWithPhotoUrl(photo: String?, containsAdultContent: Boolean) = editLinkComment()
+    override fun sendWithPhotoUrl(
+        photo: String?,
+        containsAdultContent: Boolean,
+    ) = editLinkComment()
 }

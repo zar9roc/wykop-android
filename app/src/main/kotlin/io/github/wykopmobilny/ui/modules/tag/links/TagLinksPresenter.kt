@@ -13,14 +13,15 @@ class TagLinksPresenter(
     val schedulers: Schedulers,
     val tagApi: TagApi,
     val linksInteractor: LinksInteractor,
-) : BasePresenter<TagLinksView>(), LinkActionListener {
-
+) : BasePresenter<TagLinksView>(),
+    LinkActionListener {
     var page = 1
     var tag = ""
 
     fun loadData(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
-        tagApi.getTagLinks(tag, page)
+        tagApi
+            .getTagLinks(tag, page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -34,8 +35,7 @@ class TagLinksPresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     override fun dig(link: Link) {
@@ -47,7 +47,8 @@ class TagLinksPresenter(
     }
 
     fun Single<Link>.processLinkSingle(link: Link) {
-        this.subscribeOn(schedulers.backgroundThread())
+        this
+            .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
                 { view?.updateLink(it) },
@@ -55,7 +56,6 @@ class TagLinksPresenter(
                     view?.showErrorDialog(it)
                     view?.updateLink(link)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

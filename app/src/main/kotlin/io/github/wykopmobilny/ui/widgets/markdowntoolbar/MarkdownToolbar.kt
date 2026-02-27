@@ -24,8 +24,10 @@ import io.github.wykopmobilny.utils.CameraUtils
 import io.github.wykopmobilny.utils.getActivityContext
 import io.github.wykopmobilny.utils.layoutInflater
 
-class MarkdownToolbar(context: Context, attrs: AttributeSet?) : LinearLayout(context, attrs) {
-
+class MarkdownToolbar(
+    context: Context,
+    attrs: AttributeSet?,
+) : LinearLayout(context, attrs) {
     var photoUrl: String?
         get() = floatingImageView?.photoUrl
         set(value) {
@@ -60,18 +62,19 @@ class MarkdownToolbar(context: Context, attrs: AttributeSet?) : LinearLayout(con
         val binding = MarkdownToolbarBinding.inflate(layoutInflater, this, true)
 
         val activity = getActivityContext() as BaseActivity
-        val permissions = activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) {
-                showUploadPhotoBottomsheet()
-            } else {
-                Toast.makeText(
-                    activity,
-                    "Aplikacja wymaga uprawnień zapisu do pamięci aby wysyłać zdjęcia.",
-                    Toast.LENGTH_LONG,
-                )
-                    .show()
+        val permissions =
+            activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+                if (isGranted) {
+                    showUploadPhotoBottomsheet()
+                } else {
+                    Toast
+                        .makeText(
+                            activity,
+                            "Aplikacja wymaga uprawnień zapisu do pamięci aby wysyłać zdjęcia.",
+                            Toast.LENGTH_LONG,
+                        ).show()
+                }
             }
-        }
         // Create callbacks
         markdownDialogs.apply {
             binding.formatBold.setOnClickListener { insertFormat("**", "**") }
@@ -97,15 +100,17 @@ class MarkdownToolbar(context: Context, attrs: AttributeSet?) : LinearLayout(con
 
     fun getWykopImageFile(): WykopImageFile? = photo?.let { WykopImageFile(it, context) }
 
-    fun hasUserEditedContent(): Boolean {
-        return (
+    fun hasUserEditedContent(): Boolean =
+        (
             photo != null ||
                 !floatingImageView?.photoUrl.isNullOrEmpty() ||
                 (markdownListener != null && markdownListener?.textBody!!.isNotEmpty())
-            )
-    }
+        )
 
-    private fun insertFormat(prefix: String, suffix: String) {
+    private fun insertFormat(
+        prefix: String,
+        suffix: String,
+    ) {
         markdownListener?.apply {
             if (selectionEnd > selectionStart) {
                 val bodyPrefix = textBody.substring(0, selectionStart)

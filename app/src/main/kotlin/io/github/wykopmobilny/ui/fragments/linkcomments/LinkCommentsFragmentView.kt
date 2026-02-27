@@ -5,6 +5,11 @@ import io.github.wykopmobilny.models.dataclass.LinkComment
 
 interface LinkCommentsFragmentView : BaseView {
     fun updateComment(comment: LinkComment)
+
     fun disableLoading()
-    fun addItems(items: List<LinkComment>, shouldRefresh: Boolean = false)
+
+    fun addItems(
+        items: List<LinkComment>,
+        shouldRefresh: Boolean = false,
+    )
 }

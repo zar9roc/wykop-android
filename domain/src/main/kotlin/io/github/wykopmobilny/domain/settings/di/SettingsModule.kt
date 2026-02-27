@@ -9,7 +9,6 @@ import io.github.wykopmobilny.ui.settings.GetGeneralPreferences
 
 @Module
 internal abstract class SettingsModule {
-
     @Binds
     abstract fun generalPreferences(impl: GetGeneralPreferencesQuery): GetGeneralPreferences
 

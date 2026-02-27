@@ -25,7 +25,6 @@ import kotlinx.coroutines.runBlocking
 import androidx.appcompat.R as AppcompatR
 
 class SearchFragment : BaseFragment(R.layout.activity_search) {
-
     companion object {
         fun newInstance() = SearchFragment()
     }
@@ -47,7 +46,10 @@ class SearchFragment : BaseFragment(R.layout.activity_search) {
         setHasOptionsMenu(true)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         suggestionsAdapter = ArrayAdapter<String>(requireContext(), R.layout.history_suggestion_item, R.id.historySuggestion)
 
@@ -61,19 +63,30 @@ class SearchFragment : BaseFragment(R.layout.activity_search) {
         (activity as BaseActivity).supportActionBar?.setTitle(R.string.search)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(
+        menu: Menu,
+        inflater: MenuInflater,
+    ) {
         inflater.inflate(R.menu.search_menu, menu)
         val item = menu.findItem(R.id.action_search) ?: return
         val searchView = item.actionView as SearchView
 
         searchView.findViewById<SearchView.SearchAutoComplete>(AppcompatR.id.search_src_text).apply {
             setAdapter(suggestionsAdapter)
-            onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
-                val clicked = suggestionsAdapter.getItem(position) ?: return@OnItemClickListener
+            onItemClickListener =
+                AdapterView.OnItemClickListener { _, _, position, _ ->
+                    val clicked = suggestionsAdapter.getItem(position) ?: return@OnItemClickListener
 
-                runBlocking { getSearchDetails().first().searchResults.firstOrNull { it.text == clicked }?.onClick?.invoke() }
-                searchView.setQuery(clicked, false)
-            }
+                    runBlocking {
+                        getSearchDetails()
+                            .first()
+                            .searchResults
+                            .firstOrNull { it.text == clicked }
+                            ?.onClick
+                            ?.invoke()
+                    }
+                    searchView.setQuery(clicked, false)
+                }
         }
 
         searchView.setOnQueryTextListener(
@@ -90,11 +103,12 @@ class SearchFragment : BaseFragment(R.layout.activity_search) {
                 }
 
                 override fun onQueryTextChange(newText: String?): Boolean {
-                    val results = runBlocking {
-                        val searchDetails = getSearchDetails().first()
-                        searchDetails.onQueryChanged(newText.orEmpty())
-                        getSearchDetails().first().searchResults.map { it.text }
-                    }
+                    val results =
+                        runBlocking {
+                            val searchDetails = getSearchDetails().first()
+                            searchDetails.onQueryChanged(newText.orEmpty())
+                            getSearchDetails().first().searchResults.map { it.text }
+                        }
                     suggestionsAdapter.clear()
                     suggestionsAdapter.addAll(results)
 

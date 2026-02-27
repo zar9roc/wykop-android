@@ -9,13 +9,13 @@ class BadgePresenter(
     val schedulers: Schedulers,
     val profileApi: ProfileApi,
 ) : BasePresenter<BadgeView>() {
-
     var page = 1
     lateinit var username: String
 
     fun loadData(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
-        profileApi.getBadges(username, page)
+        profileApi
+            .getBadges(username, page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -28,7 +28,6 @@ class BadgePresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

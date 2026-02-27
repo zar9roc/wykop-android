@@ -24,8 +24,10 @@ import io.github.wykopmobilny.ui.widgets.markdowntoolbar.MarkdownToolbarListener
 import io.github.wykopmobilny.utils.textview.stripWykopFormatting
 import io.github.wykopmobilny.utils.viewBinding
 
-abstract class BaseInputActivity<T : BaseInputPresenter> : BaseActivity(), BaseInputView, MarkdownToolbarListener {
-
+abstract class BaseInputActivity<T : BaseInputPresenter> :
+    BaseActivity(),
+    BaseInputView,
+    MarkdownToolbarListener {
     companion object {
         const val EXTRA_RECEIVER = "EXTRA_RECEIVER"
         const val EXTRA_BODY = "EXTRA_BODY"
@@ -102,12 +104,13 @@ abstract class BaseInputActivity<T : BaseInputPresenter> : BaseActivity(), BaseI
             getStringExtra(EXTRA_BODY)?.apply {
                 // @TODO Replace it with some regex or parser, its way too hacky now
                 textBody += stripWykopFormatting()
-                selectionStart = if (!startsWith("#")) {
-                    textBody.length
-                } else {
-                    textBody = "\n$textBody"
-                    0
-                }
+                selectionStart =
+                    if (!startsWith("#")) {
+                        textBody.length
+                    } else {
+                        textBody = "\n$textBody"
+                        0
+                    }
             }
         }
 
@@ -120,7 +123,10 @@ abstract class BaseInputActivity<T : BaseInputPresenter> : BaseActivity(), BaseI
         imm.showSoftInput(binding.body, InputMethodManager.SHOW_IMPLICIT)
     }
 
-    override fun setSelection(start: Int, end: Int) = binding.body.setSelection(start, end)
+    override fun setSelection(
+        start: Int,
+        end: Int,
+    ) = binding.body.setSelection(start, end)
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_add_comment, menu)
@@ -137,12 +143,19 @@ abstract class BaseInputActivity<T : BaseInputPresenter> : BaseActivity(), BaseI
                     presenter.sendWithPhotoUrl(binding.markupToolbar.photoUrl, binding.markupToolbar.containsAdultContent)
                 }
             }
-            android.R.id.home -> onBackPressed()
+
+            android.R.id.home -> {
+                onBackPressed()
+            }
         }
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {

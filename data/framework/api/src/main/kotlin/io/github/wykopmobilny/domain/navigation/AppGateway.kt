@@ -3,7 +3,6 @@ package io.github.wykopmobilny.domain.navigation
 import kotlinx.coroutines.flow.Flow
 
 interface AppGateway {
-
     fun getInstalledYoutubeApps(): Flow<Set<YoutubeApp>>
 
     fun getInstalledAuthenticatorApps(): Flow<Set<AuthenticatorApp>>

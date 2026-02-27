@@ -18,7 +18,6 @@ open class BaseLinkCommentFragment :
     BaseFragment(R.layout.entries_fragment),
     LinkCommentsFragmentView,
     SwipeRefreshLayout.OnRefreshListener {
-
     @Inject
     lateinit var linkCommentsAdapter: LinkCommentAdapter
 
@@ -36,7 +35,10 @@ open class BaseLinkCommentFragment :
 
     open var loadDataListener: (Boolean) -> Unit = {}
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         linkCommentsAdapter.loadNewDataListener = { loadDataListener(true) }
 
@@ -60,7 +62,10 @@ open class BaseLinkCommentFragment :
      * @param items List of entries to add
      * @param shouldRefresh If true adapter will refresh its data with provided items. False by default
      */
-    override fun addItems(items: List<LinkComment>, shouldRefresh: Boolean) {
+    override fun addItems(
+        items: List<LinkComment>,
+        shouldRefresh: Boolean,
+    ) {
         linkCommentsAdapter.addData(items, shouldRefresh)
         binding.swipeRefresh.isRefreshing = false
         binding.loadingView.isVisible = false

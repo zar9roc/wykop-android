@@ -8,5 +8,8 @@ import io.github.wykopmobilny.base.Schedulers
 @Module
 class ConversationsListFragmentModule {
     @Provides
-    fun provideConversationsListPresenter(schedulers: Schedulers, pmApi: PMApi) = ConversationsListPresenter(schedulers, pmApi)
+    fun provideConversationsListPresenter(
+        schedulers: Schedulers,
+        pmApi: PMApi,
+    ) = ConversationsListPresenter(schedulers, pmApi)
 }

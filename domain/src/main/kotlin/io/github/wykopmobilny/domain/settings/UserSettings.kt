@@ -5,35 +5,39 @@ import io.github.wykopmobilny.domain.settings.prefs.MikroblogScreen
 import io.github.wykopmobilny.domain.styles.AppThemePreference
 
 internal object UserSettings {
-
-    val appTheme = enumMapping(
-        preferencesKey = "settings.appearance.app_theme",
-        mapOf(
-            AppThemePreference.Auto to "auto",
-            AppThemePreference.Light to "light",
-            AppThemePreference.Dark to "dark",
-        ),
-    )
+    val appTheme =
+        enumMapping(
+            preferencesKey = "settings.appearance.app_theme",
+            mapOf(
+                AppThemePreference.Auto to "auto",
+                AppThemePreference.Light to "light",
+                AppThemePreference.Dark to "dark",
+            ),
+        )
     val useAmoledTheme = booleanMapping(preferencesKey = "settings.appearance.amoled_theme")
-    val defaultScreen = enumMapping(
-        preferencesKey = "settings.appearance.default_screen",
-        enumMapping = mapOf(
-            MainScreen.Promoted to "promoted",
-            MainScreen.Mikroblog to "mikroblog",
-            MainScreen.MyWykop to "my_wykop",
-            MainScreen.Hits to "hits",
-        ),
-    )
-    val font = enumMapping(
-        preferencesKey = "settings.appearance.font_size",
-        enumMapping = mapOf(
-            FontSize.VerySmall to "very_small",
-            FontSize.Small to "small",
-            FontSize.Normal to "normal",
-            FontSize.Large to "large",
-            FontSize.VeryLarge to "very_large",
-        ),
-    )
+    val defaultScreen =
+        enumMapping(
+            preferencesKey = "settings.appearance.default_screen",
+            enumMapping =
+                mapOf(
+                    MainScreen.Promoted to "promoted",
+                    MainScreen.Mikroblog to "mikroblog",
+                    MainScreen.MyWykop to "my_wykop",
+                    MainScreen.Hits to "hits",
+                ),
+        )
+    val font =
+        enumMapping(
+            preferencesKey = "settings.appearance.font_size",
+            enumMapping =
+                mapOf(
+                    FontSize.VerySmall to "very_small",
+                    FontSize.Small to "small",
+                    FontSize.Normal to "normal",
+                    FontSize.Large to "large",
+                    FontSize.VeryLarge to "very_large",
+                ),
+        )
     val disableEdgeSlide = booleanMapping(preferencesKey = "settings.appearance.disable_edge_slide")
 
     val notificationsEnabled = booleanMapping(preferencesKey = "settings.notifications.enabled")
@@ -50,28 +54,32 @@ internal object UserSettings {
     val useYoutubePlayer = booleanMapping(preferencesKey = "settings.media.use_youtube_player")
     val useEmbeddedPlayer = booleanMapping(preferencesKey = "settings.media.use_embedded_player")
 
-    val mikroblogScreen = enumMapping(
-        preferencesKey = "settings.mikroblog.default_screen",
-        enumMapping = mapOf(
-            MikroblogScreen.Active to "active",
-            MikroblogScreen.Newest to "newest",
-            MikroblogScreen.SixHours to "six-hours",
-            MikroblogScreen.TwelveHours to "twelve-hours",
-            MikroblogScreen.TwentyFourHours to "twenty-four-hours",
-        ),
-    )
+    val mikroblogScreen =
+        enumMapping(
+            preferencesKey = "settings.mikroblog.default_screen",
+            enumMapping =
+                mapOf(
+                    MikroblogScreen.Active to "active",
+                    MikroblogScreen.Newest to "newest",
+                    MikroblogScreen.SixHours to "six-hours",
+                    MikroblogScreen.TwelveHours to "twelve-hours",
+                    MikroblogScreen.TwentyFourHours to "twenty-four-hours",
+                ),
+        )
     val cutLongEntries = booleanMapping(preferencesKey = "settings.mikroblog.cut_long_entries")
     val openSpoilersInDialog = booleanMapping(preferencesKey = "settings.mikroblog.open_spoilers_in_dialog")
 
-    val imagePosition = enumMapping(
-        preferencesKey = "settings.links.image_position",
-        enumMapping = mapOf(
-            LinkImagePosition.Left to "left",
-            LinkImagePosition.Right to "right",
-            LinkImagePosition.Top to "top",
-            LinkImagePosition.Bottom to "bottom",
-        ),
-    )
+    val imagePosition =
+        enumMapping(
+            preferencesKey = "settings.links.image_position",
+            enumMapping =
+                mapOf(
+                    LinkImagePosition.Left to "left",
+                    LinkImagePosition.Right to "right",
+                    LinkImagePosition.Top to "top",
+                    LinkImagePosition.Bottom to "bottom",
+                ),
+        )
     val useSimpleList = booleanMapping(preferencesKey = "settings.links.use_simple_list")
     val showLinkThumbnail = booleanMapping(preferencesKey = "settings.links.show_thumbnails")
     val showAuthor = booleanMapping(preferencesKey = "settings.links.show_author")
@@ -82,21 +90,25 @@ internal object UserSettings {
     val cutImagesProportion = longMapping("settings.images.cut_images_proportion")
 
     val groupNotifications = booleanMapping("settings.in_app_notifications.enabled_grouping")
-    val upcomingSort = enumMapping(
-        preferencesKey = "settings.links.upcoming_sort",
-        enumMapping = mapOf(
-            UpcomingSort.Comments to "comments",
-            UpcomingSort.Votes to "votes",
-            UpcomingSort.Date to "date",
-            UpcomingSort.Active to "active",
-        ),
-    )
-    val commentsSort = enumMapping(
-        preferencesKey = "settings.links.comments_sort",
-        enumMapping = mapOf(
-            CommentsDefaultSort.Best to "best",
-            CommentsDefaultSort.New to "new",
-            CommentsDefaultSort.Old to "old",
-        ),
-    )
+    val upcomingSort =
+        enumMapping(
+            preferencesKey = "settings.links.upcoming_sort",
+            enumMapping =
+                mapOf(
+                    UpcomingSort.Comments to "comments",
+                    UpcomingSort.Votes to "votes",
+                    UpcomingSort.Date to "date",
+                    UpcomingSort.Active to "active",
+                ),
+        )
+    val commentsSort =
+        enumMapping(
+            preferencesKey = "settings.links.comments_sort",
+            enumMapping =
+                mapOf(
+                    CommentsDefaultSort.Best to "best",
+                    CommentsDefaultSort.New to "new",
+                    CommentsDefaultSort.Old to "old",
+                ),
+        )
 }

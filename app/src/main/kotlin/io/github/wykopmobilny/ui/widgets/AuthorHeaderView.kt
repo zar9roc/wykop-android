@@ -14,11 +14,17 @@ import io.github.wykopmobilny.utils.api.getGroupColor
 import io.github.wykopmobilny.utils.getActivityContext
 import io.github.wykopmobilny.utils.layoutInflater
 
-class AuthorHeaderView(context: Context, attrs: AttributeSet?) : ConstraintLayout(context, attrs) {
-
+class AuthorHeaderView(
+    context: Context,
+    attrs: AttributeSet?,
+) : ConstraintLayout(context, attrs) {
     private val binding = AuthorHeaderLayoutBinding.inflate(layoutInflater, this)
 
-    fun setAuthorData(author: Author, date: String, app: String? = null) {
+    fun setAuthorData(
+        author: Author,
+        date: String,
+        app: String? = null,
+    ) {
         author.apply {
             binding.userNameTextView.apply {
                 text = nick

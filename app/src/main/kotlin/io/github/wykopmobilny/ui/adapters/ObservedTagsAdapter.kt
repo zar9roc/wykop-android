@@ -9,14 +9,23 @@ import io.github.wykopmobilny.ui.modules.NewNavigator
 import io.github.wykopmobilny.utils.layoutInflater
 import javax.inject.Inject
 
-class ObservedTagsAdapter @Inject constructor(val navigator: NewNavigator) : RecyclerView.Adapter<ObservedTagViewHolder>() {
+class ObservedTagsAdapter
+    @Inject
+    constructor(
+        val navigator: NewNavigator,
+    ) : RecyclerView.Adapter<ObservedTagViewHolder>() {
+        val items = ArrayList<ObservedTagResponse>()
 
-    val items = ArrayList<ObservedTagResponse>()
+        override fun onBindViewHolder(
+            holder: ObservedTagViewHolder,
+            position: Int,
+        ) = holder.bindView(items[position])
 
-    override fun onBindViewHolder(holder: ObservedTagViewHolder, position: Int) = holder.bindView(items[position])
+        override fun getItemCount(): Int = items.size
 
-    override fun getItemCount(): Int = items.size
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ObservedTagViewHolder =
-        ObservedTagViewHolder(ObservedTagListItemBinding.inflate(parent.layoutInflater, parent, false), navigator)
-}
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ): ObservedTagViewHolder =
+            ObservedTagViewHolder(ObservedTagListItemBinding.inflate(parent.layoutInflater, parent, false), navigator)
+    }

@@ -5,8 +5,9 @@ import android.view.View
 import io.github.wykopmobilny.base.BaseLinksFragment
 import javax.inject.Inject
 
-class LinksFavoriteFragment : BaseLinksFragment(), LinksFavoriteView {
-
+class LinksFavoriteFragment :
+    BaseLinksFragment(),
+    LinksFavoriteView {
     companion object {
         fun newInstance() = LinksFavoriteFragment()
     }
@@ -18,7 +19,10 @@ class LinksFavoriteFragment : BaseLinksFragment(), LinksFavoriteView {
         presenter.loadData(it)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         presenter.subscribe(this)
         linksAdapter.linksActionListener = presenter

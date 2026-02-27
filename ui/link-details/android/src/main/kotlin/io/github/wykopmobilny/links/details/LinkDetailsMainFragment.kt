@@ -40,23 +40,30 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 
-fun linkDetailsFragment(linkId: Long, commentId: Long?): Fragment = LinkDetailsMainFragment()
-    .apply {
-        this.linkId = linkId
-        this.commentId = commentId
-    }
+fun linkDetailsFragment(
+    linkId: Long,
+    commentId: Long?,
+): Fragment =
+    LinkDetailsMainFragment()
+        .apply {
+            this.linkId = linkId
+            this.commentId = commentId
+        }
 
 internal class LinkDetailsMainFragment : Fragment(R.layout.fragment_link_details) {
-
     var linkId by longArgument("userId")
     var commentId by longArgumentNullable("commentId")
     private val key
-        get() = LinkDetailsKey(
-            linkId = linkId,
-            initialCommentId = commentId,
-        )
+        get() =
+            LinkDetailsKey(
+                linkId = linkId,
+                initialCommentId = commentId,
+            )
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         val viewModel by viewModels<InjectableViewModel<LinkDetailsDependencies>> {
             viewModelWrapperFactoryKeyed<LinkDetailsKey, LinkDetailsDependencies>(key = key)
@@ -74,39 +81,45 @@ internal class LinkDetailsMainFragment : Fragment(R.layout.fragment_link_details
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                val shared = getLinkDetails()
-                    .flowOn(AppDispatchers.Default)
-                    .stateIn(this)
+                val shared =
+                    getLinkDetails()
+                        .flowOn(AppDispatchers.Default)
+                        .stateIn(this)
 
                 launch {
-                    val adapterList = shared.map { it.toAdapterList() }
-                        .flowOn(AppDispatchers.Default)
+                    val adapterList =
+                        shared
+                            .map { it.toAdapterList() }
+                            .flowOn(AppDispatchers.Default)
 
                     val commentId = commentId
                     if (savedInstanceState == null && commentId != null) {
                         runCatching {
                             withTimeout(3000) {
                                 val state = adapterList.stateIn(this)
-                                val targetElement = state.mapNotNull { list ->
-                                    list.indexOfFirst { item ->
-                                        when (item) {
-                                            is ListItem.Header,
-                                            is ListItem.RelatedSection,
-                                            -> false
+                                val targetElement =
+                                    state
+                                        .mapNotNull { list ->
+                                            list
+                                                .indexOfFirst { item ->
+                                                    when (item) {
+                                                        is ListItem.Header,
+                                                        is ListItem.RelatedSection,
+                                                        -> false
 
-                                            is ListItem.ParentComment -> item.id == commentId
-                                            is ListItem.ReplyComment -> item.id == commentId
-                                        }
-                                    }.takeIf { it >= 0 }
-                                }.first()
+                                                        is ListItem.ParentComment -> item.id == commentId
+
+                                                        is ListItem.ReplyComment -> item.id == commentId
+                                                    }
+                                                }.takeIf { it >= 0 }
+                                        }.first()
                                 adapter.submitList(state.value) {
                                     binding.appBarLayout.setExpanded(false, false)
                                     val linearLayoutManager = binding.list.layoutManager as LinearLayoutManager
                                     linearLayoutManager.scrollToPositionWithOffset(targetElement, 8.dpToPx(resources))
                                 }
                             }
-                        }
-                            .onFailure { Napier.w("Couldn't find target comment key=$key") }
+                        }.onFailure { Napier.w("Couldn't find target comment key=$key") }
                     }
                     adapterList.collect { adapter.submitList(it) }
                 }
@@ -117,7 +130,8 @@ internal class LinkDetailsMainFragment : Fragment(R.layout.fragment_link_details
                 launch { shared.map { it.picker }.collectOptionPicker(view.context) }
                 launch { shared.map { it.snackbar }.collectSnackbar(view) }
                 launch {
-                    shared.map { it.header }
+                    shared
+                        .map { it.header }
                         .collect { header ->
                             when (header) {
                                 LinkDetailsHeaderUi.Loading -> {
@@ -127,7 +141,8 @@ internal class LinkDetailsMainFragment : Fragment(R.layout.fragment_link_details
                                 is LinkDetailsHeaderUi.WithData -> {
                                     binding.parallaxContainer.isVisible = header.previewImageUrl != null
                                     if (header.previewImageUrl != null) {
-                                        Glide.with(this@LinkDetailsMainFragment)
+                                        Glide
+                                            .with(this@LinkDetailsMainFragment)
                                             .load(header.previewImageUrl)
                                             .transition(withCrossFade())
                                             .into(binding.imgPreview)

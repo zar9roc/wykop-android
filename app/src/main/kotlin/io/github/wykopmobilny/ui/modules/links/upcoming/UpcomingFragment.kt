@@ -19,8 +19,9 @@ import javax.inject.Inject
 import io.github.wykopmobilny.ui.base.android.R as BaseR
 import io.github.wykopmobilny.ui.settings.android.R as SettingsR
 
-class UpcomingFragment : BaseLinksFragment(), UpcomingView {
-
+class UpcomingFragment :
+    BaseLinksFragment(),
+    UpcomingView {
     companion object {
         fun newInstance() = UpcomingFragment()
     }
@@ -35,13 +36,20 @@ class UpcomingFragment : BaseLinksFragment(), UpcomingView {
 
     private val navigation by lazy { activity as MainNavigationInterface }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View? {
         setHasOptionsMenu(true)
         navigation.activityToolbar.overflowIcon = ContextCompat.getDrawable(requireActivity(), BaseR.drawable.ic_sort)
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(
+        menu: Menu,
+        inflater: MenuInflater,
+    ) {
         inflater.inflate(R.menu.upcoming_menu, menu)
         super.onCreateOptionsMenu(menu, inflater)
     }
@@ -52,6 +60,7 @@ class UpcomingFragment : BaseLinksFragment(), UpcomingView {
                 binding.swipeRefresh.isRefreshing = true
                 loadDataListener(true)
             }
+
             R.id.sortByComments -> {
                 presenter.sortBy = UpcomingPresenter.SORTBY_COMMENTS
                 appStorage.preferencesQueries.insertOrReplace(
@@ -61,6 +70,7 @@ class UpcomingFragment : BaseLinksFragment(), UpcomingView {
                 binding.swipeRefresh.isRefreshing = true
                 loadDataListener(true)
             }
+
             R.id.sortByVotes -> {
                 presenter.sortBy = UpcomingPresenter.SORTBY_VOTES
                 appStorage.preferencesQueries.insertOrReplace(
@@ -70,6 +80,7 @@ class UpcomingFragment : BaseLinksFragment(), UpcomingView {
                 binding.swipeRefresh.isRefreshing = true
                 loadDataListener(true)
             }
+
             R.id.sortByDate -> {
                 presenter.sortBy = UpcomingPresenter.SORTBY_DATE
                 appStorage.preferencesQueries.insertOrReplace(
@@ -79,6 +90,7 @@ class UpcomingFragment : BaseLinksFragment(), UpcomingView {
                 binding.swipeRefresh.isRefreshing = true
                 loadDataListener(true)
             }
+
             R.id.sortByActive -> {
                 presenter.sortBy = UpcomingPresenter.SORTBY_ACTIVE
                 appStorage.preferencesQueries.insertOrReplace(
@@ -92,7 +104,10 @@ class UpcomingFragment : BaseLinksFragment(), UpcomingView {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         (activity as BaseActivity).supportActionBar?.setTitle(SettingsR.string.wykopalisko)
         presenter.subscribe(this)

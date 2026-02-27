@@ -20,9 +20,9 @@ import io.github.wykopmobilny.utils.linkhandler.WykopLinkHandler
 import javax.inject.Inject
 
 class HashTagsNotificationsListFragment : BaseNotificationsListFragment() {
-
     companion object {
         const val DATA_FRAGMENT_TAG = "NOTIFICATIONS_HASH_TAG_LIST_ACTIVITY"
+
         fun newInstance() = HashTagsNotificationsListFragment()
     }
 
@@ -42,7 +42,10 @@ class HashTagsNotificationsListFragment : BaseNotificationsListFragment() {
 
     var expanded = true
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
         presenter.subscribe(this)
@@ -71,7 +74,10 @@ class HashTagsNotificationsListFragment : BaseNotificationsListFragment() {
         menu.findItem(R.id.expandAll)?.isVisible = !expanded && settingsApi.groupNotifications
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(
+        menu: Menu,
+        inflater: MenuInflater,
+    ) {
         inflater.inflate(R.menu.hashtag_notification_menu, menu)
         menu.findItem(R.id.groupNotifications).isChecked = settingsApi.groupNotifications
     }

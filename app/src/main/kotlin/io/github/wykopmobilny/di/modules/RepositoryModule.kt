@@ -33,7 +33,6 @@ import io.github.wykopmobilny.api.user.LoginRepository
 
 @Module
 class RepositoryModule {
-
     @Provides
     fun provideEntriesApi(impl: EntriesRepository): EntriesApi = impl
 

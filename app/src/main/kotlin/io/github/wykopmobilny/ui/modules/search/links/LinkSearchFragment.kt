@@ -9,8 +9,9 @@ import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 import io.reactivex.disposables.Disposable
 import javax.inject.Inject
 
-class LinkSearchFragment : BaseLinksFragment(), LinkSearchView {
-
+class LinkSearchFragment :
+    BaseLinksFragment(),
+    LinkSearchView {
     companion object {
         fun newInstance() = LinkSearchFragment()
     }
@@ -27,14 +28,18 @@ class LinkSearchFragment : BaseLinksFragment(), LinkSearchView {
         presenter.searchLinks(query, it)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         presenter.subscribe(this)
-        querySubscribe = (parentFragment as SearchFragment).querySubject.subscribe {
-            binding.swipeRefresh.isRefreshing = true
-            query = it
-            presenter.searchLinks(query, true)
-        }
+        querySubscribe =
+            (parentFragment as SearchFragment).querySubject.subscribe {
+                binding.swipeRefresh.isRefreshing = true
+                query = it
+                presenter.searchLinks(query, true)
+            }
         linksAdapter.linksActionListener = presenter
         linksAdapter.loadNewDataListener = { loadDataListener(false) }
         binding.loadingView.isVisible = false

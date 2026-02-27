@@ -17,7 +17,11 @@ import io.github.wykopmobilny.utils.bindings.setOnLongClick
 import androidx.appcompat.R as AppcompatR
 import io.github.wykopmobilny.ui.base.android.R as BaseR
 
-internal fun LinkDetailsParentCommentBinding.bindParentComment(parent: ParentCommentUi, data: LinkCommentUi.Normal, hasReplies: Boolean) {
+internal fun LinkDetailsParentCommentBinding.bindParentComment(
+    parent: ParentCommentUi,
+    data: LinkCommentUi.Normal,
+    hasReplies: Boolean,
+) {
     clickableContainer.setOnClick(data.clickAction)
     clickableContainer.setOnLongClick(parent.toggleExpansionStateAction)
     if (data.showsOption) {
@@ -46,15 +50,19 @@ internal fun LinkDetailsParentCommentBinding.bindParentComment(parent: ParentCom
     btnShare.setOnClick(data.shareAction)
     btnFavorite.setOnClick(data.favoriteButton.clickAction)
     btnFavorite.setImageResource(if (data.favoriteButton.isToggled) BaseR.drawable.ic_favorite else BaseR.drawable.ic_favorite_outlined)
-    btnFavorite.imageTintList = if (data.favoriteButton.isToggled) {
-        ColorStateList.valueOf(ContextCompat.getColor(btnFavorite.context, BaseR.color.favorite_enabled))
-    } else {
-        btnFavorite.context.readColorAttr(AppcompatR.attr.colorControlNormal)
-    }
+    btnFavorite.imageTintList =
+        if (data.favoriteButton.isToggled) {
+            ColorStateList.valueOf(ContextCompat.getColor(btnFavorite.context, BaseR.color.favorite_enabled))
+        } else {
+            btnFavorite.context.readColorAttr(AppcompatR.attr.colorControlNormal)
+        }
     btnReply.setOnClick(data.profileAction)
 }
 
-internal fun LinkDetailsParentCommentHiddenBinding.bindHiddenParent(parent: ParentCommentUi, data: LinkCommentUi.Hidden) {
+internal fun LinkDetailsParentCommentHiddenBinding.bindHiddenParent(
+    parent: ParentCommentUi,
+    data: LinkCommentUi.Hidden,
+) {
     root.setOnClick(data.onClicked)
     root.setOnLongClick(parent.toggleExpansionStateAction)
 

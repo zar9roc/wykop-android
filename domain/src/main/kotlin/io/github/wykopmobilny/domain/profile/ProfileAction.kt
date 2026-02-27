@@ -48,7 +48,6 @@ internal data class UserInfo(
     val gender: Gender?,
     val color: Color,
 ) {
-
     enum class Gender {
         Male,
         Female,

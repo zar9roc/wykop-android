@@ -20,7 +20,6 @@ import javax.inject.Singleton
 
 @Module
 internal abstract class InteropModule {
-
     @Binds
     abstract fun navigationRequestsController(impl: InMemoryInteropRequestService): InteropRequestsProvider
 
@@ -32,97 +31,105 @@ internal abstract class InteropModule {
 }
 
 @Singleton
-internal class InteropSettingPreferencesApi @Inject constructor(
-    private val appStorage: AppStorage,
-    private val getMediaPreferences: GetMediaPreferences,
-) : SettingsPreferencesApi {
+internal class InteropSettingPreferencesApi
+    @Inject
+    constructor(
+        private val appStorage: AppStorage,
+        private val getMediaPreferences: GetMediaPreferences,
+    ) : SettingsPreferencesApi {
+        override val hotEntriesScreen: String?
+            get() =
+                when (interop(UserSettings.mikroblogScreen)) {
+                    MikroblogScreen.Active -> "active"
+                    MikroblogScreen.Newest -> "newest"
+                    MikroblogScreen.SixHours -> "6"
+                    MikroblogScreen.TwelveHours -> "12"
+                    MikroblogScreen.TwentyFourHours -> "24"
+                    null -> null
+                }
+        override val defaultScreen: String?
+            get() =
+                when (interop(UserSettings.defaultScreen)) {
+                    MainScreen.Promoted -> "mainpage"
+                    MainScreen.Mikroblog -> "mikroblog"
+                    MainScreen.MyWykop -> "mywykop"
+                    MainScreen.Hits -> "hits"
+                    null -> null
+                }
+        override val linkImagePosition: String
+            get() =
+                when (interop(UserSettings.imagePosition)) {
+                    LinkImagePosition.Left, null -> "left"
+                    LinkImagePosition.Right -> "right"
+                    LinkImagePosition.Top -> "top"
+                    LinkImagePosition.Bottom -> "bottom"
+                }
+        override val linkShowImage: Boolean
+            get() = interop(UserSettings.showLinkThumbnail) ?: true
+        override val linkSimpleList: Boolean
+            get() = interop(UserSettings.useSimpleList) ?: false
+        override val linkShowAuthor: Boolean
+            get() = interop(UserSettings.showAuthor) ?: false
+        override val showAdultContent: Boolean
+            get() = (interop(UserSettings.hidePlus18Content) ?: true).not()
+        override val hideNsfw: Boolean
+            get() = interop(UserSettings.hideNsfwContent) ?: true
+        override val showMinifiedImages: Boolean
+            get() = interop(UserSettings.showMinifiedImages) ?: false
+        override val cutLongEntries: Boolean
+            get() = interop(UserSettings.cutLongEntries) ?: true
+        override val cutImages: Boolean
+            get() = interop(UserSettings.cutImages) ?: true
+        override val openSpoilersDialog: Boolean
+            get() = interop(UserSettings.openSpoilersInDialog) ?: true
+        override val hideLowRangeAuthors: Boolean
+            get() = interop(UserSettings.hideNewUserContent) ?: false
+        override val hideContentWithoutTags: Boolean
+            get() = interop(UserSettings.hideContentWithNoTags) ?: false
+        override val cutImageProportion: Int?
+            get() = interop(UserSettings.cutImagesProportion)?.toInt()
+        override val fontSize: String
+            get() =
+                when (interop(UserSettings.font)) {
+                    FontSize.VerySmall -> "tiny"
+                    FontSize.Small -> "small"
+                    FontSize.Normal -> "normal"
+                    FontSize.Large -> "large"
+                    FontSize.VeryLarge -> "huge"
+                    null -> "normal"
+                }
+        override val hideLinkCommentsByDefault: Boolean
+            get() = interop(UserSettings.hideLinkComments) ?: false
+        override val hideBlacklistedViews: Boolean
+            get() = interop(UserSettings.hideBlacklistedContent) ?: false
+        override val enableYoutubePlayer: Boolean
+            get() = runBlocking { getMediaPreferences().first().useYoutubePlayer }
+        override val enableEmbedPlayer: Boolean
+            get() = interop(UserSettings.useEmbeddedPlayer) ?: true
+        override val useBuiltInBrowser: Boolean
+            get() = interop(UserSettings.useEmbeddedBrowser) ?: true
+        override var groupNotifications: Boolean
+            get() = interop(UserSettings.groupNotifications) ?: true
+            set(value) {
+                runBlocking { appStorage.update(UserSettings.groupNotifications, value) }
+            }
+        override val disableExitConfirmation: Boolean
+            get() = interop(UserSettings.exitConfirmation) ?: true
 
-    override val hotEntriesScreen: String?
-        get() = when (interop(UserSettings.mikroblogScreen)) {
-            MikroblogScreen.Active -> "active"
-            MikroblogScreen.Newest -> "newest"
-            MikroblogScreen.SixHours -> "6"
-            MikroblogScreen.TwelveHours -> "12"
-            MikroblogScreen.TwentyFourHours -> "24"
-            null -> null
-        }
-    override val defaultScreen: String?
-        get() = when (interop(UserSettings.defaultScreen)) {
-            MainScreen.Promoted -> "mainpage"
-            MainScreen.Mikroblog -> "mikroblog"
-            MainScreen.MyWykop -> "mywykop"
-            MainScreen.Hits -> "hits"
-            null -> null
-        }
-    override val linkImagePosition: String
-        get() = when (interop(UserSettings.imagePosition)) {
-            LinkImagePosition.Left, null -> "left"
-            LinkImagePosition.Right -> "right"
-            LinkImagePosition.Top -> "top"
-            LinkImagePosition.Bottom -> "bottom"
-        }
-    override val linkShowImage: Boolean
-        get() = interop(UserSettings.showLinkThumbnail) ?: true
-    override val linkSimpleList: Boolean
-        get() = interop(UserSettings.useSimpleList) ?: false
-    override val linkShowAuthor: Boolean
-        get() = interop(UserSettings.showAuthor) ?: false
-    override val showAdultContent: Boolean
-        get() = (interop(UserSettings.hidePlus18Content) ?: true).not()
-    override val hideNsfw: Boolean
-        get() = interop(UserSettings.hideNsfwContent) ?: true
-    override val showMinifiedImages: Boolean
-        get() = interop(UserSettings.showMinifiedImages) ?: false
-    override val cutLongEntries: Boolean
-        get() = interop(UserSettings.cutLongEntries) ?: true
-    override val cutImages: Boolean
-        get() = interop(UserSettings.cutImages) ?: true
-    override val openSpoilersDialog: Boolean
-        get() = interop(UserSettings.openSpoilersInDialog) ?: true
-    override val hideLowRangeAuthors: Boolean
-        get() = interop(UserSettings.hideNewUserContent) ?: false
-    override val hideContentWithoutTags: Boolean
-        get() = interop(UserSettings.hideContentWithNoTags) ?: false
-    override val cutImageProportion: Int?
-        get() = interop(UserSettings.cutImagesProportion)?.toInt()
-    override val fontSize: String
-        get() = when (interop(UserSettings.font)) {
-            FontSize.VerySmall -> "tiny"
-            FontSize.Small -> "small"
-            FontSize.Normal -> "normal"
-            FontSize.Large -> "large"
-            FontSize.VeryLarge -> "huge"
-            null -> "normal"
-        }
-    override val hideLinkCommentsByDefault: Boolean
-        get() = interop(UserSettings.hideLinkComments) ?: false
-    override val hideBlacklistedViews: Boolean
-        get() = interop(UserSettings.hideBlacklistedContent) ?: false
-    override val enableYoutubePlayer: Boolean
-        get() = runBlocking { getMediaPreferences().first().useYoutubePlayer }
-    override val enableEmbedPlayer: Boolean
-        get() = interop(UserSettings.useEmbeddedPlayer) ?: true
-    override val useBuiltInBrowser: Boolean
-        get() = interop(UserSettings.useEmbeddedBrowser) ?: true
-    override var groupNotifications: Boolean
-        get() = interop(UserSettings.groupNotifications) ?: true
-        set(value) {
-            runBlocking { appStorage.update(UserSettings.groupNotifications, value) }
-        }
-    override val disableExitConfirmation: Boolean
-        get() = interop(UserSettings.exitConfirmation) ?: true
+        private fun <T : Enum<T>> interop(setting: UserSetting<T>): T? =
+            runBlocking {
+                appStorage.get(setting).first()
+            }
 
-    private fun <T : Enum<T>> interop(setting: UserSetting<T>): T? = runBlocking {
-        appStorage.get(setting).first()
+        @JvmName("interopBoolean")
+        private fun interop(setting: UserSetting<Boolean>): Boolean? =
+            runBlocking {
+                appStorage.get(setting).first()
+            }
+
+        @JvmName("interopLong")
+        private fun interop(setting: UserSetting<Long>): Long? =
+            runBlocking {
+                appStorage.get(setting).first()
+            }
     }
-
-    @JvmName("interopBoolean")
-    private fun interop(setting: UserSetting<Boolean>): Boolean? = runBlocking {
-        appStorage.get(setting).first()
-    }
-
-    @JvmName("interopLong")
-    private fun interop(setting: UserSetting<Long>): Long? = runBlocking {
-        appStorage.get(setting).first()
-    }
-}

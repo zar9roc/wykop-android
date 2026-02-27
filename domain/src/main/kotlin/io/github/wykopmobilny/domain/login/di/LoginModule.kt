@@ -9,12 +9,10 @@ import io.github.wykopmobilny.ui.login.Login
 
 @Module
 internal abstract class LoginModule {
-
     @Binds
     abstract fun login(impl: LoginQuery): Login
 
     companion object {
-
         @Provides
         @LoginScope
         fun viewState() = SimpleViewStateStorage()

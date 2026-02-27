@@ -9,21 +9,20 @@ import io.github.wykopmobilny.ui.blacklist.android.blacklistMainFragment
 import io.github.wykopmobilny.utils.viewBinding
 
 internal class BlacklistActivity : ThemableActivity() {
-
     private val binding by viewBinding(ActivityContainerBinding::inflate)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
+            supportFragmentManager
+                .beginTransaction()
                 .replace(binding.fragmentContainer.id, blacklistMainFragment())
                 .commit()
         }
     }
 
     companion object {
-
         fun createIntent(context: Context) = Intent(context, BlacklistActivity::class.java)
     }
 }

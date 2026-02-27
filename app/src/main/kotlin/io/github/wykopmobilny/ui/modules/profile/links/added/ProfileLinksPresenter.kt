@@ -13,14 +13,15 @@ class ProfileLinksPresenter(
     val schedulers: Schedulers,
     val profileApi: ProfileApi,
     val linksInteractor: LinksInteractor,
-) : BasePresenter<ProfileLinksView>(), LinkActionListener {
-
+) : BasePresenter<ProfileLinksView>(),
+    LinkActionListener {
     var page = 1
     lateinit var username: String
 
     fun loadAdded(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
-        profileApi.getAdded(username, page)
+        profileApi
+            .getAdded(username, page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -33,13 +34,13 @@ class ProfileLinksPresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     fun loadBurried(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
-        profileApi.getBuried(username, page)
+        profileApi
+            .getBuried(username, page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -52,13 +53,13 @@ class ProfileLinksPresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     fun loadDigged(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
-        profileApi.getDigged(username, page)
+        profileApi
+            .getDigged(username, page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -71,13 +72,13 @@ class ProfileLinksPresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     fun loadPublished(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
-        profileApi.getPublished(username, page)
+        profileApi
+            .getPublished(username, page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -90,8 +91,7 @@ class ProfileLinksPresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     override fun dig(link: Link) {
@@ -112,7 +112,6 @@ class ProfileLinksPresenter(
                     view?.showErrorDialog(it)
                     view?.updateLink(link)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

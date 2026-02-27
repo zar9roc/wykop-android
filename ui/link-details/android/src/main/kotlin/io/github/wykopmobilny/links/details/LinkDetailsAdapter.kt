@@ -22,62 +22,101 @@ import io.github.wykopmobilny.ui.link_details.android.databinding.LinkDetailsRep
 import io.github.wykopmobilny.utils.asyncDifferConfig
 
 internal class LinkDetailsAdapter : ListAdapter<ListItem, LinkDetailsAdapter.BindingViewHolder>(asyncDifferConfig(ListItem.Diff)) {
+    override fun getItemViewType(position: Int) =
+        when (val item = getItem(position)) {
+            is ListItem.Header -> {
+                R.layout.link_details_header
+            }
 
-    override fun getItemViewType(position: Int) = when (val item = getItem(position)) {
-        is ListItem.Header -> R.layout.link_details_header
-        is ListItem.ParentComment -> when (item.comment.data) {
-            is LinkCommentUi.Hidden -> R.layout.link_details_parent_comment_hidden
-            is LinkCommentUi.Normal -> R.layout.link_details_parent_comment
-        }
-        is ListItem.ReplyComment -> when (item.comment) {
-            is LinkCommentUi.Hidden -> R.layout.link_details_reply_comment_hidden
-            is LinkCommentUi.Normal -> R.layout.link_details_reply_comment
-        }
-        is ListItem.RelatedSection -> R.layout.link_details_related
-    }
+            is ListItem.ParentComment -> {
+                when (item.comment.data) {
+                    is LinkCommentUi.Hidden -> R.layout.link_details_parent_comment_hidden
+                    is LinkCommentUi.Normal -> R.layout.link_details_parent_comment
+                }
+            }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BindingViewHolder {
+            is ListItem.ReplyComment -> {
+                when (item.comment) {
+                    is LinkCommentUi.Hidden -> R.layout.link_details_reply_comment_hidden
+                    is LinkCommentUi.Normal -> R.layout.link_details_reply_comment
+                }
+            }
+
+            is ListItem.RelatedSection -> {
+                R.layout.link_details_related
+            }
+        }
+
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): BindingViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        val binding = when (viewType) {
-            R.layout.link_details_header -> LinkDetailsHeaderBinding.inflate(inflater, parent, false)
-            R.layout.link_details_parent_comment -> LinkDetailsParentCommentBinding.inflate(inflater, parent, false)
-            R.layout.link_details_reply_comment -> LinkDetailsReplyCommentBinding.inflate(inflater, parent, false)
-            R.layout.link_details_related -> LinkDetailsRelatedBinding.inflate(inflater, parent, false)
-            R.layout.link_details_reply_comment_hidden -> LinkDetailsReplyCommentHiddenBinding.inflate(inflater, parent, false)
-            R.layout.link_details_parent_comment_hidden -> LinkDetailsParentCommentHiddenBinding.inflate(inflater, parent, false)
-            else -> error("unsupported $viewType")
-        }
+        val binding =
+            when (viewType) {
+                R.layout.link_details_header -> LinkDetailsHeaderBinding.inflate(inflater, parent, false)
+                R.layout.link_details_parent_comment -> LinkDetailsParentCommentBinding.inflate(inflater, parent, false)
+                R.layout.link_details_reply_comment -> LinkDetailsReplyCommentBinding.inflate(inflater, parent, false)
+                R.layout.link_details_related -> LinkDetailsRelatedBinding.inflate(inflater, parent, false)
+                R.layout.link_details_reply_comment_hidden -> LinkDetailsReplyCommentHiddenBinding.inflate(inflater, parent, false)
+                R.layout.link_details_parent_comment_hidden -> LinkDetailsParentCommentHiddenBinding.inflate(inflater, parent, false)
+                else -> error("unsupported $viewType")
+            }
 
         return BindingViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: BindingViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: BindingViewHolder,
+        position: Int,
+    ) {
         when (val item = getItem(position)) {
-            is ListItem.Header -> (holder.binding as LinkDetailsHeaderBinding).bindHeader(item.header)
-            is ListItem.ParentComment -> when (val data = item.comment.data) {
-                is LinkCommentUi.Normal -> (holder.binding as LinkDetailsParentCommentBinding).bindParentComment(
-                    parent = item.comment,
-                    data = data,
-                    hasReplies = item.hasReplies,
-                )
-                is LinkCommentUi.Hidden -> (holder.binding as LinkDetailsParentCommentHiddenBinding).bindHiddenParent(item.comment, data)
+            is ListItem.Header -> {
+                (holder.binding as LinkDetailsHeaderBinding).bindHeader(item.header)
             }
-            is ListItem.ReplyComment -> when (val comment = item.comment) {
-                is LinkCommentUi.Hidden -> (holder.binding as LinkDetailsReplyCommentHiddenBinding).bindHiddenReply(comment)
-                is LinkCommentUi.Normal -> (holder.binding as LinkDetailsReplyCommentBinding).bindReplyComment(comment, item.isLast)
+
+            is ListItem.ParentComment -> {
+                when (val data = item.comment.data) {
+                    is LinkCommentUi.Normal -> {
+                        (holder.binding as LinkDetailsParentCommentBinding).bindParentComment(
+                            parent = item.comment,
+                            data = data,
+                            hasReplies = item.hasReplies,
+                        )
+                    }
+
+                    is LinkCommentUi.Hidden -> {
+                        (holder.binding as LinkDetailsParentCommentHiddenBinding).bindHiddenParent(item.comment, data)
+                    }
+                }
             }
-            is ListItem.RelatedSection -> (holder.binding as LinkDetailsRelatedBinding).bindRelated(item.related)
+
+            is ListItem.ReplyComment -> {
+                when (val comment = item.comment) {
+                    is LinkCommentUi.Hidden -> (holder.binding as LinkDetailsReplyCommentHiddenBinding).bindHiddenReply(comment)
+                    is LinkCommentUi.Normal -> (holder.binding as LinkDetailsReplyCommentBinding).bindReplyComment(comment, item.isLast)
+                }
+            }
+
+            is ListItem.RelatedSection -> {
+                (holder.binding as LinkDetailsRelatedBinding).bindRelated(item.related)
+            }
         }
     }
 
-    data class BindingViewHolder(val binding: ViewBinding) : RecyclerView.ViewHolder(binding.root)
+    data class BindingViewHolder(
+        val binding: ViewBinding,
+    ) : RecyclerView.ViewHolder(binding.root)
 }
 
 internal sealed class ListItem {
+    data class Header(
+        val header: LinkDetailsHeaderUi,
+    ) : ListItem()
 
-    data class Header(val header: LinkDetailsHeaderUi) : ListItem()
-
-    data class RelatedSection(val related: RelatedLinksSectionUi) : ListItem()
+    data class RelatedSection(
+        val related: RelatedLinksSectionUi,
+    ) : ListItem()
 
     data class ParentComment(
         val comment: ParentCommentUi,
@@ -94,35 +133,47 @@ internal sealed class ListItem {
     }
 
     companion object Diff : DiffUtil.ItemCallback<ListItem>() {
-
-        override fun areItemsTheSame(oldItem: ListItem, newItem: ListItem): Boolean {
-            return when (oldItem) {
+        override fun areItemsTheSame(
+            oldItem: ListItem,
+            newItem: ListItem,
+        ): Boolean =
+            when (oldItem) {
                 is Header -> newItem is Header
                 is ParentComment -> oldItem.id == (newItem as? ParentComment)?.id
                 is RelatedSection -> newItem is RelatedSection
                 is ReplyComment -> oldItem.id == (newItem as? ReplyComment)?.id
             }
-        }
 
-        override fun areContentsTheSame(oldItem: ListItem, newItem: ListItem) = oldItem == newItem
+        override fun areContentsTheSame(
+            oldItem: ListItem,
+            newItem: ListItem,
+        ) = oldItem == newItem
 
-        override fun getChangePayload(oldItem: ListItem, newItem: ListItem) = Change(oldItem, newItem)
+        override fun getChangePayload(
+            oldItem: ListItem,
+            newItem: ListItem,
+        ) = Change(oldItem, newItem)
 
-        data class Change(val old: ListItem, val new: ListItem)
+        data class Change(
+            val old: ListItem,
+            val new: ListItem,
+        )
     }
 }
 
 private val LinkCommentUi.id
-    get() = when (this) {
-        is LinkCommentUi.Hidden -> id
-        is LinkCommentUi.Normal -> id
-    }
+    get() =
+        when (this) {
+            is LinkCommentUi.Hidden -> id
+            is LinkCommentUi.Normal -> id
+        }
 
 @OptIn(ExperimentalStdlibApi::class)
-internal fun LinkDetailsUi.toAdapterList(): List<ListItem> = buildList {
-    add(ListItem.Header(header))
-    commentsSection.comments.forEach { (parent, replies) ->
-        add(ListItem.ParentComment(parent, hasReplies = replies.isNotEmpty()))
-        addAll(replies.map { linkCommentUi -> ListItem.ReplyComment(linkCommentUi, linkCommentUi.id == replies.last().id) })
+internal fun LinkDetailsUi.toAdapterList(): List<ListItem> =
+    buildList {
+        add(ListItem.Header(header))
+        commentsSection.comments.forEach { (parent, replies) ->
+            add(ListItem.ParentComment(parent, hasReplies = replies.isNotEmpty()))
+            addAll(replies.map { linkCommentUi -> ListItem.ReplyComment(linkCommentUi, linkCommentUi.id == replies.last().id) })
+        }
     }
-}

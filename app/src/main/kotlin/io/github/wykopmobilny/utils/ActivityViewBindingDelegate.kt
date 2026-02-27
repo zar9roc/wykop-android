@@ -16,13 +16,11 @@ class ActivityViewBindingDelegate<T : ViewBinding>(
     private val activity: AppCompatActivity,
     private val initializer: (LayoutInflater) -> T,
 ) : ReadOnlyProperty<AppCompatActivity, T> {
-
     private var _value: T? = null
 
     init {
         activity.lifecycle.addObserver(
             object : DefaultLifecycleObserver {
-
                 override fun onCreate(owner: LifecycleOwner) {
                     if (_value == null) {
                         _value = initializer(activity.layoutInflater)
@@ -34,7 +32,10 @@ class ActivityViewBindingDelegate<T : ViewBinding>(
         )
     }
 
-    override fun getValue(thisRef: AppCompatActivity, property: KProperty<*>): T {
+    override fun getValue(
+        thisRef: AppCompatActivity,
+        property: KProperty<*>,
+    ): T {
         if (_value == null) {
             // This must be on the main thread only
             if (Looper.myLooper() != Looper.getMainLooper()) {

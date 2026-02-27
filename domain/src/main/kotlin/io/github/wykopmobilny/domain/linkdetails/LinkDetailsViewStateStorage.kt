@@ -9,14 +9,15 @@ import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @LinkDetailsScope
-internal class LinkDetailsViewStateStorage @Inject constructor() {
+internal class LinkDetailsViewStateStorage
+    @Inject
+    constructor() {
+        val state = MutableStateFlow(value = LinkDetailsViewState())
 
-    val state = MutableStateFlow(value = LinkDetailsViewState())
-
-    fun update(updater: (LinkDetailsViewState) -> LinkDetailsViewState) {
-        state.update(updater)
+        fun update(updater: (LinkDetailsViewState) -> LinkDetailsViewState) {
+            state.update(updater)
+        }
     }
-}
 
 data class LinkDetailsViewState(
     val generalResource: Resource = Resource.idle(),

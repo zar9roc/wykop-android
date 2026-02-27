@@ -44,7 +44,6 @@ import io.github.wykopmobilny.ui.modules.tag.TagActivityModule
 
 @Module
 internal abstract class ActivityBuilder {
-
     @ContributesAndroidInjector
     abstract fun glide(): GlideModule
 

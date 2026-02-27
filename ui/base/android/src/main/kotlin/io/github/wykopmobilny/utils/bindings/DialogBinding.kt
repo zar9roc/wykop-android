@@ -19,18 +19,19 @@ suspend fun Flow<ErrorDialogUi?>.collectErrorDialog(context: Context) {
         .flowOn(AppDispatchers.Default)
         .collect { dialogUi ->
             dialog?.dismiss()
-            dialog = if (dialogUi != null) {
-                MaterialAlertDialogBuilder(context).apply {
-                    setTitle(R.string.error_dialog_title)
-                    setMessage(dialogUi.error.message ?: dialogUi.error.toString())
-                    dialogUi.retryAction?.let { retry -> setNegativeButton(R.string.error_dialog_retry) { _, _ -> retry() } }
-                    setPositiveButton(R.string.error_dialog_confirm) { _, _ -> dialogUi.dismissAction() }
-                    setOnCancelListener { dialogUi.dismissAction() }
+            dialog =
+                if (dialogUi != null) {
+                    MaterialAlertDialogBuilder(context)
+                        .apply {
+                            setTitle(R.string.error_dialog_title)
+                            setMessage(dialogUi.error.message ?: dialogUi.error.toString())
+                            dialogUi.retryAction?.let { retry -> setNegativeButton(R.string.error_dialog_retry) { _, _ -> retry() } }
+                            setPositiveButton(R.string.error_dialog_confirm) { _, _ -> dialogUi.dismissAction() }
+                            setOnCancelListener { dialogUi.dismissAction() }
+                        }.show()
+                } else {
+                    null
                 }
-                    .show()
-            } else {
-                null
-            }
         }
 }
 
@@ -40,18 +41,20 @@ suspend fun Flow<InfoDialogUi?>.collectInfoDialog(context: Context) {
         .flowOn(AppDispatchers.Default)
         .collect { dialogUi ->
             dialog?.dismiss()
-            dialog = if (dialogUi != null) {
-                MaterialAlertDialogBuilder(context).apply {
-                    setTitle(dialogUi.title)
-                    setMessage(dialogUi.message)
-                    setPositiveButton(R.string.error_dialog_confirm) { _, _ -> dialogUi.dismissAction() }
-                    setOnCancelListener { dialogUi.dismissAction() }
+            dialog =
+                if (dialogUi != null) {
+                    MaterialAlertDialogBuilder(context)
+                        .apply {
+                            setTitle(dialogUi.title)
+                            setMessage(dialogUi.message)
+                            setPositiveButton(R.string.error_dialog_confirm) { _, _ -> dialogUi.dismissAction() }
+                            setOnCancelListener { dialogUi.dismissAction() }
+                        }.show()
+                        .also {
+                            it?.findViewById<TextView>(android.R.id.message)?.movementMethod = LinkMovementMethod.getInstance()
+                        }
+                } else {
+                    null
                 }
-                    .show().also {
-                        it?.findViewById<TextView>(android.R.id.message)?.movementMethod = LinkMovementMethod.getInstance()
-                    }
-            } else {
-                null
-            }
         }
 }

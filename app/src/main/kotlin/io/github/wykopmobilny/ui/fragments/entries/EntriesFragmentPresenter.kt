@@ -11,8 +11,8 @@ open class EntriesFragmentPresenter(
     val schedulers: Schedulers,
     val entriesApi: EntriesApi,
     val entriesInteractor: EntriesInteractor,
-) : BasePresenter<EntriesFragmentView>(), EntryActionListener {
-
+) : BasePresenter<EntriesFragmentView>(),
+    EntryActionListener {
     override fun voteEntry(entry: Entry) = entriesInteractor.voteEntry(entry).processEntrySingle(entry)
 
     override fun unvoteEntry(entry: Entry) = entriesInteractor.unvoteEntry(entry).processEntrySingle(entry)
@@ -21,11 +21,15 @@ open class EntriesFragmentPresenter(
 
     override fun deleteEntry(entry: Entry) = entriesInteractor.deleteEntry(entry).processEntrySingle(entry)
 
-    override fun voteSurvey(entry: Entry, index: Int) = entriesInteractor.voteSurvey(entry, index).processEntrySingle(entry)
+    override fun voteSurvey(
+        entry: Entry,
+        index: Int,
+    ) = entriesInteractor.voteSurvey(entry, index).processEntrySingle(entry)
 
     override fun getVoters(entry: Entry) {
         view?.openVotersMenu()
-        entriesApi.getEntryVoters(entry.id)
+        entriesApi
+            .getEntryVoters(entry.id)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -35,8 +39,7 @@ open class EntriesFragmentPresenter(
                 {
                     view?.showErrorDialog(it)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     private fun Single<Entry>.processEntrySingle(entry: Entry) {
@@ -49,7 +52,6 @@ open class EntriesFragmentPresenter(
                     view?.showErrorDialog(it)
                     view?.updateEntry(entry)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

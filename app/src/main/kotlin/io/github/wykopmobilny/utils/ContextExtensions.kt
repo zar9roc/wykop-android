@@ -18,13 +18,15 @@ fun Context.openBrowser(url: String) {
     // Start in-app browser, handled by Chrome Customs Tabs
     val typedValue = TypedValue()
     theme.resolveAttribute(AppcompatR.attr.colorPrimaryDark, typedValue, true)
-    val customTabsIntent = CustomTabsIntent.Builder()
-        .setDefaultColorSchemeParams(
-            CustomTabColorSchemeParams.Builder()
-                .setToolbarColor(typedValue.data)
-                .build(),
-        )
-        .build()
+    val customTabsIntent =
+        CustomTabsIntent
+            .Builder()
+            .setDefaultColorSchemeParams(
+                CustomTabColorSchemeParams
+                    .Builder()
+                    .setToolbarColor(typedValue.data)
+                    .build(),
+            ).build()
     runCatching { customTabsIntent.launchUrl(this, Uri.parse(url)) }
         .onFailure { failure ->
             Napier.i("Couldn't launch url=$url")
@@ -40,7 +42,10 @@ fun Activity.hideKeyboard() {
     }
 }
 
-fun Context.copyText(text: String, label: String = "wykopmobilny") {
+fun Context.copyText(
+    text: String,
+    label: String = "wykopmobilny",
+) {
     val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     val clip = ClipData.newPlainText(label, text)
     clipboard.setPrimaryClip(clip)

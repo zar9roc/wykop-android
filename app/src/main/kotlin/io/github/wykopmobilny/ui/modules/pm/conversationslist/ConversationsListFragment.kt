@@ -18,7 +18,6 @@ class ConversationsListFragment :
     BaseFragment(R.layout.activity_conversations_list),
     ConversationsListView,
     SwipeRefreshLayout.OnRefreshListener {
-
     @Inject
     lateinit var presenter: ConversationsListPresenter
 
@@ -32,7 +31,10 @@ class ConversationsListFragment :
         fun newInstance() = ConversationsListFragment()
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         (activity as BaseActivity).supportActionBar?.setTitle(R.string.messages)
         binding.swiperefresh.setOnRefreshListener(this)

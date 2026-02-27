@@ -11,16 +11,17 @@ import io.github.wykopmobilny.databinding.ActivityNotificationsBinding
 import io.github.wykopmobilny.utils.viewBinding
 
 class NotificationsListActivity : BaseActivity() {
-
     companion object {
         const val EXTRA_PRESELECT_INDEX = "PRESELECT_INDEX"
         const val PRESELECT_NOTIFICATIONS = 0
         const val PRESELECT_HASHTAGS = 1
 
-        fun createIntent(context: Context, currentIndex: Int = PRESELECT_NOTIFICATIONS) =
-            Intent(context, NotificationsListActivity::class.java).apply {
-                putExtra(EXTRA_PRESELECT_INDEX, currentIndex)
-            }
+        fun createIntent(
+            context: Context,
+            currentIndex: Int = PRESELECT_NOTIFICATIONS,
+        ) = Intent(context, NotificationsListActivity::class.java).apply {
+            putExtra(EXTRA_PRESELECT_INDEX, currentIndex)
+        }
     }
 
     private val binding by viewBinding(ActivityNotificationsBinding::inflate)
@@ -50,6 +51,7 @@ class NotificationsListActivity : BaseActivity() {
                 finish()
                 return true
             }
+
             R.id.markAsRead -> {
                 (pagerAdapter.registeredFragments.get(binding.pager.currentItem) as? BaseNotificationsListFragment)?.markAsRead()
                 return true

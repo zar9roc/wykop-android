@@ -13,7 +13,6 @@ import io.github.wykopmobilny.utils.requireDependency
 import kotlinx.coroutines.launch
 
 internal class GeneralPreferencesFragment : PreferenceFragmentCompat() {
-
     lateinit var getGeneralPreferences: GetGeneralPreferences
 
     override fun onAttach(context: Context) {
@@ -21,7 +20,10 @@ internal class GeneralPreferencesFragment : PreferenceFragmentCompat() {
         super.onAttach(context)
     }
 
-    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+    override fun onCreatePreferences(
+        savedInstanceState: Bundle?,
+        rootKey: String?,
+    ) {
         setPreferencesFromResource(R.xml.general_preferences, rootKey)
 
         lifecycleScope.launch {
@@ -57,13 +59,13 @@ internal class GeneralPreferencesFragment : PreferenceFragmentCompat() {
                 RefreshPeriodUi.TwoHours -> R.string.preferences_notification_period_2_hours
                 RefreshPeriodUi.FourHours -> R.string.preferences_notification_period_4_hours
                 RefreshPeriodUi.EightHours -> R.string.preferences_notification_period_8_hours
-            }
-                .let { resources.getString(it) }
+            }.let { resources.getString(it) }
         }
     }
 
     private fun openAppearanceSettings() {
-        parentFragmentManager.beginTransaction()
+        parentFragmentManager
+            .beginTransaction()
             .replace(R.id.container, AppearancePreferencesFragment())
             .addToBackStack(null)
             .commit()

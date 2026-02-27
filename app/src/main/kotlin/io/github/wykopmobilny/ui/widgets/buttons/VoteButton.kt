@@ -7,43 +7,44 @@ import io.github.wykopmobilny.R
 import io.github.wykopmobilny.ui.dialogs.showExceptionDialog
 import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 
-abstract class VoteButton @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = R.attr.MirkoButtonStyle,
-) : AppCompatTextView(context, attrs, defStyleAttr) {
+abstract class VoteButton
+    @JvmOverloads
+    constructor(
+        context: Context,
+        attrs: AttributeSet? = null,
+        defStyleAttr: Int = R.attr.MirkoButtonStyle,
+    ) : AppCompatTextView(context, attrs, defStyleAttr) {
+        var voteCount: Int
+            get() = text.toString().toInt()
+            set(value) {
+                text = context.getString(R.string.votes_count, value)
+            }
 
-    var voteCount: Int
-        get() = text.toString().toInt()
-        set(value) {
-            text = context.getString(R.string.votes_count, value)
-        }
+        var isButtonSelected: Boolean
+            get() = isSelected
+            set(value) {
+                isSelected = value
+                setLightThemeDrawable()
+            }
 
-    var isButtonSelected: Boolean
-        get() = isSelected
-        set(value) {
-            isSelected = value
+        lateinit var voteListener: () -> Unit
+        lateinit var unvoteListener: () -> Unit
+
+        abstract fun setLightThemeDrawable()
+
+        fun setup(userManagerApi: UserManagerApi) {
             setLightThemeDrawable()
-        }
-
-    lateinit var voteListener: () -> Unit
-    lateinit var unvoteListener: () -> Unit
-
-    abstract fun setLightThemeDrawable()
-
-    fun setup(userManagerApi: UserManagerApi) {
-        setLightThemeDrawable()
-        setOnClickListener {
-            userManagerApi.runIfLoggedIn(context) {
-                isEnabled = false
-                if (isSelected) {
-                    unvoteListener()
-                } else {
-                    voteListener()
+            setOnClickListener {
+                userManagerApi.runIfLoggedIn(context) {
+                    isEnabled = false
+                    if (isSelected) {
+                        unvoteListener()
+                    } else {
+                        voteListener()
+                    }
                 }
             }
         }
-    }
 
-    fun showErrorDialog(e: Throwable) = context.showExceptionDialog(e)
-}
+        fun showErrorDialog(e: Throwable) = context.showExceptionDialog(e)
+    }

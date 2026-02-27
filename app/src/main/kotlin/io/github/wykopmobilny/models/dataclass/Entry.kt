@@ -22,17 +22,14 @@ class Entry(
     var collapsed: Boolean = true,
     val isCommentingPossible: Boolean,
 ) {
-    override fun equals(other: Any?): Boolean {
-        return if (other !is Entry) {
+    override fun equals(other: Any?): Boolean =
+        if (other !is Entry) {
             false
         } else {
             (other.hashCode() == hashCode())
         }
-    }
 
-    override fun hashCode(): Int {
-        return (id + author.group + body.length).hashCode()
-    }
+    override fun hashCode(): Int = (id + author.group + body.length).hashCode()
 
     val url: String
         get() = "https://www.wykop.pl/wpis/$id"

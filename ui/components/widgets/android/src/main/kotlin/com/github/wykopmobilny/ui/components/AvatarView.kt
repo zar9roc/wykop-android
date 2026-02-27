@@ -17,7 +17,6 @@ class AvatarView(
     context: Context,
     attributeSet: AttributeSet?,
 ) : ConstraintLayout(context, attributeSet) {
-
     init {
         inflate(context, R.layout.view_avatar_simple, this)
     }
@@ -32,22 +31,32 @@ fun AvatarView.bind(model: AvatarUi?) {
     if (getTag(BaseR.id.cache) == model.toString()) {
         return
     }
-    val requestOptions = RequestOptions()
-        .centerCrop()
-        .transform(transformation)
+    val requestOptions =
+        RequestOptions()
+            .centerCrop()
+            .transform(transformation)
 
-    val placeholder = Glide.with(context)
-        .load(BaseR.drawable.avatar)
-        .apply(requestOptions)
-    Glide.with(binding.imgAvatar)
+    val placeholder =
+        Glide
+            .with(context)
+            .load(BaseR.drawable.avatar)
+            .apply(requestOptions)
+    Glide
+        .with(binding.imgAvatar)
         .load(model?.avatarUrl)
         .apply(requestOptions)
         .thumbnail(placeholder)
         .circleCrop()
         .into(binding.imgAvatar)
-    Glide.with(binding.imgGenderStrip)
-        .load(model?.genderStrip.toColorInt(context).defaultColor.let(::ColorDrawable))
-        .dontAnimate()
+    Glide
+        .with(binding.imgGenderStrip)
+        .load(
+            model
+                ?.genderStrip
+                .toColorInt(context)
+                .defaultColor
+                .let(::ColorDrawable),
+        ).dontAnimate()
         .circleCrop()
         .into(binding.imgGenderStrip)
     setTag(BaseR.id.cache, model.toString())

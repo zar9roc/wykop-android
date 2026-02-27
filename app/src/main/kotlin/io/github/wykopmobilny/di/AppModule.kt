@@ -8,7 +8,6 @@ import io.github.wykopmobilny.kotlin.AppScopes
 
 @Module
 internal abstract class AppModule {
-
     @Binds
     abstract fun provideContext(impl: WykopApp): Context
 

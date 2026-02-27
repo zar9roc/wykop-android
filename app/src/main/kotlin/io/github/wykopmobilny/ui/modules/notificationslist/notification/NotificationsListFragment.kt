@@ -14,9 +14,9 @@ import io.github.wykopmobilny.utils.linkhandler.WykopLinkHandler
 import javax.inject.Inject
 
 class NotificationsListFragment : BaseNotificationsListFragment() {
-
     companion object {
         const val DATA_FRAGMENT_TAG = "NOTIFICATIONS_LIST_ACTIVITY"
+
         fun newInstance() = NotificationsListFragment()
     }
 
@@ -35,7 +35,10 @@ class NotificationsListFragment : BaseNotificationsListFragment() {
 
     override fun onRefresh() = presenter.loadData(true)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         presenter.subscribe(this)
 

@@ -14,7 +14,6 @@ import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 
 @Module
 class NetworkModule {
-
     @Provides
     fun provideWykopSchedulers(): io.github.wykopmobilny.base.Schedulers = WykopSchedulers()
 

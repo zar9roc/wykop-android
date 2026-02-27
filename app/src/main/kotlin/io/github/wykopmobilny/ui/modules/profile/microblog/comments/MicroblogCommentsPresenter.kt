@@ -15,14 +15,15 @@ class MicroblogCommentsPresenter(
     val profileApi: ProfileApi,
     val entriesApi: EntriesApi,
     private val entryCommentInteractor: EntryCommentInteractor,
-) : BasePresenter<MicroblogCommentsView>(), EntryCommentActionListener {
-
+) : BasePresenter<MicroblogCommentsView>(),
+    EntryCommentActionListener {
     var page = 1
     lateinit var username: String
 
     fun loadData(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
-        profileApi.getEntriesComments(username, page)
+        profileApi
+            .getEntriesComments(username, page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -35,8 +36,7 @@ class MicroblogCommentsPresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     override fun voteComment(comment: EntryComment) = entryCommentInteractor.voteComment(comment).processEntryCommentSingle(comment)
@@ -47,7 +47,8 @@ class MicroblogCommentsPresenter(
 
     override fun getVoters(comment: EntryComment) {
         view?.openVotersMenu()
-        entriesApi.getEntryCommentVoters(comment.id)
+        entriesApi
+            .getEntryCommentVoters(comment.id)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -57,8 +58,7 @@ class MicroblogCommentsPresenter(
                 {
                     view?.showErrorDialog(it)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     private fun Single<EntryComment>.processEntryCommentSingle(comment: EntryComment) {
@@ -71,7 +71,6 @@ class MicroblogCommentsPresenter(
                     view?.showErrorDialog(it)
                     view?.updateComment(comment)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

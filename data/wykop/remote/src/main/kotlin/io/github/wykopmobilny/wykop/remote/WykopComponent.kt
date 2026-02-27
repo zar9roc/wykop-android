@@ -9,10 +9,8 @@ import java.io.File
 
 @Component(modules = [WykopModule::class])
 interface WykopComponent : WykopApi {
-
     @Component.Factory
     interface Factory {
-
         fun create(
             @BindsInstance okHttpClient: OkHttpClient,
             @BindsInstance @BaseUrl

@@ -22,8 +22,9 @@ data class EmbedResponse(
 
 val EmbedResponse.properUrl
     @Suppress("DEPRECATION")
-    get() = if (type == "image" && animated) {
-        invalidUrl.replace(".jpg", ".gif")
-    } else {
-        invalidUrl
-    }
+    get() =
+        if (type == "image" && animated) {
+            invalidUrl.replace(".jpg", ".gif")
+        } else {
+            invalidUrl
+        }

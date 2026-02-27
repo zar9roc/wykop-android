@@ -20,7 +20,6 @@ class SurveyWidget(
     context: Context,
     attrs: AttributeSet?,
 ) : ConstraintLayout(context, attrs) {
-
     private val binding = SurveyListviewBinding.inflate(layoutInflater, this)
 
     init {
@@ -31,7 +30,10 @@ class SurveyWidget(
     private lateinit var surveyData: Survey
     lateinit var voteAnswerListener: (Int) -> Unit
 
-    fun setSurvey(survey: Survey, userManagerApi: UserManagerApi) {
+    fun setSurvey(
+        survey: Survey,
+        userManagerApi: UserManagerApi,
+    ) {
         isVisible = true
         deselectRadioExcept(-1)
         surveyData = survey

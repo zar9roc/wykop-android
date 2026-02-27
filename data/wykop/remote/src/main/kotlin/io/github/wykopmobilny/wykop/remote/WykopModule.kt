@@ -21,7 +21,6 @@ import retrofit2.create
 
 @Module(includes = [RetrofitModule::class])
 internal class WykopModule {
-
     @Reusable
     @Provides
     fun addLinkRetrofitApi(retrofit: Retrofit) = retrofit.create<AddLinkRetrofitApi>()

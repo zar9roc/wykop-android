@@ -12,27 +12,34 @@ class LinksPagerAdapter(
     val resources: Resources,
     fragmentManager: androidx.fragment.app.FragmentManager,
 ) : androidx.fragment.app.FragmentPagerAdapter(fragmentManager) {
-
     val registeredFragments = SparseArray<androidx.fragment.app.Fragment>()
 
-    override fun getItem(position: Int): androidx.fragment.app.Fragment = when (position) {
-        0 -> ProfileLinksFragment.newInstance(ProfileLinksFragment.TYPE_ADDED)
-        1 -> ProfileLinksFragment.newInstance(ProfileLinksFragment.TYPE_PUBLISHED)
-        2 -> ProfileLinkCommentsFragment.newInstance()
-        3 -> ProfileRelatedFragment.newInstance()
-        4 -> ProfileLinksFragment.newInstance(ProfileLinksFragment.TYPE_DIGGED)
-        else -> ProfileLinksFragment.newInstance(ProfileLinksFragment.TYPE_BURRIED)
-    }
+    override fun getItem(position: Int): androidx.fragment.app.Fragment =
+        when (position) {
+            0 -> ProfileLinksFragment.newInstance(ProfileLinksFragment.TYPE_ADDED)
+            1 -> ProfileLinksFragment.newInstance(ProfileLinksFragment.TYPE_PUBLISHED)
+            2 -> ProfileLinkCommentsFragment.newInstance()
+            3 -> ProfileRelatedFragment.newInstance()
+            4 -> ProfileLinksFragment.newInstance(ProfileLinksFragment.TYPE_DIGGED)
+            else -> ProfileLinksFragment.newInstance(ProfileLinksFragment.TYPE_BURRIED)
+        }
 
     override fun getCount() = 6
 
-    override fun instantiateItem(container: ViewGroup, position: Int): Any {
+    override fun instantiateItem(
+        container: ViewGroup,
+        position: Int,
+    ): Any {
         val fragment = super.instantiateItem(container, position) as androidx.fragment.app.Fragment
         registeredFragments.put(position, fragment)
         return fragment
     }
 
-    override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
+    override fun destroyItem(
+        container: ViewGroup,
+        position: Int,
+        `object`: Any,
+    ) {
         registeredFragments.removeAt(position)
         super.destroyItem(container, position, `object`)
     }

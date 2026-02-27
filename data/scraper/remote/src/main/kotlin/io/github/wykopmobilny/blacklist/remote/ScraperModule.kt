@@ -11,19 +11,25 @@ import retrofit2.create
 
 @Module
 internal class ScraperModule {
-
     @Provides
     @Reusable
     fun scraperApi(retrofit: Retrofit) = retrofit.create<ScraperRetrofitApi>()
 
     @Provides
     @Reusable
-    fun retrofit(okHttpClient: OkHttpClient, url: String, interceptor: ScraperInterceptor): Retrofit {
-        val client = okHttpClient.newBuilder()
-            .addInterceptor(interceptor)
-            .build()
+    fun retrofit(
+        okHttpClient: OkHttpClient,
+        url: String,
+        interceptor: ScraperInterceptor,
+    ): Retrofit {
+        val client =
+            okHttpClient
+                .newBuilder()
+                .addInterceptor(interceptor)
+                .build()
 
-        return Retrofit.Builder()
+        return Retrofit
+            .Builder()
             .baseUrl(url)
             .client(client)
             .addConverterFactory(JspoonConverterFactory.create())

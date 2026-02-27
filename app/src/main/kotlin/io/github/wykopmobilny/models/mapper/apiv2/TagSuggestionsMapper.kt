@@ -5,6 +5,5 @@ import io.github.wykopmobilny.models.dataclass.TagSuggestion
 import io.github.wykopmobilny.models.mapper.Mapper
 
 object TagSuggestionsMapper : Mapper<TagSuggestionResponse, TagSuggestion> {
-
     override fun map(value: TagSuggestionResponse) = TagSuggestion(value.tag, value.followers)
 }

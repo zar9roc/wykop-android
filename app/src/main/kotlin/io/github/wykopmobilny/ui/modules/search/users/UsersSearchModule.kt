@@ -8,5 +8,8 @@ import io.github.wykopmobilny.base.Schedulers
 @Module
 class UsersSearchModule {
     @Provides
-    fun provideUsersSearchPresenter(schedulers: Schedulers, searchApi: SearchApi) = UsersSearchPresenter(schedulers, searchApi)
+    fun provideUsersSearchPresenter(
+        schedulers: Schedulers,
+        searchApi: SearchApi,
+    ) = UsersSearchPresenter(schedulers, searchApi)
 }

@@ -17,13 +17,18 @@ import io.github.wykopmobilny.utils.prepare
 import io.github.wykopmobilny.utils.viewBinding
 import javax.inject.Inject
 
-class UpvotersActivity : BaseActivity(), androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener, UpvotersView {
-
+class UpvotersActivity :
+    BaseActivity(),
+    androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener,
+    UpvotersView {
     companion object {
         const val DATA_FRAGMENT_TAG = "UPVOTERS_LIST"
         const val EXTRA_LINK_ID = "LINK_ID_EXTRA"
 
-        fun createIntent(linkId: Long, activity: Activity) = Intent(activity, UpvotersActivity::class.java).apply {
+        fun createIntent(
+            linkId: Long,
+            activity: Activity,
+        ) = Intent(activity, UpvotersActivity::class.java).apply {
             putExtra(EXTRA_LINK_ID, linkId)
         }
     }

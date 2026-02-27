@@ -10,13 +10,13 @@ import java.io.File
 import java.io.IOException
 
 object CameraUtils {
-
     fun createPictureUri(context: Context): Uri? {
         val filename = "owmcamera_${System.currentTimeMillis()}.jpg"
-        val file = File(
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-            "${PhotoViewActions.SAVED_FOLDER}/${PhotoViewActions.SHARED_FOLDER}/$filename",
-        )
+        val file =
+            File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                "${PhotoViewActions.SAVED_FOLDER}/${PhotoViewActions.SHARED_FOLDER}/$filename",
+            )
 
         try {
             file.parentFile?.mkdirs()

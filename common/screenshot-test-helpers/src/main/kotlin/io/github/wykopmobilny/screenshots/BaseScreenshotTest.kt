@@ -31,12 +31,12 @@ import org.junit.Rule
 import io.github.wykopmobilny.ui.base.android.R as BaseR
 
 abstract class BaseScreenshotTest {
-
     @get:Rule
-    val mRuntimePermissionRule: GrantPermissionRule = GrantPermissionRule.grant(
-        Manifest.permission.READ_EXTERNAL_STORAGE,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-    )
+    val mRuntimePermissionRule: GrantPermissionRule =
+        GrantPermissionRule.grant(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        )
 
     abstract fun createFragment(): Fragment
 
@@ -52,19 +52,21 @@ abstract class BaseScreenshotTest {
         val testName = Throwable().stackTrace[2].methodName
 
         themes.forEach { theme ->
-            val container = launchFragmentInContainer(
-                instantiate = ::createFragment,
-                themeResId = theme.theme,
-                fragmentArgs = runCatching { fragmentArgs }
-                    .onFailure { Log.w("ScreenshotsTests", it) }
-                    .getOrNull(),
-            )
-                .withFragment {
+            val container =
+                launchFragmentInContainer(
+                    instantiate = ::createFragment,
+                    themeResId = theme.theme,
+                    fragmentArgs =
+                        runCatching { fragmentArgs }
+                            .onFailure { Log.w("ScreenshotsTests", it) }
+                            .getOrNull(),
+                ).withFragment {
                     beforeScreenshot(requireView())
-                    val container = FrameLayout(requireContext()).apply {
-                        @Suppress("RestrictedApi")
-                        setBackgroundColor(MaterialAttributes.resolveOrThrow(this, android.R.attr.windowBackground))
-                    }
+                    val container =
+                        FrameLayout(requireContext()).apply {
+                            @Suppress("RestrictedApi")
+                            setBackgroundColor(MaterialAttributes.resolveOrThrow(this, android.R.attr.windowBackground))
+                        }
                     val parent = requireView().parent as ViewGroup
                     parent.removeView(requireView())
                     container.addView(
@@ -90,12 +92,12 @@ abstract class BaseScreenshotTest {
     }
 
     private fun View.disableFlakyComponents() {
-        allViews.filter {
-            it is NestedScrollView ||
-                it is HorizontalScrollView ||
-                it is ScrollView
-        }
-            .forEach(::hideViewBars)
+        allViews
+            .filter {
+                it is NestedScrollView ||
+                    it is HorizontalScrollView ||
+                    it is ScrollView
+            }.forEach(::hideViewBars)
         allViews.filterIsInstance<EditText>().forEach { it.isCursorVisible = false }
         allViews.filterIsInstance<TextInputLayout>().forEach { it.isHintAnimationEnabled = false }
     }
@@ -106,7 +108,10 @@ abstract class BaseScreenshotTest {
         it.overScrollMode = View.OVER_SCROLL_NEVER
     }
 
-    private fun recordScreenshot(view: View, name: String) {
+    private fun recordScreenshot(
+        view: View,
+        name: String,
+    ) {
         val snapshotName = "${TestNameDetector.getTestMethodInfo()?.className?.substringAfterLast(".")}_$name"
         Screenshot
             .snap(view)
@@ -116,8 +121,12 @@ abstract class BaseScreenshotTest {
             .record()
     }
 
-    inline fun <reified T : Any> registerDependencies(dependency: T, scopeId: String? = null) {
-        ApplicationProvider.getApplicationContext<ScreenshotTestsApplication>()
+    inline fun <reified T : Any> registerDependencies(
+        dependency: T,
+        scopeId: String? = null,
+    ) {
+        ApplicationProvider
+            .getApplicationContext<ScreenshotTestsApplication>()
             .registerDependency(T::class, scopeId, dependency)
     }
 
@@ -163,9 +172,10 @@ private fun View.guessConstrainedScrollViewHeight() {
 }
 
 private fun View.guessSwipeRefreshHeight(deviceWidth: Int) {
-    val swipeRefreshLayouts = allViews
-        .filterIsInstance<SwipeRefreshLayout>()
-        .toList()
+    val swipeRefreshLayouts =
+        allViews
+            .filterIsInstance<SwipeRefreshLayout>()
+            .toList()
     if (swipeRefreshLayouts.size > 1) {
         error("Max 1 ${SwipeRefreshLayout::class.java.simpleName} supported")
     }
@@ -186,8 +196,7 @@ private fun View.guessCoordinatorLayoutHeight() {
         .flatMap { coordinator ->
             coordinator.children
                 .filter { child -> (child.layoutParams as CoordinatorLayout.LayoutParams).behavior is AppBarLayout.ScrollingViewBehavior }
-        }
-        .forEach { target ->
+        }.forEach { target ->
             val appBarLayout = (target.parent as ViewGroup).children.first { it is AppBarLayout }
             val layoutParams = target.layoutParams as CoordinatorLayout.LayoutParams
             layoutParams.behavior = null
@@ -197,7 +206,9 @@ private fun View.guessCoordinatorLayoutHeight() {
     requestLayout()
 }
 
-enum class ScreenshotTheme(val theme: Int) {
+enum class ScreenshotTheme(
+    val theme: Int,
+) {
     Light(BaseR.style.Theme_App_Light),
     Dark(BaseR.style.Theme_App_Dark),
     Amoled(BaseR.style.Theme_App_Amoled),

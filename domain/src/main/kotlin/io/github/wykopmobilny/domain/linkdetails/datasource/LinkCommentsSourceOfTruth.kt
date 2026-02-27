@@ -23,13 +23,16 @@ import kotlin.math.absoluteValue
 internal fun linkCommentsSourceOfTruth(cache: AppCache) =
     SourceOfTruth.of<Long, List<LinkCommentResponse>, Map<LinkComment, List<LinkComment>>>(
         reader = { linkId ->
-            cache.linkCommentsQueries.selectByLinkId(linkId)
+            cache.linkCommentsQueries
+                .selectByLinkId(linkId)
                 .asFlow()
                 .mapToList(AppDispatchers.IO)
                 .map { comments ->
-                    val commentsById = comments.asSequence()
-                        .filter { it.id == it.parentId }
-                        .associateBy { it.id }
+                    val commentsById =
+                        comments
+                            .asSequence()
+                            .filter { it.id == it.parentId }
+                            .associateBy { it.id }
                     comments
                         .groupBy { commentsById.getValue(it.parentId) }
                         .map { (key, value) ->
@@ -37,8 +40,7 @@ internal fun linkCommentsSourceOfTruth(cache: AppCache) =
                             val children = value.filterNot { it.id == it.parentId }.map { it.toContent() }
 
                             parent to children
-                        }
-                        .toMap()
+                        }.toMap()
                 }
         },
         writer = { _, comments ->
@@ -71,31 +73,34 @@ internal fun linkCommentsSourceOfTruth(cache: AppCache) =
         delete = { linkId -> cache.linkCommentsQueries.deleteByLinkId(linkId) },
     )
 
-private fun SelectByLinkId.toContent() = LinkComment(
-    id = id,
-    body = body,
-    postedAt = postedAt,
-    author = UserInfo(
-        profileId = profileId,
-        avatarUrl = avatar,
-        rank = rank,
-        gender = gender?.toGenderDomain(),
-        color = color.toColorDomain(),
-    ),
-    plusCount = voteCountPlus,
-    minusCount = (voteCount - voteCountPlus).absoluteValue,
-    userAction = userVote,
-    app = app,
-    userFavorite = isFavorite,
-    embed = embedId?.let {
-        Embed(
-            id = it,
-            type = type!!,
-            fileName = fileName,
-            preview = preview!!,
-            size = size,
-            hasAdultContent = hasAdultContent!!,
-            ratio = ratio!!,
-        )
-    },
-)
+private fun SelectByLinkId.toContent() =
+    LinkComment(
+        id = id,
+        body = body,
+        postedAt = postedAt,
+        author =
+            UserInfo(
+                profileId = profileId,
+                avatarUrl = avatar,
+                rank = rank,
+                gender = gender?.toGenderDomain(),
+                color = color.toColorDomain(),
+            ),
+        plusCount = voteCountPlus,
+        minusCount = (voteCount - voteCountPlus).absoluteValue,
+        userAction = userVote,
+        app = app,
+        userFavorite = isFavorite,
+        embed =
+            embedId?.let {
+                Embed(
+                    id = it,
+                    type = type!!,
+                    fileName = fileName,
+                    preview = preview!!,
+                    size = size,
+                    hasAdultContent = hasAdultContent!!,
+                    ratio = ratio!!,
+                )
+            },
+    )

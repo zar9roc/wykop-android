@@ -6,9 +6,8 @@ import io.reactivex.SingleSource
 import io.reactivex.SingleTransformer
 
 class ErrorHandlerTransformer<T : Any> : SingleTransformer<WykopApiResponse<T>, T> {
-
-    override fun apply(upstream: Single<WykopApiResponse<T>>): SingleSource<T> {
-        return upstream.flatMap {
+    override fun apply(upstream: Single<WykopApiResponse<T>>): SingleSource<T> =
+        upstream.flatMap {
             val exception = WykopExceptionParser.getException(it)
             if (exception != null) {
                 Single.error(exception)
@@ -16,7 +15,6 @@ class ErrorHandlerTransformer<T : Any> : SingleTransformer<WykopApiResponse<T>, 
                 Single.just(it.data!!)
             }
         }
-    }
 }
 
 suspend fun <T> unwrapping(block: suspend () -> WykopApiResponse<T>): T {

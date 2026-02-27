@@ -11,39 +11,46 @@ import io.github.wykopmobilny.utils.layoutInflater
 import io.github.wykopmobilny.utils.linkhandler.WykopLinkHandler
 import javax.inject.Inject
 
-class PMMessageAdapter @Inject constructor(
-    settingsPreferencesApi: SettingsPreferencesApi,
-    private val navigator: NewNavigator,
-    private val linkHandler: WykopLinkHandler,
-) : RecyclerView.Adapter<PMMessageViewHolder>() {
+class PMMessageAdapter
+    @Inject
+    constructor(
+        settingsPreferencesApi: SettingsPreferencesApi,
+        private val navigator: NewNavigator,
+        private val linkHandler: WykopLinkHandler,
+    ) : RecyclerView.Adapter<PMMessageViewHolder>() {
+        val messages: ArrayList<PMMessage> = arrayListOf()
 
-    val messages: ArrayList<PMMessage> = arrayListOf()
+        private val openSpoilersDialog by lazy { settingsPreferencesApi.openSpoilersDialog }
+        private val enableEmbedPlayer by lazy { settingsPreferencesApi.enableEmbedPlayer }
+        private val enableYoutubePlayer by lazy { settingsPreferencesApi.enableYoutubePlayer }
+        private val showAdultContent by lazy { settingsPreferencesApi.showAdultContent }
+        private val hideNsfw by lazy { settingsPreferencesApi.hideNsfw }
 
-    private val openSpoilersDialog by lazy { settingsPreferencesApi.openSpoilersDialog }
-    private val enableEmbedPlayer by lazy { settingsPreferencesApi.enableEmbedPlayer }
-    private val enableYoutubePlayer by lazy { settingsPreferencesApi.enableYoutubePlayer }
-    private val showAdultContent by lazy { settingsPreferencesApi.showAdultContent }
-    private val hideNsfw by lazy { settingsPreferencesApi.hideNsfw }
+        override fun getItemCount() = messages.size
 
-    override fun getItemCount() = messages.size
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ) = PMMessageViewHolder(
+            binding = PmmessageSentLayoutBinding.inflate(parent.layoutInflater, parent, false),
+            linkHandler = linkHandler,
+            navigator = navigator,
+        )
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = PMMessageViewHolder(
-        binding = PmmessageSentLayoutBinding.inflate(parent.layoutInflater, parent, false),
-        linkHandler = linkHandler,
-        navigator = navigator,
-    )
+        override fun onBindViewHolder(
+            holder: PMMessageViewHolder,
+            position: Int,
+        ) = holder.bindView(
+            message = messages[position],
+            openSpoilersDialog = openSpoilersDialog,
+            enableEmbedPlayer = enableEmbedPlayer,
+            enableYoutubePlayer = enableYoutubePlayer,
+            showAdultContent = showAdultContent,
+            hideNsfw = hideNsfw,
+        )
 
-    override fun onBindViewHolder(holder: PMMessageViewHolder, position: Int) = holder.bindView(
-        message = messages[position],
-        openSpoilersDialog = openSpoilersDialog,
-        enableEmbedPlayer = enableEmbedPlayer,
-        enableYoutubePlayer = enableYoutubePlayer,
-        showAdultContent = showAdultContent,
-        hideNsfw = hideNsfw,
-    )
-
-    override fun onViewRecycled(holder: PMMessageViewHolder) {
-        holder.cleanRecycled()
-        super.onViewRecycled(holder)
+        override fun onViewRecycled(holder: PMMessageViewHolder) {
+            holder.cleanRecycled()
+            super.onViewRecycled(holder)
+        }
     }
-}

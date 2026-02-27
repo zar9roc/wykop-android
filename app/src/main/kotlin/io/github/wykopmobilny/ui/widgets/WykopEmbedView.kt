@@ -15,8 +15,10 @@ import io.github.wykopmobilny.utils.openBrowser
 import java.lang.ref.WeakReference
 import java.net.URI
 
-class WykopEmbedView(context: Context, attrs: AttributeSet) : FrameLayout(context, attrs) {
-
+class WykopEmbedView(
+    context: Context,
+    attrs: AttributeSet,
+) : FrameLayout(context, attrs) {
     companion object {
         const val NSFW_IMAGE_PLACEHOLDER = "https://www.wykop.pl/cdn/c2526412/nsfw.jpg"
     }
@@ -86,23 +88,62 @@ class WykopEmbedView(context: Context, attrs: AttributeSet) : FrameLayout(contex
         binding.imageIconGifSize.isVisible = false
         binding.imageIcon.isVisible = true
         val url = URI(embed.url.replace("\\", ""))
-        val domain = url.host.replace("www.", "").substringBeforeLast(".")
-            .substringAfterLast(".")
+        val domain =
+            url.host
+                .replace("www.", "")
+                .substringBeforeLast(".")
+                .substringAfterLast(".")
         when (domain) {
             "youtube",
             "youtu",
-            -> binding.imageIcon.setBackgroundResource(R.mipmap.ic_youtube)
-            "gfycat" -> binding.imageIcon.setBackgroundResource(R.mipmap.ic_gfycat)
-            "vimeo" -> binding.imageIcon.setBackgroundResource(R.mipmap.ic_vimeo)
-            "streamable" -> binding.imageIcon.setBackgroundResource(R.mipmap.ic_streamable)
-            "coub" -> binding.imageIcon.setBackgroundResource(R.mipmap.ic_coub)
-            "twitch" -> binding.imageIcon.setBackgroundResource(R.mipmap.ic_twitch)
-            "twitter" -> binding.imageIcon.setBackgroundResource(R.mipmap.ic_twitter)
-            "instagram" -> binding.imageIcon.setBackgroundResource(R.mipmap.ic_instagram)
-            "facebook" -> binding.imageIcon.setBackgroundResource(R.mipmap.ic_facebook)
-            "soundcloud" -> binding.imageIcon.setBackgroundResource(R.mipmap.ic_soundcloud)
-            "hearthis" -> binding.imageIcon.setBackgroundResource(R.mipmap.ic_hearthis)
-            "mixcould" -> binding.imageIcon.setBackgroundResource(R.mipmap.ic_mixcloud)
+            -> {
+                binding.imageIcon.setBackgroundResource(R.mipmap.ic_youtube)
+            }
+
+            "gfycat" -> {
+                binding.imageIcon.setBackgroundResource(R.mipmap.ic_gfycat)
+            }
+
+            "vimeo" -> {
+                binding.imageIcon.setBackgroundResource(R.mipmap.ic_vimeo)
+            }
+
+            "streamable" -> {
+                binding.imageIcon.setBackgroundResource(R.mipmap.ic_streamable)
+            }
+
+            "coub" -> {
+                binding.imageIcon.setBackgroundResource(R.mipmap.ic_coub)
+            }
+
+            "twitch" -> {
+                binding.imageIcon.setBackgroundResource(R.mipmap.ic_twitch)
+            }
+
+            "twitter" -> {
+                binding.imageIcon.setBackgroundResource(R.mipmap.ic_twitter)
+            }
+
+            "instagram" -> {
+                binding.imageIcon.setBackgroundResource(R.mipmap.ic_instagram)
+            }
+
+            "facebook" -> {
+                binding.imageIcon.setBackgroundResource(R.mipmap.ic_facebook)
+            }
+
+            "soundcloud" -> {
+                binding.imageIcon.setBackgroundResource(R.mipmap.ic_soundcloud)
+            }
+
+            "hearthis" -> {
+                binding.imageIcon.setBackgroundResource(R.mipmap.ic_hearthis)
+            }
+
+            "mixcould" -> {
+                binding.imageIcon.setBackgroundResource(R.mipmap.ic_mixcloud)
+            }
+
             else -> {
                 if (embed.isAnimated) {
                     binding.imageIconGifSize.isVisible = true
@@ -134,10 +175,14 @@ class WykopEmbedView(context: Context, attrs: AttributeSet) : FrameLayout(contex
                 val url = if (image.isAnimated) image.url.replace(".jpg", ".gif") else image.url
                 navigator.openPhotoViewActivity(url)
             }
+
             "video" -> {
                 val url = URI(image.url.replace("\\", ""))
-                val domain = url.host.replace("www.", "").substringBeforeLast(".")
-                    .substringAfterLast(".")
+                val domain =
+                    url.host
+                        .replace("www.", "")
+                        .substringBeforeLast(".")
+                        .substringAfterLast(".")
                 when (domain) {
                     "youtube", "youtu" -> {
                         if (enableYoutubePlayer) {
@@ -146,6 +191,7 @@ class WykopEmbedView(context: Context, attrs: AttributeSet) : FrameLayout(contex
                             getActivityContext()?.openBrowser(image.url)
                         }
                     }
+
                     "gfycat", "streamable", "coub" -> {
                         if (enableEmbedPlayer) {
                             navigator.openEmbedActivity(image.url)
@@ -153,7 +199,10 @@ class WykopEmbedView(context: Context, attrs: AttributeSet) : FrameLayout(contex
                             getActivityContext()?.openBrowser(image.url)
                         }
                     }
-                    else -> navigator.openBrowser(image.url)
+
+                    else -> {
+                        navigator.openBrowser(image.url)
+                    }
                 }
             }
         }

@@ -15,17 +15,18 @@ import java.util.concurrent.TimeUnit
 
 @Module
 internal class RetrofitModule {
-
     @Provides
     @PathFixingInterceptor
     fun pathFixingInterceptor(impl: AppKeyReplacingInterceptor): Interceptor = impl
 
     @Provides
     @Reusable
-    fun moshi() = Moshi.Builder().apply {
-        add(InstantAdapter())
-    }
-        .build()
+    fun moshi() =
+        Moshi
+            .Builder()
+            .apply {
+                add(InstantAdapter())
+            }.build()
 
     @Reusable
     @Provides
@@ -36,9 +37,11 @@ internal class RetrofitModule {
         @BaseUrl apiUrl: String,
         cacheDir: File,
         moshi: Moshi,
-    ) = Retrofit.Builder()
+    ) = Retrofit
+        .Builder()
         .client(
-            okHttpClient.newBuilder()
+            okHttpClient
+                .newBuilder()
                 .cache(Cache(cacheDir, maxSize = CACHE_SIZE))
                 .addInterceptor(pathFixing)
                 .addInterceptor(signing)
@@ -46,8 +49,7 @@ internal class RetrofitModule {
                 .readTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
                 .writeTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
                 .build(),
-        )
-        .baseUrl(apiUrl)
+        ).baseUrl(apiUrl)
         .addConverterFactory(MoshiConverterFactory.create(moshi))
         .build()
 
@@ -55,7 +57,6 @@ internal class RetrofitModule {
     fun errorBodyParser(errorBodyParser: MoshiErrorBodyParser): ErrorBodyParser = errorBodyParser
 
     companion object {
-
         private const val CACHE_SIZE = 10 * 1024 * 1024L
         private const val DEFAULT_TIMEOUT = 30L
     }

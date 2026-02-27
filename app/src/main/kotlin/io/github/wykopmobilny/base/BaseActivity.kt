@@ -29,8 +29,9 @@ import javax.inject.Inject
 /**
  * This class should be extended in all activities in this app. Place global-activity settings here.
  */
-abstract class BaseActivity : AppCompatActivity(), HasAndroidInjector {
-
+abstract class BaseActivity :
+    AppCompatActivity(),
+    HasAndroidInjector {
     open val enableSwipeBackLayout: Boolean = false
     open val isActivityTransfluent: Boolean = false
     var isRunning = false
@@ -48,11 +49,12 @@ abstract class BaseActivity : AppCompatActivity(), HasAndroidInjector {
         initTheme(initialStyle)
         super.onCreate(savedInstanceState)
 
-        val slidr = if (enableSwipeBackLayout) {
-            attachSlidr(SlidrConfig(edgeOnly = true))
-        } else {
-            null
-        }
+        val slidr =
+            if (enableSwipeBackLayout) {
+                attachSlidr(SlidrConfig(edgeOnly = true))
+            } else {
+                null
+            }
         lifecycleScope.launch {
             withCreated { }
             val shared = getAppStyle().stateIn(this)
@@ -101,9 +103,13 @@ abstract class BaseActivity : AppCompatActivity(), HasAndroidInjector {
 
         when (themeSettingsPreferences.fontSize) {
             "tiny" -> theme.applyStyle(R.style.TextSizeTiny, true)
+
             "small" -> theme.applyStyle(R.style.TextSizeSmall, true)
+
             "large" -> theme.applyStyle(R.style.TextSizeLarge, true)
+
             "huge" -> theme.applyStyle(R.style.TextSizeHuge, true)
+
             "normal",
             null,
             -> theme.applyStyle(R.style.TextSizeNormal, true)
@@ -111,11 +117,12 @@ abstract class BaseActivity : AppCompatActivity(), HasAndroidInjector {
     }
 
     private fun updateTheme(newTheme: ApplicableStyleUi) {
-        val appTheme = when (newTheme) {
-            ApplicableStyleUi.Light -> R.style.WykopAppTheme
-            ApplicableStyleUi.Dark -> R.style.WykopAppTheme_Dark
-            ApplicableStyleUi.DarkAmoled -> R.style.WykopAppTheme_Amoled
-        }
+        val appTheme =
+            when (newTheme) {
+                ApplicableStyleUi.Light -> R.style.WykopAppTheme
+                ApplicableStyleUi.Dark -> R.style.WykopAppTheme_Dark
+                ApplicableStyleUi.DarkAmoled -> R.style.WykopAppTheme_Amoled
+            }
         setTheme(appTheme)
     }
 

@@ -22,7 +22,6 @@ class MyWykopObservedTagsFragment :
     MyWykopObservedTagsView,
     SwipeRefreshLayout.OnRefreshListener,
     MyWykopNotifier {
-
     companion object {
         const val DATA_FRAGMENT_TAG = "MYWYKOP_OBSERVED_TAGS_FRAGMENT_TAG"
 
@@ -39,7 +38,10 @@ class MyWykopObservedTagsFragment :
 
     lateinit var dataFragment: DataFragment<List<ObservedTagResponse>>
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         presenter.subscribe(this)
         dataFragment = childFragmentManager.getDataFragmentInstance(DATA_FRAGMENT_TAG)

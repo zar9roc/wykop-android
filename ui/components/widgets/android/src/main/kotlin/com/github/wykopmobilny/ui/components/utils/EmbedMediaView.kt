@@ -16,8 +16,10 @@ import io.github.wykopmobilny.ui.components.widgets.android.databinding.ViewEmbe
 import io.github.wykopmobilny.utils.bindings.setOnClick
 import io.github.wykopmobilny.ui.base.android.R as BaseR
 
-class EmbedMediaView(context: Context, attrs: AttributeSet?) : MaterialCardView(context, attrs) {
-
+class EmbedMediaView(
+    context: Context,
+    attrs: AttributeSet?,
+) : MaterialCardView(context, attrs) {
     init {
         inflate(context, R.layout.view_embed_media, this)
         cardElevation = 0f
@@ -36,28 +38,38 @@ fun EmbedMediaView.bind(model: EmbedMediaUi?) {
     binding.fullOverlay.isVisible = model.hasNsfwOverlay == true
     binding.imgPreview.isVisible = model.hasNsfwOverlay != true
     if (model.hasNsfwOverlay) {
-        Glide.with(this).load(NSFW_PLACEHOLDER)
+        Glide
+            .with(this)
+            .load(NSFW_PLACEHOLDER)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
             .into(binding.fullOverlay)
     }
 
-    val url = when (val content = model.content) {
-        is EmbedMediaUi.Content.StaticImage -> content.url
-        is EmbedMediaUi.Content.PlayableMedia -> content.previewImage
-    }
+    val url =
+        when (val content = model.content) {
+            is EmbedMediaUi.Content.StaticImage -> content.url
+            is EmbedMediaUi.Content.PlayableMedia -> content.previewImage
+        }
     binding.imgPreview.updateLayoutParams<ConstraintLayout.LayoutParams> {
-        dimensionRatio = model.widthToHeightRatio.takeIf { it > 0 }?.let { 1 / it }.toString()
+        dimensionRatio =
+            model.widthToHeightRatio
+                .takeIf { it > 0 }
+                ?.let { 1 / it }
+                .toString()
     }
 
-    Glide.with(this).load(url)
+    Glide
+        .with(this)
+        .load(url)
         .diskCacheStrategy(DiskCacheStrategy.ALL)
         .transition(withCrossFade())
         .into(binding.imgPreview)
 
-    val prompt = when (val content = model.content) {
-        is EmbedMediaUi.Content.StaticImage -> null
-        is EmbedMediaUi.Content.PlayableMedia -> content.domain
-    }
+    val prompt =
+        when (val content = model.content) {
+            is EmbedMediaUi.Content.StaticImage -> null
+            is EmbedMediaUi.Content.PlayableMedia -> content.domain
+        }
     binding.imgPromptBackground.isVisible = prompt != null
     binding.txtPrompt.isVisible = prompt != null
     binding.txtPrompt.text = prompt

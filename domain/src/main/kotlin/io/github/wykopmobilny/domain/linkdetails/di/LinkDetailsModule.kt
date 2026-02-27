@@ -22,9 +22,7 @@ import io.github.wykopmobilny.kotlin.AppScopes
 
 @Module
 internal abstract class LinkDetailsModule {
-
     companion object {
-
         @LinkDetailsScope
         @Provides
         fun linkDetailsStore(
@@ -32,12 +30,13 @@ internal abstract class LinkDetailsModule {
             appScopes: AppScopes,
             cache: AppCache,
             apiClient: ApiClient,
-        ): Store<Long, LinkInfo> = StoreBuilder.from(
-            fetcher = apiClient.fetcher(retrofitApi::getLink),
-            sourceOfTruth = linkDetailsSourceOfTruth(cache),
-        )
-            .scope(appScopes.applicationScope)
-            .build()
+        ): Store<Long, LinkInfo> =
+            StoreBuilder
+                .from(
+                    fetcher = apiClient.fetcher(retrofitApi::getLink),
+                    sourceOfTruth = linkDetailsSourceOfTruth(cache),
+                ).scope(appScopes.applicationScope)
+                .build()
 
         @LinkDetailsScope
         @Provides
@@ -46,17 +45,19 @@ internal abstract class LinkDetailsModule {
             appScopes: AppScopes,
             cache: AppCache,
             apiClient: ApiClient,
-        ): Store<Long, Map<LinkComment, List<LinkComment>>> = StoreBuilder.from(
-            fetcher = apiClient.fetcher { linkId ->
-                retrofitApi.getLinkComments(
-                    linkId = linkId,
-                    sortBy = "old", // we'll sort it on the app side 😬
-                )
-            },
-            sourceOfTruth = linkCommentsSourceOfTruth(cache),
-        )
-            .scope(appScopes.applicationScope)
-            .build()
+        ): Store<Long, Map<LinkComment, List<LinkComment>>> =
+            StoreBuilder
+                .from(
+                    fetcher =
+                        apiClient.fetcher { linkId ->
+                            retrofitApi.getLinkComments(
+                                linkId = linkId,
+                                sortBy = "old", // we'll sort it on the app side 😬
+                            )
+                        },
+                    sourceOfTruth = linkCommentsSourceOfTruth(cache),
+                ).scope(appScopes.applicationScope)
+                .build()
 
         @LinkDetailsScope
         @Provides
@@ -65,12 +66,13 @@ internal abstract class LinkDetailsModule {
             appScopes: AppScopes,
             cache: AppCache,
             apiClient: ApiClient,
-        ): Store<Long, List<RelatedLink>> = StoreBuilder.from(
-            fetcher = apiClient.fetcher(retrofitApi::getRelated),
-            sourceOfTruth = relatedLinksSourceOfTruth(cache),
-        )
-            .scope(appScopes.applicationScope)
-            .build()
+        ): Store<Long, List<RelatedLink>> =
+            StoreBuilder
+                .from(
+                    fetcher = apiClient.fetcher(retrofitApi::getRelated),
+                    sourceOfTruth = relatedLinksSourceOfTruth(cache),
+                ).scope(appScopes.applicationScope)
+                .build()
     }
 
     @Binds

@@ -21,12 +21,16 @@ import io.github.wykopmobilny.utils.viewBinding
 import javax.inject.Inject
 import io.github.wykopmobilny.ui.base.android.R as BaseR
 
-class TagActivity : BaseActivity(), TagActivityView {
-
+class TagActivity :
+    BaseActivity(),
+    TagActivityView {
     companion object {
         private const val EXTRA_TAG = "EXTRA_TAG"
 
-        fun createIntent(context: Context, tag: String): Intent {
+        fun createIntent(
+            context: Context,
+            tag: String,
+        ): Intent {
             val intent = Intent(context, TagActivity::class.java)
             intent.putExtra(EXTRA_TAG, tag)
             return intent
@@ -51,9 +55,10 @@ class TagActivity : BaseActivity(), TagActivityView {
         super.onCreate(savedInstanceState)
         setSupportActionBar(binding.toolbar.toolbar)
         presenter.subscribe(this)
-        val tagString = intent.getStringExtra(EXTRA_TAG) ?: return finish().also {
-            Napier.e(message = "Couldn't launch TagActivity ${savedInstanceState == null}")
-        }
+        val tagString =
+            intent.getStringExtra(EXTRA_TAG) ?: return finish().also {
+                Napier.e(message = "Couldn't launch TagActivity ${savedInstanceState == null}")
+            }
         presenter.tag = tagString
         binding.fab.setOnClickListener {
             navigator.openAddEntryActivity(this, null, "#$tagString")
@@ -99,11 +104,26 @@ class TagActivity : BaseActivity(), TagActivityView {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_observe -> presenter.observeTag()
-            R.id.action_unobserve -> presenter.unobserveTag()
-            R.id.action_block -> presenter.blockTag()
-            R.id.action_unblock -> presenter.unblockTag()
-            android.R.id.home -> finish()
+            R.id.action_observe -> {
+                presenter.observeTag()
+            }
+
+            R.id.action_unobserve -> {
+                presenter.unobserveTag()
+            }
+
+            R.id.action_block -> {
+                presenter.blockTag()
+            }
+
+            R.id.action_unblock -> {
+                presenter.unblockTag()
+            }
+
+            android.R.id.home -> {
+                finish()
+            }
+
             R.id.refresh -> {
                 val tagPagerAdapter = binding.pager.adapter as TagPagerAdapter
                 for (i in 0 until tagPagerAdapter.registeredFragments.size()) {

@@ -10,9 +10,7 @@ class BlacklistedDetailsUi(
     val errorDialog: ErrorDialogUi?,
     val content: Content,
 ) {
-
     sealed class Content {
-
         data class Empty(
             val isLoading: Boolean,
             val loadAction: () -> Unit,
@@ -22,7 +20,6 @@ class BlacklistedDetailsUi(
             val tags: ElementPage,
             val users: ElementPage,
         ) : Content() {
-
             data class ElementPage(
                 val isRefreshing: Boolean,
                 val refreshAction: () -> Unit,
@@ -36,13 +33,15 @@ class BlacklistedElementUi(
     val name: String,
     val state: StateUi,
 ) {
-
     sealed class StateUi {
-
-        data class Default(val unblock: () -> Unit) : StateUi()
+        data class Default(
+            val unblock: () -> Unit,
+        ) : StateUi()
 
         object InProgress : StateUi()
 
-        data class Error(val showError: () -> Unit) : StateUi()
+        data class Error(
+            val showError: () -> Unit,
+        ) : StateUi()
     }
 }

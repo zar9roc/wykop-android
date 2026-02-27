@@ -9,10 +9,10 @@ class AddLinkUrlInputPresenter(
     val schedulers: Schedulers,
     private val addLinkApi: AddLinkApi,
 ) : BasePresenter<AddLinkUrlInputFragmentView>() {
-
     fun createDraft(url: String) {
         view?.showDuplicatesLoading(true)
-        addLinkApi.getDraft(url)
+        addLinkApi
+            .getDraft(url)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -24,7 +24,6 @@ class AddLinkUrlInputPresenter(
                     view?.showErrorDialog(it)
                     view?.showDuplicatesLoading(false)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

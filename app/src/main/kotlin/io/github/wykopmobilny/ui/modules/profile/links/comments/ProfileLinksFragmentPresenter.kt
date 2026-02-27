@@ -13,14 +13,15 @@ class ProfileLinksFragmentPresenter(
     private val schedulers: Schedulers,
     private val profileApi: ProfileApi,
     private val linksInteractor: LinkCommentInteractor,
-) : BasePresenter<ProfileLinkCommentsView>(), LinkCommentActionListener {
-
+) : BasePresenter<ProfileLinkCommentsView>(),
+    LinkCommentActionListener {
     var page = 1
     lateinit var username: String
 
     fun loadData(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
-        profileApi.getLinkComments(username, page)
+        profileApi
+            .getLinkComments(username, page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -33,8 +34,7 @@ class ProfileLinksFragmentPresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     override fun removeVote(comment: LinkComment) = linksInteractor.commentVoteCancel(comment).processLinkCommentSingle(comment)
@@ -55,7 +55,6 @@ class ProfileLinksFragmentPresenter(
                     view?.showErrorDialog(it)
                     view?.updateComment(link)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

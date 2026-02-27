@@ -10,39 +10,45 @@ import io.reactivex.Observable
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-class MainNavigationPresenter @Inject constructor(
-    private val schedulers: Schedulers,
-    private val notificationsApi: NotificationsApi,
-    private val userManagerApi: UserManagerApi,
-) : BasePresenter<MainNavigationView>() {
+class MainNavigationPresenter
+    @Inject
+    constructor(
+        private val schedulers: Schedulers,
+        private val notificationsApi: NotificationsApi,
+        private val userManagerApi: UserManagerApi,
+    ) : BasePresenter<MainNavigationView>() {
+        private var lastCheckMillis = 0L
 
-    private var lastCheckMillis = 0L
+        fun startListeningForNotifications() {
+            compositeObservable.clear()
+            compositeObservable.apply {
+                if (userManagerApi.isUserAuthorized()) {
+                    add(
+                        Observable
+                            .interval(0, 1, TimeUnit.MINUTES)
+                            .subscribe {
+                                checkNotifications(false)
+                            },
+                    )
+                }
+            }
+        }
 
-    fun startListeningForNotifications() {
-        compositeObservable.clear()
-        compositeObservable.apply {
-            if (userManagerApi.isUserAuthorized()) {
-                add(
-                    Observable.interval(0, 1, TimeUnit.MINUTES)
-                        .subscribe {
-                            checkNotifications(false)
-                        },
-                )
+        fun checkNotifications(shouldForce: Boolean) {
+            if (lastCheckMillis.plus(300000L) < (System.currentTimeMillis()) || lastCheckMillis == 0L || shouldForce) {
+                lastCheckMillis = System.currentTimeMillis()
+                notificationsApi
+                    .getNotificationCount()
+                    .subscribeOn(schedulers.backgroundThread())
+                    .observeOn(schedulers.mainThread())
+                    .subscribe({ view?.showNotificationsCount(it.count) }, { })
+                    .intoComposite(compositeObservable)
+                notificationsApi
+                    .getHashTagNotificationCount()
+                    .subscribeOn(schedulers.backgroundThread())
+                    .observeOn(schedulers.mainThread())
+                    .subscribe({ view?.showHashNotificationsCount(it.count) }, { })
+                    .intoComposite(compositeObservable)
             }
         }
     }
-
-    fun checkNotifications(shouldForce: Boolean) {
-        if (lastCheckMillis.plus(300000L) < (System.currentTimeMillis()) || lastCheckMillis == 0L || shouldForce) {
-            lastCheckMillis = System.currentTimeMillis()
-            notificationsApi.getNotificationCount().subscribeOn(schedulers.backgroundThread())
-                .observeOn(schedulers.mainThread())
-                .subscribe({ view?.showNotificationsCount(it.count) }, { })
-                .intoComposite(compositeObservable)
-            notificationsApi.getHashTagNotificationCount().subscribeOn(schedulers.backgroundThread())
-                .observeOn(schedulers.mainThread())
-                .subscribe({ view?.showHashNotificationsCount(it.count) }, { })
-                .intoComposite(compositeObservable)
-        }
-    }
-}

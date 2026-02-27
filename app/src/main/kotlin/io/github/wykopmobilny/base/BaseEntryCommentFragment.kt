@@ -23,7 +23,6 @@ open class BaseEntryCommentFragment :
     BaseFragment(R.layout.entries_fragment),
     EntryCommentsFragmentView,
     SwipeRefreshLayout.OnRefreshListener {
-
     @Inject
     lateinit var entryCommentsAdapter: EntryCommentAdapter
     lateinit var votersDialogListener: VotersDialogListener
@@ -54,7 +53,10 @@ open class BaseEntryCommentFragment :
 
     // Inflate view
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         entryCommentsAdapter.loadNewDataListener = { loadDataListener(false) }
 
@@ -80,7 +82,10 @@ open class BaseEntryCommentFragment :
      * @param items List of entries to add
      * @param shouldRefresh If true adapter will refresh its data with provided items. False by default
      */
-    override fun addItems(items: List<EntryComment>, shouldRefresh: Boolean) {
+    override fun addItems(
+        items: List<EntryComment>,
+        shouldRefresh: Boolean,
+    ) {
         entryCommentsAdapter.addData(items, shouldRefresh)
         binding.swipeRefresh.isRefreshing = false
         binding.loadingView.isVisible = false

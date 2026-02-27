@@ -12,7 +12,10 @@ import android.widget.TextView
 import io.github.wykopmobilny.utils.api.convertMarkdownToHtml
 import java.net.URLDecoder
 
-fun TextView.prepareBody(html: String, listener: (String) -> Unit) {
+fun TextView.prepareBody(
+    html: String,
+    listener: (String) -> Unit,
+) {
     text = SpannableStringBuilder(html.toSpannable())
     val method = BetterLinkMovementMethod.linkifyHtml(this)
     method.setOnLinkClickListener { _, url ->
@@ -39,12 +42,13 @@ fun TextView.prepareBody(
             if (!openSpoilersDialog) {
                 openSpoilers(url.span(), url.text())
             } else {
-                val spoiler = SpannableString(
-                    URLDecoder.decode(
-                        url.text().substringAfter("spoiler:"),
-                        "UTF-8",
-                    ),
-                )
+                val spoiler =
+                    SpannableString(
+                        URLDecoder.decode(
+                            url.text().substringAfter("spoiler:"),
+                            "UTF-8",
+                        ),
+                    )
                 Linkify.addLinks(spoiler, Linkify.WEB_URLS)
                 AlertDialog.Builder(context).apply {
                     setTitle("Spoiler")
@@ -62,7 +66,10 @@ fun TextView.prepareBody(
     }
 }
 
-fun TextView.openSpoilers(span: ClickableSpan, rawText: String) {
+fun TextView.openSpoilers(
+    span: ClickableSpan,
+    rawText: String,
+) {
     val spoilerText = URLDecoder.decode(rawText.substringAfter("spoiler:"), "UTF-8").convertMarkdownToHtml().toSpannable()
     val textBuilder = (text as SpannableString)
     val start = textBuilder.getSpanStart(span)

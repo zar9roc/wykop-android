@@ -13,13 +13,14 @@ class PromotedPresenter(
     val schedulers: Schedulers,
     private val linksApi: LinksApi,
     val linksInteractor: LinksInteractor,
-) : BasePresenter<PromotedView>(), LinkActionListener {
-
+) : BasePresenter<PromotedView>(),
+    LinkActionListener {
     var page = 1
 
     fun getPromotedLinks(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
-        linksApi.getPromoted(page)
+        linksApi
+            .getPromoted(page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -34,8 +35,7 @@ class PromotedPresenter(
                 {
                     view?.showErrorDialog(it)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     override fun dig(link: Link) = linksInteractor.dig(link).processLinkSingle(link)
@@ -43,7 +43,8 @@ class PromotedPresenter(
     override fun removeVote(link: Link) = linksInteractor.voteRemove(link).processLinkSingle(link)
 
     private fun Single<Link>.processLinkSingle(link: Link) {
-        this.subscribeOn(schedulers.backgroundThread())
+        this
+            .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
                 { view?.updateLink(it) },
@@ -51,7 +52,6 @@ class PromotedPresenter(
                     view?.showErrorDialog(it)
                     view?.updateLink(link)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

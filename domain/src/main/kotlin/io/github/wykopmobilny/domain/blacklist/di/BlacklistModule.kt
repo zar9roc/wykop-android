@@ -7,7 +7,6 @@ import io.github.wykopmobilny.ui.blacklist.GetBlacklistDetails
 
 @Module
 internal abstract class BlacklistModule {
-
     @Binds
     abstract fun getBlacklistDetails(impl: GetBlacklistDetailsQuery): GetBlacklistDetails
 }

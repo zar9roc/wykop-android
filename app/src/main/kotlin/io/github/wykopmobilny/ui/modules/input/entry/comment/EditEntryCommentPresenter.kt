@@ -10,18 +10,20 @@ class EditEntryCommentPresenter(
     private val schedulers: Schedulers,
     private val entriesApi: EntriesApi,
 ) : InputPresenter<EditEntryCommentView>() {
-
-    override fun sendWithPhoto(photo: WykopImageFile, containsAdultContent: Boolean) {
+    override fun sendWithPhoto(
+        photo: WykopImageFile,
+        containsAdultContent: Boolean,
+    ) {
         view?.showProgressBar = true
         val body = view?.textBody ?: return
         val commentId = view?.commentId ?: return
-        entriesApi.editEntryComment(
-            body = body,
-            commentId = commentId,
-            wykopImageFile = photo,
-            plus18 = containsAdultContent,
-        )
-            .subscribeOn(schedulers.backgroundThread())
+        entriesApi
+            .editEntryComment(
+                body = body,
+                commentId = commentId,
+                wykopImageFile = photo,
+                plus18 = containsAdultContent,
+            ).subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
                 { view?.exitActivity() },
@@ -29,21 +31,23 @@ class EditEntryCommentPresenter(
                     view?.showProgressBar = false
                     view?.showErrorDialog(it)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
-    override fun sendWithPhotoUrl(photo: String?, containsAdultContent: Boolean) {
+    override fun sendWithPhotoUrl(
+        photo: String?,
+        containsAdultContent: Boolean,
+    ) {
         view?.showProgressBar = true
         val body = view?.textBody ?: return
         val commentId = view?.commentId ?: return
-        entriesApi.editEntryComment(
-            body = body,
-            commentId = commentId,
-            embed = photo,
-            plus18 = containsAdultContent,
-        )
-            .subscribeOn(schedulers.backgroundThread())
+        entriesApi
+            .editEntryComment(
+                body = body,
+                commentId = commentId,
+                embed = photo,
+                plus18 = containsAdultContent,
+            ).subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
                 { view?.exitActivity() },
@@ -51,7 +55,6 @@ class EditEntryCommentPresenter(
                     view?.showProgressBar = false
                     view?.showErrorDialog(it)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

@@ -21,8 +21,10 @@ import io.github.wykopmobilny.utils.viewBinding
 import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 
-open class BaseEntriesFragment : BaseFragment(R.layout.entries_fragment), EntriesFragmentView, SwipeRefreshLayout.OnRefreshListener {
-
+open class BaseEntriesFragment :
+    BaseFragment(R.layout.entries_fragment),
+    EntriesFragmentView,
+    SwipeRefreshLayout.OnRefreshListener {
     @Inject
     lateinit var entriesApi: EntriesApi
 
@@ -41,7 +43,10 @@ open class BaseEntriesFragment : BaseFragment(R.layout.entries_fragment), Entrie
             binding.empty.searchEmptyView.isVisible = value
         }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         entriesAdapter.loadNewDataListener = { loadDataListener(false) }
 
@@ -72,7 +77,11 @@ open class BaseEntriesFragment : BaseFragment(R.layout.entries_fragment), Entrie
         super.onDestroyView()
     }
 
-    private fun updateEntryVoteState(entryId: Long, response: VoteResponse, isVoted: Boolean) {
+    private fun updateEntryVoteState(
+        entryId: Long,
+        response: VoteResponse,
+        isVoted: Boolean,
+    ) {
         entriesAdapter.data.firstOrNull { it.id == entryId }?.apply {
             response.voteCount?.let { this.voteCount = it }
             this.isVoted = isVoted
@@ -92,7 +101,10 @@ open class BaseEntriesFragment : BaseFragment(R.layout.entries_fragment), Entrie
      * @param items List of entries to add
      * @param shouldRefresh If true adapter will refresh its data with provided items. False by default
      */
-    override fun addItems(items: List<Entry>, shouldRefresh: Boolean) {
+    override fun addItems(
+        items: List<Entry>,
+        shouldRefresh: Boolean,
+    ) {
         entriesAdapter.addData(items, shouldRefresh)
         binding.swipeRefresh.isRefreshing = false
         binding.loadingView.isVisible = false

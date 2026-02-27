@@ -11,7 +11,6 @@ import io.github.wykopmobilny.ui.modules.profile.microblog.MicroblogFragmentProv
 
 @Module
 abstract class ProfileFragmentProvider {
-
     @ContributesAndroidInjector(modules = [ActionsFragmentModule::class])
     abstract fun provideActionsFragment(): ActionsFragment
 

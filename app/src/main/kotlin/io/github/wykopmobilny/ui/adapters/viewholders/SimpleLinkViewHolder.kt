@@ -21,7 +21,6 @@ class SimpleLinkViewHolder(
     private val linkActionListener: LinkActionListener,
     private val appStorage: AppStorage,
 ) : RecyclableViewHolder(binding.root) {
-
     companion object {
         const val ALPHA_NEW = 1f
         const val ALPHA_VISITED = 0.6f
@@ -45,23 +44,33 @@ class SimpleLinkViewHolder(
             appStorage = appStorage,
         )
 
-        fun getViewTypeForLink(link: Link): Int = if (link.isBlocked) {
-            TYPE_BLOCKED
-        } else {
-            TYPE_SIMPLE_LINK
-        }
+        fun getViewTypeForLink(link: Link): Int =
+            if (link.isBlocked) {
+                TYPE_BLOCKED
+            } else {
+                TYPE_SIMPLE_LINK
+            }
     }
 
     private val digCountDrawable by lazy {
-        itemView.context.obtainStyledAttributes(arrayOf(R.attr.digCountDrawable).toIntArray())
+        itemView.context
+            .obtainStyledAttributes(arrayOf(R.attr.digCountDrawable).toIntArray())
             .use { it.getDrawable(0) }
     }
 
-    fun bindView(link: Link, showMinifiedImages: Boolean, linkShowImage: Boolean) {
+    fun bindView(
+        link: Link,
+        showMinifiedImages: Boolean,
+        linkShowImage: Boolean,
+    ) {
         setupBody(link, showMinifiedImages = showMinifiedImages, linkShowImage = linkShowImage)
     }
 
-    private fun setupBody(link: Link, showMinifiedImages: Boolean, linkShowImage: Boolean) {
+    private fun setupBody(
+        link: Link,
+        showMinifiedImages: Boolean,
+        linkShowImage: Boolean,
+    ) {
         if (link.gotSelected) {
             setWidgetAlpha(ALPHA_VISITED)
         } else {
@@ -84,8 +93,7 @@ class SimpleLinkViewHolder(
                 link.previewImage
             } else {
                 link.fullImage
-            }
-                ?.let { binding.simpleImage.loadImage(it) }
+            }?.let { binding.simpleImage.loadImage(it) }
         }
 
         itemView.setOnClickListener {

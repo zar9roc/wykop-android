@@ -28,13 +28,18 @@ import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 import io.github.wykopmobilny.utils.viewBinding
 import javax.inject.Inject
 
-class ConversationActivity : BaseActivity(), ConversationView, InputToolbarListener {
-
+class ConversationActivity :
+    BaseActivity(),
+    ConversationView,
+    InputToolbarListener {
     companion object {
         private const val EXTRA_USER = "USER"
         private const val DATA_FRAGMENT_TAG = "CONVERSATION_TAG"
 
-        fun createIntent(context: Context, user: String) = Intent(context, ConversationActivity::class.java).apply {
+        fun createIntent(
+            context: Context,
+            user: String,
+        ) = Intent(context, ConversationActivity::class.java).apply {
             putExtra(EXTRA_USER, user)
         }
     }
@@ -161,13 +166,23 @@ class ConversationActivity : BaseActivity(), ConversationView, InputToolbarListe
         }
     }
 
-    override fun sendPhoto(photo: String?, body: String, containsAdultContent: Boolean) =
-        presenter.sendMessage(body, photo, containsAdultContent)
+    override fun sendPhoto(
+        photo: String?,
+        body: String,
+        containsAdultContent: Boolean,
+    ) = presenter.sendMessage(body, photo, containsAdultContent)
 
-    override fun sendPhoto(photo: WykopImageFile, body: String, containsAdultContent: Boolean) =
-        presenter.sendMessage(body, photo, containsAdultContent)
+    override fun sendPhoto(
+        photo: WykopImageFile,
+        body: String,
+        containsAdultContent: Boolean,
+    ) = presenter.sendMessage(body, photo, containsAdultContent)
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {

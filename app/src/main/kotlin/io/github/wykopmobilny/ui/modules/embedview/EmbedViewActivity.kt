@@ -46,11 +46,16 @@ import java.nio.file.Files
 import javax.inject.Inject
 import io.github.wykopmobilny.ui.base.android.R as BaseR
 
-class EmbedViewActivity : BaseActivity(), EmbedView {
-
+class EmbedViewActivity :
+    BaseActivity(),
+    EmbedView {
     companion object {
         const val EXTRA_URL = "EXTRA_URL"
-        fun createIntent(context: Context, url: String) = Intent(context, EmbedViewActivity::class.java).apply {
+
+        fun createIntent(
+            context: Context,
+            url: String,
+        ) = Intent(context, EmbedViewActivity::class.java).apply {
             putExtra(EXTRA_URL, url.trim())
         }
     }
@@ -85,28 +90,30 @@ class EmbedViewActivity : BaseActivity(), EmbedView {
         if (savedInstanceState == null) {
             presenter.playUrl(extraUrl)
         }
-        binding.videoView.player = ExoPlayer.Builder(this)
-            .setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(USAGE_MEDIA)
-                    .setContentType(AUDIO_CONTENT_TYPE_MOVIE)
-                    .build(),
-                true,
-            )
-            .build().apply {
-                addListener(
-                    object : Player.Listener {
+        binding.videoView.player =
+            ExoPlayer
+                .Builder(this)
+                .setAudioAttributes(
+                    AudioAttributes
+                        .Builder()
+                        .setUsage(USAGE_MEDIA)
+                        .setContentType(AUDIO_CONTENT_TYPE_MOVIE)
+                        .build(),
+                    true,
+                ).build()
+                .apply {
+                    addListener(
+                        object : Player.Listener {
+                            override fun onIsLoadingChanged(isLoading: Boolean) {
+                                binding.videoView.keepScreenOn = isPlaying || isLoading
+                            }
 
-                        override fun onIsLoadingChanged(isLoading: Boolean) {
-                            binding.videoView.keepScreenOn = isPlaying || isLoading
-                        }
-
-                        override fun onIsPlayingChanged(isPlaying: Boolean) {
-                            binding.videoView.keepScreenOn = isPlaying || isLoading
-                        }
-                    },
-                )
-            }
+                            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                                binding.videoView.keepScreenOn = isPlaying || isLoading
+                            }
+                        },
+                    )
+                }
         binding.videoView.controllerAutoShow = false
         binding.videoView.setShowBuffering(SHOW_BUFFERING_WHEN_PLAYING)
     }
@@ -150,20 +157,34 @@ class EmbedViewActivity : BaseActivity(), EmbedView {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_copy_url -> clipboardHelper.copyTextToClipboard(extraUrl, "imageUrl")
-            R.id.action_open_browser -> startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(extraUrl)))
-            R.id.action_share -> shareUrl()
-            R.id.action_save_mp4 ->
+            R.id.action_copy_url -> {
+                clipboardHelper.copyTextToClipboard(extraUrl, "imageUrl")
+            }
+
+            R.id.action_open_browser -> {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(extraUrl)))
+            }
+
+            R.id.action_share -> {
+                shareUrl()
+            }
+
+            R.id.action_save_mp4 -> {
                 if (checkForWriteReadPermission()) {
                     saveFile()
                 }
-            android.R.id.home -> finish()
+            }
+
+            android.R.id.home -> {
+                finish()
+            }
         }
         return super.onOptionsItemSelected(item)
     }
 
     private fun shareUrl() {
-        ShareCompat.IntentBuilder(this)
+        ShareCompat
+            .IntentBuilder(this)
             .setType("text/plain")
             .setChooserTitle(R.string.share)
             .setText(extraUrl)
@@ -187,50 +208,57 @@ class EmbedViewActivity : BaseActivity(), EmbedView {
 
     @Suppress("DEPRECATION")
     private fun saveFileV2(url: String) {
-        val request = Request.Builder()
-            .url(url)
-            .build()
+        val request =
+            Request
+                .Builder()
+                .url(url)
+                .build()
         val result = OkHttpClient().newCall(request).execute()
-        val source = if (result.isSuccessful) {
-            File(cacheDir, getFilenameFromResult(result)).apply {
-                sink().buffer().use { it.writeAll(result.body!!.source()) }
+        val source =
+            if (result.isSuccessful) {
+                File(cacheDir, getFilenameFromResult(result)).apply {
+                    sink().buffer().use { it.writeAll(result.body!!.source()) }
+                }
+            } else {
+                error("Could not download the file, http code ${result.code}")
             }
-        } else {
-            error("Could not download the file, http code ${result.code}")
-        }
 
         val fileName = Uri.parse(url).lastPathSegment ?: "video.mp4"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val values = ContentValues().apply {
-                put(MediaStore.Images.Media.DISPLAY_NAME, fileName)
-                put(MediaStore.Images.Media.MIME_TYPE, getMimeType(url))
-                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separator + PhotoViewActions.SAVED_FOLDER)
-                put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
-            }
+            val values =
+                ContentValues().apply {
+                    put(MediaStore.Images.Media.DISPLAY_NAME, fileName)
+                    put(MediaStore.Images.Media.MIME_TYPE, getMimeType(url))
+                    put(
+                        MediaStore.Images.Media.RELATIVE_PATH,
+                        Environment.DIRECTORY_PICTURES + File.separator + PhotoViewActions.SAVED_FOLDER,
+                    )
+                    put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
+                }
 
-            val uri = runCatching { contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values) }
-                .recoverCatching {
-                    values.put(
-                        MediaStore.Images.Media.RELATIVE_PATH,
-                        Environment.DIRECTORY_MOVIES + File.separator + PhotoViewActions.SAVED_FOLDER,
-                    )
-                    contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
-                }
-                .onFailure {
-                    values.put(
-                        MediaStore.Images.Media.RELATIVE_PATH,
-                        Environment.DIRECTORY_DOWNLOADS + File.separator + PhotoViewActions.SAVED_FOLDER,
-                    )
-                    contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
-                }
-                .getOrThrow()
-                .let(::checkNotNull)
+            val uri =
+                runCatching { contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values) }
+                    .recoverCatching {
+                        values.put(
+                            MediaStore.Images.Media.RELATIVE_PATH,
+                            Environment.DIRECTORY_MOVIES + File.separator + PhotoViewActions.SAVED_FOLDER,
+                        )
+                        contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
+                    }.onFailure {
+                        values.put(
+                            MediaStore.Images.Media.RELATIVE_PATH,
+                            Environment.DIRECTORY_DOWNLOADS + File.separator + PhotoViewActions.SAVED_FOLDER,
+                        )
+                        contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
+                    }.getOrThrow()
+                    .let(::checkNotNull)
             contentResolver.openOutputStream(uri)?.use { Files.copy(source.toPath(), it) }
         } else {
-            val directory = File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                PhotoViewActions.SAVED_FOLDER,
-            )
+            val directory =
+                File(
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                    PhotoViewActions.SAVED_FOLDER,
+                )
             val targetFile = File(directory, fileName)
             source.copyTo(targetFile, true)
             addVideoToGallery(targetFile.path, this)
@@ -238,7 +266,10 @@ class EmbedViewActivity : BaseActivity(), EmbedView {
         source.delete()
     }
 
-    private fun addVideoToGallery(filePath: String, context: Context) {
+    private fun addVideoToGallery(
+        filePath: String,
+        context: Context,
+    ) {
         val values = ContentValues()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -251,10 +282,10 @@ class EmbedViewActivity : BaseActivity(), EmbedView {
     }
 
     private fun saveFile() {
-        Completable.fromCallable {
-            saveFileV2(presenter.mp4Url)
-        }
-            .subscribeOn(WykopSchedulers().backgroundThread())
+        Completable
+            .fromCallable {
+                saveFileV2(presenter.mp4Url)
+            }.subscribeOn(WykopSchedulers().backgroundThread())
             .observeOn(WykopSchedulers().mainThread())
             .subscribe(
                 {
@@ -284,14 +315,16 @@ class EmbedViewActivity : BaseActivity(), EmbedView {
             arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE),
             1,
         )
-        val writePermission = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        )
-        val readPermission = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-        )
+        val writePermission =
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            )
+        val readPermission =
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+            )
         return writePermission == PackageManager.PERMISSION_GRANTED && readPermission == PackageManager.PERMISSION_GRANTED
     }
 

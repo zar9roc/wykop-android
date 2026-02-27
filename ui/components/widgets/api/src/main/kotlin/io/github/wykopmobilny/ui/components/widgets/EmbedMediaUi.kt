@@ -7,9 +7,7 @@ data class EmbedMediaUi(
     val clickAction: () -> Unit,
     val widthToHeightRatio: Float,
 ) {
-
     sealed class Content {
-
         data class StaticImage(
             val url: String,
         ) : Content()

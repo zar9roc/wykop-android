@@ -8,14 +8,15 @@ import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @BlacklistScope
-internal class BlacklistViewStateStorage @Inject constructor() {
+internal class BlacklistViewStateStorage
+    @Inject
+    constructor() {
+        val state = MutableStateFlow(value = BlacklistViewState())
 
-    val state = MutableStateFlow(value = BlacklistViewState())
-
-    fun update(updater: (BlacklistViewState) -> BlacklistViewState) {
-        state.update(updater)
+        fun update(updater: (BlacklistViewState) -> BlacklistViewState) {
+            state.update(updater)
+        }
     }
-}
 
 data class BlacklistViewState(
     val generalResource: Resource = Resource.idle(),

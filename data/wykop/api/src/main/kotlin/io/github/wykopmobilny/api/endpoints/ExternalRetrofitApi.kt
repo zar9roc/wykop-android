@@ -9,16 +9,21 @@ import retrofit2.http.Headers
 import retrofit2.http.Path
 
 interface ExternalRetrofitApi {
-
     @Headers("@: $REMOVE_USERKEY_HEADER")
     @GET("https://api.gfycat.com/v1/gfycats/{gfycatId}")
-    suspend fun getGfycat(@Path("gfycatId") gfycatItem: String): Gfycat
+    suspend fun getGfycat(
+        @Path("gfycatId") gfycatItem: String,
+    ): Gfycat
 
     @Headers("@: $REMOVE_USERKEY_HEADER")
     @GET("https://api.streamable.com/videos/{streamableId}")
-    suspend fun getStreamableFile(@Path("streamableId") streamableId: String): Streamable
+    suspend fun getStreamableFile(
+        @Path("streamableId") streamableId: String,
+    ): Streamable
 
     @Headers("@: $REMOVE_USERKEY_HEADER")
     @GET("https://coub.com/api/v2/coubs/{coubId}")
-    suspend fun getCoub(@Path("coubId") coubId: String): Coub
+    suspend fun getCoub(
+        @Path("coubId") coubId: String,
+    ): Coub
 }

@@ -15,7 +15,6 @@ import io.github.wykopmobilny.api.endpoints.SuggestRetrofitApi
 import io.github.wykopmobilny.api.endpoints.TagRetrofitApi
 
 interface WykopApi {
-
     fun addLinkRetrofitApi(): AddLinkRetrofitApi
 
     fun entriesRetrofitApi(): EntriesRetrofitApi

@@ -11,8 +11,9 @@ import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.ui.adapters.viewholders.RecyclableViewHolder
 
-class ViewHolderDependentItemDecorator(val context: Context) : RecyclerView.ItemDecoration() {
-
+class ViewHolderDependentItemDecorator(
+    val context: Context,
+) : RecyclerView.ItemDecoration() {
     val paint by lazy { Paint() }
     private val largeHeight by lazy { context.resources.getDimension(R.dimen.separator_large).toInt() }
     private val normalHeight by lazy { context.resources.getDimension(R.dimen.separator_normal).toInt() }
@@ -25,7 +26,12 @@ class ViewHolderDependentItemDecorator(val context: Context) : RecyclerView.Item
         paint.color = typedValue.data
     }
 
-    override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
+    override fun getItemOffsets(
+        outRect: Rect,
+        view: View,
+        parent: RecyclerView,
+        state: RecyclerView.State,
+    ) {
         try {
             if (view.tag == RecyclableViewHolder.SEPARATOR_NORMAL) {
                 outRect.set(0, 0, 0, largeHeight)
@@ -37,7 +43,11 @@ class ViewHolderDependentItemDecorator(val context: Context) : RecyclerView.Item
         }
     }
 
-    override fun onDraw(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {
+    override fun onDraw(
+        c: Canvas,
+        parent: RecyclerView,
+        state: RecyclerView.State,
+    ) {
         try {
             super.onDraw(c, parent, state)
             for (i in 0 until parent.childCount) {

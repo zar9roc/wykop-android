@@ -7,8 +7,9 @@ import io.github.wykopmobilny.ui.modules.profile.ProfileActivity
 import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 import javax.inject.Inject
 
-class ActionsFragment : BaseEntryLinkFragment(), ActionsView {
-
+class ActionsFragment :
+    BaseEntryLinkFragment(),
+    ActionsView {
     companion object {
         fun newInstance() = ActionsFragment()
     }
@@ -22,7 +23,10 @@ class ActionsFragment : BaseEntryLinkFragment(), ActionsView {
     override var loadDataListener: (Boolean) -> Unit = { presenter.getActions() }
     private val username by lazy { (activity as ProfileActivity).username }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         presenter.subscribe(this)
         presenter.username = username

@@ -50,10 +50,8 @@ import javax.inject.Singleton
     ],
 )
 interface DomainComponent {
-
     @Component.Factory
     interface Factory {
-
         fun create(
             @BindsInstance appScopes: AppScopes,
             @BindsInstance connectConfig: () -> ConnectConfig,

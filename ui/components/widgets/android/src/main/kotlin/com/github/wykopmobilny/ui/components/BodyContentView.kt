@@ -20,8 +20,10 @@ import androidx.core.view.isVisible
 import io.github.wykopmobilny.ui.components.widgets.MessageBodyUi
 import java.util.regex.Pattern
 
-class BodyContentView(context: Context, attrs: AttributeSet?) : AppCompatTextView(context, attrs) {
-
+class BodyContentView(
+    context: Context,
+    attrs: AttributeSet?,
+) : AppCompatTextView(context, attrs) {
     private val ellipsis = SpannableString("\u0020[rozwiń]")
     private val defaultEndPunctuation = Pattern.compile("[.!?,;:…]*$", Pattern.DOTALL)
     var rawText: CharSequence? = null
@@ -63,7 +65,10 @@ class BodyContentView(context: Context, attrs: AttributeSet?) : AppCompatTextVie
         return super.dispatchTouchEvent(event)
     }
 
-    override fun setText(text: CharSequence?, type: BufferType?) {
+    override fun setText(
+        text: CharSequence?,
+        type: BufferType?,
+    ) {
         super.setText(text, type)
         if (text !is Spanned || text.getSpans<ViewMoreSpan>().isEmpty()) {
             rawText = text
@@ -71,7 +76,11 @@ class BodyContentView(context: Context, attrs: AttributeSet?) : AppCompatTextVie
     }
 
     private val ellipsizeStrategy = EllipsizeEndStrategy()
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         val processed = ellipsizeStrategy.processText(rawText)
         if (processed.toString() != text.toString()) {
@@ -81,21 +90,21 @@ class BodyContentView(context: Context, attrs: AttributeSet?) : AppCompatTextVie
     }
 
     private inner class EllipsizeEndStrategy {
-
         fun processText(text: CharSequence?) = if (text == null || fitsInLayout(text)) text else createEllipsizedText(text)
 
         private fun fitsInLayout(text: CharSequence) = createWorkingLayout(text).lineCount <= maxLines
 
-        private fun createWorkingLayout(workingText: CharSequence) = StaticLayout.Builder.obtain(
-            workingText,
-            0,
-            workingText.length,
-            paint,
-            measuredWidth - compoundPaddingLeft - compoundPaddingRight,
-        )
-            .setMaxLines(maxLines)
-            .setLineSpacing(lineSpacingExtra, lineSpacingMultiplier)
-            .build()
+        private fun createWorkingLayout(workingText: CharSequence) =
+            StaticLayout.Builder
+                .obtain(
+                    workingText,
+                    0,
+                    workingText.length,
+                    paint,
+                    measuredWidth - compoundPaddingLeft - compoundPaddingRight,
+                ).setMaxLines(maxLines)
+                .setLineSpacing(lineSpacingExtra, lineSpacingMultiplier)
+                .build()
 
         private fun stripEndPunctuation(workingText: CharSequence) = defaultEndPunctuation.matcher(workingText).replaceFirst("")
 
@@ -122,14 +131,16 @@ class BodyContentView(context: Context, attrs: AttributeSet?) : AppCompatTextVie
     }
 
     private inner class ViewMoreSpan : ClickableSpan() {
-
         override fun onClick(widget: View) = onViewMoreClicked()
     }
 }
 
 private object SelectableLinkMovement : LinkMovementMethod() {
-
-    override fun onTouchEvent(widget: TextView, buffer: Spannable, event: MotionEvent): Boolean {
+    override fun onTouchEvent(
+        widget: TextView,
+        buffer: Spannable,
+        event: MotionEvent,
+    ): Boolean {
         val action = event.action
         if (action == MotionEvent.ACTION_UP) {
             val xTarget = event.x - widget.totalPaddingLeft + widget.scrollX

@@ -36,19 +36,16 @@ object YouTubeUrlParser {
         return findInUrl(videoRegex, unwrappedUrl)
     }
 
-    fun getTimestamp(videoUrl: String): String? {
-        return findInUrl(timestampRegex, videoUrl)
-    }
+    fun getTimestamp(videoUrl: String): String? = findInUrl(timestampRegex, videoUrl)
 
-    fun getVideoUrl(videoId: String): String {
-        return "http://youtu.be/$videoId"
-    }
+    fun getVideoUrl(videoId: String): String = "http://youtu.be/$videoId"
 
-    fun isVideoUrl(url: String): Boolean {
-        return videoRegex.find(unwrapConsentYoutubeUrl(url)) != null
-    }
+    fun isVideoUrl(url: String): Boolean = videoRegex.find(unwrapConsentYoutubeUrl(url)) != null
 
-    private fun findInUrl(regex: Regex, url: String): String? {
+    private fun findInUrl(
+        regex: Regex,
+        url: String,
+    ): String? {
         val match = regex.find(url)
         return match?.groupValues?.get(1)
     }
@@ -60,7 +57,6 @@ object YouTubeUrlParser {
 }
 
 object StatusBarUtil {
-
     fun hide(activity: Activity) {
         val decorView = activity.window.decorView
         val uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN
@@ -69,7 +65,6 @@ object StatusBarUtil {
 }
 
 object AudioUtil {
-
     private val mSingletonLock = Any()
     private var audioManager: AudioManager? = null
 
@@ -85,7 +80,11 @@ object AudioUtil {
         }
     }
 
-    fun adjustMusicVolume(context: Context, up: Boolean, showInterface: Boolean) {
+    fun adjustMusicVolume(
+        context: Context,
+        up: Boolean,
+        showInterface: Boolean,
+    ) {
         val direction = if (up) AudioManager.ADJUST_RAISE else AudioManager.ADJUST_LOWER
         val flag = AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE or if (showInterface) AudioManager.FLAG_SHOW_UI else 0
         getInstance(context)!!.adjustStreamVolume(AudioManager.STREAM_MUSIC, direction, flag)
@@ -104,7 +103,6 @@ class YTPlayer :
     YouTubePlayer.OnInitializedListener,
     YouTubePlayer.OnFullscreenListener,
     YouTubePlayer.PlayerStateChangeListener {
-
     private var videoId: String? = null
     private var timestampMs: Long? = null
 
@@ -147,40 +145,52 @@ class YTPlayer :
         animExit = intent.getIntExtra(EXTRA_ANIM_EXIT, 0)
     }
 
-    override fun onInitializationSuccess(provider: YouTubePlayer.Provider, player: YouTubePlayer, wasRestored: Boolean) {
+    override fun onInitializationSuccess(
+        provider: YouTubePlayer.Provider,
+        player: YouTubePlayer,
+        wasRestored: Boolean,
+    ) {
         this.player = player
         player.setOnFullscreenListener(this)
         player.setPlayerStateChangeListener(this)
 
         when (orientation) {
-            Orientation.AUTO -> player.fullscreenControlFlags = (
-                YouTubePlayer.FULLSCREEN_FLAG_CONTROL_ORIENTATION
-                    or YouTubePlayer.FULLSCREEN_FLAG_CONTROL_SYSTEM_UI
-                    or YouTubePlayer.FULLSCREEN_FLAG_ALWAYS_FULLSCREEN_IN_LANDSCAPE
-                    or YouTubePlayer.FULLSCREEN_FLAG_CUSTOM_LAYOUT
+            Orientation.AUTO -> {
+                player.fullscreenControlFlags = (
+                    YouTubePlayer.FULLSCREEN_FLAG_CONTROL_ORIENTATION
+                        or YouTubePlayer.FULLSCREEN_FLAG_CONTROL_SYSTEM_UI
+                        or YouTubePlayer.FULLSCREEN_FLAG_ALWAYS_FULLSCREEN_IN_LANDSCAPE
+                        or YouTubePlayer.FULLSCREEN_FLAG_CUSTOM_LAYOUT
                 )
+            }
+
             Orientation.AUTO_START_WITH_LANDSCAPE -> {
                 player.fullscreenControlFlags = (
                     YouTubePlayer.FULLSCREEN_FLAG_CONTROL_ORIENTATION
                         or YouTubePlayer.FULLSCREEN_FLAG_CONTROL_SYSTEM_UI
                         or YouTubePlayer.FULLSCREEN_FLAG_ALWAYS_FULLSCREEN_IN_LANDSCAPE
                         or YouTubePlayer.FULLSCREEN_FLAG_CUSTOM_LAYOUT
-                    )
+                )
                 player.setFullscreen(true)
             }
+
             Orientation.ONLY_LANDSCAPE -> {
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                 player.fullscreenControlFlags =
                     YouTubePlayer.FULLSCREEN_FLAG_CONTROL_SYSTEM_UI or YouTubePlayer.FULLSCREEN_FLAG_CUSTOM_LAYOUT
                 player.setFullscreen(true)
             }
+
             Orientation.ONLY_PORTRAIT -> {
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
                 player.fullscreenControlFlags =
                     YouTubePlayer.FULLSCREEN_FLAG_CONTROL_SYSTEM_UI or YouTubePlayer.FULLSCREEN_FLAG_CUSTOM_LAYOUT
                 player.setFullscreen(true)
             }
-            else -> Unit
+
+            else -> {
+                Unit
+            }
         }
 
         when (playerStyle) {
@@ -195,7 +205,10 @@ class YTPlayer :
         }
     }
 
-    override fun onInitializationFailure(provider: YouTubePlayer.Provider, errorReason: YouTubeInitializationResult) {
+    override fun onInitializationFailure(
+        provider: YouTubePlayer.Provider,
+        errorReason: YouTubeInitializationResult,
+    ) {
         if (errorReason.isUserRecoverableError) {
             errorReason.getErrorDialog(this, RECOVERY_DIALOG_REQUEST).show()
         } else {
@@ -204,7 +217,11 @@ class YTPlayer :
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         if (requestCode == RECOVERY_DIALOG_REQUEST) {
             // Retry initialization if user performed a recovery action
             playerView.initialize(findYoutubeApiKey(), this)
@@ -218,31 +235,42 @@ class YTPlayer :
         super.onConfigurationChanged(newConfig)
         runCatching {
             when (orientation) {
-                Orientation.AUTO, Orientation.AUTO_START_WITH_LANDSCAPE ->
+                Orientation.AUTO, Orientation.AUTO_START_WITH_LANDSCAPE -> {
                     when (newConfig.orientation) {
                         Configuration.ORIENTATION_LANDSCAPE -> player?.setFullscreen(true)
                         Configuration.ORIENTATION_PORTRAIT -> player?.setFullscreen(true)
                         else -> Unit
                     }
+                }
+
                 Orientation.ONLY_LANDSCAPE,
                 Orientation.ONLY_PORTRAIT,
                 null,
-                -> Unit
+                -> {
+                    Unit
+                }
             }
-        }
-            .onFailure { Napier.i("onConfigurationChanged failed", it) }
+        }.onFailure { Napier.i("onConfigurationChanged failed", it) }
     }
 
     override fun onFullscreen(fullScreen: Boolean) {
         when (orientation) {
-            Orientation.AUTO, Orientation.AUTO_START_WITH_LANDSCAPE ->
-                requestedOrientation = if (fullScreen) {
-                    LANDSCAPE_ORIENTATION
-                } else {
-                    PORTRAIT_ORIENTATION
-                }
-            Orientation.ONLY_LANDSCAPE, Orientation.ONLY_PORTRAIT -> Unit
-            else -> Unit
+            Orientation.AUTO, Orientation.AUTO_START_WITH_LANDSCAPE -> {
+                requestedOrientation =
+                    if (fullScreen) {
+                        LANDSCAPE_ORIENTATION
+                    } else {
+                        PORTRAIT_ORIENTATION
+                    }
+            }
+
+            Orientation.ONLY_LANDSCAPE, Orientation.ONLY_PORTRAIT -> {
+                Unit
+            }
+
+            else -> {
+                Unit
+            }
         }
     }
 
@@ -251,9 +279,10 @@ class YTPlayer :
         Napier.i("onError : " + reason.name)
         if (ErrorReason.NOT_PLAYABLE == reason) {
             val videoUri = Uri.parse(YouTubeUrlParser.getVideoUrl(videoId!!))
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:$videoId"))
-                .takeIf { packageManager.queryIntentActivities(it, PackageManager.MATCH_DEFAULT_ONLY).isNotEmpty() }
-                ?: Intent(Intent.ACTION_VIEW, videoUri)
+            val intent =
+                Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:$videoId"))
+                    .takeIf { packageManager.queryIntentActivities(it, PackageManager.MATCH_DEFAULT_ONLY).isNotEmpty() }
+                    ?: Intent(Intent.ACTION_VIEW, videoUri)
 
             if (handleError) {
                 startActivity(intent)
@@ -282,7 +311,10 @@ class YTPlayer :
     }
 
     // Audio Managing
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+    override fun onKeyDown(
+        keyCode: Int,
+        event: KeyEvent,
+    ): Boolean {
         if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
             AudioUtil.adjustMusicVolume(applicationContext, true, showAudioUi)
             StatusBarUtil.hide(this)

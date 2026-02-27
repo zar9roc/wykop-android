@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.collect
 data class Event<T : Any>(
     private val value: T,
 ) {
-
     private var hasBeenConsumed = false
 
     @MainThread

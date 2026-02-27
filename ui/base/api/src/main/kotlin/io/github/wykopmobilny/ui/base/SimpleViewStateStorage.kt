@@ -5,7 +5,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 
 class SimpleViewStateStorage {
-
     private val _state = MutableStateFlow(Resource.idle())
     val state: StateFlow<Resource> = _state
 
@@ -19,23 +18,24 @@ data class Resource private constructor(
     val isLoading: Boolean = false,
     val failedAction: FailedAction? = null,
 ) {
-
     companion object {
+        fun loading() =
+            Resource(
+                isLoading = true,
+                failedAction = null,
+            )
 
-        fun loading() = Resource(
-            isLoading = true,
-            failedAction = null,
-        )
+        fun error(failedAction: FailedAction) =
+            Resource(
+                isLoading = false,
+                failedAction = failedAction,
+            )
 
-        fun error(failedAction: FailedAction) = Resource(
-            isLoading = false,
-            failedAction = failedAction,
-        )
-
-        fun idle() = Resource(
-            isLoading = false,
-            failedAction = null,
-        )
+        fun idle() =
+            Resource(
+                isLoading = false,
+                failedAction = null,
+            )
     }
 }
 
@@ -46,5 +46,8 @@ data class FailedAction(
 
 sealed class ItemState {
     object InProgress : ItemState()
-    data class Error(val error: Throwable) : ItemState()
+
+    data class Error(
+        val error: Throwable,
+    ) : ItemState()
 }

@@ -14,7 +14,6 @@ import io.github.wykopmobilny.utils.viewBinding
 import io.github.wykopmobilny.ui.settings.android.R as SettingsR
 
 class MyWykopFragment : BaseFragment(R.layout.activity_mywykop) {
-
     companion object {
         fun newInstance() = MyWykopFragment()
     }
@@ -28,7 +27,10 @@ class MyWykopFragment : BaseFragment(R.layout.activity_mywykop) {
         setHasOptionsMenu(true)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         pagerAdapter = MyWykopPagerAdapter(resources, childFragmentManager)
         binding.pager.offscreenPageLimit = 4
@@ -51,7 +53,10 @@ class MyWykopFragment : BaseFragment(R.layout.activity_mywykop) {
         return true
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(
+        menu: Menu,
+        inflater: MenuInflater,
+    ) {
         inflater.inflate(R.menu.refresh_layout, menu)
     }
 }

@@ -8,5 +8,8 @@ import io.github.wykopmobilny.base.Schedulers
 @Module
 class AddLinkUrlInputModule {
     @Provides
-    fun providePresenter(schedulers: Schedulers, addLinkApi: AddLinkApi) = AddLinkUrlInputPresenter(schedulers, addLinkApi)
+    fun providePresenter(
+        schedulers: Schedulers,
+        addLinkApi: AddLinkApi,
+    ) = AddLinkUrlInputPresenter(schedulers, addLinkApi)
 }

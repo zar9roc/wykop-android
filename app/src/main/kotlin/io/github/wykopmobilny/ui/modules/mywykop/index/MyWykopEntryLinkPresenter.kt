@@ -22,13 +22,15 @@ class MyWykopEntryLinkPresenter(
     val linksInteractor: LinksInteractor,
     val linksApi: LinksApi,
     private val myWykopApi: MyWykopApi,
-) : BasePresenter<EntryLinkFragmentView>(), EntryActionListener, LinkActionListener {
-
+) : BasePresenter<EntryLinkFragmentView>(),
+    EntryActionListener,
+    LinkActionListener {
     var page = 1
 
     fun loadIndex(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
-        myWykopApi.getIndex(page)
+        myWykopApi
+            .getIndex(page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -41,13 +43,13 @@ class MyWykopEntryLinkPresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     fun loadTags(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
-        myWykopApi.byTags(page)
+        myWykopApi
+            .byTags(page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -60,13 +62,13 @@ class MyWykopEntryLinkPresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     fun loadUsers(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
-        myWykopApi.byUsers(page)
+        myWykopApi
+            .byUsers(page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -79,8 +81,7 @@ class MyWykopEntryLinkPresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     override fun voteEntry(entry: Entry) = entriesInteractor.voteEntry(entry).processEntrySingle(entry)
@@ -91,11 +92,15 @@ class MyWykopEntryLinkPresenter(
 
     override fun deleteEntry(entry: Entry) = entriesInteractor.deleteEntry(entry).processEntrySingle(entry)
 
-    override fun voteSurvey(entry: Entry, index: Int) = entriesInteractor.voteSurvey(entry, index).processEntrySingle(entry)
+    override fun voteSurvey(
+        entry: Entry,
+        index: Int,
+    ) = entriesInteractor.voteSurvey(entry, index).processEntrySingle(entry)
 
     override fun getVoters(entry: Entry) {
         view?.openVotersMenu()
-        entriesApi.getEntryVoters(entry.id)
+        entriesApi
+            .getEntryVoters(entry.id)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -105,8 +110,7 @@ class MyWykopEntryLinkPresenter(
                 {
                     view?.showErrorDialog(it)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     override fun dig(link: Link) = linksInteractor.dig(link).processLinkSingle(link)
@@ -123,8 +127,7 @@ class MyWykopEntryLinkPresenter(
                     view?.showErrorDialog(it)
                     view?.updateEntry(entry)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     private fun Single<Link>.processLinkSingle(link: Link) {
@@ -137,7 +140,6 @@ class MyWykopEntryLinkPresenter(
                     view?.showErrorDialog(it)
                     view?.updateLink(link)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

@@ -37,8 +37,9 @@ import kotlinx.datetime.periodUntil
 import javax.inject.Inject
 import io.github.wykopmobilny.ui.base.android.R as BaseR
 
-class ProfileActivity : BaseActivity(), ProfileView {
-
+class ProfileActivity :
+    BaseActivity(),
+    ProfileView {
     @Inject
     lateinit var navigator: NewNavigator
 
@@ -204,7 +205,10 @@ class ProfileActivity : BaseActivity(), ProfileView {
         const val EXTRA_USERNAME = "EXTRA_USERNAME"
         const val DATA_FRAGMENT_TAG = "PROFILE_DATAFRAGMENT"
 
-        fun createIntent(context: Context, username: String) = if (BuildConfig.DEBUG) {
+        fun createIntent(
+            context: Context,
+            username: String,
+        ) = if (BuildConfig.DEBUG) {
             ProfileActivityV2.createIntent(context, userId = username)
             Intent(context, ProfileActivity::class.java).apply {
                 putExtra(EXTRA_USERNAME, username)

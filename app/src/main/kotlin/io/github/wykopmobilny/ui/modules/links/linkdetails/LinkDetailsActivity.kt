@@ -38,7 +38,6 @@ class LinkDetailsActivity :
     androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener,
     InputToolbarListener,
     LinkCommentViewListener {
-
     @Inject
     lateinit var userManagerApi: UserManagerApi
 
@@ -83,26 +82,31 @@ class LinkDetailsActivity :
         binding.inputToolbar.addAddressant(comment.author.nick)
     }
 
-    override fun setCollapsed(comment: LinkComment, isCollapsed: Boolean) {
+    override fun setCollapsed(
+        comment: LinkComment,
+        isCollapsed: Boolean,
+    ) {
         adapter.link?.comments?.forEach {
             when (comment.id) {
                 it.id -> {
                     it.isCollapsed = isCollapsed
                     it.isParentCollapsed = false
                 }
-                it.parentId -> it.isParentCollapsed = isCollapsed
+
+                it.parentId -> {
+                    it.isParentCollapsed = isCollapsed
+                }
             }
         }
         adapter.notifyDataSetChanged()
     }
 
-    override fun getReplyCommentId(): Long {
-        return if (replyLinkId != 0L && binding.inputToolbar.textBody.contains("@")) {
+    override fun getReplyCommentId(): Long =
+        if (replyLinkId != 0L && binding.inputToolbar.textBody.contains("@")) {
             replyLinkId
         } else {
             -1
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -138,7 +142,8 @@ class LinkDetailsActivity :
         binding.swiperefresh.setOnRefreshListener(this)
 
         presenter.sortBy = runBlocking {
-            appStorage.preferencesQueries.getPreference("settings.links.comments_sort")
+            appStorage.preferencesQueries
+                .getPreference("settings.links.comments_sort")
                 .executeAsOneOrNull()
         } ?: "best"
         adapter.notifyDataSetChanged()
@@ -171,7 +176,10 @@ class LinkDetailsActivity :
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.refresh -> onRefresh()
+            R.id.refresh -> {
+                onRefresh()
+            }
+
             R.id.sortbyBest -> {
                 presenter.sortBy = "best"
                 appStorage.preferencesQueries.insertOrReplace(PreferenceEntity(key = "settings.links.comments_sort", value_ = "best"))
@@ -179,6 +187,7 @@ class LinkDetailsActivity :
                 presenter.loadComments()
                 binding.swiperefresh.isRefreshing = true
             }
+
             R.id.sortbyNewest -> {
                 presenter.sortBy = "new"
                 appStorage.preferencesQueries.insertOrReplace(PreferenceEntity(key = "settings.links.comments_sort", value_ = "new"))
@@ -186,6 +195,7 @@ class LinkDetailsActivity :
                 presenter.loadComments()
                 binding.swiperefresh.isRefreshing = true
             }
+
             R.id.sortbyOldest -> {
                 presenter.sortBy = "old"
                 appStorage.preferencesQueries.insertOrReplace(PreferenceEntity(key = "settings.links.comments_sort", value_ = "old"))
@@ -194,7 +204,9 @@ class LinkDetailsActivity :
                 binding.swiperefresh.isRefreshing = true
             }
 
-            android.R.id.home -> finish()
+            android.R.id.home -> {
+                finish()
+            }
         }
         return true
     }
@@ -253,7 +265,11 @@ class LinkDetailsActivity :
     }
 
     override fun scrollToComment(id: Long) {
-        val index = adapter.link?.comments?.indexOfFirst { it.id == id }?.takeIf { it >= 0 } ?: return
+        val index =
+            adapter.link
+                ?.comments
+                ?.indexOfFirst { it.id == id }
+                ?.takeIf { it >= 0 } ?: return
         binding.recyclerView.scrollToPosition(index + 1)
     }
 
@@ -276,11 +292,19 @@ class LinkDetailsActivity :
         )
     }
 
-    override fun sendPhoto(photo: String?, body: String, containsAdultContent: Boolean) {
+    override fun sendPhoto(
+        photo: String?,
+        body: String,
+        containsAdultContent: Boolean,
+    ) {
         presenter.sendReply(body, photo, containsAdultContent)
     }
 
-    override fun sendPhoto(photo: WykopImageFile, body: String, containsAdultContent: Boolean) {
+    override fun sendPhoto(
+        photo: WykopImageFile,
+        body: String,
+        containsAdultContent: Boolean,
+    ) {
         presenter.sendReply(body, photo, containsAdultContent)
     }
 
@@ -298,7 +322,11 @@ class LinkDetailsActivity :
         replyLinkId = 0
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
@@ -340,7 +368,10 @@ class LinkDetailsActivity :
         const val EXTRA_LINK_ID = "EXTRA_LINKID"
         const val EXTRA_COMMENT_ID = "EXTRA_COMMENT_ID"
 
-        fun createIntent(context: Context, link: Link) = if (BuildConfig.DEBUG) {
+        fun createIntent(
+            context: Context,
+            link: Link,
+        ) = if (BuildConfig.DEBUG) {
             LinkDetailsActivityV2.createIntent(context, link.id)
             Intent(context, LinkDetailsActivity::class.java).apply {
                 putExtra(EXTRA_LINK, link)
@@ -351,7 +382,11 @@ class LinkDetailsActivity :
             }
         }
 
-        fun createIntent(context: Context, linkId: Long, commentId: Long? = null) = if (BuildConfig.DEBUG) {
+        fun createIntent(
+            context: Context,
+            linkId: Long,
+            commentId: Long? = null,
+        ) = if (BuildConfig.DEBUG) {
             LinkDetailsActivityV2.createIntent(context, linkId = linkId, commentId = commentId)
             Intent(context, LinkDetailsActivity::class.java).apply {
                 putExtra(EXTRA_LINK_ID, linkId)

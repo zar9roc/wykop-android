@@ -7,7 +7,6 @@ import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 import javax.inject.Inject
 
 class MyWykopEntryLinkFragment : BaseEntryLinkFragment() {
-
     companion object {
         const val TYPE_INDEX = "TYPE_INDEX"
         const val TYPE_TAGS = "TYPE_TAGS"
@@ -43,7 +42,10 @@ class MyWykopEntryLinkFragment : BaseEntryLinkFragment() {
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         presenter.subscribe(this)
         entriesAdapter.entryActionListener = presenter

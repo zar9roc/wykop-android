@@ -10,7 +10,6 @@ data class SearchDetailsUi(
     val onQueryChanged: (String) -> Unit,
     val onQuerySubmitted: (() -> Unit)?,
 ) {
-
     data class Suggestion(
         val text: String,
         val onClick: () -> Unit,

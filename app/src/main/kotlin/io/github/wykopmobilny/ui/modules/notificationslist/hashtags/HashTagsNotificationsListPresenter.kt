@@ -13,12 +13,12 @@ class HashTagsNotificationsListPresenter(
     val schedulers: Schedulers,
     private val notificationsApi: NotificationsApi,
 ) : BasePresenter<NotificationsListView>() {
-
     var page = 1
 
     fun loadData(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
-        notificationsApi.getHashTagNotifications(page)
+        notificationsApi
+            .getHashTagNotifications(page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -31,12 +31,12 @@ class HashTagsNotificationsListPresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     fun readNotifications() {
-        notificationsApi.readHashTagNotifications()
+        notificationsApi
+            .readHashTagNotifications()
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe({ view?.showReadToast() }, { view?.showErrorDialog(it) })
@@ -44,7 +44,8 @@ class HashTagsNotificationsListPresenter(
     }
 
     fun loadAllNotifications(shouldRefresh: Boolean) {
-        notificationsApi.getHashTagNotificationCount()
+        notificationsApi
+            .getHashTagNotificationCount()
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -56,15 +57,15 @@ class HashTagsNotificationsListPresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     private fun fetchAllPages(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
         val allData = arrayListOf<Notification>()
         var dataEmpty = false
-        Single.defer { notificationsApi.getHashTagNotifications(page) }
+        Single
+            .defer { notificationsApi.getHashTagNotifications(page) }
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .repeatUntil { dataEmpty }
@@ -89,7 +90,6 @@ class HashTagsNotificationsListPresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

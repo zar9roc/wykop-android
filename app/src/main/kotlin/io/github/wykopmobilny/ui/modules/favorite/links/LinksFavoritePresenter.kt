@@ -13,13 +13,14 @@ class LinksFavoritePresenter(
     val schedulers: Schedulers,
     val linksApi: LinksApi,
     val linksInteractor: LinksInteractor,
-) : BasePresenter<LinksFavoriteView>(), LinkActionListener {
-
+) : BasePresenter<LinksFavoriteView>(),
+    LinkActionListener {
     var page = 1
 
     fun loadData(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
-        linksApi.getObserved(page)
+        linksApi
+            .getObserved(page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -32,8 +33,7 @@ class LinksFavoritePresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     override fun dig(link: Link) = linksInteractor.dig(link).processLinkSingle(link)
@@ -50,7 +50,6 @@ class LinksFavoritePresenter(
                     view?.showErrorDialog(it)
                     view?.updateLink(link)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

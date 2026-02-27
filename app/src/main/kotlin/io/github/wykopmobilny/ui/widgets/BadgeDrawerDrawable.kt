@@ -8,8 +8,9 @@ import android.graphics.Rect
 import android.graphics.Typeface
 import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
 
-class BadgeDrawerDrawable(context: Context) : DrawerArrowDrawable(context) {
-
+class BadgeDrawerDrawable(
+    context: Context,
+) : DrawerArrowDrawable(context) {
     companion object {
         // Fraction of the drawable's intrinsic size we want the badge to be.
         private const val SIZE_FACTOR = .35f

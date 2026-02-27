@@ -7,6 +7,8 @@ import io.github.wykopmobilny.base.BaseView
 
 interface ProfileView : BaseView {
     fun showProfile(profileResponse: ProfileResponse)
+
     fun showButtons(observeState: ObserveStateResponse)
+
     fun showBadges(badges: List<BadgeResponse>)
 }

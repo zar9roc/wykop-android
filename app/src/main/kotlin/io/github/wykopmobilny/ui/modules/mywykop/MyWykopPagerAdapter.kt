@@ -11,25 +11,32 @@ class MyWykopPagerAdapter(
     val resources: Resources,
     fragmentManager: androidx.fragment.app.FragmentManager,
 ) : androidx.fragment.app.FragmentPagerAdapter(fragmentManager) {
-
     val registeredFragments = SparseArray<androidx.fragment.app.Fragment>()
 
-    override fun getItem(position: Int): androidx.fragment.app.Fragment = when (position) {
-        0 -> MyWykopEntryLinkFragment.newInstance(MyWykopEntryLinkFragment.TYPE_INDEX)
-        1 -> MyWykopEntryLinkFragment.newInstance(MyWykopEntryLinkFragment.TYPE_TAGS)
-        2 -> MyWykopEntryLinkFragment.newInstance(MyWykopEntryLinkFragment.TYPE_USERS)
-        else -> MyWykopObservedTagsFragment.newInstance()
-    }
+    override fun getItem(position: Int): androidx.fragment.app.Fragment =
+        when (position) {
+            0 -> MyWykopEntryLinkFragment.newInstance(MyWykopEntryLinkFragment.TYPE_INDEX)
+            1 -> MyWykopEntryLinkFragment.newInstance(MyWykopEntryLinkFragment.TYPE_TAGS)
+            2 -> MyWykopEntryLinkFragment.newInstance(MyWykopEntryLinkFragment.TYPE_USERS)
+            else -> MyWykopObservedTagsFragment.newInstance()
+        }
 
     override fun getCount() = 4
 
-    override fun instantiateItem(container: ViewGroup, position: Int): Any {
+    override fun instantiateItem(
+        container: ViewGroup,
+        position: Int,
+    ): Any {
         val fragment = super.instantiateItem(container, position) as androidx.fragment.app.Fragment
         registeredFragments.put(position, fragment)
         return fragment
     }
 
-    override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
+    override fun destroyItem(
+        container: ViewGroup,
+        position: Int,
+        `object`: Any,
+    ) {
         registeredFragments.removeAt(position)
         super.destroyItem(container, position, `object`)
     }

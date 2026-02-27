@@ -15,7 +15,6 @@ import io.github.wykopmobilny.ui.modules.addlink.fragments.urlinput.AddlinkUrlIn
 import io.github.wykopmobilny.utils.viewBinding
 
 class AddlinkActivity : BaseActivity() {
-
     companion object {
         fun createIntent(context: Context) = Intent(context, AddlinkActivity::class.java)
     }
@@ -43,8 +42,12 @@ class AddlinkActivity : BaseActivity() {
         }
     }
 
-    private fun openFragment(fragment: Fragment, tag: String) {
-        supportFragmentManager.beginTransaction()
+    private fun openFragment(
+        fragment: Fragment,
+        tag: String,
+    ) {
+        supportFragmentManager
+            .beginTransaction()
             .replace(R.id.fragmentView, fragment, tag)
             // Add this transaction to the back stack
             .addToBackStack(null)

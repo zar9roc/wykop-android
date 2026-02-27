@@ -28,14 +28,28 @@ import io.github.wykopmobilny.utils.usermanager.isUserAuthorized
 const val ZERO_WIDTH_SPACE = "\u200B\u200B\u200B\u200B\u200B"
 
 interface InputToolbarListener {
-    fun sendPhoto(photo: WykopImageFile, body: String, containsAdultContent: Boolean)
-    fun sendPhoto(photo: String?, body: String, containsAdultContent: Boolean)
+    fun sendPhoto(
+        photo: WykopImageFile,
+        body: String,
+        containsAdultContent: Boolean,
+    )
+
+    fun sendPhoto(
+        photo: String?,
+        body: String,
+        containsAdultContent: Boolean,
+    )
+
     fun openGalleryImageChooser()
+
     fun openCamera(uri: Uri)
 }
 
-class InputToolbar(context: Context, attrs: AttributeSet) : ConstraintLayout(context, attrs), MarkdownToolbarListener {
-
+class InputToolbar(
+    context: Context,
+    attrs: AttributeSet,
+) : ConstraintLayout(context, attrs),
+    MarkdownToolbarListener {
     // Inflate view
     private val binding = InputToolbarBinding.inflate(layoutInflater, this)
 
@@ -110,13 +124,27 @@ class InputToolbar(context: Context, attrs: AttributeSet) : ConstraintLayout(con
             if (wykopImageFile != null) {
                 inputToolbarListener?.sendPhoto(
                     wykopImageFile,
-                    if (binding.body.text.toString().isNotEmpty()) binding.body.text.toString() else ZERO_WIDTH_SPACE,
+                    if (binding.body.text
+                            .toString()
+                            .isNotEmpty()
+                    ) {
+                        binding.body.text.toString()
+                    } else {
+                        ZERO_WIDTH_SPACE
+                    },
                     binding.markdownToolbar.containsAdultContent,
                 )
             } else {
                 inputToolbarListener?.sendPhoto(
                     binding.markdownToolbar.photoUrl,
-                    if (binding.body.text.toString().isNotEmpty()) binding.body.text.toString() else ZERO_WIDTH_SPACE,
+                    if (binding.body.text
+                            .toString()
+                            .isNotEmpty()
+                    ) {
+                        binding.body.text.toString()
+                    } else {
+                        ZERO_WIDTH_SPACE
+                    },
                     binding.markdownToolbar.containsAdultContent,
                 )
             }
@@ -130,7 +158,10 @@ class InputToolbar(context: Context, attrs: AttributeSet) : ConstraintLayout(con
         }
     }
 
-    override fun setSelection(start: Int, end: Int) = binding.body.setSelection(start, end)
+    override fun setSelection(
+        start: Int,
+        end: Int,
+    ) = binding.body.setSelection(start, end)
 
     override fun openCamera(uri: Uri) {
         inputToolbarListener?.openCamera(uri)
@@ -145,7 +176,10 @@ class InputToolbar(context: Context, attrs: AttributeSet) : ConstraintLayout(con
         binding.markdownToolbar.photo = photo
     }
 
-    fun setup(userManagerApi: UserManagerApi, suggestionApi: SuggestApi) {
+    fun setup(
+        userManagerApi: UserManagerApi,
+        suggestionApi: SuggestApi,
+    ) {
         userManager = userManagerApi
         suggestApi = suggestionApi
         show()
@@ -208,7 +242,10 @@ class InputToolbar(context: Context, attrs: AttributeSet) : ConstraintLayout(con
         showKeyboard()
     }
 
-    fun addQuoteText(quote: String, quoteAuthor: String) {
+    fun addQuoteText(
+        quote: String,
+        quoteAuthor: String,
+    ) {
         defaultText = ""
         binding.body.requestFocus()
         if (textBody.isNotEmpty()) textBody += "\n\n"
@@ -280,7 +317,6 @@ class InputToolbar(context: Context, attrs: AttributeSet) : ConstraintLayout(con
     }
 
     class SavedState : BaseSavedState {
-
         val isOpened: Boolean
         val text: String
 
@@ -294,24 +330,21 @@ class InputToolbar(context: Context, attrs: AttributeSet) : ConstraintLayout(con
             text = `in`.readString()!!
         }
 
-        override fun writeToParcel(destination: Parcel, flags: Int) {
+        override fun writeToParcel(
+            destination: Parcel,
+            flags: Int,
+        ) {
             super.writeToParcel(destination, flags)
             destination.writeInt(if (isOpened) 1 else 0)
             destination.writeString(text)
         }
 
-        override fun describeContents(): Int {
-            return 0
-        }
+        override fun describeContents(): Int = 0
 
         companion object CREATOR : Parcelable.Creator<SavedState> {
-            override fun createFromParcel(parcel: Parcel): SavedState {
-                return SavedState(parcel)
-            }
+            override fun createFromParcel(parcel: Parcel): SavedState = SavedState(parcel)
 
-            override fun newArray(size: Int): Array<SavedState?> {
-                return arrayOfNulls(size)
-            }
+            override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
         }
     }
 }

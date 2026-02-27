@@ -13,7 +13,6 @@ import io.github.wykopmobilny.databinding.ActivityMywykopBinding
 import io.github.wykopmobilny.utils.viewBinding
 
 class FavoriteFragment : BaseFragment(R.layout.activity_mywykop) {
-
     companion object {
         fun newInstance() = FavoriteFragment()
     }
@@ -27,7 +26,10 @@ class FavoriteFragment : BaseFragment(R.layout.activity_mywykop) {
         setHasOptionsMenu(true)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         (activity as BaseActivity).supportActionBar?.setTitle(R.string.favourite)
         pagerAdapter = FavoritePagerAdapter(resources, childFragmentManager)
@@ -35,7 +37,10 @@ class FavoriteFragment : BaseFragment(R.layout.activity_mywykop) {
         binding.tabLayout.setupWithViewPager(binding.pager)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(
+        menu: Menu,
+        inflater: MenuInflater,
+    ) {
         inflater.inflate(R.menu.refresh_layout, menu)
     }
 

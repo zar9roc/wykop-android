@@ -12,7 +12,6 @@ import io.github.wykopmobilny.domain.navigation.AppGateway
 
 @Module
 internal abstract class FrameworkModule {
-
     @Binds
     abstract fun appRestarter(impl: AndroidAppRestarter): AppRestarter
 

@@ -13,13 +13,14 @@ class EntryFavoritePresenter(
     val schedulers: Schedulers,
     val entriesInteractor: EntriesInteractor,
     private val entryApi: EntriesApi,
-) : BasePresenter<EntryFavoriteView>(), EntryActionListener {
-
+) : BasePresenter<EntryFavoriteView>(),
+    EntryActionListener {
     var page = 1
 
     fun loadData(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
-        entryApi.getObserved(page)
+        entryApi
+            .getObserved(page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -35,8 +36,7 @@ class EntryFavoritePresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     override fun voteEntry(entry: Entry) = entriesInteractor.voteEntry(entry).processEntrySingle(entry)
@@ -47,11 +47,15 @@ class EntryFavoritePresenter(
 
     override fun deleteEntry(entry: Entry) = entriesInteractor.deleteEntry(entry).processEntrySingle(entry)
 
-    override fun voteSurvey(entry: Entry, index: Int) = entriesInteractor.voteSurvey(entry, index).processEntrySingle(entry)
+    override fun voteSurvey(
+        entry: Entry,
+        index: Int,
+    ) = entriesInteractor.voteSurvey(entry, index).processEntrySingle(entry)
 
     override fun getVoters(entry: Entry) {
         view?.openVotersMenu()
-        entryApi.getEntryVoters(entry.id)
+        entryApi
+            .getEntryVoters(entry.id)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -61,8 +65,7 @@ class EntryFavoritePresenter(
                 {
                     view?.showErrorDialog(it)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     private fun Single<Entry>.processEntrySingle(entry: Entry) {
@@ -75,7 +78,6 @@ class EntryFavoritePresenter(
                     view?.showErrorDialog(it)
                     view?.updateEntry(entry)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

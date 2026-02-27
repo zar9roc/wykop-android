@@ -9,15 +9,14 @@ class UsersSearchPresenter(
     val schedulers: Schedulers,
     private val searchApi: SearchApi,
 ) : BasePresenter<UsersSearchView>() {
-
     fun searchProfiles(q: String) {
-        searchApi.searchProfiles(q)
+        searchApi
+            .searchProfiles(q)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
                 { view?.showUsers(it) },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

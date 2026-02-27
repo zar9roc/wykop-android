@@ -7,8 +7,9 @@ import io.github.wykopmobilny.models.dataclass.Author
 import io.github.wykopmobilny.ui.modules.profile.ProfileActivity
 import io.github.wykopmobilny.utils.api.getGroupColor
 
-class AuthorViewHolder(private val binding: ConversationListItemBinding) : RecyclerView.ViewHolder(binding.root) {
-
+class AuthorViewHolder(
+    private val binding: ConversationListItemBinding,
+) : RecyclerView.ViewHolder(binding.root) {
     fun bindView(author: Author) {
         binding.authorAvatarView.setAuthor(author)
         binding.userNameTextView.apply {

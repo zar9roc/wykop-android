@@ -5,8 +5,10 @@ import io.github.wykopmobilny.api.responses.LinkCommentResponse
 import io.github.wykopmobilny.models.dataclass.LinkComment
 
 object LinkCommentMapper {
-
-    fun map(value: LinkCommentResponse, owmContentFilter: OWMContentFilter) = owmContentFilter.filterLinkComment(
+    fun map(
+        value: LinkCommentResponse,
+        owmContentFilter: OWMContentFilter,
+    ) = owmContentFilter.filterLinkComment(
         LinkComment(
             id = value.id,
             author = AuthorMapper.map(value.author),

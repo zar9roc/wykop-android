@@ -7,6 +7,8 @@ import java.net.URL
 
 interface ExternalApi {
     fun getCoub(coubId: String): Single<Coub>
+
     fun getGfycat(gfycatId: String): Single<Gfycat>
+
     fun getStreamableUrl(streamableId: String): Single<URL>
 }

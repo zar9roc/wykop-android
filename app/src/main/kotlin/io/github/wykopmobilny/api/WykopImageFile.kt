@@ -17,8 +17,10 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 
-class WykopImageFile(val uri: Uri, val context: Context) {
-
+class WykopImageFile(
+    val uri: Uri,
+    val context: Context,
+) {
     fun getFileMultipart(): MultipartBody.Part {
         val contentResolver = context.contentResolver
         val filename = uri.queryFileName(contentResolver)
@@ -46,7 +48,10 @@ class WykopImageFile(val uri: Uri, val context: Context) {
         return MultipartBody.Part.createFormData("embed", rotatedFile.name, rotatedFile.asRequestBody(mimetype?.toMediaTypeOrNull()))
     }
 
-    private fun saveUri(uri: Uri, filename: String): File? {
+    private fun saveUri(
+        uri: Uri,
+        filename: String,
+    ): File? {
         val inputStream = context.contentResolver.openInputStream(uri)
         inputStream.use { input ->
             val file = File.createTempFile(filename, "0", context.cacheDir)
@@ -71,37 +76,41 @@ class WykopImageFile(val uri: Uri, val context: Context) {
     private fun ensureRotation(f: File): File? {
         try {
             val exif = ExifInterface(f.path)
-            val orientation = exif.getAttributeInt(
-                ExifInterface.TAG_ORIENTATION,
-                ExifInterface.ORIENTATION_NORMAL,
-            )
+            val orientation =
+                exif.getAttributeInt(
+                    ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_NORMAL,
+                )
 
-            val angle = when (orientation) {
-                ExifInterface.ORIENTATION_ROTATE_90 -> 90
-                ExifInterface.ORIENTATION_ROTATE_180 -> 180
-                ExifInterface.ORIENTATION_ROTATE_270 -> 270
-                else -> return f
-            }
+            val angle =
+                when (orientation) {
+                    ExifInterface.ORIENTATION_ROTATE_90 -> 90
+                    ExifInterface.ORIENTATION_ROTATE_180 -> 180
+                    ExifInterface.ORIENTATION_ROTATE_270 -> 270
+                    else -> return f
+                }
 
             val mat = Matrix()
             mat.postRotate(angle.toFloat())
             val options = BitmapFactory.Options()
             options.inSampleSize = 2
 
-            val bmp = BitmapFactory.decodeStream(
-                FileInputStream(f),
-                null,
-                options,
-            )
-            val bitmap = Bitmap.createBitmap(
-                bmp!!,
-                0,
-                0,
-                bmp.width,
-                bmp.height,
-                mat,
-                true,
-            )
+            val bmp =
+                BitmapFactory.decodeStream(
+                    FileInputStream(f),
+                    null,
+                    options,
+                )
+            val bitmap =
+                Bitmap.createBitmap(
+                    bmp!!,
+                    0,
+                    0,
+                    bmp.width,
+                    bmp.height,
+                    mat,
+                    true,
+                )
 
             val file = File.createTempFile("rSaved", ".0", context.cacheDir)
             file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it) }

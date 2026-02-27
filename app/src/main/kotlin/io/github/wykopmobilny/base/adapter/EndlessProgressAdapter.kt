@@ -8,7 +8,6 @@ import io.github.wykopmobilny.ui.helpers.EndlessScrollListener
 import io.github.wykopmobilny.utils.layoutInflater
 
 abstract class EndlessProgressAdapter<T : RecyclerView.ViewHolder, A : Any> : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
     companion object {
         const val ITEM_PROGRESS = 0
     }
@@ -20,9 +19,15 @@ abstract class EndlessProgressAdapter<T : RecyclerView.ViewHolder, A : Any> : Re
     open val data: List<A>
         get() = dataset.filterNotNull()
 
-    abstract fun constructViewHolder(parent: ViewGroup, viewType: Int): T
+    abstract fun constructViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): T
 
-    abstract fun bindHolder(holder: T, position: Int)
+    abstract fun bindHolder(
+        holder: T,
+        position: Int,
+    )
 
     override fun getItemId(position: Int) = dataset[position]?.hashCode()?.toLong() ?: position.toLong()
 
@@ -53,7 +58,10 @@ abstract class EndlessProgressAdapter<T : RecyclerView.ViewHolder, A : Any> : Re
         isLoading = true
     }
 
-    open fun addData(items: List<A>, shouldClearAdapter: Boolean) {
+    open fun addData(
+        items: List<A>,
+        shouldClearAdapter: Boolean,
+    ) {
         if (shouldClearAdapter || dataset.isEmpty()) {
             dataset.apply {
                 clear()
@@ -77,22 +85,31 @@ abstract class EndlessProgressAdapter<T : RecyclerView.ViewHolder, A : Any> : Re
 
     abstract fun getViewType(position: Int): Int
 
-    override fun getItemViewType(position: Int): Int = if (dataset[position] == null) {
-        ITEM_PROGRESS
-    } else {
-        getViewType(position)
-    }
+    override fun getItemViewType(position: Int): Int =
+        if (dataset[position] == null) {
+            ITEM_PROGRESS
+        } else {
+            getViewType(position)
+        }
 
     @Suppress("UNCHECKED_CAST")
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: RecyclerView.ViewHolder,
+        position: Int,
+    ) {
         if (dataset[position] != null) bindHolder(holder as T, position)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = if (viewType == ITEM_PROGRESS) {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) = if (viewType == ITEM_PROGRESS) {
         ProgressViewHolder(ProgressItemBinding.inflate(parent.layoutInflater, parent, false))
     } else {
         constructViewHolder(parent, viewType)
     }
 
-    class ProgressViewHolder(binding: ProgressItemBinding) : RecyclerView.ViewHolder(binding.root)
+    class ProgressViewHolder(
+        binding: ProgressItemBinding,
+    ) : RecyclerView.ViewHolder(binding.root)
 }

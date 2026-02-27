@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 
 class BlacklistTagsFragment : Fragment(R.layout.fragment_page) {
-
     lateinit var getBlacklistDetails: GetBlacklistDetails
 
     override fun onAttach(context: Context) {
@@ -30,7 +29,10 @@ class BlacklistTagsFragment : Fragment(R.layout.fragment_page) {
         super.onAttach(context)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         val binding = FragmentPageBinding.bind(view)
         binding.list.layoutManager = LinearLayoutManager(view.context)

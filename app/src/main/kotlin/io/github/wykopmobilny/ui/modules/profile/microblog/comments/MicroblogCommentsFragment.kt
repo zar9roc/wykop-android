@@ -6,8 +6,9 @@ import io.github.wykopmobilny.base.BaseEntryCommentFragment
 import io.github.wykopmobilny.ui.modules.profile.ProfileActivity
 import javax.inject.Inject
 
-class MicroblogCommentsFragment : BaseEntryCommentFragment(), MicroblogCommentsView {
-
+class MicroblogCommentsFragment :
+    BaseEntryCommentFragment(),
+    MicroblogCommentsView {
     companion object {
         fun newInstance() = MicroblogCommentsFragment()
     }
@@ -18,7 +19,10 @@ class MicroblogCommentsFragment : BaseEntryCommentFragment(), MicroblogCommentsV
     override var loadDataListener: (Boolean) -> Unit = { presenter.loadData(it) }
     private val username by lazy { (activity as ProfileActivity).username }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         presenter.subscribe(this)
         presenter.username = username

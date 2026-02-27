@@ -11,14 +11,18 @@ import io.github.wykopmobilny.ui.modules.NewNavigator
 import io.github.wykopmobilny.ui.modules.input.BaseInputActivity
 import javax.inject.Inject
 
-class AddEntryActivity : BaseInputActivity<AddEntryPresenter>(), AddEntryActivityView {
-
+class AddEntryActivity :
+    BaseInputActivity<AddEntryPresenter>(),
+    AddEntryActivityView {
     companion object {
-        fun createIntent(context: Activity, receiver: String?, textBody: String? = null) =
-            Intent(context, AddEntryActivity::class.java).apply {
-                putExtra(EXTRA_BODY, textBody)
-                putExtra(EXTRA_RECEIVER, receiver)
-            }
+        fun createIntent(
+            context: Activity,
+            receiver: String?,
+            textBody: String? = null,
+        ) = Intent(context, AddEntryActivity::class.java).apply {
+            putExtra(EXTRA_BODY, textBody)
+            putExtra(EXTRA_RECEIVER, receiver)
+        }
     }
 
     @Inject

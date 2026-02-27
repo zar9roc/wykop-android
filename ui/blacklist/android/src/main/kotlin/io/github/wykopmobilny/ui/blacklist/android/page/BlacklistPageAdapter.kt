@@ -15,18 +15,24 @@ import io.github.wykopmobilny.ui.base.android.R as BaseR
 
 internal class BlacklistPageAdapter :
     ListAdapter<BlacklistedElementUi, BlacklistPageAdapter.DefaultViewHolder>(
-        AsyncDifferConfig.Builder(BlacklistElementDiff())
+        AsyncDifferConfig
+            .Builder(BlacklistElementDiff())
             .setBackgroundThreadExecutor(AppDispatchers.Default.asExecutor())
             .build(),
     ) {
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DefaultViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): DefaultViewHolder {
         val binding = ItemBlockedElementBinding.inflate(LayoutInflater.from(parent.context), parent, false)
 
         return DefaultViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: DefaultViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: DefaultViewHolder,
+        position: Int,
+    ) {
         val item = getItem(position)
         holder.binding.name.text = item.name
         when (val state = item.state) {
@@ -36,12 +42,14 @@ internal class BlacklistPageAdapter :
                 holder.binding.btnAction.setImageResource(BaseR.drawable.ic_lock_open)
                 holder.binding.btnAction.setOnClickListener { state.unblock() }
             }
+
             is BlacklistedElementUi.StateUi.Error -> {
                 holder.binding.progress.isVisible = false
                 holder.binding.btnAction.isVisible = true
                 holder.binding.btnAction.setImageResource(BaseR.drawable.ic_exclamation_round)
                 holder.binding.btnAction.setOnClickListener { state.showError() }
             }
+
             BlacklistedElementUi.StateUi.InProgress -> {
                 holder.binding.progress.isVisible = true
                 holder.binding.btnAction.isVisible = false
@@ -50,13 +58,19 @@ internal class BlacklistPageAdapter :
         }
     }
 
-    class DefaultViewHolder(val binding: ItemBlockedElementBinding) : RecyclerView.ViewHolder(binding.root)
+    class DefaultViewHolder(
+        val binding: ItemBlockedElementBinding,
+    ) : RecyclerView.ViewHolder(binding.root)
 
     private class BlacklistElementDiff : DiffUtil.ItemCallback<BlacklistedElementUi>() {
+        override fun areItemsTheSame(
+            oldItem: BlacklistedElementUi,
+            newItem: BlacklistedElementUi,
+        ) = oldItem.name == newItem.name
 
-        override fun areItemsTheSame(oldItem: BlacklistedElementUi, newItem: BlacklistedElementUi) = oldItem.name == newItem.name
-
-        override fun areContentsTheSame(oldItem: BlacklistedElementUi, newItem: BlacklistedElementUi) =
-            oldItem.name == newItem.name && oldItem.state::class == newItem.state::class
+        override fun areContentsTheSame(
+            oldItem: BlacklistedElementUi,
+            newItem: BlacklistedElementUi,
+        ) = oldItem.name == newItem.name && oldItem.state::class == newItem.state::class
     }
 }

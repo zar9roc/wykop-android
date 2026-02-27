@@ -17,8 +17,11 @@ import io.github.wykopmobilny.utils.getActivityContext
 import io.github.wykopmobilny.utils.layoutInflater
 import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 
-class RelatedWidget(context: Context, attrs: AttributeSet) : CardView(context, attrs), RelatedWidgetView {
-
+class RelatedWidget(
+    context: Context,
+    attrs: AttributeSet,
+) : CardView(context, attrs),
+    RelatedWidgetView {
     private val binding = LinkRelatedLayoutBinding.inflate(layoutInflater, this)
 
     init {
@@ -35,7 +38,12 @@ class RelatedWidget(context: Context, attrs: AttributeSet) : CardView(context, a
     private lateinit var presenter: RelatedWidgetPresenter
     private lateinit var relatedItem: Related
 
-    fun setRelatedData(linkId: Long?, related: Related, userManagerApi: UserManagerApi, relatedWidgetPresenter: RelatedWidgetPresenter) {
+    fun setRelatedData(
+        linkId: Long?,
+        related: Related,
+        userManagerApi: UserManagerApi,
+        relatedWidgetPresenter: RelatedWidgetPresenter,
+    ) {
         relatedItem = related
         presenter = relatedWidgetPresenter
         binding.title.text = related.title
@@ -127,7 +135,8 @@ class RelatedWidget(context: Context, attrs: AttributeSet) : CardView(context, a
     override fun showErrorDialog(e: Throwable) = context.showExceptionDialog(e)
 
     private fun shareUrl() {
-        ShareCompat.IntentBuilder(getActivityContext()!!)
+        ShareCompat
+            .IntentBuilder(getActivityContext()!!)
             .setType("text/plain")
             .setChooserTitle(R.string.share)
             .setText(url)

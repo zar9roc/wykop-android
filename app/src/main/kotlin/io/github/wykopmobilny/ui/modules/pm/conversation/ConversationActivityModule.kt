@@ -6,7 +6,6 @@ import dagger.Module
 
 @Module
 abstract class ConversationActivityModule {
-
     @Binds
     abstract fun activity(impl: ConversationActivity): Activity
 }

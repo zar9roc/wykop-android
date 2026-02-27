@@ -9,8 +9,9 @@ import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 import io.reactivex.disposables.Disposable
 import javax.inject.Inject
 
-class EntrySearchFragment : BaseEntriesFragment(), EntrySearchView {
-
+class EntrySearchFragment :
+    BaseEntriesFragment(),
+    EntrySearchView {
     companion object {
         fun newInstance() = EntrySearchFragment()
     }
@@ -25,14 +26,18 @@ class EntrySearchFragment : BaseEntriesFragment(), EntrySearchView {
     lateinit var querySubscribe: Disposable
     override var loadDataListener: (Boolean) -> Unit = { presenter.searchEntries(query, it) }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         presenter.subscribe(this)
-        querySubscribe = (parentFragment as SearchFragment).querySubject.subscribe {
-            binding.swipeRefresh.isRefreshing = true
-            query = it
-            presenter.searchEntries(query, true)
-        }
+        querySubscribe =
+            (parentFragment as SearchFragment).querySubject.subscribe {
+                binding.swipeRefresh.isRefreshing = true
+                query = it
+                presenter.searchEntries(query, true)
+            }
         entriesAdapter.entryActionListener = presenter
         entriesAdapter.loadNewDataListener = { loadDataListener(false) }
         binding.loadingView.isVisible = false

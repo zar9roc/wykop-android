@@ -15,8 +15,10 @@ import io.github.wykopmobilny.utils.viewBinding
 import io.reactivex.disposables.Disposable
 import javax.inject.Inject
 
-class UsersSearchFragment : BaseFragment(R.layout.feed_fragment), UsersSearchView, SwipeRefreshLayout.OnRefreshListener {
-
+class UsersSearchFragment :
+    BaseFragment(R.layout.feed_fragment),
+    UsersSearchView,
+    SwipeRefreshLayout.OnRefreshListener {
     @Inject
     lateinit var presenter: UsersSearchPresenter
 
@@ -31,15 +33,19 @@ class UsersSearchFragment : BaseFragment(R.layout.feed_fragment), UsersSearchVie
         fun newInstance() = UsersSearchFragment()
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         presenter.subscribe(this)
-        querySubscribe = (parentFragment as SearchFragment).querySubject.subscribe {
-            binding.swiperefresh.isRefreshing = true
-            queryString = it
-            presenter.searchProfiles(queryString)
-        }
+        querySubscribe =
+            (parentFragment as SearchFragment).querySubject.subscribe {
+                binding.swiperefresh.isRefreshing = true
+                queryString = it
+                presenter.searchProfiles(queryString)
+            }
         binding.swiperefresh.setOnRefreshListener(this)
 
         binding.recyclerView.apply {

@@ -11,13 +11,15 @@ import io.github.wykopmobilny.databinding.YearMonthPickerBinding
 import java.util.Calendar
 
 class MonthYearPickerDialog : DialogFragment() {
-
     companion object {
         const val RESULT_CODE = 167
         const val EXTRA_YEAR = "EXTRA_YEAR"
         const val EXTRA_MONTH = "EXTRA_MONTH"
 
-        fun newInstance(selectedMonth: Int = 0, selectedYear: Int = 0): MonthYearPickerDialog {
+        fun newInstance(
+            selectedMonth: Int = 0,
+            selectedYear: Int = 0,
+        ): MonthYearPickerDialog {
             val intent = MonthYearPickerDialog()
             val arguments = Bundle()
             arguments.putInt(EXTRA_YEAR, selectedYear)
@@ -80,6 +82,7 @@ class MonthYearPickerDialog : DialogFragment() {
                     monthPicker.maxValue = currentMonth - 1
                     selectedMonth = currentMonth - 1
                 }
+
                 2005 -> {
                     monthPicker.minValue = 11
                     monthPicker.maxValue = 11
@@ -87,6 +90,7 @@ class MonthYearPickerDialog : DialogFragment() {
                     monthPicker.displayedValues = arrayOf(getMonthString(12))
                     selectedMonth = 11
                 }
+
                 else -> {
                     monthPicker.displayedValues = (1..12).map { getMonthString(it) }.toTypedArray()
                     monthPicker.minValue = 0
@@ -102,20 +106,21 @@ class MonthYearPickerDialog : DialogFragment() {
         view.yearTextView.text = yearSelection.toString()
     }
 
-    private fun getMonthString(index: Int): String = getString(
-        when (index) {
-            1 -> R.string.january
-            2 -> R.string.february
-            3 -> R.string.march
-            4 -> R.string.april
-            5 -> R.string.may
-            6 -> R.string.june
-            7 -> R.string.july
-            8 -> R.string.august
-            9 -> R.string.september
-            10 -> R.string.october
-            11 -> R.string.novermber
-            else -> R.string.december
-        },
-    )
+    private fun getMonthString(index: Int): String =
+        getString(
+            when (index) {
+                1 -> R.string.january
+                2 -> R.string.february
+                3 -> R.string.march
+                4 -> R.string.april
+                5 -> R.string.may
+                6 -> R.string.june
+                7 -> R.string.july
+                8 -> R.string.august
+                9 -> R.string.september
+                10 -> R.string.october
+                11 -> R.string.novermber
+                else -> R.string.december
+            },
+        )
 }

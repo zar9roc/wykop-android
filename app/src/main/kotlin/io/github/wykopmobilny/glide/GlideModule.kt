@@ -22,20 +22,29 @@ class GlideModule : AppGlideModule() {
     @Inject
     lateinit var okHttpClient: OkHttpClient
 
-    override fun applyOptions(context: Context, builder: GlideBuilder) {
+    override fun applyOptions(
+        context: Context,
+        builder: GlideBuilder,
+    ) {
         if (!BuildConfig.DEBUG) {
             builder.setLogLevel(Log.ERROR)
         }
     }
 
-    override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
+    override fun registerComponents(
+        context: Context,
+        glide: Glide,
+        registry: Registry,
+    ) {
         (context.applicationContext as HasAndroidInjector).androidInjector().inject(this)
 
-        val builder = okHttpClient.newBuilder()
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .addInterceptor(RetryInterceptor())
+        val builder =
+            okHttpClient
+                .newBuilder()
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .addInterceptor(RetryInterceptor())
         registry.append(GlideUrl::class.java, InputStream::class.java, OkHttpUrlLoader.Factory(builder.build()))
     }
 }

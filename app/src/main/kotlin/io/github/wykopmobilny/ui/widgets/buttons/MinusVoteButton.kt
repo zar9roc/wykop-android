@@ -7,30 +7,32 @@ import androidx.core.content.ContextCompat
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.utils.getActivityContext
 
-class MinusVoteButton @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = R.attr.MirkoButtonStyle,
-) : VoteButton(context, attrs, defStyleAttr) {
+class MinusVoteButton
+    @JvmOverloads
+    constructor(
+        context: Context,
+        attrs: AttributeSet? = null,
+        defStyleAttr: Int = R.attr.MirkoButtonStyle,
+    ) : VoteButton(context, attrs, defStyleAttr) {
+        init {
+            val typedValue = TypedValue()
+            getActivityContext()!!.theme?.resolveAttribute(R.attr.voteMinusButtonStatelist, typedValue, true)
+            setBackgroundResource(typedValue.resourceId)
+            setTextColor(ContextCompat.getColorStateList(context, typedValue.resourceId))
+        }
 
-    init {
-        val typedValue = TypedValue()
-        getActivityContext()!!.theme?.resolveAttribute(R.attr.voteMinusButtonStatelist, typedValue, true)
-        setBackgroundResource(typedValue.resourceId)
-        setTextColor(ContextCompat.getColorStateList(context, typedValue.resourceId))
-    }
-
-    override fun setLightThemeDrawable() {
-        if (isSelected) {
-            setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_buttontoolbar_minus_activ, 0, 0, 0)
-        } else {
-            val typedArray = context.obtainStyledAttributes(
-                arrayOf(
-                    R.attr.minusDrawable,
-                ).toIntArray(),
-            )
-            setCompoundDrawablesWithIntrinsicBounds(typedArray.getDrawable(0), null, null, null)
-            typedArray.recycle()
+        override fun setLightThemeDrawable() {
+            if (isSelected) {
+                setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_buttontoolbar_minus_activ, 0, 0, 0)
+            } else {
+                val typedArray =
+                    context.obtainStyledAttributes(
+                        arrayOf(
+                            R.attr.minusDrawable,
+                        ).toIntArray(),
+                    )
+                setCompoundDrawablesWithIntrinsicBounds(typedArray.getDrawable(0), null, null, null)
+                typedArray.recycle()
+            }
         }
     }
-}

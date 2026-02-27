@@ -10,8 +10,10 @@ import io.github.wykopmobilny.glide.GlideApp
 import io.github.wykopmobilny.utils.layoutInflater
 import io.github.wykopmobilny.utils.loadImage
 
-class FloatingImageView(context: Context, attrs: AttributeSet) : FrameLayout(context, attrs) {
-
+class FloatingImageView(
+    context: Context,
+    attrs: AttributeSet,
+) : FrameLayout(context, attrs) {
     private val binding = FloatingImageViewLayoutBinding.inflate(layoutInflater, this)
 
     init {

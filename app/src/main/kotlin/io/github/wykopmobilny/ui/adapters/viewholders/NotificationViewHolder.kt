@@ -16,7 +16,6 @@ class NotificationViewHolder(
     private val linkHandler: WykopLinkHandler,
     private val updateHeader: (String) -> Unit,
 ) : androidx.recyclerview.widget.RecyclerView.ViewHolder(binding.root) {
-
     fun bindNotification(notification: Notification) {
         binding.apply {
             // Setup widgets

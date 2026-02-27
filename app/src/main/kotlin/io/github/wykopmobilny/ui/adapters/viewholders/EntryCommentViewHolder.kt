@@ -37,7 +37,6 @@ class EntryCommentViewHolder(
     private val commentViewListener: EntryCommentViewListener?,
     private val enableClickListener: Boolean,
 ) : RecyclableViewHolder(binding.root) {
-
     companion object {
         const val TYPE_EMBED = 9
         const val TYPE_NORMAL = 10
@@ -56,15 +55,16 @@ class EntryCommentViewHolder(
             commentViewListener: EntryCommentViewListener?,
             enableClickListener: Boolean,
         ): EntryCommentViewHolder {
-            val view = EntryCommentViewHolder(
-                CommentListItemBinding.inflate(parent.layoutInflater, parent, false),
-                userManagerApi,
-                navigator,
-                linkHandler,
-                commentActionListener,
-                commentViewListener,
-                enableClickListener,
-            )
+            val view =
+                EntryCommentViewHolder(
+                    CommentListItemBinding.inflate(parent.layoutInflater, parent, false),
+                    userManagerApi,
+                    navigator,
+                    linkHandler,
+                    commentActionListener,
+                    commentViewListener,
+                    enableClickListener,
+                )
 
             view.type = viewType
 
@@ -73,13 +73,12 @@ class EntryCommentViewHolder(
             return view
         }
 
-        fun getViewTypeForEntryComment(comment: EntryComment): Int {
-            return when {
+        fun getViewTypeForEntryComment(comment: EntryComment): Int =
+            when {
                 comment.isBlocked -> TYPE_BLOCKED
                 comment.embed == null -> TYPE_NORMAL
                 else -> TYPE_EMBED
             }
-        }
     }
 
     private val userCredentials = userManagerApi.getUserCredentials()
@@ -227,11 +226,12 @@ class EntryCommentViewHolder(
             author.text = comment.author.nick
             date.text = comment.fullDate
             comment.app?.let {
-                date.text = root.context.getString(
-                    R.string.date_with_user_app,
-                    comment.fullDate,
-                    comment.app,
-                )
+                date.text =
+                    root.context.getString(
+                        R.string.date_with_user_app,
+                        comment.fullDate,
+                        comment.app,
+                    )
             }
 
             entryCommentMenuCopy.setOnClickListener {
@@ -262,8 +262,9 @@ class EntryCommentViewHolder(
                 dialog.dismiss()
             }
 
-            val canUserEdit = isUserAuthorized &&
-                comment.author.nick == userCredentials?.login
+            val canUserEdit =
+                isUserAuthorized &&
+                    comment.author.nick == userCredentials?.login
             entryCommentMenuDelete.isVisible = canUserEdit || isOwnEntry
             entryCommentMenuEdit.isVisible = canUserEdit
         }
@@ -285,7 +286,10 @@ class EntryCommentViewHolder(
         embedView = binding.entryImageViewStub.inflate() as WykopEmbedView
     }
 
-    private fun setStyleForComment(comment: EntryComment, commentId: Long = -1) {
+    private fun setStyleForComment(
+        comment: EntryComment,
+        commentId: Long = -1,
+    ) {
         val credentials = userCredentials
         if (credentials != null && credentials.login == comment.author.nick) {
             binding.authorBadgeStrip.isVisible = true

@@ -6,7 +6,6 @@ import dagger.Module
 
 @Module
 abstract class NotificationsListModule {
-
     @Binds
     abstract fun activity(impl: NotificationsListActivity): Activity
 }

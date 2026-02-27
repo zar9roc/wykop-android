@@ -9,9 +9,9 @@ class ConversationsListPresenter(
     private val schedulers: Schedulers,
     private val pmApi: PMApi,
 ) : BasePresenter<ConversationsListView>() {
-
     fun loadConversations() {
-        pmApi.getConversations()
+        pmApi
+            .getConversations()
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe({ view?.showConversations(it) }, { view?.showErrorDialog(it) })

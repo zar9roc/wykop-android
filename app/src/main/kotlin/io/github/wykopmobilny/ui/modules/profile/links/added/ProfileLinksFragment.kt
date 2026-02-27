@@ -7,8 +7,9 @@ import io.github.wykopmobilny.ui.modules.profile.ProfileActivity
 import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 import javax.inject.Inject
 
-class ProfileLinksFragment : BaseLinksFragment(), ProfileLinksView {
-
+class ProfileLinksFragment :
+    BaseLinksFragment(),
+    ProfileLinksView {
     companion object {
         const val TYPE_PUBLISHED = "TYPE_PUBLISHED"
         const val TYPE_DIGGED = "TYPE_DIGGED"
@@ -47,7 +48,10 @@ class ProfileLinksFragment : BaseLinksFragment(), ProfileLinksView {
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         presenter.subscribe(this)
         presenter.username = username

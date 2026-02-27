@@ -8,5 +8,8 @@ import io.github.wykopmobilny.base.Schedulers
 @Module
 class EditEntryActivityModule {
     @Provides
-    fun provideEditEntryPresenter(schedulers: Schedulers, entriesApi: EntriesApi) = EditEntryPresenter(schedulers, entriesApi)
+    fun provideEditEntryPresenter(
+        schedulers: Schedulers,
+        entriesApi: EntriesApi,
+    ) = EditEntryPresenter(schedulers, entriesApi)
 }

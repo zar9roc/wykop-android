@@ -30,7 +30,6 @@ class LinkDetailsUi(
 )
 
 sealed class LinkDetailsHeaderUi {
-
     object Loading : LinkDetailsHeaderUi()
 
     data class WithData(
@@ -55,7 +54,6 @@ sealed class LinkDetailsHeaderUi {
 }
 
 sealed class RelatedLinksSectionUi {
-
     object Loading : RelatedLinksSectionUi()
 
     data class Empty(
@@ -93,7 +91,6 @@ data class ParentCommentUi(
 )
 
 sealed class LinkCommentUi {
-
     data class Hidden(
         val id: Long,
         val author: UserInfoUi,

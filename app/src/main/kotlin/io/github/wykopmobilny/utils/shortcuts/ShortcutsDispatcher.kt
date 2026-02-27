@@ -8,23 +8,35 @@ import io.github.wykopmobilny.ui.modules.mywykop.MyWykopFragment
 import io.github.wykopmobilny.ui.modules.search.SearchFragment
 import javax.inject.Inject
 
-class ShortcutsDispatcher @Inject constructor() {
+class ShortcutsDispatcher
+    @Inject
+    constructor() {
+        fun dispatchIntent(
+            intent: Intent,
+            startFragment: (fragment: Fragment) -> (Unit),
+            startActivity: () -> (Unit),
+            isUserAuthorized: Boolean,
+        ) {
+            when (intent.action) {
+                "hot" -> {
+                    startFragment.invoke(HotFragment.newInstance())
+                }
 
-    fun dispatchIntent(
-        intent: Intent,
-        startFragment: (fragment: Fragment) -> (Unit),
-        startActivity: () -> (Unit),
-        isUserAuthorized: Boolean,
-    ) {
-        when (intent.action) {
-            "hot" -> startFragment.invoke(HotFragment.newInstance())
-            "search" -> startFragment.invoke(SearchFragment.newInstance())
-            "mywykop" -> if (isUserAuthorized) {
-                startFragment(MyWykopFragment.newInstance())
-            } else {
-                startActivity()
+                "search" -> {
+                    startFragment.invoke(SearchFragment.newInstance())
+                }
+
+                "mywykop" -> {
+                    if (isUserAuthorized) {
+                        startFragment(MyWykopFragment.newInstance())
+                    } else {
+                        startActivity()
+                    }
+                }
+
+                "hits" -> {
+                    startFragment.invoke(HitsFragment.newInstance())
+                }
             }
-            "hits" -> startFragment.invoke(HitsFragment.newInstance())
         }
     }
-}

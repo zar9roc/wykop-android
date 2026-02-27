@@ -5,7 +5,6 @@ data class OptionPickerUi(
     val reasons: List<Option>,
     val dismissAction: () -> Unit,
 ) {
-
     data class Option(
         val label: String,
         val icon: Drawable? = null,

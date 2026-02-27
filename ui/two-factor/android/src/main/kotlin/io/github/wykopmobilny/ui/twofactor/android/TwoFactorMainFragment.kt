@@ -23,8 +23,10 @@ import kotlinx.coroutines.launch
 fun twoFactorMainFragment(): Fragment = TwoFactorMainFragment()
 
 internal class TwoFactorMainFragment : Fragment(R.layout.fragment_two_factor) {
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         val viewModel by viewModels<InjectableViewModel<TwoFactorAuthDependencies>> {
             viewModelWrapperFactory<TwoFactorAuthDependencies>()

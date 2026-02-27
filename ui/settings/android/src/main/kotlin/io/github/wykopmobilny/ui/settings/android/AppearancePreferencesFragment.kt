@@ -17,7 +17,6 @@ import io.github.wykopmobilny.utils.requireDependency
 import kotlinx.coroutines.launch
 
 internal class AppearancePreferencesFragment : PreferenceFragmentCompat() {
-
     lateinit var getAppearancePreferences: GetAppearancePreferences
 
     override fun onAttach(context: Context) {
@@ -25,7 +24,10 @@ internal class AppearancePreferencesFragment : PreferenceFragmentCompat() {
         super.onAttach(context)
     }
 
-    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+    override fun onCreatePreferences(
+        savedInstanceState: Bundle?,
+        rootKey: String?,
+    ) {
         setPreferencesFromResource(R.xml.appearance_preferences, rootKey)
 
         lifecycleScope.launch {
@@ -60,8 +62,7 @@ internal class AppearancePreferencesFragment : PreferenceFragmentCompat() {
                 AppThemeUi.Automatic -> R.string.automatic
                 AppThemeUi.Light -> R.string.light_mode
                 AppThemeUi.Dark -> R.string.dark_mode
-            }
-                .let(resources::getString)
+            }.let(resources::getString)
         }
     }
 
@@ -72,8 +73,7 @@ internal class AppearancePreferencesFragment : PreferenceFragmentCompat() {
                 MainScreenUi.Mikroblog -> R.string.mikroblog
                 MainScreenUi.MyWykop -> R.string.mywykop
                 MainScreenUi.Hits -> R.string.hits
-            }
-                .let(resources::getString)
+            }.let(resources::getString)
         }
     }
 
@@ -85,8 +85,7 @@ internal class AppearancePreferencesFragment : PreferenceFragmentCompat() {
                 FontSizeUi.Normal -> R.string.fontsize_normal
                 FontSizeUi.Large -> R.string.fontsize_large
                 FontSizeUi.VeryLarge -> R.string.fontsize_huge
-            }
-                .let(resources::getString)
+            }.let(resources::getString)
         }
     }
 
@@ -97,8 +96,7 @@ internal class AppearancePreferencesFragment : PreferenceFragmentCompat() {
                 LinkImagePositionUi.Right -> R.string.link_image_position_right
                 LinkImagePositionUi.Top -> R.string.link_image_position_top
                 LinkImagePositionUi.Bottom -> R.string.link_image_position_bottom
-            }
-                .let(resources::getString)
+            }.let(resources::getString)
         }
     }
 
@@ -110,8 +108,7 @@ internal class AppearancePreferencesFragment : PreferenceFragmentCompat() {
                 MikroblogScreenUi.SixHours -> R.string.period6
                 MikroblogScreenUi.TwelveHours -> R.string.period12
                 MikroblogScreenUi.TwentyFourHours -> R.string.period24
-            }
-                .let(resources::getString)
+            }.let(resources::getString)
         }
     }
 }

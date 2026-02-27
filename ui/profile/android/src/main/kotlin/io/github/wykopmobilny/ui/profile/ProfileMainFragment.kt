@@ -28,11 +28,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-fun profileMainFragment(userId: String): Fragment = ProfileMainFragment()
-    .apply { this.userId = userId }
+fun profileMainFragment(userId: String): Fragment =
+    ProfileMainFragment()
+        .apply { this.userId = userId }
 
 internal class ProfileMainFragment : Fragment(R.layout.fragment_profile) {
-
     var userId by stringArgument("userId")
 
     private lateinit var getProfileDetails: GetProfileDetails
@@ -44,15 +44,17 @@ internal class ProfileMainFragment : Fragment(R.layout.fragment_profile) {
         super.onAttach(context)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.toolbar.bindBackButton(activity = activity)
         val adapter = ProfilePagerAdapter(this)
         binding.viewPager.adapter = adapter
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             tab.setText(adapter.getTitle(position))
-        }
-            .attach()
+        }.attach()
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 val shared = getProfileDetails().stateIn(this)
@@ -72,30 +74,55 @@ internal class ProfileMainFragment : Fragment(R.layout.fragment_profile) {
             binding.nickname.setTextColor(header.userInfo?.color.toColorInt(requireContext()))
             binding.description.isVisible = header.description != null
             binding.description.text = header.description
-            binding.followers.text = header.followersCount?.let { followers ->
-                resources.getQuantityString(R.plurals.followers_count, followers, followers)
-            }
-            binding.rank.isVisible = header.userInfo?.avatar?.rank != null
-            binding.rank.text = header.userInfo?.avatar?.rank?.let { "#$it" }
-            binding.rank.setBackgroundColor(header.userInfo?.color.toColorInt(requireContext()).defaultColor)
-            binding.genderStripImageView.isVisible = header.userInfo?.avatar?.genderStrip != null
-            binding.genderStripImageView.setBackgroundColor(header.userInfo?.avatar?.genderStrip.toColorInt(requireContext()).defaultColor)
-            binding.banTextView.isVisible = header.banReason != null
-            binding.banTextView.text = header.banReason?.let { reason ->
-                if (reason.reason == null) {
-                    if (reason.endDate == null) {
-                        getString(R.string.banned_no_info)
-                    } else {
-                        getString(R.string.banned_date_only, reason.endDate)
-                    }
-                } else if (reason.endDate == null) {
-                    getString(R.string.banned_reason_only, reason.reason)
-                } else {
-                    getString(R.string.banned_date_and_reason, reason.endDate, reason.reason)
+            binding.followers.text =
+                header.followersCount?.let { followers ->
+                    resources.getQuantityString(R.plurals.followers_count, followers, followers)
                 }
-            }
-            Glide.with(binding.root).load(header.backgroundUrl).transition(withCrossFade()).into(binding.backgroundImg)
-            Glide.with(binding.root).load(header.userInfo?.avatar?.avatarUrl).transition(withCrossFade()).into(binding.profilePicture)
+            binding.rank.isVisible = header.userInfo?.avatar?.rank != null
+            binding.rank.text =
+                header.userInfo
+                    ?.avatar
+                    ?.rank
+                    ?.let { "#$it" }
+            binding.rank.setBackgroundColor(
+                header.userInfo
+                    ?.color
+                    .toColorInt(requireContext())
+                    .defaultColor,
+            )
+            binding.genderStripImageView.isVisible = header.userInfo?.avatar?.genderStrip != null
+            binding.genderStripImageView.setBackgroundColor(
+                header.userInfo
+                    ?.avatar
+                    ?.genderStrip
+                    .toColorInt(requireContext())
+                    .defaultColor,
+            )
+            binding.banTextView.isVisible = header.banReason != null
+            binding.banTextView.text =
+                header.banReason?.let { reason ->
+                    if (reason.reason == null) {
+                        if (reason.endDate == null) {
+                            getString(R.string.banned_no_info)
+                        } else {
+                            getString(R.string.banned_date_only, reason.endDate)
+                        }
+                    } else if (reason.endDate == null) {
+                        getString(R.string.banned_reason_only, reason.reason)
+                    } else {
+                        getString(R.string.banned_date_and_reason, reason.endDate, reason.reason)
+                    }
+                }
+            Glide
+                .with(binding.root)
+                .load(header.backgroundUrl)
+                .transition(withCrossFade())
+                .into(binding.backgroundImg)
+            Glide
+                .with(binding.root)
+                .load(header.userInfo?.avatar?.avatarUrl)
+                .transition(withCrossFade())
+                .into(binding.profilePicture)
         }
     }
 

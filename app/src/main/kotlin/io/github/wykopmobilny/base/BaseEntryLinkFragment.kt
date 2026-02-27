@@ -21,8 +21,10 @@ import io.github.wykopmobilny.utils.prepare
 import io.github.wykopmobilny.utils.viewBinding
 import javax.inject.Inject
 
-open class BaseEntryLinkFragment : BaseFragment(R.layout.entries_fragment), EntryLinkFragmentView, SwipeRefreshLayout.OnRefreshListener {
-
+open class BaseEntryLinkFragment :
+    BaseFragment(R.layout.entries_fragment),
+    EntryLinkFragmentView,
+    SwipeRefreshLayout.OnRefreshListener {
     @Inject
     lateinit var entriesAdapter: EntryLinksAdapter
     lateinit var votersDialogListener: VotersDialogListener
@@ -41,7 +43,10 @@ open class BaseEntryLinkFragment : BaseFragment(R.layout.entries_fragment), Entr
 
     open var loadDataListener: (Boolean) -> Unit = {}
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         entriesAdapter.loadNewDataListener = { loadDataListener(false) }
 
@@ -67,7 +72,10 @@ open class BaseEntryLinkFragment : BaseFragment(R.layout.entries_fragment), Entr
      * @param items List of entries to add
      * @param shouldRefresh If true adapter will refresh its data with provided items. False by default
      */
-    override fun addItems(items: List<EntryLink>, shouldRefresh: Boolean) {
+    override fun addItems(
+        items: List<EntryLink>,
+        shouldRefresh: Boolean,
+    ) {
         entriesAdapter.addData(items, shouldRefresh)
         binding.swipeRefresh.isRefreshing = false
         binding.loadingView.isVisible = false

@@ -13,8 +13,8 @@ class HitsPresenter(
     val schedulers: Schedulers,
     val linksInteractor: LinksInteractor,
     private val hitsApi: HitsApi,
-) : BasePresenter<HitsView>(), LinkActionListener {
-
+) : BasePresenter<HitsView>(),
+    LinkActionListener {
     companion object {
         const val HITS_POPULAR = "popular"
         const val HITS_DAY = "day"
@@ -34,8 +34,7 @@ class HitsPresenter(
             HITS_WEEK -> hitsApi.currentWeek()
             HITS_MONTH -> hitsApi.byMonth(yearSelection, monthSelection)
             else -> hitsApi.byYear(yearSelection)
-        }
-            .subscribeOn(schedulers.backgroundThread())
+        }.subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
                 {
@@ -43,8 +42,7 @@ class HitsPresenter(
                     view?.disableLoading()
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     override fun dig(link: Link) = linksInteractor.dig(link).processLinkSingle(link)
@@ -52,7 +50,8 @@ class HitsPresenter(
     override fun removeVote(link: Link) = linksInteractor.voteRemove(link).processLinkSingle(link)
 
     private fun Single<Link>.processLinkSingle(link: Link) {
-        this.subscribeOn(schedulers.backgroundThread())
+        this
+            .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
                 { view?.updateLink(it) },
@@ -60,7 +59,6 @@ class HitsPresenter(
                     view?.showErrorDialog(it)
                     view?.updateLink(link)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

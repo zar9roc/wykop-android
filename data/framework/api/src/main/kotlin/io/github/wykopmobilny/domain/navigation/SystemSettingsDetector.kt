@@ -1,7 +1,6 @@
 package io.github.wykopmobilny.domain.navigation
 
 interface SystemSettingsDetector {
-
     suspend fun getNightModeState(): NightModeState
 
     suspend fun getNavigationMode(): NavigationMode

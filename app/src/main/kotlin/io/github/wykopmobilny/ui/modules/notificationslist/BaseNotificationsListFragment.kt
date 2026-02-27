@@ -19,7 +19,6 @@ abstract class BaseNotificationsListFragment :
     BaseFragment(R.layout.activity_notifications_list),
     NotificationsListView,
     SwipeRefreshLayout.OnRefreshListener {
-
     protected val binding by viewBinding(ActivityNotificationsListBinding::bind)
     abstract var notificationAdapter: NotificationsListAdapter
     abstract var linkHandler: WykopLinkHandler
@@ -36,7 +35,10 @@ abstract class BaseNotificationsListFragment :
         notification.url?.let { linkHandler.handleUrl(it, true) }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.swiperefresh.setOnRefreshListener(this)
 
@@ -52,7 +54,10 @@ abstract class BaseNotificationsListFragment :
         binding.swiperefresh.isRefreshing = false
     }
 
-    override fun addNotifications(notifications: List<Notification>, shouldClearAdapter: Boolean) {
+    override fun addNotifications(
+        notifications: List<Notification>,
+        shouldClearAdapter: Boolean,
+    ) {
         binding.loadingView.isVisible = false
         binding.swiperefresh.isRefreshing = false
         notificationAdapter.addData(

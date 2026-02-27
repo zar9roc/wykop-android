@@ -8,5 +8,8 @@ import io.github.wykopmobilny.base.Schedulers
 @Module
 class HotFragmentModule {
     @Provides
-    fun providesHotPresenter(schedulers: Schedulers, streamApi: EntriesApi) = HotPresenter(schedulers, streamApi)
+    fun providesHotPresenter(
+        schedulers: Schedulers,
+        streamApi: EntriesApi,
+    ) = HotPresenter(schedulers, streamApi)
 }

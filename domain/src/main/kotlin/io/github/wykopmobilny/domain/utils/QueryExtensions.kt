@@ -12,7 +12,11 @@ internal inline fun <reified T : Any> AppScopes.safe(crossinline block: suspend 
             .onFailure { Napier.e("Something wasn't safe 😬", it) }
     }
 }
-internal inline fun <reified T : Any> AppScopes.safeKeyed(id: Any, crossinline block: suspend CoroutineScope.() -> Unit) {
+
+internal inline fun <reified T : Any> AppScopes.safeKeyed(
+    id: Any,
+    crossinline block: suspend CoroutineScope.() -> Unit,
+) {
     launchInKeyed<T>(id) {
         runCatching { block() }
             .onFailure { Napier.e("Something wasn't safe 😬", it) }

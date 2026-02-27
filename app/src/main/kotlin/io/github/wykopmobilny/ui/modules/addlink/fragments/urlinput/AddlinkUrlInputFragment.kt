@@ -12,8 +12,9 @@ import io.github.wykopmobilny.ui.modules.addlink.AddlinkActivity
 import io.github.wykopmobilny.utils.viewBinding
 import javax.inject.Inject
 
-class AddlinkUrlInputFragment : BaseFragment(R.layout.addlink_fragment), AddLinkUrlInputFragmentView {
-
+class AddlinkUrlInputFragment :
+    BaseFragment(R.layout.addlink_fragment),
+    AddLinkUrlInputFragmentView {
     companion object {
         const val EXTRA_URL = "ADDLINK_URL"
 
@@ -31,7 +32,10 @@ class AddlinkUrlInputFragment : BaseFragment(R.layout.addlink_fragment), AddLink
 
     private val binding by viewBinding(AddlinkFragmentBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         presenter.subscribe(this)
         binding.addLink.setOnClickListener {

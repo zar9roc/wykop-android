@@ -16,8 +16,10 @@ import io.github.wykopmobilny.utils.viewBinding
 import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 
-open class BaseLinksFragment : BaseFragment(R.layout.entries_fragment), LinksFragmentView, SwipeRefreshLayout.OnRefreshListener {
-
+open class BaseLinksFragment :
+    BaseFragment(R.layout.entries_fragment),
+    LinksFragmentView,
+    SwipeRefreshLayout.OnRefreshListener {
     @Inject
     lateinit var linksApi: LinksApi
 
@@ -36,7 +38,10 @@ open class BaseLinksFragment : BaseFragment(R.layout.entries_fragment), LinksFra
 
     private val subjectDisposable = CompositeDisposable()
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         linksAdapter.loadNewDataListener = { loadDataListener(false) }
 
@@ -71,7 +76,12 @@ open class BaseLinksFragment : BaseFragment(R.layout.entries_fragment), LinksFra
         super.onDestroyView()
     }
 
-    private fun updateLinkVoteState(linkId: Long, buryCount: Int, voteCount: Int, userVote: String?) {
+    private fun updateLinkVoteState(
+        linkId: Long,
+        buryCount: Int,
+        voteCount: Int,
+        userVote: String?,
+    ) {
         linksAdapter.data.firstOrNull { it.id == linkId }?.apply {
             this.buryCount = buryCount
             this.voteCount = voteCount
@@ -90,7 +100,10 @@ open class BaseLinksFragment : BaseFragment(R.layout.entries_fragment), LinksFra
      * @param items List of entries to add
      * @param shouldRefresh If true adapter will refresh its data with provided items. False by default
      */
-    override fun addItems(items: List<Link>, shouldRefresh: Boolean) {
+    override fun addItems(
+        items: List<Link>,
+        shouldRefresh: Boolean,
+    ) {
         linksAdapter.addData(items, shouldRefresh)
         binding.swipeRefresh.isRefreshing = false
         binding.loadingView.isVisible = false

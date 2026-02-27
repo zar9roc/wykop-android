@@ -11,7 +11,6 @@ class HotPresenter(
     val schedulers: Schedulers,
     val entriesApi: EntriesApi,
 ) : BasePresenter<HotView>() {
-
     var page = 1
     var period = "24"
 
@@ -31,21 +30,29 @@ class HotPresenter(
 
         when (period) {
             "24", "12", "6" -> {
-                entriesApi.getHot(page, period).subscribeOn(schedulers.backgroundThread())
+                entriesApi
+                    .getHot(page, period)
+                    .subscribeOn(schedulers.backgroundThread())
                     .observeOn(schedulers.mainThread())
                     .subscribe(success, failure)
             }
 
-            "active" ->
-                entriesApi.getActive(page).subscribeOn(schedulers.backgroundThread())
+            "active" -> {
+                entriesApi
+                    .getActive(page)
+                    .subscribeOn(schedulers.backgroundThread())
                     .observeOn(schedulers.mainThread())
                     .subscribe(success, failure)
+            }
 
-            else -> // Newest
-                entriesApi.getStream(page).subscribeOn(schedulers.backgroundThread())
+            else -> {
+                // Newest
+                entriesApi
+                    .getStream(page)
+                    .subscribeOn(schedulers.backgroundThread())
                     .observeOn(schedulers.mainThread())
                     .subscribe(success, failure)
-        }
-            .intoComposite(compositeObservable)
+            }
+        }.intoComposite(compositeObservable)
     }
 }

@@ -6,7 +6,6 @@ import io.github.wykopmobilny.databinding.ProfileSubtabLayoutBinding
 import io.github.wykopmobilny.utils.viewBinding
 
 class LinksFragment : BaseFragment(R.layout.profile_subtab_layout) {
-
     companion object {
         fun newInstance() = LinksFragment()
     }

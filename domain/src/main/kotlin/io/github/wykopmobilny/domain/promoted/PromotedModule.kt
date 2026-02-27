@@ -13,14 +13,15 @@ import javax.inject.Provider
 
 @Module
 internal abstract class PromotedModule {
-
     @Binds
     abstract fun bind(impl: GetPromotedQuery): GetPromoted
 
     companion object {
-
         @Provides
-        fun promotedPager(mediator: StoreMediator<Link>, pagingSource: Provider<PagingSource<Link>>) = Pager(
+        fun promotedPager(
+            mediator: StoreMediator<Link>,
+            pagingSource: Provider<PagingSource<Link>>,
+        ) = Pager(
             config = PagingConfig(pageSize = 20),
             remoteMediator = mediator,
             pagingSourceFactory = pagingSource::get,

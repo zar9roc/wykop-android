@@ -14,8 +14,9 @@ import java.io.ByteArrayOutputStream
 
 const val REMOVE_USERKEY_HEADER = "REMOVE_USERKEY"
 
-class ApiSignInterceptor(private val userManagerApi: SimpleUserManagerApi) : Interceptor {
-
+class ApiSignInterceptor(
+    private val userManagerApi: SimpleUserManagerApi,
+) : Interceptor {
     companion object {
         const val MAX_RETRY_COUNT = 3
         const val API_SIGN_HEADER = "apisign"
@@ -33,29 +34,35 @@ class ApiSignInterceptor(private val userManagerApi: SimpleUserManagerApi) : Int
         }
         val appSecret = FirebaseRemoteConfig.getInstance().getString(RemoteConfigKeys.API_APP_SECRET)
 
-        val encodeUrl: String = when (request.body) {
-            is FormBody -> {
-                val formBody = request.body as FormBody
-                val paramList = (0 until formBody.size)
-                    .filter { formBody.value(it).isNotEmpty() }
-                    .mapTo(ArrayList<String>()) { formBody.value(it) }
-                    .toList()
-                appSecret + url + paramList.joinToString(",")
-            }
-            is MultipartBody -> {
-                val multipart = request.body as MultipartBody
-                val parts = arrayListOf<String>()
-                for (i in 0..1) {
-                    val part = multipart.part(i).body
-                    // Get body from multipart
-                    val bufferedSink = ByteArrayOutputStream().sink().buffer()
-                    part.writeTo(bufferedSink)
-                    parts.add(bufferedSink.buffer.readUtf8())
+        val encodeUrl: String =
+            when (request.body) {
+                is FormBody -> {
+                    val formBody = request.body as FormBody
+                    val paramList =
+                        (0 until formBody.size)
+                            .filter { formBody.value(it).isNotEmpty() }
+                            .mapTo(ArrayList<String>()) { formBody.value(it) }
+                            .toList()
+                    appSecret + url + paramList.joinToString(",")
                 }
-                appSecret + url + parts.joinToString(",")
+
+                is MultipartBody -> {
+                    val multipart = request.body as MultipartBody
+                    val parts = arrayListOf<String>()
+                    for (i in 0..1) {
+                        val part = multipart.part(i).body
+                        // Get body from multipart
+                        val bufferedSink = ByteArrayOutputStream().sink().buffer()
+                        part.writeTo(bufferedSink)
+                        parts.add(bufferedSink.buffer.readUtf8())
+                    }
+                    appSecret + url + parts.joinToString(",")
+                }
+
+                else -> {
+                    appSecret + url
+                }
             }
-            else -> appSecret + url
-        }
 
         builder.apply {
             url(url)

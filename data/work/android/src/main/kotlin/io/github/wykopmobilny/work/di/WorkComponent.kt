@@ -13,19 +13,17 @@ import io.github.wykopmobilny.work.WorkScheduler
 
 @Component(modules = [WorkManagerModule::class])
 interface WorkManagerComponent : WorkApi {
-
     @Component.Factory
     interface Factory {
-
-        fun create(@BindsInstance context: Context): WorkManagerComponent
+        fun create(
+            @BindsInstance context: Context,
+        ): WorkManagerComponent
     }
 }
 
 @Module
 internal abstract class WorkManagerModule {
-
     companion object {
-
         @Provides
         fun workManager(context: Context) = WorkManager.getInstance(context)
     }

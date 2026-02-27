@@ -20,30 +20,39 @@ import org.intellij.markdown.parser.sequentialparsers.impl.ReferenceLinkParser
 import java.net.URI
 
 class WykopFlavorDescriptor : CommonMarkFlavourDescriptor() {
-
     override val markerProcessorFactory = CommonMarkMarkerProcessor.Factory
 
     override fun createInlinesLexer() = MarkdownLexer(_GFMLexer())
 
-    override val sequentialParserManager = object : SequentialParserManager() {
-        override fun getParserSequence() = listOf(
-            AutolinkParser(listOf(MarkdownTokenTypes.AUTOLINK, GFMTokenTypes.GFM_AUTOLINK)),
-            BacktickParser(),
-            InlineLinkParser(),
-            ReferenceLinkParser(),
-            EmphStrongParser(),
-        )
-    }
+    override val sequentialParserManager =
+        object : SequentialParserManager() {
+            override fun getParserSequence() =
+                listOf(
+                    AutolinkParser(listOf(MarkdownTokenTypes.AUTOLINK, GFMTokenTypes.GFM_AUTOLINK)),
+                    BacktickParser(),
+                    InlineLinkParser(),
+                    ReferenceLinkParser(),
+                    EmphStrongParser(),
+                )
+        }
 
-    override fun createHtmlGeneratingProviders(linkMap: LinkMap, baseURI: URI?) =
-        super.createHtmlGeneratingProviders(linkMap, baseURI) + hashMapOf(
-            GFMTokenTypes.GFM_AUTOLINK to object : GeneratingProvider {
-                override fun processNode(visitor: HtmlGenerator.HtmlGeneratingVisitor, text: String, node: ASTNode) {
-                    val linkDestination = node.getTextInNode(text)
-                    visitor.consumeTagOpen(node, "a", "href=\"$linkDestination\"")
-                    visitor.consumeHtml(linkDestination)
-                    visitor.consumeTagClose("a")
-                }
-            },
+    override fun createHtmlGeneratingProviders(
+        linkMap: LinkMap,
+        baseURI: URI?,
+    ) = super.createHtmlGeneratingProviders(linkMap, baseURI) +
+        hashMapOf(
+            GFMTokenTypes.GFM_AUTOLINK to
+                object : GeneratingProvider {
+                    override fun processNode(
+                        visitor: HtmlGenerator.HtmlGeneratingVisitor,
+                        text: String,
+                        node: ASTNode,
+                    ) {
+                        val linkDestination = node.getTextInNode(text)
+                        visitor.consumeTagOpen(node, "a", "href=\"$linkDestination\"")
+                        visitor.consumeHtml(linkDestination)
+                        visitor.consumeTagClose("a")
+                    }
+                },
         )
 }

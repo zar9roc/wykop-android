@@ -9,13 +9,19 @@ import io.github.wykopmobilny.api.suggest.SuggestApi
 import io.github.wykopmobilny.ui.modules.input.BaseInputActivity
 import javax.inject.Inject
 
-class LinkCommentEditActivity : BaseInputActivity<LinkCommentEditPresenter>(), LinkCommentEditView {
-
+class LinkCommentEditActivity :
+    BaseInputActivity<LinkCommentEditPresenter>(),
+    LinkCommentEditView {
     companion object {
         private const val EXTRA_LINKID = "LINK_ID"
         private const val EXTRA_COMMENTID = "COMMENT_ID"
 
-        fun createIntent(context: Context, commentId: Long, body: String, linkId: Long): Intent {
+        fun createIntent(
+            context: Context,
+            commentId: Long,
+            body: String,
+            linkId: Long,
+        ): Intent {
             val intent = Intent(context, LinkCommentEditActivity::class.java)
             intent.putExtra(EXTRA_BODY, body)
             intent.putExtra(EXTRA_LINKID, linkId)

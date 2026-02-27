@@ -15,14 +15,15 @@ class TagEntriesPresenter(
     val tagApi: TagApi,
     val entriesApi: EntriesApi,
     val entriesInteractor: EntriesInteractor,
-) : BasePresenter<TagEntriesView>(), EntryActionListener {
-
+) : BasePresenter<TagEntriesView>(),
+    EntryActionListener {
     var page = 1
     var tag = ""
 
     fun loadData(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
-        tagApi.getTagEntries(tag, page)
+        tagApi
+            .getTagEntries(tag, page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -36,8 +37,7 @@ class TagEntriesPresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     override fun voteEntry(entry: Entry) = entriesInteractor.voteEntry(entry).processEntrySingle(entry)
@@ -48,11 +48,15 @@ class TagEntriesPresenter(
 
     override fun deleteEntry(entry: Entry) = entriesInteractor.deleteEntry(entry).processEntrySingle(entry)
 
-    override fun voteSurvey(entry: Entry, index: Int) = entriesInteractor.voteSurvey(entry, index).processEntrySingle(entry)
+    override fun voteSurvey(
+        entry: Entry,
+        index: Int,
+    ) = entriesInteractor.voteSurvey(entry, index).processEntrySingle(entry)
 
     override fun getVoters(entry: Entry) {
         view?.openVotersMenu()
-        entriesApi.getEntryVoters(entry.id)
+        entriesApi
+            .getEntryVoters(entry.id)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -62,12 +66,12 @@ class TagEntriesPresenter(
                 {
                     view?.showErrorDialog(it)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     private fun Single<Entry>.processEntrySingle(entry: Entry) {
-        this.subscribeOn(schedulers.backgroundThread())
+        this
+            .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
                 { view?.updateEntry(it) },
@@ -75,7 +79,6 @@ class TagEntriesPresenter(
                     view?.showErrorDialog(it)
                     view?.updateEntry(entry)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

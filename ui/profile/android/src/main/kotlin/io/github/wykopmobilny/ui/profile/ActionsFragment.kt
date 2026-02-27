@@ -15,7 +15,6 @@ import io.github.wykopmobilny.utils.viewBinding
 import kotlinx.coroutines.launch
 
 internal class ActionsFragment : Fragment(R.layout.fragment_links) {
-
     private lateinit var getProfileActions: GetProfileActions
     private val binding by viewBinding(FragmentLinksBinding::bind)
 
@@ -25,7 +24,10 @@ internal class ActionsFragment : Fragment(R.layout.fragment_links) {
         super.onAttach(context)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         viewLifecycleOwner.lifecycleScope.launch {

@@ -16,8 +16,10 @@ import io.github.wykopmobilny.ui.modules.mainnavigation.MainNavigationInterface
 import javax.inject.Inject
 import io.github.wykopmobilny.ui.settings.android.R as SettingsR
 
-class PromotedFragment : BaseLinksFragment(), PromotedView, BaseNavigationView {
-
+class PromotedFragment :
+    BaseLinksFragment(),
+    PromotedView,
+    BaseNavigationView {
     companion object {
         fun newInstance() = PromotedFragment()
     }
@@ -33,12 +35,19 @@ class PromotedFragment : BaseLinksFragment(), PromotedView, BaseNavigationView {
 
     override var loadDataListener: (Boolean) -> Unit = { presenter.getPromotedLinks(it) }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View? {
         setHasOptionsMenu(true)
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(
+        menu: Menu,
+        inflater: MenuInflater,
+    ) {
         inflater.inflate(R.menu.refresh_layout, menu)
         super.onCreateOptionsMenu(menu, inflater)
     }
@@ -53,7 +62,10 @@ class PromotedFragment : BaseLinksFragment(), PromotedView, BaseNavigationView {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         fab.setOnClickListener { navigator.openAddLinkActivity() }
         presenter.subscribe(this)

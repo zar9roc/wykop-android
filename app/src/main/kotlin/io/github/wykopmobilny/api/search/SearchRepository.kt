@@ -11,28 +11,36 @@ import io.github.wykopmobilny.models.mapper.apiv2.filterLinks
 import kotlinx.coroutines.rx2.rxSingle
 import javax.inject.Inject
 
-class SearchRepository @Inject constructor(
-    private val searchApi: SearchRetrofitApi,
-    private val userTokenRefresher: UserTokenRefresher,
-    private val owmContentFilter: OWMContentFilter,
-    private val patronsApi: PatronsApi,
-) : SearchApi {
+class SearchRepository
+    @Inject
+    constructor(
+        private val searchApi: SearchRetrofitApi,
+        private val userTokenRefresher: UserTokenRefresher,
+        private val owmContentFilter: OWMContentFilter,
+        private val patronsApi: PatronsApi,
+    ) : SearchApi {
+        override fun searchLinks(
+            page: Int,
+            query: String,
+        ) = rxSingle { searchApi.searchLinks(page, query) }
+            .retryWhen(userTokenRefresher)
+            .flatMap { patronsApi.ensurePatrons(it) }
+            .compose(ErrorHandlerTransformer())
+            .map { it.filterLinks(owmContentFilter = owmContentFilter) }
 
-    override fun searchLinks(page: Int, query: String) = rxSingle { searchApi.searchLinks(page, query) }
-        .retryWhen(userTokenRefresher)
-        .flatMap { patronsApi.ensurePatrons(it) }
-        .compose(ErrorHandlerTransformer())
-        .map { it.filterLinks(owmContentFilter = owmContentFilter) }
+        override fun searchEntries(
+            page: Int,
+            query: String,
+        ) = rxSingle { searchApi.searchEntries(page, query) }
+            .retryWhen(userTokenRefresher)
+            .flatMap { patronsApi.ensurePatrons(it) }
+            .compose(ErrorHandlerTransformer())
+            .map { it.filterEntries(owmContentFilter = owmContentFilter) }
 
-    override fun searchEntries(page: Int, query: String) = rxSingle { searchApi.searchEntries(page, query) }
-        .retryWhen(userTokenRefresher)
-        .flatMap { patronsApi.ensurePatrons(it) }
-        .compose(ErrorHandlerTransformer())
-        .map { it.filterEntries(owmContentFilter = owmContentFilter) }
-
-    override fun searchProfiles(query: String) = rxSingle { searchApi.searchProfiles(query) }
-        .retryWhen(userTokenRefresher)
-        .flatMap { patronsApi.ensurePatrons(it) }
-        .compose(ErrorHandlerTransformer())
-        .map { it.map { response -> AuthorMapper.map(response) } }
-}
+        override fun searchProfiles(query: String) =
+            rxSingle { searchApi.searchProfiles(query) }
+                .retryWhen(userTokenRefresher)
+                .flatMap { patronsApi.ensurePatrons(it) }
+                .compose(ErrorHandlerTransformer())
+                .map { it.map { response -> AuthorMapper.map(response) } }
+    }

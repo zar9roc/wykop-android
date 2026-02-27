@@ -6,15 +6,24 @@ import io.github.wykopmobilny.data.cache.api.Embed
 import io.github.wykopmobilny.data.cache.api.EmbedType
 
 internal fun EmbedResponse.toEntity(): Embed {
-    val knownType = when (type) {
-        "image" -> if (animated) {
-            EmbedType.AnimatedImage
-        } else {
-            EmbedType.StaticImage
+    val knownType =
+        when (type) {
+            "image" -> {
+                if (animated) {
+                    EmbedType.AnimatedImage
+                } else {
+                    EmbedType.StaticImage
+                }
+            }
+
+            "video" -> {
+                EmbedType.Video
+            }
+
+            else -> {
+                EmbedType.Unknown
+            }
         }
-        "video" -> EmbedType.Video
-        else -> EmbedType.Unknown
-    }
 
     return Embed(
         id = properUrl,

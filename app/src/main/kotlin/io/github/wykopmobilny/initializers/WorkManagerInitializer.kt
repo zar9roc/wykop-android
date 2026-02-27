@@ -9,19 +9,18 @@ import io.github.wykopmobilny.utils.requireDependency
 import io.github.wykopmobilny.work.InjectingFactory
 
 internal class WorkManagerInitializer : Initializer<WorkManager> {
-
     override fun create(context: Context): WorkManager {
         val application = context.applicationContext as WykopApp
 
         WorkManager.initialize(
             context,
-            Configuration.Builder()
+            Configuration
+                .Builder()
                 .setWorkerFactory(
                     InjectingFactory(
                         dependencies = application::requireDependency,
                     ),
-                )
-                .build(),
+                ).build(),
         )
 
         return WorkManager.getInstance(context)

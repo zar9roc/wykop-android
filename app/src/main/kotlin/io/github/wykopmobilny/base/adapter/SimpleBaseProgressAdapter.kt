@@ -6,8 +6,8 @@ import io.github.wykopmobilny.databinding.ProgressItemBinding
 import io.github.wykopmobilny.utils.layoutInflater
 
 abstract class SimpleBaseProgressAdapter<T : RecyclerView.ViewHolder, A : Any> :
-    RecyclerView.Adapter<RecyclerView.ViewHolder>(), BaseProgressAdapter<A> {
-
+    RecyclerView.Adapter<RecyclerView.ViewHolder>(),
+    BaseProgressAdapter<A> {
     companion object {
         const val ITEM_PROGRESS = 2001
         const val DEFAULT_PROGRES_ITEM = 2002
@@ -22,7 +22,10 @@ abstract class SimpleBaseProgressAdapter<T : RecyclerView.ViewHolder, A : Any> :
 
     abstract fun createViewHolder(parent: ViewGroup): T
 
-    abstract fun bindHolder(holder: T, position: Int)
+    abstract fun bindHolder(
+        holder: T,
+        position: Int,
+    )
 
     override fun disableLoading() {
         if (dataset.isNotEmpty() && dataset.last() == null) {
@@ -32,7 +35,10 @@ abstract class SimpleBaseProgressAdapter<T : RecyclerView.ViewHolder, A : Any> :
         }
     }
 
-    override fun addData(items: List<A>, shouldClearAdapter: Boolean) {
+    override fun addData(
+        items: List<A>,
+        shouldClearAdapter: Boolean,
+    ) {
         if (shouldClearAdapter) {
             dataset.apply {
                 clear()
@@ -55,22 +61,31 @@ abstract class SimpleBaseProgressAdapter<T : RecyclerView.ViewHolder, A : Any> :
 
     override fun getItemCount() = dataset.size
 
-    override fun getItemViewType(position: Int): Int = if (dataset[position] == null) {
-        ITEM_PROGRESS
-    } else {
-        itemType
-    }
+    override fun getItemViewType(position: Int): Int =
+        if (dataset[position] == null) {
+            ITEM_PROGRESS
+        } else {
+            itemType
+        }
 
     @Suppress("UNCHECKED_CAST")
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: RecyclerView.ViewHolder,
+        position: Int,
+    ) {
         if (dataset[position] != null) bindHolder(holder as T, position)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) = when (viewType) {
         itemType -> createViewHolder(parent)
         ITEM_PROGRESS -> ProgressViewHolder(ProgressItemBinding.inflate(parent.layoutInflater, parent, false))
         else -> error("Not supported")
     }
 
-    class ProgressViewHolder(val binding: ProgressItemBinding) : RecyclerView.ViewHolder(binding.root)
+    class ProgressViewHolder(
+        val binding: ProgressItemBinding,
+    ) : RecyclerView.ViewHolder(binding.root)
 }

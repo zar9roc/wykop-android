@@ -22,13 +22,18 @@ import io.github.wykopmobilny.utils.usermanager.isUserAuthorized
 import io.github.wykopmobilny.utils.viewBinding
 import javax.inject.Inject
 
-class RelatedActivity : BaseActivity(), SwipeRefreshLayout.OnRefreshListener, RelatedView {
-
+class RelatedActivity :
+    BaseActivity(),
+    SwipeRefreshLayout.OnRefreshListener,
+    RelatedView {
     companion object {
         private const val DATA_FRAGMENT_TAG = "RELATED_LIST"
         private const val EXTRA_LINKID = "LINK_ID_EXTRA"
 
-        fun createIntent(linkId: Long, activity: Activity) = Intent(activity, RelatedActivity::class.java).apply {
+        fun createIntent(
+            linkId: Long,
+            activity: Activity,
+        ) = Intent(activity, RelatedActivity::class.java).apply {
             putExtra(EXTRA_LINKID, linkId)
         }
     }
@@ -105,7 +110,10 @@ class RelatedActivity : BaseActivity(), SwipeRefreshLayout.OnRefreshListener, Re
                     presenter.addRelated(description, url)
                 }.show()
             }
-            android.R.id.home -> finish()
+
+            android.R.id.home -> {
+                finish()
+            }
         }
         return super.onOptionsItemSelected(item)
     }

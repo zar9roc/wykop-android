@@ -8,14 +8,19 @@ import io.github.wykopmobilny.storage.api.SettingsPreferencesApi
 import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 import javax.inject.Inject
 
-class FeedAdapter @Inject constructor(
-    val userManagerApi: UserManagerApi,
-    val settingsPreferencesApi: SettingsPreferencesApi,
-) : SimpleBaseProgressAdapter<BlockedViewHolder, Entry>() {
+class FeedAdapter
+    @Inject
+    constructor(
+        val userManagerApi: UserManagerApi,
+        val settingsPreferencesApi: SettingsPreferencesApi,
+    ) : SimpleBaseProgressAdapter<BlockedViewHolder, Entry>() {
+        override val itemType: Int = 0
 
-    override val itemType: Int = 0
+        override fun bindHolder(
+            holder: BlockedViewHolder,
+            position: Int,
+        ) = holder.bindView(data[position])
 
-    override fun bindHolder(holder: BlockedViewHolder, position: Int) = holder.bindView(data[position])
-
-    override fun createViewHolder(parent: ViewGroup): BlockedViewHolder = BlockedViewHolder.inflateView(parent) { notifyItemChanged(it) }
-}
+        override fun createViewHolder(parent: ViewGroup): BlockedViewHolder =
+            BlockedViewHolder.inflateView(parent) { notifyItemChanged(it) }
+    }

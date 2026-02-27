@@ -17,35 +17,39 @@ import io.github.wykopmobilny.utils.layoutInflater
 class UsersSuggestionsAdapter(
     context: Context,
     private val suggestionApi: SuggestApi,
-) : ArrayAdapter<Author>(context, R.layout.autosuggest_item), Filterable {
-
+) : ArrayAdapter<Author>(context, R.layout.autosuggest_item),
+    Filterable {
     val items = arrayListOf<Author>()
-    private val itemsFilter = object : Filter() {
-        override fun convertResultToString(resultValue: Any): CharSequence = (resultValue as Author).nick
+    private val itemsFilter =
+        object : Filter() {
+            override fun convertResultToString(resultValue: Any): CharSequence = (resultValue as Author).nick
 
-        override fun performFiltering(constraint: CharSequence?): FilterResults {
-            val filterResults = FilterResults()
-            if (constraint != null) {
-                val data = ArrayList<Author>()
-                if (constraint.matches("[\\w-]+".toRegex())) {
-                    data.addAll(suggestionApi.getUserSuggestions(constraint.toString()).blockingGet())
+            override fun performFiltering(constraint: CharSequence?): FilterResults {
+                val filterResults = FilterResults()
+                if (constraint != null) {
+                    val data = ArrayList<Author>()
+                    if (constraint.matches("[\\w-]+".toRegex())) {
+                        data.addAll(suggestionApi.getUserSuggestions(constraint.toString()).blockingGet())
+                    }
+                    filterResults.values = data.toList()
+                    filterResults.count = data.size
                 }
-                filterResults.values = data.toList()
-                filterResults.count = data.size
+                return filterResults
             }
-            return filterResults
-        }
 
-        override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
-            items.clear()
-            if (results != null && results.count > 0) {
-                items.addAll(results.values as List<Author>)
-                notifyDataSetChanged()
-            } else {
-                notifyDataSetInvalidated()
+            override fun publishResults(
+                constraint: CharSequence?,
+                results: FilterResults?,
+            ) {
+                items.clear()
+                if (results != null && results.count > 0) {
+                    items.addAll(results.values as List<Author>)
+                    notifyDataSetChanged()
+                } else {
+                    notifyDataSetInvalidated()
+                }
             }
         }
-    }
 
     override fun getCount() = items.size
 
@@ -53,7 +57,11 @@ class UsersSuggestionsAdapter(
 
     override fun getFilter() = itemsFilter
 
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+    override fun getView(
+        position: Int,
+        convertView: View?,
+        parent: ViewGroup,
+    ): View {
         val view = convertView?.let(AutosuggestItemBinding::bind) ?: AutosuggestItemBinding.inflate(context.layoutInflater)
         val item = items[position]
         view.textView.setTextColor(getGroupColor(item.group, false))

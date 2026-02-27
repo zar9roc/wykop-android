@@ -20,8 +20,7 @@ fun Context.showExceptionDialog(throwable: Throwable) {
             )
         } else {
             exceptionDialog(throwable = throwable)
-        }
-            .show()
+        }.show()
     }
     when (throwable) {
         is KnownError -> Napier.i("Known error", throwable)
@@ -31,17 +30,22 @@ fun Context.showExceptionDialog(throwable: Throwable) {
     }
 }
 
-private fun Context.exceptionDialog(throwable: Throwable, onPositive: Pair<Int, () -> Unit> = android.R.string.ok to { }): AlertDialog {
-    val message = when {
-        throwable is WykopExceptionParser.WykopApiException -> "${throwable.message} (${throwable.code})"
-        throwable.message.isNullOrEmpty() -> throwable.toString()
-        else -> throwable.message
-    }
-    val builder = AlertDialog.Builder(this).apply {
-        setTitle(context.getString(R.string.error_occured))
-        setMessage(message)
-        setPositiveButton(onPositive.first) { _, _ -> onPositive.second() }
-    }
+private fun Context.exceptionDialog(
+    throwable: Throwable,
+    onPositive: Pair<Int, () -> Unit> = android.R.string.ok to { },
+): AlertDialog {
+    val message =
+        when {
+            throwable is WykopExceptionParser.WykopApiException -> "${throwable.message} (${throwable.code})"
+            throwable.message.isNullOrEmpty() -> throwable.toString()
+            else -> throwable.message
+        }
+    val builder =
+        AlertDialog.Builder(this).apply {
+            setTitle(context.getString(R.string.error_occured))
+            setMessage(message)
+            setPositiveButton(onPositive.first) { _, _ -> onPositive.second() }
+        }
 
     return builder.create()
 }

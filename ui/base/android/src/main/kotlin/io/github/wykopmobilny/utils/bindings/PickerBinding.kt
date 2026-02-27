@@ -26,10 +26,11 @@ suspend fun Flow<OptionPickerUi?>.collectOptionPicker(context: Context) {
         .collect { picker ->
             dialog?.dismiss()
             if (picker != null) {
-                dialog = OptionPickerBottomSheet(picker, context).apply {
-                    setOnDismissListener { picker.dismissAction() }
-                    show()
-                }
+                dialog =
+                    OptionPickerBottomSheet(picker, context).apply {
+                        setOnDismissListener { picker.dismissAction() }
+                        show()
+                    }
             }
         }
 }
@@ -38,37 +39,43 @@ private class OptionPickerBottomSheet(
     private val picker: OptionPickerUi,
     context: Context,
 ) : BottomSheetDialog(context) {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = OptionPickerBinding.inflate(layoutInflater)
-        binding.list.adapter = PickerListAdapter().apply {
-            submitList(
-                picker.reasons.map { reason ->
-                    reason.copy(
-                        clickAction = {
-                            picker.dismissAction()
-                            reason.clickAction()
-                        },
-                    )
-                },
-            )
-        }
+        binding.list.adapter =
+            PickerListAdapter().apply {
+                submitList(
+                    picker.reasons.map { reason ->
+                        reason.copy(
+                            clickAction = {
+                                picker.dismissAction()
+                                reason.clickAction()
+                            },
+                        )
+                    },
+                )
+            }
         binding.txtTitle.text = picker.title
         setContentView(binding.root)
     }
 }
 
-private class PickerListAdapter : ListAdapter<OptionPickerUi.Option, PickerListAdapter.DefaultViewHolder>(
-    AsyncDifferConfig.Builder(Diff)
-        .setBackgroundThreadExecutor(AppDispatchers.Default.asExecutor())
-        .build(),
-) {
+private class PickerListAdapter :
+    ListAdapter<OptionPickerUi.Option, PickerListAdapter.DefaultViewHolder>(
+        AsyncDifferConfig
+            .Builder(Diff)
+            .setBackgroundThreadExecutor(AppDispatchers.Default.asExecutor())
+            .build(),
+    ) {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) = DefaultViewHolder(binding = ItemOptionBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        DefaultViewHolder(binding = ItemOptionBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-
-    override fun onBindViewHolder(holder: DefaultViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: DefaultViewHolder,
+        position: Int,
+    ) {
         val item = getItem(position)
 
         val icon = item.icon
@@ -82,12 +89,19 @@ private class PickerListAdapter : ListAdapter<OptionPickerUi.Option, PickerListA
         holder.binding.root.setOnClick(item.clickAction)
     }
 
-    class DefaultViewHolder(val binding: ItemOptionBinding) : RecyclerView.ViewHolder(binding.root)
+    class DefaultViewHolder(
+        val binding: ItemOptionBinding,
+    ) : RecyclerView.ViewHolder(binding.root)
 
     private object Diff : DiffUtil.ItemCallback<OptionPickerUi.Option>() {
-        override fun areItemsTheSame(oldItem: OptionPickerUi.Option, newItem: OptionPickerUi.Option) = oldItem.label == newItem.label
+        override fun areItemsTheSame(
+            oldItem: OptionPickerUi.Option,
+            newItem: OptionPickerUi.Option,
+        ) = oldItem.label == newItem.label
 
-        override fun areContentsTheSame(oldItem: OptionPickerUi.Option, newItem: OptionPickerUi.Option) =
-            oldItem.label == newItem.label && oldItem.icon == newItem.icon
+        override fun areContentsTheSame(
+            oldItem: OptionPickerUi.Option,
+            newItem: OptionPickerUi.Option,
+        ) = oldItem.label == newItem.label && oldItem.icon == newItem.icon
     }
 }

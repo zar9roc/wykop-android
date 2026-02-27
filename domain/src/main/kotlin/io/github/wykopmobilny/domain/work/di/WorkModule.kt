@@ -9,7 +9,6 @@ import io.github.wykopmobilny.work.GetNotificationsRefreshWorkDetails
 
 @Module
 internal abstract class WorkModule {
-
     @Binds
     abstract fun bindBlacklist(impl: GetBlacklistRefreshWorkDetailsQuery): GetBlacklistRefreshWorkDetails
 

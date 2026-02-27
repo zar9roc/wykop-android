@@ -13,7 +13,6 @@ import io.github.wykopmobilny.initializers.RemoteConfigKeys.YOUTUBE_KEY
 import kotlin.time.Duration.Companion.days
 
 internal class RemoteConfigInitializer : Initializer<FirebaseRemoteConfig> {
-
     override fun create(context: Context): FirebaseRemoteConfig {
         FirebaseRemoteConfig.getInstance().setDefaultsAsync(
             mapOf(

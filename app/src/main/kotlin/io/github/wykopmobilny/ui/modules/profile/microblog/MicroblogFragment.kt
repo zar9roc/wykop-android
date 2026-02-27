@@ -6,9 +6,9 @@ import io.github.wykopmobilny.databinding.ProfileSubtabLayoutBinding
 import io.github.wykopmobilny.utils.viewBinding
 
 class MicroblogFragment : BaseFragment(R.layout.profile_subtab_layout) {
-
     companion object {
         const val DATA_FRAGMENT_TAG = "USER_MICROBLOG"
+
         fun newInstance() = MicroblogFragment()
     }
 

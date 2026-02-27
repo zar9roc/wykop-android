@@ -15,8 +15,10 @@ import io.github.wykopmobilny.utils.bindings.setImage
 import io.github.wykopmobilny.utils.bindings.setOnClick
 import androidx.appcompat.R as AppcompatR
 
-class SimpleCounter(context: Context, attrs: AttributeSet?) : LinearLayout(context, attrs) {
-
+class SimpleCounter(
+    context: Context,
+    attrs: AttributeSet?,
+) : LinearLayout(context, attrs) {
     init {
         inflate(context, R.layout.view_simple_counter, this)
         orientation = HORIZONTAL

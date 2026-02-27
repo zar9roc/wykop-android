@@ -13,14 +13,15 @@ class NotificationHeaderViewHolder(
     private val navigator: NewNavigator,
     private val collapseListener: (Boolean, String) -> Unit,
 ) : RecyclerView.ViewHolder(binding.root) {
-
     val collapseDrawable: Drawable? by lazy {
-        itemView.context.obtainStyledAttributes(arrayOf(R.attr.collapseDrawable).toIntArray())
+        itemView.context
+            .obtainStyledAttributes(arrayOf(R.attr.collapseDrawable).toIntArray())
             .use { it.getDrawable(0) }
     }
 
     val expandDrawable: Drawable? by lazy {
-        itemView.context.obtainStyledAttributes(arrayOf(R.attr.expandDrawable).toIntArray())
+        itemView.context
+            .obtainStyledAttributes(arrayOf(R.attr.expandDrawable).toIntArray())
             .use { it.getDrawable(0) }
     }
 

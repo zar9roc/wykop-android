@@ -14,72 +14,88 @@ import io.github.wykopmobilny.utils.layoutInflater
 import io.github.wykopmobilny.utils.linkhandler.WykopLinkHandler
 import javax.inject.Inject
 
-class NotificationsListAdapter @Inject constructor(
-    val navigator: NewNavigator,
-    val linkHandler: WykopLinkHandler,
-) : EndlessProgressAdapter<RecyclerView.ViewHolder, Notification>() {
-
-    companion object {
-        const val TYPE_HEADER = 2123
-        const val TYPE_ITEM = 2124
-    }
-
-    var itemClickListener: (Int) -> Unit = {}
-    private val items: List<Notification?>
-        get() = dataset.filter { it?.visible ?: true || it is NotificationHeader }
-
-    private val updateHeader: (String) -> Unit = { tag ->
-        (dataset.find { it is NotificationHeader && it.tag == tag } as? NotificationHeader)?.apply {
-            notificationsCount -= 1
-            notifyItemChanged(items.indexOf(this))
+class NotificationsListAdapter
+    @Inject
+    constructor(
+        val navigator: NewNavigator,
+        val linkHandler: WykopLinkHandler,
+    ) : EndlessProgressAdapter<RecyclerView.ViewHolder, Notification>() {
+        companion object {
+            const val TYPE_HEADER = 2123
+            const val TYPE_ITEM = 2124
         }
-    }
 
-    private val collapseListener: (Boolean, String) -> Unit = { visibility, tagStr ->
-        dataset
-            .filter { it?.tag == tagStr }
-            .forEach {
-                it?.visible = visibility
+        var itemClickListener: (Int) -> Unit = {}
+        private val items: List<Notification?>
+            get() = dataset.filter { it?.visible ?: true || it is NotificationHeader }
+
+        private val updateHeader: (String) -> Unit = { tag ->
+            (dataset.find { it is NotificationHeader && it.tag == tag } as? NotificationHeader)?.apply {
+                notificationsCount -= 1
+                notifyItemChanged(items.indexOf(this))
             }
-        notifyDataSetChanged()
-    }
-
-    override fun getViewType(position: Int) = if (items[position] is NotificationHeader) {
-        TYPE_HEADER
-    } else {
-        TYPE_ITEM
-    }
-
-    fun collapseAll() {
-        dataset.forEach { it?.visible = false }
-        notifyDataSetChanged()
-    }
-
-    fun expandAll() {
-        dataset.forEach { it?.visible = true }
-        notifyDataSetChanged()
-    }
-
-    override fun constructViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
-        TYPE_HEADER -> NotificationHeaderViewHolder(
-            HashtagNotificationHeaderListItemBinding.inflate(parent.layoutInflater, parent, false),
-            navigator,
-            collapseListener,
-        )
-        TYPE_ITEM -> NotificationViewHolder(
-            NotificationsListItemBinding.inflate(parent.layoutInflater, parent, false),
-            linkHandler,
-            updateHeader,
-        )
-        else -> error("unsupported type")
-    }
-
-    override fun bindHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (holder) {
-            is NotificationViewHolder -> holder.bindNotification(items[position]!!)
-            is NotificationHeaderViewHolder -> holder.bindView(items[position] as NotificationHeader)
         }
-    }
 
-    override fun getItemCount(): Int = items.size
-}
+        private val collapseListener: (Boolean, String) -> Unit = { visibility, tagStr ->
+            dataset
+                .filter { it?.tag == tagStr }
+                .forEach {
+                    it?.visible = visibility
+                }
+            notifyDataSetChanged()
+        }
+
+        override fun getViewType(position: Int) =
+            if (items[position] is NotificationHeader) {
+                TYPE_HEADER
+            } else {
+                TYPE_ITEM
+            }
+
+        fun collapseAll() {
+            dataset.forEach { it?.visible = false }
+            notifyDataSetChanged()
+        }
+
+        fun expandAll() {
+            dataset.forEach { it?.visible = true }
+            notifyDataSetChanged()
+        }
+
+        override fun constructViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ) = when (viewType) {
+            TYPE_HEADER -> {
+                NotificationHeaderViewHolder(
+                    HashtagNotificationHeaderListItemBinding.inflate(parent.layoutInflater, parent, false),
+                    navigator,
+                    collapseListener,
+                )
+            }
+
+            TYPE_ITEM -> {
+                NotificationViewHolder(
+                    NotificationsListItemBinding.inflate(parent.layoutInflater, parent, false),
+                    linkHandler,
+                    updateHeader,
+                )
+            }
+
+            else -> {
+                error("unsupported type")
+            }
+        }
+
+        override fun bindHolder(
+            holder: RecyclerView.ViewHolder,
+            position: Int,
+        ) {
+            when (holder) {
+                is NotificationViewHolder -> holder.bindNotification(items[position]!!)
+                is NotificationHeaderViewHolder -> holder.bindView(items[position] as NotificationHeader)
+            }
+        }
+
+        override fun getItemCount(): Int = items.size
+    }

@@ -10,12 +10,12 @@ class NotificationsListPresenter(
     val schedulers: Schedulers,
     val notificationsApi: NotificationsApi,
 ) : BasePresenter<NotificationsListView>() {
-
     var page = 1
 
     fun loadData(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
-        notificationsApi.getNotifications(page)
+        notificationsApi
+            .getNotifications(page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -28,12 +28,12 @@ class NotificationsListPresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     fun readNotifications() {
-        notificationsApi.readNotifications()
+        notificationsApi
+            .readNotifications()
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe({ view?.showReadToast() }, { view?.showErrorDialog(it) })

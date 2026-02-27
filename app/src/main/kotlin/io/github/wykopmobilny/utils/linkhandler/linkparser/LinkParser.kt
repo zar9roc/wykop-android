@@ -1,7 +1,6 @@
 package io.github.wykopmobilny.utils.linkhandler.linkparser
 
 object LinkParser {
-
     fun getLinkId(url: String): Long? {
         if (url.contains("/link/")) {
             return url.substringAfter("/link/").substringBefore("/").toLongOrNull()

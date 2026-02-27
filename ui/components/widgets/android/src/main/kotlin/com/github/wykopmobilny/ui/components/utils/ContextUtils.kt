@@ -15,7 +15,9 @@ import io.github.aakira.napier.Napier
 @Dimension(unit = Dimension.PX)
 fun Number.dpToPx(resources: Resources) = (toFloat() * resources.displayMetrics.density).toInt()
 
-fun Context.readColorAttr(@AttrRes attrColor: Int): ColorStateList {
+fun Context.readColorAttr(
+    @AttrRes attrColor: Int,
+): ColorStateList {
     val typedValue = TypedValue()
     theme.resolveAttribute(attrColor, typedValue, true)
 
@@ -28,7 +30,9 @@ fun Context.readColorAttr(@AttrRes attrColor: Int): ColorStateList {
 }
 
 @Dimension(unit = Dimension.PX)
-fun Context.readDimensionAttr(@AttrRes dimensionAttr: Int): Int {
+fun Context.readDimensionAttr(
+    @AttrRes dimensionAttr: Int,
+): Int {
     val dimensionValue = TypedValue()
     theme.resolveAttribute(dimensionAttr, dimensionValue, true)
 
@@ -41,7 +45,9 @@ fun Context.readDimensionAttr(@AttrRes dimensionAttr: Int): Int {
 }
 
 @AnyRes
-fun Context.readAttr(@AttrRes attrColor: Int): Int {
+fun Context.readAttr(
+    @AttrRes attrColor: Int,
+): Int {
     val typedValue = TypedValue()
     theme.resolveAttribute(attrColor, typedValue, true)
 

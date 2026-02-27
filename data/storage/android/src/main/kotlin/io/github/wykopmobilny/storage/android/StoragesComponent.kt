@@ -18,30 +18,35 @@ import javax.inject.Singleton
 @Singleton
 @Component(modules = [StoragesModule::class])
 interface StoragesComponent : Storages {
-
     @Component.Factory
     interface Factory {
-
-        fun create(@BindsInstance dbName: String?, @BindsInstance context: Context, @BindsInstance executor: Executor): StoragesComponent
+        fun create(
+            @BindsInstance dbName: String?,
+            @BindsInstance context: Context,
+            @BindsInstance executor: Executor,
+        ): StoragesComponent
     }
 }
 
 @Module
 internal abstract class StoragesModule {
-
     companion object {
-
         @Singleton
         @Provides
-        fun database(context: Context, name: String?) = AppStorage(
-            driver = AndroidSqliteDriver(
-                schema = AppStorage.Schema,
-                context = context,
-                name = name,
-            ),
-            readNotificationEntityAdapter = ReadNotificationEntity.Adapter(
-                dismissedAtAdapter = InstantAdapter,
-            ),
+        fun database(
+            context: Context,
+            name: String?,
+        ) = AppStorage(
+            driver =
+                AndroidSqliteDriver(
+                    schema = AppStorage.Schema,
+                    context = context,
+                    name = name,
+                ),
+            readNotificationEntityAdapter =
+                ReadNotificationEntity.Adapter(
+                    dismissedAtAdapter = InstantAdapter,
+                ),
         )
     }
 

@@ -7,10 +7,8 @@ import okhttp3.OkHttpClient
 
 @Component(modules = [ScraperModule::class])
 interface ScraperComponent : Scraper {
-
     @Component.Factory
     interface Factory {
-
         fun create(
             @BindsInstance okHttpClient: OkHttpClient,
             @BindsInstance baseUrl: String,

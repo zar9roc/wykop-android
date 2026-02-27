@@ -6,7 +6,6 @@ import dagger.Module
 
 @Module
 abstract class MainNavigationModule {
-
     @Binds
     abstract fun activity(impl: MainNavigationActivity): Activity
 }

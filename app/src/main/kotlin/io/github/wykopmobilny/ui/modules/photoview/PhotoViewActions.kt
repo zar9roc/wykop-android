@@ -26,12 +26,15 @@ import java.nio.file.Files
 
 interface PhotoViewCallbacks {
     fun shareImage(url: String)
+
     fun getDrawable(): Drawable?
+
     fun saveImage(url: String)
 }
 
-class PhotoViewActions(val context: Context) : PhotoViewCallbacks {
-
+class PhotoViewActions(
+    val context: Context,
+) : PhotoViewCallbacks {
     companion object {
         const val SAVED_FOLDER = "wykopmobilny"
         const val SHARED_FOLDER = "udostępnione"
@@ -44,16 +47,23 @@ class PhotoViewActions(val context: Context) : PhotoViewCallbacks {
             return
         }
 
-        Single.fromCallable {
-            val file = Glide.with(context).downloadOnly().load(url).submit().get()
-            val newFile = File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                "$SAVED_FOLDER/$SHARED_FOLDER/" + url.substringAfterLast("/"),
-            )
-            file.copyTo(newFile, true)
-            newFile
-        }
-            .subscribeOn(WykopSchedulers().backgroundThread())
+        Single
+            .fromCallable {
+                val file =
+                    Glide
+                        .with(context)
+                        .downloadOnly()
+                        .load(url)
+                        .submit()
+                        .get()
+                val newFile =
+                    File(
+                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                        "$SAVED_FOLDER/$SHARED_FOLDER/" + url.substringAfterLast("/"),
+                    )
+                file.copyTo(newFile, true)
+                newFile
+            }.subscribeOn(WykopSchedulers().backgroundThread())
             .observeOn(WykopSchedulers().mainThread())
             .subscribe(
                 { file ->
@@ -93,38 +103,52 @@ class PhotoViewActions(val context: Context) : PhotoViewCallbacks {
         }
         saveImageV2(url)
             .subscribeOn(WykopSchedulers().backgroundThread())
-            .observeOn(WykopSchedulers().mainThread()).subscribe(
+            .observeOn(WykopSchedulers().mainThread())
+            .subscribe(
                 { showToastMessage("Zapisano plik") },
                 { showToastMessage("Błąd podczas zapisu pliku") },
             )
     }
 
     @Suppress("DEPRECATION")
-    private fun saveImageV2(url: String): Completable {
-        return Completable.fromAction {
+    private fun saveImageV2(url: String): Completable =
+        Completable.fromAction {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                val source = Glide.with(context).downloadOnly().load(url).submit().get()
-                val values = ContentValues().apply {
-                    put(Images.Media.DISPLAY_NAME, url.substringAfterLast('/'))
-                    put(Images.Media.MIME_TYPE, getMimeType(url))
-                    put(Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separator + SAVED_FOLDER)
-                    put(Images.Media.DATE_TAKEN, System.currentTimeMillis())
-                }
+                val source =
+                    Glide
+                        .with(context)
+                        .downloadOnly()
+                        .load(url)
+                        .submit()
+                        .get()
+                val values =
+                    ContentValues().apply {
+                        put(Images.Media.DISPLAY_NAME, url.substringAfterLast('/'))
+                        put(Images.Media.MIME_TYPE, getMimeType(url))
+                        put(Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separator + SAVED_FOLDER)
+                        put(Images.Media.DATE_TAKEN, System.currentTimeMillis())
+                    }
 
                 val uri = context.contentResolver.insert(Images.Media.EXTERNAL_CONTENT_URI, values).let(::checkNotNull)
                 context.contentResolver.openOutputStream(uri)?.use { Files.copy(source.toPath(), it) }
             } else {
-                val source = Glide.with(context).downloadOnly().load(url).submit().get()
-                val directory = File(
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                    SAVED_FOLDER,
-                )
+                val source =
+                    Glide
+                        .with(context)
+                        .downloadOnly()
+                        .load(url)
+                        .submit()
+                        .get()
+                val directory =
+                    File(
+                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                        SAVED_FOLDER,
+                    )
                 val targetFile = File(directory, url.substringAfterLast('/'))
                 source.copyTo(targetFile, true)
                 addImageToGallery(targetFile.path, context)
             }
         }
-    }
 
     private fun checkForWriteReadPermission(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -139,20 +163,25 @@ class PhotoViewActions(val context: Context) : PhotoViewCallbacks {
             arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE),
             1,
         )
-        val writePermission = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        )
-        val readPermission = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-        )
+        val writePermission =
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            )
+        val readPermission =
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+            )
         return writePermission == PackageManager.PERMISSION_GRANTED && readPermission == PackageManager.PERMISSION_GRANTED
     }
 
     private fun showToastMessage(text: String) = Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
 
-    private fun addImageToGallery(filePath: String, context: Context) {
+    private fun addImageToGallery(
+        filePath: String,
+        context: Context,
+    ) {
         val values = ContentValues()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

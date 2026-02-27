@@ -13,13 +13,17 @@ class LinkSearchPresenter(
     val schedulers: Schedulers,
     val searchApi: SearchApi,
     val linksInteractor: LinksInteractor,
-) : BasePresenter<LinkSearchView>(), LinkActionListener {
-
+) : BasePresenter<LinkSearchView>(),
+    LinkActionListener {
     var page = 1
 
-    fun searchLinks(q: String, shouldRefresh: Boolean) {
+    fun searchLinks(
+        q: String,
+        shouldRefresh: Boolean,
+    ) {
         if (shouldRefresh) page = 1
-        searchApi.searchLinks(page, q)
+        searchApi
+            .searchLinks(page, q)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -34,8 +38,7 @@ class LinkSearchPresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     override fun dig(link: Link) = linksInteractor.dig(link).processLinkSingle(link)
@@ -52,7 +55,6 @@ class LinkSearchPresenter(
                     view?.showErrorDialog(it)
                     view?.updateLink(link)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

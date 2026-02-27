@@ -14,10 +14,14 @@ import retrofit2.http.Path
 interface AddLinkRetrofitApi {
     @FormUrlEncoded
     @POST("addlink/draft/appkey/$APP_KEY")
-    suspend fun getDraft(@Field("url") url: String): NewLinkResponse
+    suspend fun getDraft(
+        @Field("url") url: String,
+    ): NewLinkResponse
 
     @GET("/addlink/images/key/{key}/appkey/$APP_KEY")
-    suspend fun getImages(@Path("key") key: String): WykopApiResponse<List<AddLinkPreviewImage>>
+    suspend fun getImages(
+        @Path("key") key: String,
+    ): WykopApiResponse<List<AddLinkPreviewImage>>
 
     @FormUrlEncoded
     @POST("/addlink/add/key/{key}/appkey/$APP_KEY")

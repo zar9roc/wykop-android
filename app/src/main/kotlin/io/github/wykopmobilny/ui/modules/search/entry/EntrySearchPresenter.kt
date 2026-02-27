@@ -15,13 +15,17 @@ class EntrySearchPresenter(
     val searchApi: SearchApi,
     val entriesApi: EntriesApi,
     val entriesInteractor: EntriesInteractor,
-) : BasePresenter<EntrySearchView>(), EntryActionListener {
-
+) : BasePresenter<EntrySearchView>(),
+    EntryActionListener {
     var page = 1
 
-    fun searchEntries(q: String, shouldRefresh: Boolean) {
+    fun searchEntries(
+        q: String,
+        shouldRefresh: Boolean,
+    ) {
         if (shouldRefresh) page = 1
-        searchApi.searchEntries(page, q)
+        searchApi
+            .searchEntries(page, q)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -36,8 +40,7 @@ class EntrySearchPresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     override fun voteEntry(entry: Entry) = entriesInteractor.voteEntry(entry).processEntrySingle(entry)
@@ -48,11 +51,15 @@ class EntrySearchPresenter(
 
     override fun deleteEntry(entry: Entry) = entriesInteractor.deleteEntry(entry).processEntrySingle(entry)
 
-    override fun voteSurvey(entry: Entry, index: Int) = entriesInteractor.voteSurvey(entry, index).processEntrySingle(entry)
+    override fun voteSurvey(
+        entry: Entry,
+        index: Int,
+    ) = entriesInteractor.voteSurvey(entry, index).processEntrySingle(entry)
 
     override fun getVoters(entry: Entry) {
         view?.openVotersMenu()
-        entriesApi.getEntryVoters(entry.id)
+        entriesApi
+            .getEntryVoters(entry.id)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -62,8 +69,7 @@ class EntrySearchPresenter(
                 {
                     view?.showErrorDialog(it)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     private fun Single<Entry>.processEntrySingle(entry: Entry) {
@@ -76,7 +82,6 @@ class EntrySearchPresenter(
                     view?.showErrorDialog(it)
                     view?.updateEntry(entry)
                 },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

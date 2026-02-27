@@ -17,64 +17,81 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-internal class GetNotificationsRefreshWorkDetailsQuery @Inject constructor(
-    private val sessionStorage: SessionStorage,
-    private val store: Store<Int, List<NotificationResponse>>,
-    private val notificationsManager: NotificationsManager,
-    private val appStorage: AppStorage,
-) : GetNotificationsRefreshWorkDetails {
-
-    override fun invoke() = WorkData(
-        onWorkRequested = {
-            if (sessionStorage.session.first() != null) {
-                runCatching { doRefresh() }
-            } else {
-                Napier.i("User not logged in, skipping notification refresh")
-                Result.success(Unit)
-            }
-        },
-    )
-
-    private suspend fun doRefresh() {
-        val notifications = store.fresh(key = 0)
-        val unreadNotifications = notifications.filter(NotificationResponse::new)
-        val newNotifications = unreadNotifications.filter {
-            withContext(AppDispatchers.IO) {
-                val dismissedEntry = appStorage.notificationsQueries.getById(it.id).executeAsOneOrNull()
-                    ?: return@withContext true
-                dismissedEntry.dismissedAt > it.date
-            }
-        }
-
-        Napier.i("Notifications refreshed, ${newNotifications.size}(${unreadNotifications.size}) out of ${notifications.size}")
-        when (newNotifications.size) {
-            0 -> notificationsManager.cancelNotification<AppNotification.Type.Notifications>()
-            notifications.size -> notificationsManager.upsertNotification(
-                notification = AppNotification(
-                    title = Strings.Notifications.TITLE,
-                    message = Strings.Notifications.notificationContentUnbounded(unreadNotifications.size),
-                    type = AppNotification.Type.Notifications.MultipleNotifications,
-                ),
+internal class GetNotificationsRefreshWorkDetailsQuery
+    @Inject
+    constructor(
+        private val sessionStorage: SessionStorage,
+        private val store: Store<Int, List<NotificationResponse>>,
+        private val notificationsManager: NotificationsManager,
+        private val appStorage: AppStorage,
+    ) : GetNotificationsRefreshWorkDetails {
+        override fun invoke() =
+            WorkData(
+                onWorkRequested = {
+                    if (sessionStorage.session.first() != null) {
+                        runCatching { doRefresh() }
+                    } else {
+                        Napier.i("User not logged in, skipping notification refresh")
+                        Result.success(Unit)
+                    }
+                },
             )
-            1 -> {
-                val notification = newNotifications.first()
-                notificationsManager.upsertNotification(
-                    notification = AppNotification(
-                        title = Strings.Notifications.TITLE,
-                        message = notification.body,
-                        type = notification.url?.let {
-                            AppNotification.Type.Notifications.SingleMessage(interopUrl = it)
-                        } ?: AppNotification.Type.Notifications.MultipleNotifications,
-                    ),
-                )
+
+        private suspend fun doRefresh() {
+            val notifications = store.fresh(key = 0)
+            val unreadNotifications = notifications.filter(NotificationResponse::new)
+            val newNotifications =
+                unreadNotifications.filter {
+                    withContext(AppDispatchers.IO) {
+                        val dismissedEntry =
+                            appStorage.notificationsQueries.getById(it.id).executeAsOneOrNull()
+                                ?: return@withContext true
+                        dismissedEntry.dismissedAt > it.date
+                    }
+                }
+
+            Napier.i("Notifications refreshed, ${newNotifications.size}(${unreadNotifications.size}) out of ${notifications.size}")
+            when (newNotifications.size) {
+                0 -> {
+                    notificationsManager.cancelNotification<AppNotification.Type.Notifications>()
+                }
+
+                notifications.size -> {
+                    notificationsManager.upsertNotification(
+                        notification =
+                            AppNotification(
+                                title = Strings.Notifications.TITLE,
+                                message = Strings.Notifications.notificationContentUnbounded(unreadNotifications.size),
+                                type = AppNotification.Type.Notifications.MultipleNotifications,
+                            ),
+                    )
+                }
+
+                1 -> {
+                    val notification = newNotifications.first()
+                    notificationsManager.upsertNotification(
+                        notification =
+                            AppNotification(
+                                title = Strings.Notifications.TITLE,
+                                message = notification.body,
+                                type =
+                                    notification.url?.let {
+                                        AppNotification.Type.Notifications.SingleMessage(interopUrl = it)
+                                    } ?: AppNotification.Type.Notifications.MultipleNotifications,
+                            ),
+                    )
+                }
+
+                else -> {
+                    notificationsManager.upsertNotification(
+                        notification =
+                            AppNotification(
+                                title = Strings.Notifications.TITLE,
+                                message = Strings.Notifications.notificationContent(unreadNotifications.size),
+                                type = AppNotification.Type.Notifications.MultipleNotifications,
+                            ),
+                    )
+                }
             }
-            else -> notificationsManager.upsertNotification(
-                notification = AppNotification(
-                    title = Strings.Notifications.TITLE,
-                    message = Strings.Notifications.notificationContent(unreadNotifications.size),
-                    type = AppNotification.Type.Notifications.MultipleNotifications,
-                ),
-            )
         }
     }
-}

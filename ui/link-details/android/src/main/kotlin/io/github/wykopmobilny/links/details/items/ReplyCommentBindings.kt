@@ -24,7 +24,10 @@ internal fun LinkDetailsReplyCommentHiddenBinding.bindHiddenReply(comment: LinkC
     imgBadge.setBackgroundColor(badgeColor)
 }
 
-internal fun LinkDetailsReplyCommentBinding.bindReplyComment(comment: LinkCommentUi.Normal, isLast: Boolean) {
+internal fun LinkDetailsReplyCommentBinding.bindReplyComment(
+    comment: LinkCommentUi.Normal,
+    isLast: Boolean,
+) {
     clickableContainer.setOnClick(comment.clickAction)
     if (comment.showsOption) {
         clickableContainer.setBackgroundColor(clickableContainer.context.readColorAttr(AppcompatR.attr.colorControlHighlight).defaultColor)
@@ -60,10 +63,11 @@ internal fun LinkDetailsReplyCommentBinding.bindReplyComment(comment: LinkCommen
             BaseR.drawable.ic_favorite_outlined
         },
     )
-    btnFavorite.imageTintList = if (comment.favoriteButton.isToggled) {
-        ColorStateList.valueOf(ContextCompat.getColor(btnFavorite.context, BaseR.color.favorite_enabled))
-    } else {
-        btnFavorite.context.readColorAttr(AppcompatR.attr.colorControlNormal)
-    }
+    btnFavorite.imageTintList =
+        if (comment.favoriteButton.isToggled) {
+            ColorStateList.valueOf(ContextCompat.getColor(btnFavorite.context, BaseR.color.favorite_enabled))
+        } else {
+            btnFavorite.context.readColorAttr(AppcompatR.attr.colorControlNormal)
+        }
     btnReply.setOnClick(comment.profileAction)
 }

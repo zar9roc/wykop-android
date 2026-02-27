@@ -6,18 +6,20 @@ import io.github.wykopmobilny.base.Schedulers
 import io.github.wykopmobilny.utils.intoComposite
 import javax.inject.Inject
 
-class UpvotersPresenter @Inject constructor(
-    private val schedulers: Schedulers,
-    private val linksApi: LinksApi,
-) : BasePresenter<UpvotersView>() {
+class UpvotersPresenter
+    @Inject
+    constructor(
+        private val schedulers: Schedulers,
+        private val linksApi: LinksApi,
+    ) : BasePresenter<UpvotersView>() {
+        var linkId = -1L
 
-    var linkId = -1L
-
-    fun getUpvoters() {
-        linksApi.getUpvoters(linkId)
-            .subscribeOn(schedulers.backgroundThread())
-            .observeOn(schedulers.mainThread())
-            .subscribe({ view?.showUpvoters(it) }, { view?.showErrorDialog(it) })
-            .intoComposite(compositeObservable)
+        fun getUpvoters() {
+            linksApi
+                .getUpvoters(linkId)
+                .subscribeOn(schedulers.backgroundThread())
+                .observeOn(schedulers.mainThread())
+                .subscribe({ view?.showUpvoters(it) }, { view?.showErrorDialog(it) })
+                .intoComposite(compositeObservable)
+        }
     }
-}

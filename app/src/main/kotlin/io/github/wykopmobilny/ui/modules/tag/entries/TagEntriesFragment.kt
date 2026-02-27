@@ -8,8 +8,9 @@ import io.github.wykopmobilny.ui.modules.tag.TagActivityView
 import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 import javax.inject.Inject
 
-class TagEntriesFragment : BaseEntriesFragment(), TagEntriesView {
-
+class TagEntriesFragment :
+    BaseEntriesFragment(),
+    TagEntriesView {
     companion object {
         private const val EXTRA_TAG = "EXTRA_TAG"
 
@@ -32,7 +33,10 @@ class TagEntriesFragment : BaseEntriesFragment(), TagEntriesView {
 
     private val entryTag by lazy { requireArguments().getString(EXTRA_TAG)!! }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         presenter.subscribe(this)
         presenter.tag = entryTag

@@ -16,7 +16,6 @@ class PMMessageViewHolder(
     private val linkHandler: WykopLinkHandler,
     private val navigator: NewNavigator,
 ) : RecyclableViewHolder(binding.root) {
-
     fun bindView(
         message: PMMessage,
         openSpoilersDialog: Boolean,
@@ -63,9 +62,18 @@ class PMMessageViewHolder(
         val cardBackgroundColor = TypedValue()
         theme?.resolveAttribute(R.attr.yourMessageColor, cardBackgroundColor, true)
 
-        val marginVertical = binding.root.resources.getDimension(R.dimen.padding_dp_mini).toInt()
-        val marginHorizontal = binding.root.resources.getDimension(R.dimen.pmmessage_sent_layout_card_margin_horizontal).toInt()
-        val marginFlip = binding.root.resources.getDimension(R.dimen.pmmessage_sent_layout_card_margin_flip).toInt()
+        val marginVertical =
+            binding.root.resources
+                .getDimension(R.dimen.padding_dp_mini)
+                .toInt()
+        val marginHorizontal =
+            binding.root.resources
+                .getDimension(R.dimen.pmmessage_sent_layout_card_margin_horizontal)
+                .toInt()
+        val marginFlip =
+            binding.root.resources
+                .getDimension(R.dimen.pmmessage_sent_layout_card_margin_flip)
+                .toInt()
 
         if (isSentFromUser) {
             binding.notificationItem.setCardBackgroundColor(usersMessageColor.data)

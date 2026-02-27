@@ -22,31 +22,34 @@ interface NotificationsDomainComponent : NotificationDependencies
 
 @Module
 internal abstract class NotificationsModule {
-
     @Binds
     abstract fun handleNotificationDismissed(impl: HandleNotificationDismissedImpl): HandleNotificationDismissed
 }
 
-internal class HandleNotificationDismissedImpl @Inject constructor(
-    private val appStorage: AppStorage,
-    private val store: Store<Int, List<NotificationResponse>>,
-) : HandleNotificationDismissed {
+internal class HandleNotificationDismissedImpl
+    @Inject
+    constructor(
+        private val appStorage: AppStorage,
+        private val store: Store<Int, List<NotificationResponse>>,
+    ) : HandleNotificationDismissed {
+        override suspend fun invoke() =
+            withContext(AppDispatchers.IO) {
+                val currentNotifications =
+                    store
+                        .stream(StoreRequest.cached(key = 0, refresh = false))
+                        .map { it.dataOrNull() }
+                        .filterNotNull()
+                        .first()
 
-    override suspend fun invoke() = withContext(AppDispatchers.IO) {
-        val currentNotifications = store.stream(StoreRequest.cached(key = 0, refresh = false))
-            .map { it.dataOrNull() }
-            .filterNotNull()
-            .first()
-
-        appStorage.notificationsQueries.transaction {
-            currentNotifications.forEach { notification ->
-                appStorage.notificationsQueries.insertOrReplace(
-                    ReadNotificationEntity(
-                        notificationId = notification.id,
-                        dismissedAt = notification.date,
-                    ),
-                )
+                appStorage.notificationsQueries.transaction {
+                    currentNotifications.forEach { notification ->
+                        appStorage.notificationsQueries.insertOrReplace(
+                            ReadNotificationEntity(
+                                notificationId = notification.id,
+                                dismissedAt = notification.date,
+                            ),
+                        )
+                    }
+                }
             }
-        }
     }
-}

@@ -11,10 +11,13 @@ import retrofit2.create
 
 @Module
 internal class PatronsModule {
-
     @Reusable
     @Provides
-    fun retrofit(okHttpClient: OkHttpClient, baseUrl: String) = Retrofit.Builder()
+    fun retrofit(
+        okHttpClient: OkHttpClient,
+        baseUrl: String,
+    ) = Retrofit
+        .Builder()
         .client(okHttpClient)
         .baseUrl(baseUrl)
         .addConverterFactory(MoshiConverterFactory.create())

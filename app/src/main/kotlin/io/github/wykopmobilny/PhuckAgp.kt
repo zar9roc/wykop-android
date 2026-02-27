@@ -10,6 +10,9 @@ import io.github.wykopmobilny.wykop.remote.DaggerWykopComponent
 import io.github.wykopmobilny.wykop.remote.WykopComponent
 
 fun daggerScraper(): ScraperComponent.Factory = DaggerScraperComponent.factory()
+
 fun daggerWykop(): WykopComponent.Factory = DaggerWykopComponent.factory()
+
 fun daggerPatrons(): PatronsComponent.Factory = DaggerPatronsComponent.factory()
+
 fun daggerDomain(): DomainComponent.Factory = DaggerDomainComponent.factory()

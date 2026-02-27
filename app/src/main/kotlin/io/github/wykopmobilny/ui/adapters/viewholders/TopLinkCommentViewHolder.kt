@@ -25,14 +25,13 @@ class TopLinkCommentViewHolder(
     commentActionListener: LinkCommentActionListener,
     commentViewListener: LinkCommentViewListener?,
 ) : BaseLinkCommentViewHolder(
-    binding.root,
-    userManagerApi,
-    navigator,
-    linkHandler,
-    commentViewListener,
-    commentActionListener,
-) {
-
+        binding.root,
+        userManagerApi,
+        navigator,
+        linkHandler,
+        commentViewListener,
+        commentActionListener,
+    ) {
     override lateinit var embedView: WykopEmbedView
 
     // Bind correct views
@@ -62,14 +61,15 @@ class TopLinkCommentViewHolder(
             commentActionListener: LinkCommentActionListener,
             commentViewListener: LinkCommentViewListener?,
         ): TopLinkCommentViewHolder {
-            val view = TopLinkCommentViewHolder(
-                TopLinkCommentLayoutBinding.inflate(parent.layoutInflater, parent, false),
-                userManagerApi,
-                navigator,
-                linkHandler,
-                commentActionListener,
-                commentViewListener,
-            )
+            val view =
+                TopLinkCommentViewHolder(
+                    TopLinkCommentLayoutBinding.inflate(parent.layoutInflater, parent, false),
+                    userManagerApi,
+                    navigator,
+                    linkHandler,
+                    commentActionListener,
+                    commentViewListener,
+                )
 
             view.type = viewType
 

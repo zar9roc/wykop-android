@@ -10,17 +10,22 @@ import io.github.wykopmobilny.models.dataclass.Embed
 import io.github.wykopmobilny.ui.modules.input.BaseInputActivity
 import javax.inject.Inject
 
-class EditEntryActivity : BaseInputActivity<EditEntryPresenter>(), EditEntryView {
-
+class EditEntryActivity :
+    BaseInputActivity<EditEntryPresenter>(),
+    EditEntryView {
     companion object {
         const val EXTRA_ENTRY_ID = "ENTRY_ID"
 
-        fun createIntent(context: Context, body: String, entryId: Long, embed: Embed?) =
-            Intent(context, EditEntryActivity::class.java).apply {
-                putExtra(EXTRA_BODY, body)
-                putExtra(EXTRA_ENTRY_ID, entryId)
-                putExtra(EXTRA_EMBED, embed)
-            }
+        fun createIntent(
+            context: Context,
+            body: String,
+            entryId: Long,
+            embed: Embed?,
+        ) = Intent(context, EditEntryActivity::class.java).apply {
+            putExtra(EXTRA_BODY, body)
+            putExtra(EXTRA_ENTRY_ID, entryId)
+            putExtra(EXTRA_EMBED, embed)
+        }
     }
 
     @Inject

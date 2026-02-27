@@ -37,9 +37,7 @@ import javax.inject.Provider
 
 @Module
 internal abstract class ProfileModule {
-
     companion object {
-
         @ProfileScope
         @Provides
         fun viewState() = SimpleViewStateStorage()
@@ -52,29 +50,32 @@ internal abstract class ProfileModule {
             appScopes: AppScopes,
             cache: AppCache,
             apiClient: ApiClient,
-        ): Store<Int, List<ProfileAction>> = StoreBuilder.from(
-            fetcher = apiClient.fetcher { page ->
-                // pagination is broken on the  api side
-                if (page == 1) {
-                    retrofitApi.getActions(profileId)
-                } else {
-                    WykopApiResponse(data = emptyList(), error = null)
-                }
-            },
-            sourceOfTruth = profileSourceOfTruth(profileId, cache),
-        )
-            .scope(appScopes.applicationScope)
-            .build()
+        ): Store<Int, List<ProfileAction>> =
+            StoreBuilder
+                .from(
+                    fetcher =
+                        apiClient.fetcher { page ->
+                            // pagination is broken on the  api side
+                            if (page == 1) {
+                                retrofitApi.getActions(profileId)
+                            } else {
+                                WykopApiResponse(data = emptyList(), error = null)
+                            }
+                        },
+                    sourceOfTruth = profileSourceOfTruth(profileId, cache),
+                ).scope(appScopes.applicationScope)
+                .build()
 
         @Provides
         fun actionsPager(
             mediator: StoreMediator<ProfileAction>,
             pagingSource: Provider<PagingSource<ProfileAction>>,
-        ): Pager<Int, ProfileAction> = Pager(
-            config = PagingConfig(pageSize = 20),
-            remoteMediator = mediator,
-            pagingSourceFactory = pagingSource::get,
-        )
+        ): Pager<Int, ProfileAction> =
+            Pager(
+                config = PagingConfig(pageSize = 20),
+                remoteMediator = mediator,
+                pagingSourceFactory = pagingSource::get,
+            )
 
         @ProfileScope
         @Provides
@@ -84,35 +85,38 @@ internal abstract class ProfileModule {
             appScopes: AppScopes,
             cache: AppCache,
             apiClient: ApiClient,
-        ): Store<Unit, ProfileDetailsView> = StoreBuilder.from(
-            fetcher = apiClient.fetcher { retrofitApi.getIndex(profileId) },
-            sourceOfTruth = SourceOfTruth.of<Unit, ProfileResponse, ProfileDetailsView>(
-                reader = {
-                    cache.profileQueries.selectById(profileId)
-                        .asFlow()
-                        .mapToOneOrNull(AppDispatchers.IO)
-                },
-                writer = { _, input ->
-                    cache.transaction {
-                        if (input.isBlocked == true) {
-                            cache.profileStateQueries.blockProfile(input.id)
-                        } else {
-                            cache.profileStateQueries.unblockProfile(input.id)
-                        }
-                        if (input.isObserved == true) {
-                            cache.profileStateQueries.observeProfile(input.id)
-                        } else {
-                            cache.profileStateQueries.unobserveProfile(input.id)
-                        }
-                        cache.profileQueries.insertOrReplace(input.toProfileEntity())
-                    }
-                },
-                delete = { cache.profileQueries.deleteById(profileId) },
-                deleteAll = { cache.profileQueries.deleteAll() },
-            ),
-        )
-            .scope(appScopes.applicationScope)
-            .build()
+        ): Store<Unit, ProfileDetailsView> =
+            StoreBuilder
+                .from(
+                    fetcher = apiClient.fetcher { retrofitApi.getIndex(profileId) },
+                    sourceOfTruth =
+                        SourceOfTruth.of<Unit, ProfileResponse, ProfileDetailsView>(
+                            reader = {
+                                cache.profileQueries
+                                    .selectById(profileId)
+                                    .asFlow()
+                                    .mapToOneOrNull(AppDispatchers.IO)
+                            },
+                            writer = { _, input ->
+                                cache.transaction {
+                                    if (input.isBlocked == true) {
+                                        cache.profileStateQueries.blockProfile(input.id)
+                                    } else {
+                                        cache.profileStateQueries.unblockProfile(input.id)
+                                    }
+                                    if (input.isObserved == true) {
+                                        cache.profileStateQueries.observeProfile(input.id)
+                                    } else {
+                                        cache.profileStateQueries.unobserveProfile(input.id)
+                                    }
+                                    cache.profileQueries.insertOrReplace(input.toProfileEntity())
+                                }
+                            },
+                            delete = { cache.profileQueries.deleteById(profileId) },
+                            deleteAll = { cache.profileQueries.deleteAll() },
+                        ),
+                ).scope(appScopes.applicationScope)
+                .build()
     }
 
     @Binds
@@ -125,53 +129,56 @@ internal abstract class ProfileModule {
     abstract fun scopeInitializer(impl: InitializeProfile): ScopeInitializer
 }
 
-private fun ProfileResponse.toProfileEntity() = ProfileEntity(
-    id = id,
-    signupAt = signupAt,
-    background = background,
-    isVerified = isVerified == true,
-    email = email,
-    description = description,
-    name = name,
-    wwwUrl = wwwUrl,
-    jabberUrl = jabberUrl,
-    ggUrl = ggUrl,
-    city = city,
-    facebookUrl = facebookUrl,
-    twitterUrl = twitterUrl,
-    instagramUrl = instagramUrl,
-    linksAddedCount = linksAddedCount,
-    linksPublishedCount = linksPublishedCount,
-    commentsCount = commentsCount,
-    rank = rank,
-    followers = followers,
-    following = following,
-    entriesCount = entriesCount,
-    entriesCommentsCount = entriesCommentsCount,
-    diggsCount = diggsCount,
-    buriesCount = buriesCount,
-    violationUrl = violationUrl,
-    banReason = ban?.reason,
-    banDate = ban?.date,
-    color = color.toColorEntity(),
-    gender = sex.toGenderEntity(),
-    avatar = avatar,
-)
+private fun ProfileResponse.toProfileEntity() =
+    ProfileEntity(
+        id = id,
+        signupAt = signupAt,
+        background = background,
+        isVerified = isVerified == true,
+        email = email,
+        description = description,
+        name = name,
+        wwwUrl = wwwUrl,
+        jabberUrl = jabberUrl,
+        ggUrl = ggUrl,
+        city = city,
+        facebookUrl = facebookUrl,
+        twitterUrl = twitterUrl,
+        instagramUrl = instagramUrl,
+        linksAddedCount = linksAddedCount,
+        linksPublishedCount = linksPublishedCount,
+        commentsCount = commentsCount,
+        rank = rank,
+        followers = followers,
+        following = following,
+        entriesCount = entriesCount,
+        entriesCommentsCount = entriesCommentsCount,
+        diggsCount = diggsCount,
+        buriesCount = buriesCount,
+        violationUrl = violationUrl,
+        banReason = ban?.reason,
+        banDate = ban?.date,
+        color = color.toColorEntity(),
+        gender = sex.toGenderEntity(),
+        avatar = avatar,
+    )
 
 @Suppress("MagicNumber")
-internal fun Int.toColorEntity() = when (this) {
-    0 -> UserColorEntity.Green
-    1 -> UserColorEntity.Orange
-    2 -> UserColorEntity.Claret
-    5 -> UserColorEntity.Admin
-    1001 -> UserColorEntity.Banned
-    1002 -> UserColorEntity.Deleted
-    2001 -> UserColorEntity.Client
-    else -> UserColorEntity.Unknown
-}
+internal fun Int.toColorEntity() =
+    when (this) {
+        0 -> UserColorEntity.Green
+        1 -> UserColorEntity.Orange
+        2 -> UserColorEntity.Claret
+        5 -> UserColorEntity.Admin
+        1001 -> UserColorEntity.Banned
+        1002 -> UserColorEntity.Deleted
+        2001 -> UserColorEntity.Client
+        else -> UserColorEntity.Unknown
+    }
 
-internal fun String?.toGenderEntity() = when (this) {
-    "male" -> GenderEntity.Male
-    "female" -> GenderEntity.Female
-    else -> null
-}
+internal fun String?.toGenderEntity() =
+    when (this) {
+        "male" -> GenderEntity.Male
+        "female" -> GenderEntity.Female
+        else -> null
+    }

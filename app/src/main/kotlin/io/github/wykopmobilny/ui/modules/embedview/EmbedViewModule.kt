@@ -6,7 +6,6 @@ import dagger.Module
 
 @Module
 abstract class EmbedViewModule {
-
     @Binds
     abstract fun activity(impl: EmbedViewActivity): Activity
 }

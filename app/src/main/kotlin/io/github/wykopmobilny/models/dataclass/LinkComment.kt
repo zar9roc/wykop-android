@@ -27,7 +27,6 @@ class LinkComment(
     var isNsfw: Boolean = false,
     var isBlocked: Boolean = false,
 ) : Parcelable {
-
     val url = "https://www.wykop.pl/link/$linkId/#comment-$id"
 
     constructor(parcel: Parcel) : this(
@@ -53,7 +52,10 @@ class LinkComment(
         parcel.readByte() != 0.toByte(),
     )
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
+    override fun writeToParcel(
+        parcel: Parcel,
+        flags: Int,
+    ) {
         parcel.writeLong(id)
         parcel.writeParcelable(author, flags)
         parcel.writeLong(fullDate.toEpochMilliseconds())
@@ -76,18 +78,12 @@ class LinkComment(
         parcel.writeByte(if (isBlocked) 1 else 0)
     }
 
-    override fun describeContents(): Int {
-        return 0
-    }
+    override fun describeContents(): Int = 0
 
     companion object CREATOR : Parcelable.Creator<LinkComment> {
-        override fun createFromParcel(parcel: Parcel): LinkComment {
-            return LinkComment(parcel)
-        }
+        override fun createFromParcel(parcel: Parcel): LinkComment = LinkComment(parcel)
 
-        override fun newArray(size: Int): Array<LinkComment?> {
-            return arrayOfNulls(size)
-        }
+        override fun newArray(size: Int): Array<LinkComment?> = arrayOfNulls(size)
     }
 
     val date: String

@@ -9,13 +9,13 @@ class ProfileRelatedPresenter(
     val schedulers: Schedulers,
     val profileApi: ProfileApi,
 ) : BasePresenter<ProfileRelatedView>() {
-
     var page = 1
     lateinit var username: String
 
     fun loadData(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
-        profileApi.getRelated(username, page)
+        profileApi
+            .getRelated(username, page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -28,7 +28,6 @@ class ProfileRelatedPresenter(
                     }
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

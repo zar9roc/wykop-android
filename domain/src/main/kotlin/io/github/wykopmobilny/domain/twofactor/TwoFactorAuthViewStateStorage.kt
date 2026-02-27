@@ -7,14 +7,15 @@ import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @TwoFactorAuthScope
-internal class TwoFactorAuthViewStateStorage @Inject constructor() {
+internal class TwoFactorAuthViewStateStorage
+    @Inject
+    constructor() {
+        val state = MutableStateFlow(value = TwoFactorAuthViewState())
 
-    val state = MutableStateFlow(value = TwoFactorAuthViewState())
-
-    fun update(updater: (TwoFactorAuthViewState) -> TwoFactorAuthViewState) {
-        state.update(updater)
+        fun update(updater: (TwoFactorAuthViewState) -> TwoFactorAuthViewState) {
+            state.update(updater)
+        }
     }
-}
 
 data class TwoFactorAuthViewState(
     val generalResource: Resource = Resource.idle(),

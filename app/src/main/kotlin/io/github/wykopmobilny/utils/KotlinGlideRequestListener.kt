@@ -6,9 +6,16 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 
-class KotlinGlideRequestListener(val failedListener: (GlideException?) -> Unit, val successListener: () -> Unit) :
-    RequestListener<Drawable> {
-    override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
+class KotlinGlideRequestListener(
+    val failedListener: (GlideException?) -> Unit,
+    val successListener: () -> Unit,
+) : RequestListener<Drawable> {
+    override fun onLoadFailed(
+        e: GlideException?,
+        model: Any?,
+        target: Target<Drawable>?,
+        isFirstResource: Boolean,
+    ): Boolean {
         failedListener(e)
         return false
     }

@@ -16,8 +16,9 @@ import io.github.wykopmobilny.ui.dialogs.YearPickerDialog
 import javax.inject.Inject
 import io.github.wykopmobilny.ui.settings.android.R as SettingsR
 
-class HitsFragment : BaseLinksFragment(), HitsView {
-
+class HitsFragment :
+    BaseLinksFragment(),
+    HitsView {
     companion object {
         const val DATA_FRAGMENT_TAG = "HITS_FRAGMENT_TAG"
         const val PICKER_REQUEST_CODE = 126
@@ -32,12 +33,19 @@ class HitsFragment : BaseLinksFragment(), HitsView {
         presenter.loadData()
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View? {
         setHasOptionsMenu(true)
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(
+        menu: Menu,
+        inflater: MenuInflater,
+    ) {
         inflater.inflate(R.menu.hits_menu, menu)
         super.onCreateOptionsMenu(menu, inflater)
     }
@@ -87,7 +95,10 @@ class HitsFragment : BaseLinksFragment(), HitsView {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         presenter.subscribe(this)
         (activity as BaseActivity).supportActionBar?.setTitle(SettingsR.string.hits)
@@ -103,16 +114,21 @@ class HitsFragment : BaseLinksFragment(), HitsView {
     }
 
     fun setTitle() {
-        (activity as BaseActivity).supportActionBar?.title = when (presenter.currentScreen) {
-            HitsPresenter.HITS_POPULAR -> getString(R.string.hits_popular)
-            HitsPresenter.HITS_MONTH -> getString(R.string.hits_month_toolbar, presenter.monthSelection, presenter.yearSelection)
-            HitsPresenter.HITS_YEAR -> getString(R.string.hits_year_toolbar, presenter.yearSelection)
-            HitsPresenter.HITS_WEEK -> getString(R.string.hits_week)
-            else -> getString(R.string.hits_day)
-        }
+        (activity as BaseActivity).supportActionBar?.title =
+            when (presenter.currentScreen) {
+                HitsPresenter.HITS_POPULAR -> getString(R.string.hits_popular)
+                HitsPresenter.HITS_MONTH -> getString(R.string.hits_month_toolbar, presenter.monthSelection, presenter.yearSelection)
+                HitsPresenter.HITS_YEAR -> getString(R.string.hits_year_toolbar, presenter.yearSelection)
+                HitsPresenter.HITS_WEEK -> getString(R.string.hits_week)
+                else -> getString(R.string.hits_day)
+            }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         if (requestCode == PICKER_REQUEST_CODE) {
             data?.let {
                 if (data.hasExtra(MonthYearPickerDialog.EXTRA_YEAR)) {

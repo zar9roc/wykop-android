@@ -7,11 +7,12 @@ import okhttp3.OkHttpClient
 
 @Component(modules = [PatronsModule::class])
 interface PatronsComponent {
-
     @Component.Factory
     interface Factory {
-
-        fun create(@BindsInstance okHttpClient: OkHttpClient, @BindsInstance baseUrl: String): PatronsComponent
+        fun create(
+            @BindsInstance okHttpClient: OkHttpClient,
+            @BindsInstance baseUrl: String,
+        ): PatronsComponent
     }
 
     fun patronsApi(): PatronsRetrofitApi

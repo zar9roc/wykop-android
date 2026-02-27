@@ -41,18 +41,21 @@ class EntryActivity :
     InputToolbarListener,
     SwipeRefreshLayout.OnRefreshListener,
     EntryCommentViewListener {
-
     companion object {
         const val EXTRA_ENTRY_ID = "ENTRY_ID"
         const val EXTRA_COMMENT_ID = "COMMENT_ID"
         const val EXTRA_IS_REVEALED = "IS_REVEALED"
 
-        fun createIntent(context: Context, entryId: Long, commentId: Long?, isRevealed: Boolean) =
-            Intent(context, EntryActivity::class.java).apply {
-                putExtra(EXTRA_ENTRY_ID, entryId)
-                putExtra(EXTRA_IS_REVEALED, isRevealed)
-                commentId?.let<Long, Unit> { putExtra(EXTRA_COMMENT_ID, commentId) }
-            }
+        fun createIntent(
+            context: Context,
+            entryId: Long,
+            commentId: Long?,
+            isRevealed: Boolean,
+        ) = Intent(context, EntryActivity::class.java).apply {
+            putExtra(EXTRA_ENTRY_ID, entryId)
+            putExtra(EXTRA_IS_REVEALED, isRevealed)
+            commentId?.let<Long, Unit> { putExtra(EXTRA_COMMENT_ID, commentId) }
+        }
     }
 
     @Inject
@@ -195,9 +198,10 @@ class EntryActivity :
         binding.inputToolbar.resetState()
     }
 
-    private val contract = registerForActivityResult(ActivityResultContracts.GetContent()) {
-        binding.inputToolbar.setPhoto(it)
-    }
+    private val contract =
+        registerForActivityResult(ActivityResultContracts.GetContent()) {
+            binding.inputToolbar.setPhoto(it)
+        }
 
     override fun openGalleryImageChooser() {
         contract.launch("image/*")
@@ -211,15 +215,27 @@ class EntryActivity :
         }
     }
 
-    override fun sendPhoto(photo: String?, body: String, containsAdultContent: Boolean) {
+    override fun sendPhoto(
+        photo: String?,
+        body: String,
+        containsAdultContent: Boolean,
+    ) {
         presenter.addComment(body, photo, containsAdultContent)
     }
 
-    override fun sendPhoto(photo: WykopImageFile, body: String, containsAdultContent: Boolean) {
+    override fun sendPhoto(
+        photo: WykopImageFile,
+        body: String,
+        containsAdultContent: Boolean,
+    ) {
         presenter.addComment(body, photo, containsAdultContent)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
             if (!presenter.isSubscribed) presenter.subscribe(this)

@@ -5,8 +5,9 @@ import android.view.View
 import io.github.wykopmobilny.base.BaseEntriesFragment
 import javax.inject.Inject
 
-class EntryFavoriteFragment : BaseEntriesFragment(), EntryFavoriteView {
-
+class EntryFavoriteFragment :
+    BaseEntriesFragment(),
+    EntryFavoriteView {
     companion object {
         fun newInstance() = EntryFavoriteFragment()
     }
@@ -15,7 +16,10 @@ class EntryFavoriteFragment : BaseEntriesFragment(), EntryFavoriteView {
     lateinit var presenter: EntryFavoritePresenter
     override var loadDataListener: (Boolean) -> Unit = { presenter.loadData(it) }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         presenter.subscribe(this)
         entriesAdapter.entryActionListener = presenter

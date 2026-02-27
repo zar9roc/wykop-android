@@ -12,7 +12,6 @@ class RelatedWidgetPresenter(
     val linksApi: LinksApi,
     val linkHandler: WykopLinkHandler,
 ) : BasePresenter<RelatedWidgetView>() {
-
     var relatedId = -1
     var linkId: Long? = null
 
@@ -20,7 +19,8 @@ class RelatedWidgetPresenter(
 
     fun voteUp() {
         val linkId = linkId ?: return view?.showErrorDialog(Exception("Sorky, to jeszcze nie dziala")) ?: Unit
-        linksApi.relatedVoteUp(linkId, relatedId)
+        linksApi
+            .relatedVoteUp(linkId, relatedId)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -29,13 +29,13 @@ class RelatedWidgetPresenter(
                     view?.markVoted()
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 
     fun voteDown() {
         val linkId = linkId ?: return view?.showErrorDialog(Exception("Sorky, to jeszcze nie dziala")) ?: Unit
-        linksApi.relatedVoteDown(linkId, relatedId)
+        linksApi
+            .relatedVoteDown(linkId, relatedId)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -44,7 +44,6 @@ class RelatedWidgetPresenter(
                     view?.markUnvoted()
                 },
                 { view?.showErrorDialog(it) },
-            )
-            .intoComposite(compositeObservable)
+            ).intoComposite(compositeObservable)
     }
 }

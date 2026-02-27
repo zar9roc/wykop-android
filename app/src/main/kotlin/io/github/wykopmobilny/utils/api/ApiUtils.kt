@@ -18,44 +18,99 @@ fun parseDate(date: String): Date? {
     return format.parse(date)
 }
 
-fun getGroupColor(role: Int, isUsingDarkTheme: Boolean = true): Int = when (role) {
-    0 -> Color.parseColor("#339933")
-    1 -> Color.parseColor("#ff5917")
-    2 -> Color.parseColor("#BB0000")
-    5 ->
-        if (isUsingDarkTheme) {
-            Color.parseColor("#ffffff")
-        } else {
-            Color.parseColor("#000000")
+fun getGroupColor(
+    role: Int,
+    isUsingDarkTheme: Boolean = true,
+): Int =
+    when (role) {
+        0 -> {
+            Color.parseColor("#339933")
         }
-    999 -> Color.parseColor("#BF9B30")
-    1001 -> Color.parseColor("#999999")
-    1002 -> Color.parseColor("#999999")
-    2001 -> Color.parseColor("#3F6FA0")
-    else -> Color.BLUE
-}
 
-fun Context.getGroupColor(role: Int): Int = when (role) {
-    0 -> Color.parseColor("#339933")
-    1 -> Color.parseColor("#ff5917")
-    2 -> Color.parseColor("#BB0000")
-    5 -> {
-        val tv = TypedValue()
-        theme.resolveAttribute(R.attr.adminNickColor, tv, true)
-        tv.data
+        1 -> {
+            Color.parseColor("#ff5917")
+        }
+
+        2 -> {
+            Color.parseColor("#BB0000")
+        }
+
+        5 -> {
+            if (isUsingDarkTheme) {
+                Color.parseColor("#ffffff")
+            } else {
+                Color.parseColor("#000000")
+            }
+        }
+
+        999 -> {
+            Color.parseColor("#BF9B30")
+        }
+
+        1001 -> {
+            Color.parseColor("#999999")
+        }
+
+        1002 -> {
+            Color.parseColor("#999999")
+        }
+
+        2001 -> {
+            Color.parseColor("#3F6FA0")
+        }
+
+        else -> {
+            Color.BLUE
+        }
     }
-    999 -> Color.parseColor("#BF9B30")
-    1001 -> Color.parseColor("#999999")
-    1002 -> Color.parseColor("#999999")
-    2001 -> Color.parseColor("#3F6FA0")
-    else -> Color.BLUE
-}
 
-fun getGenderStripResource(authorSex: String): Int = when (authorSex) {
-    "male" -> R.drawable.strip_male
-    "female" -> R.drawable.strip_female
-    else -> 0
-}
+fun Context.getGroupColor(role: Int): Int =
+    when (role) {
+        0 -> {
+            Color.parseColor("#339933")
+        }
+
+        1 -> {
+            Color.parseColor("#ff5917")
+        }
+
+        2 -> {
+            Color.parseColor("#BB0000")
+        }
+
+        5 -> {
+            val tv = TypedValue()
+            theme.resolveAttribute(R.attr.adminNickColor, tv, true)
+            tv.data
+        }
+
+        999 -> {
+            Color.parseColor("#BF9B30")
+        }
+
+        1001 -> {
+            Color.parseColor("#999999")
+        }
+
+        1002 -> {
+            Color.parseColor("#999999")
+        }
+
+        2001 -> {
+            Color.parseColor("#3F6FA0")
+        }
+
+        else -> {
+            Color.BLUE
+        }
+    }
+
+fun getGenderStripResource(authorSex: String): Int =
+    when (authorSex) {
+        "male" -> R.drawable.strip_male
+        "female" -> R.drawable.strip_female
+        else -> 0
+    }
 
 fun String.stripImageCompression(): String {
     val extension = substringAfterLast(".")
@@ -65,8 +120,9 @@ fun String.stripImageCompression(): String {
 
 fun String.convertMarkdownToHtml(): String {
     val flavour = WykopFlavorDescriptor()
-    val parsedTree = MarkdownParser(flavour)
-        .buildMarkdownTreeFromString(this)
+    val parsedTree =
+        MarkdownParser(flavour)
+            .buildMarkdownTreeFromString(this)
     var html = HtmlGenerator(this, parsedTree, flavour).generateHtml()
     val regex = Regex("[#@]\\w+")
     regex.findAll(html).forEach {

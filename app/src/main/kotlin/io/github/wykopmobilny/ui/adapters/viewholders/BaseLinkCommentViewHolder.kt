@@ -42,10 +42,12 @@ abstract class BaseLinkCommentViewHolder(
     protected val commentViewListener: LinkCommentViewListener?,
     private val commentActionListener: LinkCommentActionListener,
 ) : RecyclableViewHolder(view) {
-
     companion object {
-        fun getViewTypeForComment(comment: LinkComment, forceTop: Boolean = false): Int {
-            return if (comment.parentId != comment.id && !forceTop) {
+        fun getViewTypeForComment(
+            comment: LinkComment,
+            forceTop: Boolean = false,
+        ): Int =
+            if (comment.parentId != comment.id && !forceTop) {
                 when {
                     comment.isBlocked -> LinkCommentViewHolder.TYPE_BLOCKED
                     comment.embed == null -> LinkCommentViewHolder.TYPE_NORMAL
@@ -58,19 +60,20 @@ abstract class BaseLinkCommentViewHolder(
                     else -> TopLinkCommentViewHolder.TYPE_TOP_EMBED
                 }
             }
-        }
     }
 
     private val userAuthorized by lazy { userManagerApi.isUserAuthorized() }
     private val userCredentials by lazy { userManagerApi.getUserCredentials() }
 
     private val collapseDrawable: Drawable? by lazy {
-        itemView.context.obtainStyledAttributes(arrayOf(R.attr.collapseDrawable).toIntArray())
+        itemView.context
+            .obtainStyledAttributes(arrayOf(R.attr.collapseDrawable).toIntArray())
             .use { it.getDrawable(0) }
     }
 
     private val expandDrawable: Drawable? by lazy {
-        itemView.context.obtainStyledAttributes(arrayOf(R.attr.expandDrawable).toIntArray())
+        itemView.context
+            .obtainStyledAttributes(arrayOf(R.attr.expandDrawable).toIntArray())
             .use { it.getDrawable(0) }
     }
 
@@ -152,7 +155,11 @@ abstract class BaseLinkCommentViewHolder(
         }
     }
 
-    private fun setStyleForComment(comment: LinkComment, isAuthorComment: Boolean, commentId: Long = -1) {
+    private fun setStyleForComment(
+        comment: LinkComment,
+        isAuthorComment: Boolean,
+        commentId: Long = -1,
+    ) {
         if (userCredentials?.login == comment.author.nick) {
             authorBadgeStrip.isVisible = true
             authorBadgeStrip.setBackgroundColor(ContextCompat.getColor(itemView.context, R.color.colorBadgeOwn))
@@ -247,9 +254,12 @@ abstract class BaseLinkCommentViewHolder(
 
         bottomSheetView.apply {
             author.text = comment.author.nick
-            val dateAsString = comment.fullDate.toLocalDateTime(TimeZone.currentSystemDefault()).run {
-                LocalDateTime.of(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond)
-            }.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM))
+            val dateAsString =
+                comment.fullDate
+                    .toLocalDateTime(TimeZone.currentSystemDefault())
+                    .run {
+                        LocalDateTime.of(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond)
+                    }.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM))
             date.text = comment.app?.let { root.context.getString(R.string.date_with_user_app, dateAsString, comment.app) }
                 ?: dateAsString
 

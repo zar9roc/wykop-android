@@ -19,10 +19,11 @@ class BlockedViewHolder(
     private val binding: BlockedEntryViewBinding,
     private val blockListener: (Int) -> Unit,
 ) : RecyclerView.ViewHolder(binding.root) {
-
     companion object {
-        fun inflateView(parent: ViewGroup, blockListener: (Int) -> Unit) =
-            BlockedViewHolder(BlockedEntryViewBinding.inflate(parent.layoutInflater, parent, false), blockListener)
+        fun inflateView(
+            parent: ViewGroup,
+            blockListener: (Int) -> Unit,
+        ) = BlockedViewHolder(BlockedEntryViewBinding.inflate(parent.layoutInflater, parent, false), blockListener)
     }
 
     fun bindView(entry: Entry) {
@@ -61,7 +62,10 @@ class BlockedViewHolder(
         }
     }
 
-    private fun showText(type: String, author: Author?) {
+    private fun showText(
+        type: String,
+        author: Author?,
+    ) {
         val text = SpannableString("Pokaż ukryty $type od @" + author?.nick)
         text.setSpan(
             ForegroundColorSpan(getGroupColor(author?.group ?: 1)),

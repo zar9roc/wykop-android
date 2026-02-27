@@ -9,8 +9,10 @@ import io.github.wykopmobilny.utils.api.getGenderStripResource
 import io.github.wykopmobilny.utils.layoutInflater
 import io.github.wykopmobilny.utils.loadImage
 
-class AvatarView(context: Context, attrs: AttributeSet) : FrameLayout(context, attrs) {
-
+class AvatarView(
+    context: Context,
+    attrs: AttributeSet,
+) : FrameLayout(context, attrs) {
     private val binding = AvatarViewBinding.inflate(layoutInflater, this, true)
 
     fun setAuthor(author: Author) {

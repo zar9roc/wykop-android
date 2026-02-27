@@ -8,10 +8,13 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 
 interface SuggestRetrofitApi {
-
     @GET("/suggest/tags/{suggestString}/appkey/$APP_KEY")
-    suspend fun getTagSuggestions(@Path("suggestString") suggestString: String): WykopApiResponse<List<TagSuggestionResponse>>
+    suspend fun getTagSuggestions(
+        @Path("suggestString") suggestString: String,
+    ): WykopApiResponse<List<TagSuggestionResponse>>
 
     @GET("/suggest/users/{suggestString}/appkey/$APP_KEY")
-    suspend fun getUsersSuggestions(@Path("suggestString") suggestString: String): WykopApiResponse<List<AuthorResponse>>
+    suspend fun getUsersSuggestions(
+        @Path("suggestString") suggestString: String,
+    ): WykopApiResponse<List<AuthorResponse>>
 }

@@ -17,8 +17,9 @@ import io.github.wykopmobilny.utils.loadImage
 import io.github.wykopmobilny.utils.viewBinding
 import javax.inject.Inject
 
-class AddLinkDetailsFragment : BaseFragment(R.layout.addlink_details_fragment), AddLinkDetailsFragmentView {
-
+class AddLinkDetailsFragment :
+    BaseFragment(R.layout.addlink_details_fragment),
+    AddLinkDetailsFragmentView {
     companion object {
         fun newInstance() = AddLinkDetailsFragment()
     }
@@ -35,7 +36,10 @@ class AddLinkDetailsFragment : BaseFragment(R.layout.addlink_details_fragment), 
     private val draftInformation
         get() = (activity as? AddlinkActivity)?.draft?.data
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         presenter.subscribe(this)
         draftInformation?.apply {

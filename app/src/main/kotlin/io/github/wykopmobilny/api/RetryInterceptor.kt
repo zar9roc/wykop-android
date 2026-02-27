@@ -4,7 +4,6 @@ import okhttp3.Interceptor
 import okhttp3.Response
 
 class RetryInterceptor : Interceptor {
-
     companion object {
         private const val MAX_RETRY_COUNT = 3
     }

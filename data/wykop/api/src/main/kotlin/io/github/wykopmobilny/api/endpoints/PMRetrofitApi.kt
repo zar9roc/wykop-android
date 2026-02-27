@@ -17,12 +17,13 @@ import retrofit2.http.Part
 import retrofit2.http.Path
 
 interface PMRetrofitApi {
-
     @GET("/pm/ConversationsList/appkey/$APP_KEY")
     suspend fun getConversations(): WykopApiResponse<List<ConversationResponse>>
 
     @GET("/pm/Conversation/{user}/appkey/$APP_KEY")
-    suspend fun getConversation(@Path("user") user: String): FullConversationResponse
+    suspend fun getConversation(
+        @Path("user") user: String,
+    ): FullConversationResponse
 
     @Multipart
     @POST("/pm/SendMessage/{user}/appkey/$APP_KEY")
@@ -43,5 +44,7 @@ interface PMRetrofitApi {
     ): WykopApiResponse<PMMessageResponse>
 
     @GET("/pm/DeleteConversation/{user}/appkey/$APP_KEY")
-    suspend fun deleteConversation(@Path("user") user: String): WykopApiResponse<ConversationDeleteResponse>
+    suspend fun deleteConversation(
+        @Path("user") user: String,
+    ): WykopApiResponse<ConversationDeleteResponse>
 }

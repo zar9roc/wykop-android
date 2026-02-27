@@ -9,7 +9,6 @@ class WykopSuggestionsTokenizer(
     val setUsersAdapter: () -> Unit,
     val setHashTagsAdapter: () -> Unit,
 ) : MultiAutoCompleteTextView.Tokenizer {
-
     override fun terminateToken(text: CharSequence): CharSequence {
         var index = text.length
 
@@ -30,7 +29,10 @@ class WykopSuggestionsTokenizer(
         }
     }
 
-    override fun findTokenStart(text: CharSequence, cursor: Int): Int {
+    override fun findTokenStart(
+        text: CharSequence,
+        cursor: Int,
+    ): Int {
         var index = cursor
 
         while (index > 0 && text[index - 1] != '@' && text[index - 1] != '#') {
@@ -51,7 +53,10 @@ class WykopSuggestionsTokenizer(
         }
     }
 
-    override fun findTokenEnd(text: CharSequence, cursor: Int): Int {
+    override fun findTokenEnd(
+        text: CharSequence,
+        cursor: Int,
+    ): Int {
         var index = cursor
         val len = text.length
 

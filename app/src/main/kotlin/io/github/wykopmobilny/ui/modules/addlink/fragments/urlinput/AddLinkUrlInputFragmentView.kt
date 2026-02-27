@@ -5,5 +5,6 @@ import io.github.wykopmobilny.base.BaseView
 
 interface AddLinkUrlInputFragmentView : BaseView {
     fun setLinkDraft(draft: NewLinkResponse)
+
     fun showDuplicatesLoading(visibility: Boolean)
 }

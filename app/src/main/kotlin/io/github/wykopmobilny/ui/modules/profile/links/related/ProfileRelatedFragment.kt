@@ -12,8 +12,9 @@ import io.github.wykopmobilny.utils.prepare
 import io.github.wykopmobilny.utils.viewBinding
 import javax.inject.Inject
 
-class ProfileRelatedFragment : BaseFragment(R.layout.feed_fragment), ProfileRelatedView {
-
+class ProfileRelatedFragment :
+    BaseFragment(R.layout.feed_fragment),
+    ProfileRelatedView {
     companion object {
         fun newInstance() = ProfileRelatedFragment()
     }
@@ -28,7 +29,10 @@ class ProfileRelatedFragment : BaseFragment(R.layout.feed_fragment), ProfileRela
 
     private val binding by viewBinding(FeedFragmentBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         presenter.subscribe(this)
         presenter.username = username
@@ -43,8 +47,10 @@ class ProfileRelatedFragment : BaseFragment(R.layout.feed_fragment), ProfileRela
         super.onDestroyView()
     }
 
-    override fun addDataToAdapter(entryList: List<Related>, shouldClearAdapter: Boolean) =
-        feedAdapter.addData(entryList, shouldClearAdapter)
+    override fun addDataToAdapter(
+        entryList: List<Related>,
+        shouldClearAdapter: Boolean,
+    ) = feedAdapter.addData(entryList, shouldClearAdapter)
 
     override fun disableLoading() = feedAdapter.disableLoading()
 }

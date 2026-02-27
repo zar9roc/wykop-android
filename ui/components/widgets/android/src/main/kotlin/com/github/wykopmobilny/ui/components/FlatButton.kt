@@ -16,8 +16,10 @@ import io.github.wykopmobilny.utils.bindings.setOnClick
 import androidx.appcompat.R as AppcompatR
 import io.github.wykopmobilny.ui.base.android.R as BaseR
 
-class FlatButton(context: Context, attrs: AttributeSet?) : LinearLayout(context, attrs) {
-
+class FlatButton(
+    context: Context,
+    attrs: AttributeSet?,
+) : LinearLayout(context, attrs) {
     init {
         inflate(context, R.layout.view_flat_button, this)
         orientation = HORIZONTAL

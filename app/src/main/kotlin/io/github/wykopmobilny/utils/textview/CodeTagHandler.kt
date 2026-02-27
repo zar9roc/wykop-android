@@ -8,7 +8,12 @@ import android.text.style.TypefaceSpan
 import org.xml.sax.XMLReader
 
 class CodeTagHandler : Html.TagHandler {
-    override fun handleTag(opening: Boolean, tag: String?, output: Editable?, reader: XMLReader?) {
+    override fun handleTag(
+        opening: Boolean,
+        tag: String?,
+        output: Editable?,
+        reader: XMLReader?,
+    ) {
         if (tag.equals("code", true)) {
             val len = output?.length
             if (opening) {
@@ -26,7 +31,10 @@ class CodeTagHandler : Html.TagHandler {
         }
     }
 
-    private fun getLast(text: Editable, kind: Class<*>): Any? {
+    private fun getLast(
+        text: Editable,
+        kind: Class<*>,
+    ): Any? {
         val objs = text.getSpans(0, text.length, kind)
 
         return if (objs.isEmpty()) {

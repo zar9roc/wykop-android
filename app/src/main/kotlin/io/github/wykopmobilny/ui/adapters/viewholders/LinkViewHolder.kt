@@ -19,7 +19,6 @@ class LinkViewHolder(
     private val linkActionListener: LinkActionListener,
     private val appStorage: AppStorage,
 ) : RecyclableViewHolder(binding.root) {
-
     companion object {
         const val ALPHA_VISITED = 0.6f
         const val ALPHA_NEW = 1f
@@ -40,13 +39,14 @@ class LinkViewHolder(
             linkImagePosition: String,
             linkShowAuthor: Boolean,
         ): LinkViewHolder {
-            val view = LinkViewHolder(
-                LinkLayoutBinding.inflate(parent.layoutInflater, parent, false),
-                navigator,
-                userManagerApi,
-                linkActionListener,
-                appStorage,
-            )
+            val view =
+                LinkViewHolder(
+                    LinkLayoutBinding.inflate(parent.layoutInflater, parent, false),
+                    navigator,
+                    userManagerApi,
+                    linkActionListener,
+                    appStorage,
+                )
             if (viewType == TYPE_IMAGE) {
                 view.inflateCorrectImageView(
                     linkImagePosition = linkImagePosition,
@@ -57,8 +57,12 @@ class LinkViewHolder(
             return view
         }
 
-        fun getViewTypeForLink(link: Link, linkSimpleList: Boolean, linkShowImage: Boolean): Int {
-            return if (linkSimpleList) {
+        fun getViewTypeForLink(
+            link: Link,
+            linkSimpleList: Boolean,
+            linkShowImage: Boolean,
+        ): Int =
+            if (linkSimpleList) {
                 SimpleLinkViewHolder.getViewTypeForLink(link)
             } else {
                 if (link.isBlocked) {
@@ -69,29 +73,45 @@ class LinkViewHolder(
                     TYPE_IMAGE
                 }
             }
-        }
     }
 
     private var type: Int = TYPE_IMAGE
     private lateinit var previewImageView: ImageView
 
-    fun inflateCorrectImageView(linkImagePosition: String, linkShowAuthor: Boolean) {
-        previewImageView = when (linkImagePosition) {
-            "top" -> {
-                val img = binding.imageTop.inflate() as ImageView
-                if (linkShowAuthor) {
-                    val params = img.layoutParams as ViewGroup.MarginLayoutParams
-                    params.topMargin = (img.context.resources.displayMetrics.density * 8).toInt()
+    fun inflateCorrectImageView(
+        linkImagePosition: String,
+        linkShowAuthor: Boolean,
+    ) {
+        previewImageView =
+            when (linkImagePosition) {
+                "top" -> {
+                    val img = binding.imageTop.inflate() as ImageView
+                    if (linkShowAuthor) {
+                        val params = img.layoutParams as ViewGroup.MarginLayoutParams
+                        params.topMargin = (img.context.resources.displayMetrics.density * 8).toInt()
+                    }
+                    img
                 }
-                img
+
+                "right" -> {
+                    binding.imageRight.inflate() as ImageView
+                }
+
+                "bottom" -> {
+                    binding.imageBottom.inflate() as ImageView
+                }
+
+                else -> {
+                    binding.imageLeft.inflate() as ImageView
+                }
             }
-            "right" -> binding.imageRight.inflate() as ImageView
-            "bottom" -> binding.imageBottom.inflate() as ImageView
-            else -> binding.imageLeft.inflate() as ImageView
-        }
     }
 
-    fun bindView(link: Link, linkImagePosition: String, linkShowAuthor: Boolean) {
+    fun bindView(
+        link: Link,
+        linkImagePosition: String,
+        linkShowAuthor: Boolean,
+    ) {
         setupBody(
             link = link,
             linkImagePosition = linkImagePosition,
@@ -109,7 +129,11 @@ class LinkViewHolder(
         }
     }
 
-    private fun setupBody(link: Link, linkImagePosition: String, linkShowAuthor: Boolean) {
+    private fun setupBody(
+        link: Link,
+        linkImagePosition: String,
+        linkShowAuthor: Boolean,
+    ) {
         if (link.gotSelected) {
             setWidgetAlpha(ALPHA_VISITED)
         } else {

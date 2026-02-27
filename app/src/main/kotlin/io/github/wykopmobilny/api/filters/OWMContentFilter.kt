@@ -12,59 +12,71 @@ import io.github.wykopmobilny.utils.textview.removeHtml
 import java.util.Collections
 import javax.inject.Inject
 
-class OWMContentFilter @Inject constructor(
-    private val appStorage: AppStorage,
-    private val settingsPreferencesApi: SettingsPreferencesApi,
-    private val patronsApi: PatronsApi,
-) {
+class OWMContentFilter
+    @Inject
+    constructor(
+        private val appStorage: AppStorage,
+        private val settingsPreferencesApi: SettingsPreferencesApi,
+        private val patronsApi: PatronsApi,
+    ) {
+        fun filterEntry(entry: Entry) =
+            entry.apply {
+                author.badge = patronsApi.getBadgeFor(author)
+                isBlocked =
+                    isBlocked ||
+                    body.bodyContainsBlockedTags() ||
+                    author.nick.isUserBlocked() ||
+                    (settingsPreferencesApi.hideLowRangeAuthors && author.group == 0) ||
+                    (settingsPreferencesApi.hideContentWithoutTags && !body.bodyContainsTags())
+            }
 
-    fun filterEntry(entry: Entry) = entry.apply {
-        author.badge = patronsApi.getBadgeFor(author)
-        isBlocked =
-            isBlocked ||
-            body.bodyContainsBlockedTags() ||
-            author.nick.isUserBlocked() ||
-            (settingsPreferencesApi.hideLowRangeAuthors && author.group == 0) ||
-            (settingsPreferencesApi.hideContentWithoutTags && !body.bodyContainsTags())
+        fun filterEntryComment(comment: EntryComment) =
+            comment.apply {
+                author.badge = patronsApi.getBadgeFor(author)
+                isBlocked =
+                    isBlocked ||
+                    body.bodyContainsBlockedTags() ||
+                    author.nick.isUserBlocked() ||
+                    (settingsPreferencesApi.hideLowRangeAuthors && author.group == 0)
+            }
+
+        fun filterLinkComment(comment: LinkComment) =
+            comment.apply {
+                author.badge = patronsApi.getBadgeFor(author)
+                isBlocked =
+                    isBlocked ||
+                    body?.bodyContainsBlockedTags() ?: false ||
+                    author.nick.isUserBlocked() ||
+                    (settingsPreferencesApi.hideLowRangeAuthors && author.group == 0)
+            }
+
+        fun filterLink(link: Link) =
+            link.apply {
+                gotSelected = appStorage.linksQueries.contains(linkId = id).executeAsOne() > 0
+                isBlocked =
+                    isBlocked ||
+                    tags.bodyContainsBlockedTags() ||
+                    author?.nick?.isUserBlocked() ?: false ||
+                    (settingsPreferencesApi.hideLowRangeAuthors && author?.group == 0)
+            }
+
+        private val tagsRegex = "(^|\\s)(#[a-z\\d-]+)".toRegex()
+
+        private fun String.bodyContainsTags() = tagsRegex.containsMatchIn(this.removeHtml())
+
+        private fun String.bodyContainsBlockedTags(): Boolean =
+            !Collections.disjoint(
+                appStorage.blacklistQueries.allTags().executeAsList(),
+                tagsRegex
+                    .matchEntire(this)
+                    ?.groupValues
+                    ?.map { it.removePrefix("#") }
+                    .orEmpty(),
+            )
+
+        private fun String.isUserBlocked() =
+            appStorage.blacklistQueries
+                .allProfiles()
+                .executeAsList()
+                .contains(this.removePrefix("@"))
     }
-
-    fun filterEntryComment(comment: EntryComment) = comment.apply {
-        author.badge = patronsApi.getBadgeFor(author)
-        isBlocked =
-            isBlocked ||
-            body.bodyContainsBlockedTags() ||
-            author.nick.isUserBlocked() ||
-            (settingsPreferencesApi.hideLowRangeAuthors && author.group == 0)
-    }
-
-    fun filterLinkComment(comment: LinkComment) = comment.apply {
-        author.badge = patronsApi.getBadgeFor(author)
-        isBlocked =
-            isBlocked ||
-            body?.bodyContainsBlockedTags() ?: false ||
-            author.nick.isUserBlocked() ||
-            (settingsPreferencesApi.hideLowRangeAuthors && author.group == 0)
-    }
-
-    fun filterLink(link: Link) = link.apply {
-        gotSelected = appStorage.linksQueries.contains(linkId = id).executeAsOne() > 0
-        isBlocked =
-            isBlocked ||
-            tags.bodyContainsBlockedTags() ||
-            author?.nick?.isUserBlocked() ?: false ||
-            (settingsPreferencesApi.hideLowRangeAuthors && author?.group == 0)
-    }
-
-    private val tagsRegex = "(^|\\s)(#[a-z\\d-]+)".toRegex()
-
-    private fun String.bodyContainsTags() = tagsRegex.containsMatchIn(this.removeHtml())
-
-    private fun String.bodyContainsBlockedTags(): Boolean {
-        return !Collections.disjoint(
-            appStorage.blacklistQueries.allTags().executeAsList(),
-            tagsRegex.matchEntire(this)?.groupValues?.map { it.removePrefix("#") }.orEmpty(),
-        )
-    }
-
-    private fun String.isUserBlocked() = appStorage.blacklistQueries.allProfiles().executeAsList().contains(this.removePrefix("@"))
-}

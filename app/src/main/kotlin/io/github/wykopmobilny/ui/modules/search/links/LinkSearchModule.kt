@@ -9,6 +9,9 @@ import io.github.wykopmobilny.ui.fragments.links.LinksInteractor
 @Module
 class LinkSearchModule {
     @Provides
-    fun provideLinkSearchPresenter(schedulers: Schedulers, searchApi: SearchApi, linksInteractor: LinksInteractor) =
-        LinkSearchPresenter(schedulers, searchApi, linksInteractor)
+    fun provideLinkSearchPresenter(
+        schedulers: Schedulers,
+        searchApi: SearchApi,
+        linksInteractor: LinksInteractor,
+    ) = LinkSearchPresenter(schedulers, searchApi, linksInteractor)
 }

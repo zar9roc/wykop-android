@@ -28,7 +28,6 @@ import kotlinx.coroutines.launch
 fun loginFragment(): Fragment = LoginFragment()
 
 internal class LoginFragment : Fragment(R.layout.fragment_login) {
-
     private val binding by viewBinding(FragmentLoginBinding::bind)
     private lateinit var login: Login
 
@@ -37,7 +36,10 @@ internal class LoginFragment : Fragment(R.layout.fragment_login) {
         super.onAttach(context)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         CookieManager.getInstance().apply {
@@ -51,21 +53,26 @@ internal class LoginFragment : Fragment(R.layout.fragment_login) {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 val sharedFlow = login().stateIn(this)
 
-                binding.webView.webViewClient = object : WebViewClient() {
-
-                    override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                        sharedFlow.value.parseUrlAction(request.url.toString())
-                        return super.shouldOverrideUrlLoading(view, request)
+                binding.webView.webViewClient =
+                    object : WebViewClient() {
+                        override fun shouldOverrideUrlLoading(
+                            view: WebView,
+                            request: WebResourceRequest,
+                        ): Boolean {
+                            sharedFlow.value.parseUrlAction(request.url.toString())
+                            return super.shouldOverrideUrlLoading(view, request)
+                        }
                     }
-                }
 
                 launch {
-                    sharedFlow.map { it.urlToLoad }
+                    sharedFlow
+                        .map { it.urlToLoad }
                         .distinctUntilChanged()
                         .collect { binding.webView.loadUrl(it) }
                 }
                 launch {
-                    sharedFlow.map { it.isLoading }
+                    sharedFlow
+                        .map { it.isLoading }
                         .distinctUntilChanged()
                         .collect { binding.fullScreenProgress.isVisible = it }
                 }

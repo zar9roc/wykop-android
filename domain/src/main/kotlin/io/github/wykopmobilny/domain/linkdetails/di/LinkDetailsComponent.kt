@@ -8,11 +8,13 @@ import io.github.wykopmobilny.links.details.LinkDetailsKey
 
 @LinkDetailsScope
 @Subcomponent(modules = [LinkDetailsModule::class])
-interface LinkDetailsComponent : LinkDetailsDependencies, HasScopeInitializer {
-
+interface LinkDetailsComponent :
+    LinkDetailsDependencies,
+    HasScopeInitializer {
     @Subcomponent.Factory
     interface Factory {
-
-        fun create(@BindsInstance key: LinkDetailsKey): LinkDetailsComponent
+        fun create(
+            @BindsInstance key: LinkDetailsKey,
+        ): LinkDetailsComponent
     }
 }

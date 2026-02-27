@@ -16,8 +16,9 @@ import io.github.wykopmobilny.utils.prepare
 import io.github.wykopmobilny.utils.viewBinding
 import javax.inject.Inject
 
-class AddLinkDuplicatesListFragment : BaseFragment(R.layout.addlink_duplicates_fragment), LinkActionListener {
-
+class AddLinkDuplicatesListFragment :
+    BaseFragment(R.layout.addlink_duplicates_fragment),
+    LinkActionListener {
     companion object {
         fun newInstance() = AddLinkDuplicatesListFragment()
     }
@@ -37,12 +38,18 @@ class AddLinkDuplicatesListFragment : BaseFragment(R.layout.addlink_duplicates_f
 
     override fun removeVote(link: Link) = Unit
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        val duplicates = (activity as? AddlinkActivity)?.draft?.duplicates
-            ?.filterLinks(owmContentFilter = owmContentFilter)
-            ?.filtered
-            .orEmpty()
+        val duplicates =
+            (activity as? AddlinkActivity)
+                ?.draft
+                ?.duplicates
+                ?.filterLinks(owmContentFilter = owmContentFilter)
+                ?.filtered
+                .orEmpty()
         binding.duplicatesList.run {
             prepare()
             adapter = linksAdapter

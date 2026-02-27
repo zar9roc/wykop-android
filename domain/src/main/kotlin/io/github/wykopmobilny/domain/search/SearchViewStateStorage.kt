@@ -6,14 +6,15 @@ import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @SearchScope
-internal class SearchViewStateStorage @Inject constructor() {
+internal class SearchViewStateStorage
+    @Inject
+    constructor() {
+        val state = MutableStateFlow(value = SearchViewState())
 
-    val state = MutableStateFlow(value = SearchViewState())
-
-    fun update(updater: (SearchViewState) -> SearchViewState) {
-        state.update(updater)
+        fun update(updater: (SearchViewState) -> SearchViewState) {
+            state.update(updater)
+        }
     }
-}
 
 data class SearchViewState(
     val query: String? = null,

@@ -21,7 +21,6 @@ import kotlinx.coroutines.runBlocking
 import io.github.wykopmobilny.ui.base.android.R as BaseR
 
 internal abstract class ThemableActivity : AppCompatActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         val getAppStyle = requireDependency<StylesDependencies>().getAppStyle()
         val initialStyle = runBlocking { getAppStyle().first() }.style
@@ -60,11 +59,12 @@ internal abstract class ThemableActivity : AppCompatActivity() {
     }
 
     private fun updateTheme(theme: ApplicableStyleUi) {
-        val themeRes = when (theme) {
-            ApplicableStyleUi.Light -> BaseR.style.Theme_App_Light
-            ApplicableStyleUi.Dark -> BaseR.style.Theme_App_Dark
-            ApplicableStyleUi.DarkAmoled -> BaseR.style.Theme_App_Amoled
-        }
+        val themeRes =
+            when (theme) {
+                ApplicableStyleUi.Light -> BaseR.style.Theme_App_Light
+                ApplicableStyleUi.Dark -> BaseR.style.Theme_App_Dark
+                ApplicableStyleUi.DarkAmoled -> BaseR.style.Theme_App_Amoled
+            }
         setTheme(themeRes)
     }
 }

@@ -10,7 +10,10 @@ import io.github.wykopmobilny.ui.settings.ListSetting
 import io.github.wykopmobilny.ui.settings.Setting
 import io.github.wykopmobilny.ui.settings.SliderSetting
 
-internal fun PreferenceFragmentCompat.bindPreference(key: String, onClick: (() -> Unit)?) {
+internal fun PreferenceFragmentCompat.bindPreference(
+    key: String,
+    onClick: (() -> Unit)?,
+) {
     val pref = findPreference<Preference>(key) ?: return Napier.w("missing preference with key=$key")
     pref.isVisible = onClick != null
     pref.setOnPreferenceClickListener {
@@ -19,7 +22,10 @@ internal fun PreferenceFragmentCompat.bindPreference(key: String, onClick: (() -
     }
 }
 
-internal fun PreferenceFragmentCompat.bindCheckbox(key: String, setting: Setting) {
+internal fun PreferenceFragmentCompat.bindCheckbox(
+    key: String,
+    setting: Setting,
+) {
     val pref = findPreference<CheckBoxPreference>(key) ?: return Napier.w("missing preference with key=$key")
     pref.isChecked = setting.currentValue
     pref.isEnabled = setting.isEnabled
@@ -29,7 +35,11 @@ internal fun PreferenceFragmentCompat.bindCheckbox(key: String, setting: Setting
     }
 }
 
-internal fun <T> PreferenceFragmentCompat.bindList(key: String, setting: ListSetting<T>, mapping: Map<T, String>) {
+internal fun <T> PreferenceFragmentCompat.bindList(
+    key: String,
+    setting: ListSetting<T>,
+    mapping: Map<T, String>,
+) {
     val pref = findPreference<ListPreference>(key) ?: return
     pref.entries = setting.values.mapNotNull { mapping[it] }.toTypedArray()
     pref.entryValues = pref.entries
@@ -42,7 +52,10 @@ internal fun <T> PreferenceFragmentCompat.bindList(key: String, setting: ListSet
     }
 }
 
-internal fun PreferenceFragmentCompat.bindSlider(key: String, setting: SliderSetting) {
+internal fun PreferenceFragmentCompat.bindSlider(
+    key: String,
+    setting: SliderSetting,
+) {
     val pref = findPreference<SeekBarPreference>(key) ?: return
     pref.min = setting.values.first
     pref.max = setting.values.last

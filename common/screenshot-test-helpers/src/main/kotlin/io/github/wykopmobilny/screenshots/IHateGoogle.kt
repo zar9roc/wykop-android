@@ -25,19 +25,23 @@ inline fun <reified F : Fragment> launchFragmentInContainer(
     @StyleRes themeResId: Int = FragmentTestingR.style.FragmentScenarioEmptyFragmentActivityTheme,
     initialState: Lifecycle.State = Lifecycle.State.RESUMED,
     crossinline instantiate: () -> F,
-): FragmentScenarioIHateGoogle<F> = FragmentScenarioIHateGoogle.launchInContainer(
-    F::class.java,
-    fragmentArgs,
-    themeResId,
-    initialState,
-    object : FragmentFactory() {
-        override fun instantiate(classLoader: ClassLoader, className: String) = if (className == F::class.java.name) {
-            instantiate()
-        } else {
-            super.instantiate(classLoader, className)
-        }
-    },
-)
+): FragmentScenarioIHateGoogle<F> =
+    FragmentScenarioIHateGoogle.launchInContainer(
+        F::class.java,
+        fragmentArgs,
+        themeResId,
+        initialState,
+        object : FragmentFactory() {
+            override fun instantiate(
+                classLoader: ClassLoader,
+                className: String,
+            ) = if (className == F::class.java.name) {
+                instantiate()
+            } else {
+                super.instantiate(classLoader, className)
+            }
+        },
+    )
 
 inline fun <reified F : Fragment, T : Any> FragmentScenarioIHateGoogle<F>.withFragment(crossinline block: F.() -> T): T {
     lateinit var value: T
@@ -55,12 +59,12 @@ class FragmentScenarioIHateGoogle<F : Fragment>(
     internal val fragmentClass: Class<F>,
     private val activityScenario: ActivityScenario<EmptyFragmentActivityIHateGoogle>,
 ) {
-
     fun onFragment(action: FragmentScenario.FragmentAction<F>): FragmentScenarioIHateGoogle<F> {
         activityScenario.onActivity { activity ->
-            val fragment = requireNotNull(activity.supportFragmentManager.findFragmentByTag(FRAGMENT_TAG)) {
-                "The fragment has been removed from the FragmentManager already."
-            }
+            val fragment =
+                requireNotNull(activity.supportFragmentManager.findFragmentByTag(FRAGMENT_TAG)) {
+                    "The fragment has been removed from the FragmentManager already."
+                }
             check(fragmentClass.isInstance(fragment))
             action.perform(requireNotNull(fragmentClass.cast(fragment)))
         }
@@ -68,7 +72,6 @@ class FragmentScenarioIHateGoogle<F : Fragment>(
     }
 
     class EmptyFragmentActivityIHateGoogle : AppCompatActivity() {
-
         override fun onCreate(savedInstanceState: Bundle?) {
             setTheme(
                 intent.getIntExtra(
@@ -90,8 +93,9 @@ class FragmentScenarioIHateGoogle<F : Fragment>(
         }
 
         companion object {
-            const val THEME_EXTRAS_BUNDLE_KEY = "androidx.fragment.app.testing.FragmentScenario" +
-                ".EmptyFragmentActivity.THEME_EXTRAS_BUNDLE_KEY"
+            const val THEME_EXTRAS_BUNDLE_KEY =
+                "androidx.fragment.app.testing.FragmentScenario" +
+                    ".EmptyFragmentActivity.THEME_EXTRAS_BUNDLE_KEY"
         }
     }
 
@@ -122,7 +126,6 @@ class FragmentScenarioIHateGoogle<F : Fragment>(
     }
 
     companion object {
-
         private const val FRAGMENT_TAG = "FragmentScenario_Fragment_Tag"
 
         fun <F : Fragment> launchInContainer(
@@ -131,13 +134,14 @@ class FragmentScenarioIHateGoogle<F : Fragment>(
             @StyleRes themeResId: Int = FragmentTestingR.style.FragmentScenarioEmptyFragmentActivityTheme,
             initialState: Lifecycle.State = Lifecycle.State.RESUMED,
             factory: FragmentFactory? = null,
-        ): FragmentScenarioIHateGoogle<F> = internalLaunch(
-            fragmentClass,
-            fragmentArgs,
-            themeResId,
-            initialState,
-            factory,
-        )
+        ): FragmentScenarioIHateGoogle<F> =
+            internalLaunch(
+                fragmentClass,
+                fragmentArgs,
+                themeResId,
+                initialState,
+                factory,
+            )
 
         @SuppressLint("RestrictedApi")
         private fun <F : Fragment> internalLaunch(
@@ -150,26 +154,32 @@ class FragmentScenarioIHateGoogle<F : Fragment>(
             require(initialState != Lifecycle.State.DESTROYED) {
                 "Cannot set initial Lifecycle state to $initialState for FragmentScenario"
             }
-            val componentName = ComponentName(
-                ApplicationProvider.getApplicationContext(),
-                EmptyFragmentActivityIHateGoogle::class.java,
-            )
-            val startActivityIntent = Intent.makeMainActivity(componentName)
-                .putExtra(THEME_EXTRAS_BUNDLE_KEY, themeResId)
-            val scenario = FragmentScenarioIHateGoogle(
-                fragmentClass = fragmentClass,
-                activityScenario = ActivityScenario.launch(
-                    startActivityIntent,
-                ),
-            )
+            val componentName =
+                ComponentName(
+                    ApplicationProvider.getApplicationContext(),
+                    EmptyFragmentActivityIHateGoogle::class.java,
+                )
+            val startActivityIntent =
+                Intent
+                    .makeMainActivity(componentName)
+                    .putExtra(THEME_EXTRAS_BUNDLE_KEY, themeResId)
+            val scenario =
+                FragmentScenarioIHateGoogle(
+                    fragmentClass = fragmentClass,
+                    activityScenario =
+                        ActivityScenario.launch(
+                            startActivityIntent,
+                        ),
+                )
 
             scenario.activityScenario.onActivity { activity ->
                 if (factory != null) {
                     FragmentFactoryHolderViewModel.getInstance(activity).fragmentFactory = factory
                     activity.supportFragmentManager.fragmentFactory = factory
                 }
-                val fragment = activity.supportFragmentManager.fragmentFactory
-                    .instantiate(requireNotNull(fragmentClass.classLoader), fragmentClass.name)
+                val fragment =
+                    activity.supportFragmentManager.fragmentFactory
+                        .instantiate(requireNotNull(fragmentClass.classLoader), fragmentClass.name)
                 fragment.arguments = fragmentArgs
                 activity.supportFragmentManager.commitNow {
                     add(android.R.id.content, fragment, FRAGMENT_TAG)

@@ -19,47 +19,56 @@ import kotlinx.coroutines.withContext
 import org.xml.sax.XMLReader
 import javax.inject.Inject
 
-internal class AndroidWykopTextUtils @Inject constructor() : WykopTextUtils {
+internal class AndroidWykopTextUtils
+    @Inject
+    constructor() : WykopTextUtils {
+        override suspend fun parseHtml(
+            text: String,
+            onLinkClicked: ((RecognizedLink) -> Unit)?,
+        ): CharSequence =
+            withContext(AppDispatchers.Default) {
+                val parsed = HtmlCompat.fromHtml(text, HtmlCompat.FROM_HTML_MODE_COMPACT, null, CodeTagHandler())
 
-    override suspend fun parseHtml(text: String, onLinkClicked: ((RecognizedLink) -> Unit)?): CharSequence =
-        withContext(AppDispatchers.Default) {
-            val parsed = HtmlCompat.fromHtml(text, HtmlCompat.FROM_HTML_MODE_COMPACT, null, CodeTagHandler())
-
-            if (onLinkClicked == null) {
-                parsed
-            } else {
-                parsed.toSpannable().apply {
-                    getSpans<URLSpan>().forEach { span ->
-                        setSpan(
-                            clickableSpan {
-                                val url = span.url
-                                val link = when {
-                                    url.startsWith("@") -> RecognizedLink.Profile(url.substringAfter("@"))
-                                    url.startsWith("#") -> RecognizedLink.Tag(url.substringAfter("#"))
-                                    url.startsWith("spoiler:") -> RecognizedLink.Spoiler(id = url.substringAfter("spoiler:"))
-                                    else -> RecognizedLink.Other(url)
-                                }
-                                onLinkClicked(link)
-                            },
-                            getSpanStart(span),
-                            getSpanEnd(span),
-                            Spanned.SPAN_INCLUSIVE_EXCLUSIVE,
-                        )
-                        removeSpan(span)
+                if (onLinkClicked == null) {
+                    parsed
+                } else {
+                    parsed.toSpannable().apply {
+                        getSpans<URLSpan>().forEach { span ->
+                            setSpan(
+                                clickableSpan {
+                                    val url = span.url
+                                    val link =
+                                        when {
+                                            url.startsWith("@") -> RecognizedLink.Profile(url.substringAfter("@"))
+                                            url.startsWith("#") -> RecognizedLink.Tag(url.substringAfter("#"))
+                                            url.startsWith("spoiler:") -> RecognizedLink.Spoiler(id = url.substringAfter("spoiler:"))
+                                            else -> RecognizedLink.Other(url)
+                                        }
+                                    onLinkClicked(link)
+                                },
+                                getSpanStart(span),
+                                getSpanEnd(span),
+                                Spanned.SPAN_INCLUSIVE_EXCLUSIVE,
+                            )
+                            removeSpan(span)
+                        }
                     }
                 }
             }
-        }
-}
+    }
 
-inline fun clickableSpan(crossinline onClick: () -> Unit) = object : ClickableSpan() {
-
-    override fun onClick(widget: View) = onClick()
-}
+inline fun clickableSpan(crossinline onClick: () -> Unit) =
+    object : ClickableSpan() {
+        override fun onClick(widget: View) = onClick()
+    }
 
 private class CodeTagHandler : Html.TagHandler {
-
-    override fun handleTag(opening: Boolean, tag: String, output: Editable, reader: XMLReader) {
+    override fun handleTag(
+        opening: Boolean,
+        tag: String,
+        output: Editable,
+        reader: XMLReader,
+    ) {
         if (tag.equals("code", true)) {
             val len = output.length
             if (opening) {

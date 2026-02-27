@@ -2,8 +2,9 @@ package io.github.wykopmobilny.ui.components.widgets
 
 sealed interface Color
 
-enum class ColorConst(val hexValue: String) : Color {
-
+enum class ColorConst(
+    val hexValue: String,
+) : Color {
     CommentCurrentUser("#3498db"),
     CommentOriginalPoster("#F75616"),
     CommentLinked("#27AE60"),

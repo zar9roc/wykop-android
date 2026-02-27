@@ -9,7 +9,6 @@ import io.github.wykopmobilny.ui.profile.profileMainFragment
 import io.github.wykopmobilny.utils.viewBinding
 
 internal class ProfileActivityV2 : ThemableActivity() {
-
     private val binding by viewBinding(ActivityContainerBinding::inflate)
 
     private val userId
@@ -19,7 +18,8 @@ internal class ProfileActivityV2 : ThemableActivity() {
         super.onCreate(savedInstanceState)
 
         if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
+            supportFragmentManager
+                .beginTransaction()
                 .replace(binding.fragmentContainer.id, profileMainFragment(userId))
                 .commit()
         }
@@ -28,7 +28,10 @@ internal class ProfileActivityV2 : ThemableActivity() {
     companion object {
         const val EXTRA_USER_ID = "EXTRA_USERNAME"
 
-        fun createIntent(context: Context, userId: String) = Intent(context, ProfileActivityV2::class.java).apply {
+        fun createIntent(
+            context: Context,
+            userId: String,
+        ) = Intent(context, ProfileActivityV2::class.java).apply {
             putExtra(EXTRA_USER_ID, userId)
         }
     }

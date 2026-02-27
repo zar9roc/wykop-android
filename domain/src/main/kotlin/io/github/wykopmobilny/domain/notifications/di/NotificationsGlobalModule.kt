@@ -10,12 +10,15 @@ import javax.inject.Singleton
 
 @Module
 internal class NotificationsGlobalModule {
-
     @Singleton
     @Provides
-    fun notificationsStore(retrofitApi: NotificationsRetrofitApi, appScopes: AppScopes, apiClient: ApiClient) = StoreBuilder.from(
-        fetcher = apiClient.fetcher(retrofitApi::getNotifications),
-    )
-        .scope(appScopes.applicationScope)
+    fun notificationsStore(
+        retrofitApi: NotificationsRetrofitApi,
+        appScopes: AppScopes,
+        apiClient: ApiClient,
+    ) = StoreBuilder
+        .from(
+            fetcher = apiClient.fetcher(retrofitApi::getNotifications),
+        ).scope(appScopes.applicationScope)
         .build()
 }

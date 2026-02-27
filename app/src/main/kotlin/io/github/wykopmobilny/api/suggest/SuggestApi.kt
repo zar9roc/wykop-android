@@ -6,5 +6,6 @@ import io.reactivex.Single
 
 interface SuggestApi {
     fun getTagSuggestions(suggestionString: String): Single<List<TagSuggestion>>
+
     fun getUserSuggestions(suggestionString: String): Single<List<Author>>
 }

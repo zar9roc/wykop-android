@@ -5,13 +5,13 @@ import io.github.wykopmobilny.models.dataclass.Related
 import io.github.wykopmobilny.models.mapper.Mapper
 
 object RelatedMapper : Mapper<RelatedResponse, Related> {
-
-    override fun map(value: RelatedResponse) = Related(
-        id = value.id.toInt(),
-        url = value.url,
-        voteCount = value.voteCount,
-        author = value.author?.let(AuthorMapper::map),
-        title = value.title,
-        userVote = value.userVote ?: 0,
-    )
+    override fun map(value: RelatedResponse) =
+        Related(
+            id = value.id.toInt(),
+            url = value.url,
+            voteCount = value.voteCount,
+            author = value.author?.let(AuthorMapper::map),
+            title = value.title,
+            userVote = value.userVote ?: 0,
+        )
 }

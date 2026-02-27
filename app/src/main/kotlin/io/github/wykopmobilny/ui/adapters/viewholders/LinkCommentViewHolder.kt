@@ -29,14 +29,13 @@ class LinkCommentViewHolder(
     commentActionListener: LinkCommentActionListener,
     commentViewListener: LinkCommentViewListener,
 ) : BaseLinkCommentViewHolder(
-    binding.root,
-    userManagerApi,
-    navigator,
-    linkHandler,
-    commentViewListener,
-    commentActionListener,
-) {
-
+        binding.root,
+        userManagerApi,
+        navigator,
+        linkHandler,
+        commentViewListener,
+        commentActionListener,
+    ) {
     companion object {
         const val TYPE_EMBED = 17
         const val TYPE_NORMAL = 18
@@ -54,14 +53,15 @@ class LinkCommentViewHolder(
             commentActionListener: LinkCommentActionListener,
             commentViewListener: LinkCommentViewListener,
         ): LinkCommentViewHolder {
-            val view = LinkCommentViewHolder(
-                LinkCommentLayoutBinding.inflate(parent.layoutInflater, parent, false),
-                userManagerApi,
-                navigator,
-                linkHandler,
-                commentActionListener,
-                commentViewListener,
-            )
+            val view =
+                LinkCommentViewHolder(
+                    LinkCommentLayoutBinding.inflate(parent.layoutInflater, parent, false),
+                    userManagerApi,
+                    navigator,
+                    linkHandler,
+                    commentActionListener,
+                    commentViewListener,
+                )
 
             view.type = viewType
 

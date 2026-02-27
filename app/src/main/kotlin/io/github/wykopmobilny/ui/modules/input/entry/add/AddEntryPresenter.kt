@@ -7,38 +7,45 @@ import io.github.wykopmobilny.ui.modules.input.InputPresenter
 import io.github.wykopmobilny.utils.intoComposite
 import javax.inject.Inject
 
-class AddEntryPresenter @Inject constructor(
-    private val schedulers: Schedulers,
-    private val entriesApi: EntriesApi,
-) : InputPresenter<AddEntryActivityView>() {
+class AddEntryPresenter
+    @Inject
+    constructor(
+        private val schedulers: Schedulers,
+        private val entriesApi: EntriesApi,
+    ) : InputPresenter<AddEntryActivityView>() {
+        override fun sendWithPhoto(
+            photo: WykopImageFile,
+            containsAdultContent: Boolean,
+        ) {
+            view?.showProgressBar = true
+            entriesApi
+                .addEntry(view?.textBody!!, photo, containsAdultContent)
+                .subscribeOn(schedulers.backgroundThread())
+                .observeOn(schedulers.mainThread())
+                .subscribe(
+                    { view?.openEntryActivity(it.id) },
+                    {
+                        view?.showProgressBar = false
+                        view?.showErrorDialog(it)
+                    },
+                ).intoComposite(compositeObservable)
+        }
 
-    override fun sendWithPhoto(photo: WykopImageFile, containsAdultContent: Boolean) {
-        view?.showProgressBar = true
-        entriesApi.addEntry(view?.textBody!!, photo, containsAdultContent)
-            .subscribeOn(schedulers.backgroundThread())
-            .observeOn(schedulers.mainThread())
-            .subscribe(
-                { view?.openEntryActivity(it.id) },
-                {
-                    view?.showProgressBar = false
-                    view?.showErrorDialog(it)
-                },
-            )
-            .intoComposite(compositeObservable)
+        override fun sendWithPhotoUrl(
+            photo: String?,
+            containsAdultContent: Boolean,
+        ) {
+            view?.showProgressBar = true
+            entriesApi
+                .addEntry(view?.textBody!!, photo, containsAdultContent)
+                .subscribeOn(schedulers.backgroundThread())
+                .observeOn(schedulers.mainThread())
+                .subscribe(
+                    { view?.openEntryActivity(it.id) },
+                    {
+                        view?.showProgressBar = false
+                        view?.showErrorDialog(it)
+                    },
+                ).intoComposite(compositeObservable)
+        }
     }
-
-    override fun sendWithPhotoUrl(photo: String?, containsAdultContent: Boolean) {
-        view?.showProgressBar = true
-        entriesApi.addEntry(view?.textBody!!, photo, containsAdultContent)
-            .subscribeOn(schedulers.backgroundThread())
-            .observeOn(schedulers.mainThread())
-            .subscribe(
-                { view?.openEntryActivity(it.id) },
-                {
-                    view?.showProgressBar = false
-                    view?.showErrorDialog(it)
-                },
-            )
-            .intoComposite(compositeObservable)
-    }
-}

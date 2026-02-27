@@ -1,7 +1,6 @@
 package io.github.wykopmobilny.ui.components.widgets
 
 sealed class ListElementUi {
-
     data class Entry(
         val id: Long,
         val body: String,
@@ -31,7 +30,6 @@ sealed class ListElementUi {
         val favoriteAction: () -> Unit,
         val voteAction: () -> Unit,
     ) : ListElementUi() {
-
         enum class Thumbnail {
             None,
             SmallOnLeft,
@@ -43,7 +41,8 @@ sealed class ListElementUi {
 }
 
 val ListElementUi.id
-    get() = when (this) {
-        is ListElementUi.Entry -> id
-        is ListElementUi.Link -> id
-    }
+    get() =
+        when (this) {
+            is ListElementUi.Entry -> id
+            is ListElementUi.Link -> id
+        }

@@ -11,7 +11,6 @@ data class AppearancePreferencesUi(
     val linksSection: LinksSectionUi,
     val imagesSection: ImagesSectionUi,
 ) {
-
     data class AppearanceSectionUi(
         val userThemeSetting: ListSetting<AppThemeUi>,
         val useAmoledTheme: Setting,

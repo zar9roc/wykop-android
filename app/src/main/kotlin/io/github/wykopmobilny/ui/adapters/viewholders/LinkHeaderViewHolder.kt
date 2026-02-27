@@ -31,7 +31,6 @@ class LinkHeaderViewHolder(
     private val linkHandler: WykopLinkHandler,
     private val userManagerApi: UserManagerApi,
 ) : RecyclableViewHolder(binding.root) {
-
     companion object {
         const val TYPE_HEADER = 64
 
@@ -44,18 +43,20 @@ class LinkHeaderViewHolder(
             navigator: NewNavigator,
             linkHandler: WykopLinkHandler,
             linkHeaderActionListener: LinkHeaderActionListener,
-        ): LinkHeaderViewHolder {
-            return LinkHeaderViewHolder(
+        ): LinkHeaderViewHolder =
+            LinkHeaderViewHolder(
                 LinkDetailsHeaderLayoutBinding.inflate(parent.layoutInflater, parent, false),
                 linkHeaderActionListener,
                 navigator,
                 linkHandler,
                 userManagerApi,
             )
-        }
     }
 
-    fun bindView(link: Link, showMinifiedImages: Boolean) {
+    fun bindView(
+        link: Link,
+        showMinifiedImages: Boolean,
+    ) {
         when (link.userVote) {
             "dig" -> showDigged(link)
             "bury" -> showBurried(link)
@@ -114,15 +115,17 @@ class LinkHeaderViewHolder(
         }
     }
 
-    private fun setupBody(link: Link, showMinifiedImages: Boolean) {
+    private fun setupBody(
+        link: Link,
+        showMinifiedImages: Boolean,
+    ) {
         binding.titleTextView.text = link.title.removeHtml()
         binding.image.isVisible = link.fullImage != null
         if (showMinifiedImages) {
             link.previewImage
         } else {
             link.fullImage
-        }
-            ?.let(binding.image::loadImage)
+        }?.let(binding.image::loadImage)
         binding.description.text = link.description.removeHtml()
         binding.relatedCountTextView.text = link.relatedCount.toString()
         binding.relatedCountTextView.setOnClickListener {

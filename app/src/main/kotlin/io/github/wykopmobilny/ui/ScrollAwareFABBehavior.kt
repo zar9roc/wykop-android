@@ -8,8 +8,10 @@ import androidx.core.view.ViewCompat
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 // Used in XML layout files
-class ScrollAwareFABBehavior(context: Context, attrs: AttributeSet) : FloatingActionButton.Behavior(context, attrs) {
-
+class ScrollAwareFABBehavior(
+    context: Context,
+    attrs: AttributeSet,
+) : FloatingActionButton.Behavior(context, attrs) {
     override fun onStartNestedScroll(
         coordinatorLayout: CoordinatorLayout,
         child: FloatingActionButton,
@@ -17,16 +19,16 @@ class ScrollAwareFABBehavior(context: Context, attrs: AttributeSet) : FloatingAc
         target: View,
         nestedScrollAxes: Int,
         type: Int,
-    ): Boolean {
-        return nestedScrollAxes == ViewCompat.SCROLL_AXIS_VERTICAL || super.onStartNestedScroll(
-            coordinatorLayout,
-            child,
-            directTargetChild,
-            target,
-            nestedScrollAxes,
-            type,
-        )
-    }
+    ): Boolean =
+        nestedScrollAxes == ViewCompat.SCROLL_AXIS_VERTICAL ||
+            super.onStartNestedScroll(
+                coordinatorLayout,
+                child,
+                directTargetChild,
+                target,
+                nestedScrollAxes,
+                type,
+            )
 
     override fun onNestedScroll(
         coordinatorLayout: CoordinatorLayout,

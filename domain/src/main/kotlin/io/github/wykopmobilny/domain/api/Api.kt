@@ -22,12 +22,13 @@ internal suspend fun <T : Any> apiCall(
     rawCall: suspend () -> ApiResponse<T>,
     onUnauthorized: (suspend () -> Unit)?,
 ): FetcherResult<T> {
-    val retry = suspend {
-        val newResponse = rawCall()
-        newResponse.data?.let { FetcherResult.Data(it) }
-            ?: newResponse.error?.let { FetcherResult.Error.Message("[${it.code}] ${it.messagePl}") }
-            ?: FetcherResult.Error.Message("Invalid response. API's fault")
-    }
+    val retry =
+        suspend {
+            val newResponse = rawCall()
+            newResponse.data?.let { FetcherResult.Data(it) }
+                ?: newResponse.error?.let { FetcherResult.Error.Message("[${it.code}] ${it.messagePl}") }
+                ?: FetcherResult.Error.Message("Invalid response. API's fault")
+        }
 
     return runCatching { rawCall() }
         .mapCatching { response ->
@@ -42,14 +43,16 @@ internal suspend fun <T : Any> apiCall(
                             onUnauthorized?.invoke() ?: error("[${error.code}] ${error.messagePl}")
                             retry()
                         }
-                        else -> FetcherResult.Error.Message("[${error.code}] ${error.messagePl}")
+
+                        else -> {
+                            FetcherResult.Error.Message("[${error.code}] ${error.messagePl}")
+                        }
                     }
                 }
             } else {
                 FetcherResult.Data(data)
             }
-        }
-        .recoverCatching { failure ->
+        }.recoverCatching { failure ->
             if (failure is HttpException && failure.code() == 401) {
                 val errorBody = failure.response()?.errorBody()?.let { errorBody -> errorBodyParser.parse(errorBody) }
 
@@ -58,12 +61,14 @@ internal suspend fun <T : Any> apiCall(
                         onTwoFactorAuthorizationRequired()
                         throw KnownError.TwoFactorAuthorizationRequired("[${errorBody.code}] ${errorBody.messagePl}")
                     }
+
                     WykopApiCodes.InvalidUserKey,
                     WykopApiCodes.WrongUserSessionKey,
                     -> {
                         onUnauthorized?.invoke() ?: error("[${failure.code()}] ${failure.message()}")
                         retry()
                     }
+
                     else -> {
                         Napier.w(message = "Unsupported error code $errorBody")
                         onUnauthorized?.invoke() ?: error("[${failure.code()}] ${failure.message()}")
@@ -73,47 +78,48 @@ internal suspend fun <T : Any> apiCall(
             } else {
                 FetcherResult.Error.Exception(failure)
             }
-        }
-        .getOrElse(FetcherResult.Error::Exception)
+        }.getOrElse(FetcherResult.Error::Exception)
 }
 
-internal class ApiClient @Inject constructor(
-    private val userSessionStorage: SessionStorage,
-    private val userInfoStore: Store<UserSession, LoggedUserInfo>,
-    private val errorBodyParser: ErrorBodyParser,
-) {
+internal class ApiClient
+    @Inject
+    constructor(
+        private val userSessionStorage: SessionStorage,
+        private val userInfoStore: Store<UserSession, LoggedUserInfo>,
+        private val errorBodyParser: ErrorBodyParser,
+    ) {
+        suspend fun <T : Any> mutation(rawCall: suspend () -> ApiResponse<T>): T {
+            val result =
+                apiCall(
+                    errorBodyParser = errorBodyParser,
+                    onTwoFactorAuthorizationRequired = { Napier.e("2FA not handled") },
+                    rawCall = { rawCall() },
+                    onUnauthorized = {
+                        val session = userSessionStorage.session.first() ?: error("Login required")
+                        userInfoStore.fresh(session)
+                    },
+                )
 
-    suspend fun <T : Any> mutation(rawCall: suspend () -> ApiResponse<T>): T {
-        val result = apiCall(
-            errorBodyParser = errorBodyParser,
-            onTwoFactorAuthorizationRequired = { Napier.e("2FA not handled") },
-            rawCall = { rawCall() },
-            onUnauthorized = {
-                val session = userSessionStorage.session.first() ?: error("Login required")
-                userInfoStore.fresh(session)
-            },
-        )
-
-        return when (result) {
-            is FetcherResult.Data -> result.value
-            is FetcherResult.Error.Exception -> throw result.error
-            is FetcherResult.Error.Message -> error(result.message)
+            return when (result) {
+                is FetcherResult.Data -> result.value
+                is FetcherResult.Error.Exception -> throw result.error
+                is FetcherResult.Error.Message -> error(result.message)
+            }
         }
+
+        fun <TInput : Any, TOutput : Any> fetcher(rawCall: suspend (TInput) -> ApiResponse<TOutput>) =
+            Fetcher.ofResult<TInput, TOutput> { args ->
+                apiCall(
+                    errorBodyParser = errorBodyParser,
+                    onTwoFactorAuthorizationRequired = { Napier.e("2FA not handled") },
+                    rawCall = { rawCall(args) },
+                    onUnauthorized = {
+                        val session = userSessionStorage.session.first() ?: error("Login required")
+                        userInfoStore.fresh(session)
+                    },
+                )
+            }
     }
-
-    fun <TInput : Any, TOutput : Any> fetcher(rawCall: suspend (TInput) -> ApiResponse<TOutput>) =
-        Fetcher.ofResult<TInput, TOutput> { args ->
-            apiCall(
-                errorBodyParser = errorBodyParser,
-                onTwoFactorAuthorizationRequired = { Napier.e("2FA not handled") },
-                rawCall = { rawCall(args) },
-                onUnauthorized = {
-                    val session = userSessionStorage.session.first() ?: error("Login required")
-                    userInfoStore.fresh(session)
-                },
-            )
-        }
-}
 
 object WykopApiCodes {
     const val InvalidUserKey = 11

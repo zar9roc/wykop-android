@@ -5,12 +5,13 @@ data class AppNotification(
     val message: String,
     val type: Type,
 ) {
-
     sealed class Type {
-
         sealed class Notifications : Type() {
             object MultipleNotifications : Notifications()
-            data class SingleMessage(val interopUrl: String) : Notifications()
+
+            data class SingleMessage(
+                val interopUrl: String,
+            ) : Notifications()
         }
     }
 }

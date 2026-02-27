@@ -10,7 +10,6 @@ import io.github.wykopmobilny.databinding.YearPickerBinding
 import java.util.Calendar
 
 class YearPickerDialog : DialogFragment() {
-
     companion object {
         private const val RESULT_CODE = 167
         private const val MIN_YEAR = 2006
