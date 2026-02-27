@@ -11,9 +11,9 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
+import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.signature.ObjectKey
-import io.github.wykopmobilny.glide.GlideApp
 import io.github.wykopmobilny.utils.api.parseDate
 import io.github.wykopmobilny.utils.recyclerview.ViewHolderDependentItemDecorator
 import kotlinx.datetime.Instant
@@ -63,12 +63,12 @@ fun ImageView.loadImage(
     signature: Int? = null,
 ) {
     if (signature == null) {
-        GlideApp
+        Glide
             .with(context)
             .load(url)
             .into(this)
     } else {
-        GlideApp
+        Glide
             .with(context)
             .load(url)
             .apply(

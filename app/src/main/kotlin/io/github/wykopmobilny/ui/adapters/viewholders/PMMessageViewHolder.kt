@@ -3,9 +3,9 @@ package io.github.wykopmobilny.ui.adapters.viewholders
 import android.util.TypedValue
 import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
+import com.bumptech.glide.Glide
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.databinding.PmmessageSentLayoutBinding
-import io.github.wykopmobilny.glide.GlideApp
 import io.github.wykopmobilny.models.dataclass.PMMessage
 import io.github.wykopmobilny.ui.modules.NewNavigator
 import io.github.wykopmobilny.utils.linkhandler.WykopLinkHandler
@@ -102,7 +102,7 @@ class PMMessageViewHolder(
         binding.apply {
             date.text = null
             body.text = null
-            GlideApp.with(this.root).clear(embedImage)
+            Glide.with(this.root).clear(embedImage)
         }
     }
 }

@@ -11,8 +11,8 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.bumptech.glide.signature.ObjectKey
+import com.bumptech.glide.Glide
 import io.github.wykopmobilny.WykopApp
-import io.github.wykopmobilny.glide.GlideApp
 import io.github.wykopmobilny.utils.getActivityContext
 
 class WykopImageView(
@@ -38,7 +38,7 @@ class WykopImageView(
     }
 
     fun loadImageFromUrl(url: String) {
-        GlideApp
+        Glide
             .with(context)
             .asBitmap()
             .load(url)

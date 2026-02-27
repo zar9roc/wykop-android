@@ -5,8 +5,8 @@ import android.net.Uri
 import android.util.AttributeSet
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
+import com.bumptech.glide.Glide
 import io.github.wykopmobilny.databinding.FloatingImageViewLayoutBinding
-import io.github.wykopmobilny.glide.GlideApp
 import io.github.wykopmobilny.utils.layoutInflater
 import io.github.wykopmobilny.utils.loadImage
 
@@ -41,7 +41,7 @@ class FloatingImageView(
         this.photo = photo
         photo?.let {
             isVisible = true
-            GlideApp.with(context).load(photo).into(binding.imageView)
+            Glide.with(context).load(photo).into(binding.imageView)
         }
     }
 }

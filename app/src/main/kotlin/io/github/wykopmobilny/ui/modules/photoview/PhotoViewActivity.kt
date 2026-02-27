@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.core.view.isVisible
+import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
@@ -15,7 +16,6 @@ import com.davemorrissey.labs.subscaleview.ImageSource
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.base.BaseActivity
 import io.github.wykopmobilny.databinding.ActivityPhotoviewBinding
-import io.github.wykopmobilny.glide.GlideApp
 import io.github.wykopmobilny.utils.ClipboardHelperApi
 import io.github.wykopmobilny.utils.KotlinGlideRequestListener
 import io.github.wykopmobilny.utils.viewBinding
@@ -86,7 +86,7 @@ internal class PhotoViewActivity : BaseActivity() {
         binding.image.setMinimumDpi(70)
         binding.image.setMinimumTileDpi(240)
         binding.gif.isVisible = false
-        GlideApp
+        Glide
             .with(this)
             .downloadOnly()
             .load(url)
@@ -108,7 +108,7 @@ internal class PhotoViewActivity : BaseActivity() {
     private fun loadGif() {
         binding.image.isVisible = false
         binding.gif.isVisible = true
-        GlideApp
+        Glide
             .with(this)
             .load(url)
             .listener(KotlinGlideRequestListener({ binding.loadingView.isVisible = false }, { binding.loadingView.isVisible = false }))
