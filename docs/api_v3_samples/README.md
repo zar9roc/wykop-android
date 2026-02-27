@@ -3,6 +3,9 @@
 **Data:** 2026-02-27
 **Cel:** Walidacja formatu odpowiedzi API v3 Wykop przed implementacją
 
+> **UWAGA:** API v1/v2 jest **OBSOLETE** — serwer Wykop nie odpowiada już na endpointy v1/v2.
+> Wszystkie interfejsy Retrofit v1/v2 oznaczone jako `@Deprecated`. Migracja na v3 jest konieczna.
+
 ---
 
 ## Struktura Plików

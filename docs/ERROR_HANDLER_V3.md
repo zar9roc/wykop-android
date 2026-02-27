@@ -11,6 +11,9 @@
 
 ## Key Differences: v2 vs v3
 
+> **Note:** API v2 is **OBSOLETE** — server no longer responds to v1/v2 endpoints.
+> All v1/v2 Retrofit interfaces are marked `@Deprecated`. Use `ErrorHandlerTransformerV3` for all new code.
+
 ### API v2 Response Format
 ```json
 // Success

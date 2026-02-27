@@ -3,6 +3,10 @@
 **Data:** 2026-02-27
 **Cel:** Zweryfikować strukturę JSON, paginację i format dat przed pełną implementacją modeli response v3
 
+> **UWAGA:** API v1/v2 jest **OBSOLETE** — serwer Wykop nie odpowiada już na endpointy v1/v2.
+> Wszystkie interfejsy Retrofit v1/v2 zostały oznaczone jako `@Deprecated`.
+> Poniższe porównania v2 → v3 mają charakter referencyjny.
+
 ## 1. POST /auth - Autoryzacja
 
 ### Endpoint

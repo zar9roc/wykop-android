@@ -21,6 +21,7 @@ import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
 
+@Deprecated("API v1/v2 is obsolete - server no longer responds to these endpoints. Migrate to v3 API.")
 interface LinksRetrofitApi {
     @GET("/links/upcoming/page/{page}/sort/{sortBy}/appkey/$APP_KEY")
     suspend fun getUpcoming(

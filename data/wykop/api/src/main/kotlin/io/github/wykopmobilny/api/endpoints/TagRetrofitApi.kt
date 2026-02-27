@@ -9,6 +9,7 @@ import io.github.wykopmobilny.api.responses.TagLinksResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
 
+@Deprecated("API v1/v2 is obsolete - server no longer responds to these endpoints. Migrate to v3 API.")
 interface TagRetrofitApi {
     @GET("/tags/entries/{tag}/appkey/$APP_KEY/page/{page}")
     suspend fun getTagEntries(

@@ -10,6 +10,7 @@ import retrofit2.http.FormUrlEncoded
 import retrofit2.http.POST
 import retrofit2.http.Path
 
+@Deprecated("API v1/v2 is obsolete - server no longer responds to these endpoints. Migrate to v3 API.")
 interface SearchRetrofitApi {
     @FormUrlEncoded
     @POST("/search/links/page/{page}/appkey/$APP_KEY")

@@ -14,6 +14,7 @@ import io.github.wykopmobilny.api.responses.WykopApiResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
 
+@Deprecated("API v1/v2 is obsolete - server no longer responds to these endpoints. Migrate to v3 API.")
 interface ProfileRetrofitApi {
     @GET("/profiles/index/{username}/appkey/$APP_KEY")
     suspend fun getIndex(

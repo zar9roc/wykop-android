@@ -10,6 +10,7 @@ import retrofit2.http.FormUrlEncoded
 import retrofit2.http.Headers
 import retrofit2.http.POST
 
+@Deprecated("API v1/v2 is obsolete - server no longer responds to these endpoints. Migrate to v3 API.")
 interface LoginRetrofitApi {
     @Headers("@: $REMOVE_USERKEY_HEADER")
     @FormUrlEncoded
