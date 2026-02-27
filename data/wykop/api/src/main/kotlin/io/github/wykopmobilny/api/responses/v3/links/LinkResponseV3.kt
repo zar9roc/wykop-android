@@ -1,0 +1,32 @@
+package io.github.wykopmobilny.api.responses.v3.links
+
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
+import io.github.wykopmobilny.api.responses.v3.common.ActionsResponseV3
+import io.github.wykopmobilny.api.responses.v3.media.MediaResponseV3
+import io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3
+import kotlinx.datetime.Instant
+
+@JsonClass(generateAdapter = true)
+data class LinkResponseV3(
+    @field:Json(name = "id") val id: Long,
+    @field:Json(name = "author") val author: UserShortResponseV3,
+    @field:Json(name = "title") val title: String?,
+    @field:Json(name = "description") val description: String?,
+    @field:Json(name = "url") val url: String?,
+    @field:Json(name = "source_url") val sourceUrl: String?,
+    @field:Json(name = "created_at") val createdAt: Instant,
+    @field:Json(name = "voted") val voted: Int?,
+    @field:Json(name = "media") val media: MediaResponseV3?,
+    @field:Json(name = "adult") val adult: Boolean?,
+    @field:Json(name = "tags") val tags: List<String>?,
+    @field:Json(name = "favourite") val favourite: Boolean?,
+    @field:Json(name = "deletable") val deletable: Boolean?,
+    @field:Json(name = "slug") val slug: String?,
+    @field:Json(name = "votes") val votes: LinkVotesResponseV3,
+    @field:Json(name = "comments") val comments: LinkCommentsResponseV3,
+    @field:Json(name = "actions") val actions: ActionsResponseV3?,
+    @field:Json(name = "deleted") val deleted: Boolean?,
+    @field:Json(name = "archive") val archive: Boolean?,
+    @field:Json(name = "hot") val hot: Boolean?,
+)

@@ -25,6 +25,7 @@ class LinksRepository
     @Inject
     constructor(
         private val linksApi: LinksRetrofitApi,
+        private val linksApiV3: io.github.wykopmobilny.api.endpoints.v3.LinksV3RetrofitApi,
         private val userTokenRefresher: UserTokenRefresher,
         private val owmContentFilter: OWMContentFilter,
         private val patronsApi: PatronsApi,
@@ -34,36 +35,55 @@ class LinksRepository
         override val burySubject = PublishSubject.create<LinkVoteResponsePublishModel>()
 
         override fun getPromoted(page: Int) =
-            rxSingle { linksApi.getPromoted(page) }
+            rxSingle { linksApiV3.getPromoted(page) }
                 .retryWhen(userTokenRefresher)
-                .flatMap { patronsApi.ensurePatrons(it) }
                 .compose(ErrorHandlerTransformer())
-                .map { it.filterLinks(owmContentFilter = owmContentFilter) }
+                .map { response ->
+                    io.github.wykopmobilny.models.mapper.apiv3.filterLinksV3(
+                        response.data.orEmpty(),
+                        owmContentFilter = owmContentFilter,
+                    )
+                }
 
         override fun getUpcoming(
             page: Int,
             sortBy: String,
-        ) = rxSingle { linksApi.getUpcoming(page, sortBy) }
+        ) = rxSingle { linksApiV3.getUpcoming(page, sortBy) }
             .retryWhen(userTokenRefresher)
-            .flatMap { patronsApi.ensurePatrons(it) }
             .compose(ErrorHandlerTransformer())
-            .map { it.filterLinks(owmContentFilter = owmContentFilter) }
+            .map { response ->
+                io.github.wykopmobilny.models.mapper.apiv3.filterLinksV3(
+                    response.data.orEmpty(),
+                    owmContentFilter = owmContentFilter,
+                )
+            }
 
         override fun getObserved(page: Int) =
-            rxSingle { linksApi.getObserved(page) }
+            rxSingle { linksApiV3.getObserved(page) }
                 .retryWhen(userTokenRefresher)
-                .flatMap { patronsApi.ensurePatrons(it) }
                 .compose(ErrorHandlerTransformer())
-                .map { it.filterLinks(owmContentFilter = owmContentFilter) }
+                .map { response ->
+                    io.github.wykopmobilny.models.mapper.apiv3.filterLinksV3(
+                        response.data.orEmpty(),
+                        owmContentFilter = owmContentFilter,
+                    )
+                }
 
         override fun getLinkComments(
             linkId: Long,
             sortBy: String,
-        ) = rxSingle { linksApi.getLinkComments(linkId, sortBy) }
+        ) = rxSingle { linksApiV3.getLinkComments(linkId, sortBy) }
             .retryWhen(userTokenRefresher)
-            .flatMap { patronsApi.ensurePatrons(it) }
             .compose(ErrorHandlerTransformer())
-            .map { it.map { response -> LinkCommentMapper.map(response, owmContentFilter) } }
+            .map { response ->
+                response.data.orEmpty().map { commentResponse ->
+                    io.github.wykopmobilny.models.mapper.apiv3.LinkCommentMapperV3.map(
+                        commentResponse,
+                        owmContentFilter,
+                        linkId,
+                    )
+                }
+            }
             .map { list ->
                 list.forEach { comment ->
                     if (
@@ -76,11 +96,17 @@ class LinksRepository
             }
 
         override fun getLink(linkId: Long) =
-            rxSingle { linksApi.getLink(linkId) }
+            rxSingle { linksApiV3.getLink(linkId) }
                 .retryWhen(userTokenRefresher)
-                .flatMap { patronsApi.ensurePatrons(it) }
                 .compose(ErrorHandlerTransformer())
-                .map { it.filterLink(owmContentFilter = owmContentFilter) }
+                .map { response ->
+                    response.data?.let {
+                        io.github.wykopmobilny.models.mapper.apiv3.filterLinkV3(
+                            it,
+                            owmContentFilter = owmContentFilter,
+                        )
+                    } ?: throw IllegalStateException("Link not found")
+                }
 
         override fun commentVoteUp(
             linkId: Long,
@@ -241,22 +267,34 @@ class LinksRepository
                 .map { LinkCommentMapper.map(it, owmContentFilter) }
 
         override fun getDownvoters(linkId: Long) =
-            rxSingle { linksApi.getDownvoters(linkId) }
+            rxSingle { linksApiV3.getDownvoters(linkId) }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformer())
-                .map { it.map { response -> DownvoterMapper.map(response) } }
+                .map { response ->
+                    response.data.orEmpty().map { userResponse ->
+                        io.github.wykopmobilny.models.mapper.apiv3.VoterMapperV3.map(userResponse)
+                    }
+                }
 
         override fun getUpvoters(linkId: Long) =
-            rxSingle { linksApi.getUpvoters(linkId) }
+            rxSingle { linksApiV3.getUpvoters(linkId) }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformer())
-                .map { it.map { response -> UpvoterMapper.map(response) } }
+                .map { response ->
+                    response.data.orEmpty().map { userResponse ->
+                        io.github.wykopmobilny.models.mapper.apiv3.VoterMapperV3.map(userResponse)
+                    }
+                }
 
         override fun getRelated(linkId: Long) =
-            rxSingle { linksApi.getRelated(linkId) }
+            rxSingle { linksApiV3.getRelated(linkId) }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformer())
-                .map { it.map { response -> RelatedMapper.map(response) } }
+                .map { response ->
+                    response.data.orEmpty().map { relatedResponse ->
+                        io.github.wykopmobilny.models.mapper.apiv3.RelatedMapperV3.map(relatedResponse)
+                    }
+                }
 
         override fun markFavorite(linkId: Long) =
             rxSingle { linksApi.toggleFavorite(linkId) }

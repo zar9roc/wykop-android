@@ -22,6 +22,7 @@ class EntriesRepository
     @Inject
     constructor(
         private val entriesApi: EntriesRetrofitApi,
+        private val entriesApiV3: io.github.wykopmobilny.api.endpoints.v3.EntriesV3RetrofitApi,
         private val userTokenRefresher: UserTokenRefresher,
         private val owmContentFilter: OWMContentFilter,
         private val patronsApi: PatronsApi,
@@ -170,51 +171,81 @@ class EntriesRepository
         override fun getHot(
             page: Int,
             period: String,
-        ) = rxSingle { entriesApi.getHot(page, period) }
+        ) = rxSingle { entriesApiV3.getHot(page, "best") }
             .retryWhen(userTokenRefresher)
-            .flatMap { patronsApi.ensurePatrons(it) }
             .compose(ErrorHandlerTransformer())
-            .map { it.filterEntries(owmContentFilter = owmContentFilter) }
+            .map { response ->
+                io.github.wykopmobilny.models.mapper.apiv3.filterEntriesV3(
+                    response.data.orEmpty(),
+                    owmContentFilter = owmContentFilter,
+                )
+            }
 
         override fun getStream(page: Int) =
-            rxSingle { entriesApi.getStream(page) }
+            rxSingle { entriesApiV3.getStream(page) }
                 .retryWhen(userTokenRefresher)
-                .flatMap { patronsApi.ensurePatrons(it) }
                 .compose(ErrorHandlerTransformer())
-                .map { it.filterEntries(owmContentFilter = owmContentFilter) }
+                .map { response ->
+                    io.github.wykopmobilny.models.mapper.apiv3.filterEntriesV3(
+                        response.data.orEmpty(),
+                        owmContentFilter = owmContentFilter,
+                    )
+                }
 
         override fun getActive(page: Int) =
-            rxSingle { entriesApi.getActive(page) }
+            rxSingle { entriesApiV3.getActive(page) }
                 .retryWhen(userTokenRefresher)
-                .flatMap { patronsApi.ensurePatrons(it) }
                 .compose(ErrorHandlerTransformer())
-                .map { it.filterEntries(owmContentFilter = owmContentFilter) }
+                .map { response ->
+                    io.github.wykopmobilny.models.mapper.apiv3.filterEntriesV3(
+                        response.data.orEmpty(),
+                        owmContentFilter = owmContentFilter,
+                    )
+                }
 
         override fun getObserved(page: Int) =
-            rxSingle { entriesApi.getObserved(page) }
+            rxSingle { entriesApiV3.getObserved(page) }
                 .retryWhen(userTokenRefresher)
-                .flatMap { patronsApi.ensurePatrons(it) }
                 .compose(ErrorHandlerTransformer())
-                .map { it.filterEntries(owmContentFilter = owmContentFilter) }
+                .map { response ->
+                    io.github.wykopmobilny.models.mapper.apiv3.filterEntriesV3(
+                        response.data.orEmpty(),
+                        owmContentFilter = owmContentFilter,
+                    )
+                }
 
         override fun getEntry(id: Long) =
-            rxSingle { entriesApi.getEntry(id) }
+            rxSingle { entriesApiV3.getEntry(id) }
                 .retryWhen(userTokenRefresher)
-                .flatMap { patronsApi.ensurePatrons(it) }
                 .compose(ErrorHandlerTransformer())
-                .map { it.filterEntry(owmContentFilter = owmContentFilter) }
+                .map { response ->
+                    response.data?.let {
+                        io.github.wykopmobilny.models.mapper.apiv3.filterEntryV3(
+                            it,
+                            owmContentFilter = owmContentFilter,
+                        )
+                    } ?: throw IllegalStateException("Entry not found")
+                }
 
         override fun getEntryVoters(id: Long) =
-            rxSingle { entriesApi.getEntryVoters(id) }
+            rxSingle { entriesApiV3.getEntryVoters(id) }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformer())
-                .map { it.map { response -> VoterMapper.map(response) } }
+                .map { response ->
+                    response.data.orEmpty().map { userResponse ->
+                        io.github.wykopmobilny.models.mapper.apiv3.VoterMapperV3.map(userResponse)
+                    }
+                }
 
         override fun getEntryCommentVoters(id: Long) =
-            rxSingle { entriesApi.getCommentUpvoters(id) }
+            rxSingle { entriesApiV3.getCommentUpvoters(id) }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformer())
-                .map { it.map { response -> VoterMapper.map(response) } }
+                .map { response ->
+                    response.data.orEmpty().map { userResponse ->
+                        io.github.wykopmobilny.models.mapper.apiv3.VoterMapperV3.map(userResponse)
+                    }
+                }
     }
 
 internal fun String.allowImageOnly() = ifEmpty { " " }
