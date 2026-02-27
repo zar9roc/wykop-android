@@ -9,7 +9,6 @@ import io.github.wykopmobilny.ui.twofactor.android.TwoFactorMainFragment
 import org.junit.Test
 
 internal class TwoFactorFragmentTest : BaseScreenshotTest() {
-
     override fun createFragment() = TwoFactorMainFragment()
 
     @Test
@@ -17,18 +16,21 @@ internal class TwoFactorFragmentTest : BaseScreenshotTest() {
         registerTwoFactor(
             twoFactorUi = {
                 TwoFactorAuthDetailsUi(
-                    code = TextInputUi(
-                        text = "123456",
-                        onChanged = {},
-                    ),
-                    verifyButton = ProgressButtonUi.Default(
-                        label = "Weryfikuj",
-                        onClicked = {},
-                    ),
-                    authenticatorButton = ProgressButtonUi.Default(
-                        label = "Very long Authenticator app",
-                        onClicked = {},
-                    ),
+                    code =
+                        TextInputUi(
+                            text = "123456",
+                            onChanged = {},
+                        ),
+                    verifyButton =
+                        ProgressButtonUi.Default(
+                            label = "Weryfikuj",
+                            onClicked = {},
+                        ),
+                    authenticatorButton =
+                        ProgressButtonUi.Default(
+                            label = "Very long Authenticator app",
+                            onClicked = {},
+                        ),
                     errorDialog = null,
                 )
             },
@@ -41,15 +43,17 @@ internal class TwoFactorFragmentTest : BaseScreenshotTest() {
         registerTwoFactor(
             twoFactorUi = {
                 TwoFactorAuthDetailsUi(
-                    code = TextInputUi(
-                        text = "",
-                        onChanged = {},
-                    ),
+                    code =
+                        TextInputUi(
+                            text = "",
+                            onChanged = {},
+                        ),
                     verifyButton = ProgressButtonUi.Loading,
-                    authenticatorButton = ProgressButtonUi.Default(
-                        label = "Short",
-                        onClicked = {},
-                    ),
+                    authenticatorButton =
+                        ProgressButtonUi.Default(
+                            label = "Short",
+                            onClicked = {},
+                        ),
                     errorDialog = null,
                 )
             },

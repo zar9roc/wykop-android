@@ -6,13 +6,10 @@ import io.github.wykopmobilny.api.endpoints.LinksRetrofitApi
 import io.github.wykopmobilny.api.entries.allowImageOnly
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformer
 import io.github.wykopmobilny.api.filters.OWMContentFilter
-import io.github.wykopmobilny.api.patrons.PatronsApi
 import io.github.wykopmobilny.api.toRequestBody
 import io.github.wykopmobilny.models.dataclass.LinkVoteResponsePublishModel
-import io.github.wykopmobilny.models.mapper.apiv2.DownvoterMapper
 import io.github.wykopmobilny.models.mapper.apiv2.LinkCommentMapper
 import io.github.wykopmobilny.models.mapper.apiv2.RelatedMapper
-import io.github.wykopmobilny.models.mapper.apiv2.UpvoterMapper
 import io.github.wykopmobilny.models.mapper.apiv2.filterLink
 import io.github.wykopmobilny.models.mapper.apiv2.filterLinks
 import io.reactivex.subjects.PublishSubject
@@ -28,7 +25,6 @@ class LinksRepository
         private val linksApiV3: io.github.wykopmobilny.api.endpoints.v3.LinksV3RetrofitApi,
         private val userTokenRefresher: UserTokenRefresher,
         private val owmContentFilter: OWMContentFilter,
-        private val patronsApi: PatronsApi,
     ) : LinksApi {
         override val voteRemoveSubject = PublishSubject.create<LinkVoteResponsePublishModel>()
         override val digSubject = PublishSubject.create<LinkVoteResponsePublishModel>()
@@ -74,8 +70,7 @@ class LinksRepository
                         linkId,
                     )
                 }
-            }
-            .map { list ->
+            }.map { list ->
                 list.forEach { comment ->
                     if (
                         comment.id == comment.parentId
@@ -92,14 +87,13 @@ class LinksRepository
                 .compose(ErrorHandlerTransformer())
                 .map { response ->
                     response.data?.filterLinkV3(owmContentFilter)
-                        ?: throw IllegalStateException("Link not found")
+                        ?: error("Link not found")
                 }
 
         override fun commentVoteUp(
             linkId: Long,
             commentId: Long,
         ) = rxSingle { linksApi.commentVoteUp(linkId = linkId, commentId = commentId) }
-            .flatMap { patronsApi.ensurePatrons(it) }
             .retryWhen(userTokenRefresher)
             .compose(ErrorHandlerTransformer())
 
@@ -107,7 +101,6 @@ class LinksRepository
             linkId: Long,
             commentId: Long,
         ) = rxSingle { linksApi.commentVoteDown(linkId = linkId, commentId = commentId) }
-            .flatMap { patronsApi.ensurePatrons(it) }
             .retryWhen(userTokenRefresher)
             .compose(ErrorHandlerTransformer())
 
@@ -122,7 +115,6 @@ class LinksRepository
             linkId: Long,
             relatedId: Int,
         ) = rxSingle { linksApi.relatedVoteDown(linkId, relatedId.toLong()) }
-            .flatMap { patronsApi.ensurePatrons(it) }
             .retryWhen(userTokenRefresher)
             .compose(ErrorHandlerTransformer())
 
@@ -130,7 +122,6 @@ class LinksRepository
             linkId: Long,
             commentId: Long,
         ) = rxSingle { linksApi.commentVoteCancel(linkId = linkId, commentId = commentId) }
-            .flatMap { patronsApi.ensurePatrons(it) }
             .retryWhen(userTokenRefresher)
             .compose(ErrorHandlerTransformer())
 
@@ -138,7 +129,6 @@ class LinksRepository
             linkId: Long,
             notifyPublisher: Boolean,
         ) = rxSingle { linksApi.voteUp(linkId) }
-            .flatMap { patronsApi.ensurePatrons(it) }
             .retryWhen(userTokenRefresher)
             .compose(ErrorHandlerTransformer())
             .doOnSuccess {
@@ -153,7 +143,6 @@ class LinksRepository
             notifyPublisher: Boolean,
         ) = rxSingle { linksApi.voteDown(linkId, reason) }
             .retryWhen(userTokenRefresher)
-            .flatMap { patronsApi.ensurePatrons(it) }
             .compose(ErrorHandlerTransformer())
             .doOnSuccess {
                 if (notifyPublisher) {
@@ -166,7 +155,6 @@ class LinksRepository
             notifyPublisher: Boolean,
         ) = rxSingle { linksApi.voteRemove(linkId) }
             .retryWhen(userTokenRefresher)
-            .flatMap { patronsApi.ensurePatrons(it) }
             .compose(ErrorHandlerTransformer())
             .doOnSuccess {
                 if (notifyPublisher) {
@@ -260,7 +248,9 @@ class LinksRepository
                 .map { response ->
                     response.data.orEmpty().map { userResponse ->
                         io.github.wykopmobilny.models.dataclass.Downvoter(
-                            author = io.github.wykopmobilny.models.mapper.apiv3.AuthorMapperV3.map(userResponse),
+                            author =
+                                io.github.wykopmobilny.models.mapper.apiv3.AuthorMapperV3
+                                    .map(userResponse),
                             date = "",
                         )
                     }
@@ -273,7 +263,9 @@ class LinksRepository
                 .map { response ->
                     response.data.orEmpty().map { userResponse ->
                         io.github.wykopmobilny.models.dataclass.Upvoter(
-                            author = io.github.wykopmobilny.models.mapper.apiv3.AuthorMapperV3.map(userResponse),
+                            author =
+                                io.github.wykopmobilny.models.mapper.apiv3.AuthorMapperV3
+                                    .map(userResponse),
                             date = "",
                         )
                     }
@@ -285,7 +277,8 @@ class LinksRepository
                 .compose(ErrorHandlerTransformer())
                 .map { response ->
                     response.data.orEmpty().map { relatedResponse ->
-                        io.github.wykopmobilny.models.mapper.apiv3.RelatedMapperV3.map(relatedResponse)
+                        io.github.wykopmobilny.models.mapper.apiv3.RelatedMapperV3
+                            .map(relatedResponse)
                     }
                 }
 

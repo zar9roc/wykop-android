@@ -18,7 +18,6 @@ import androidx.preference.R as PreferenceR
 import io.github.wykopmobilny.ui.settings.android.R as SettingsR
 
 object SettingsPage {
-
     private val confirmationOption = withText("Wyłącz potwierdzenie wyjścia z aplikacji")
     private val manageBlacklistOption = withText(SettingsR.string.pref_manage_blacklist)
 

@@ -4,8 +4,9 @@ import androidx.test.espresso.IdlingResource
 import okhttp3.Dispatcher
 import java.util.concurrent.CopyOnWriteArrayList
 
-class OkHttp3IdlingResource(private val dispatcher: Dispatcher) : IdlingResource {
-
+class OkHttp3IdlingResource(
+    private val dispatcher: Dispatcher,
+) : IdlingResource {
     private val callbacks = CopyOnWriteArrayList<IdlingResource.ResourceCallback>()
 
     override fun registerIdleTransitionCallback(callback: IdlingResource.ResourceCallback?) {

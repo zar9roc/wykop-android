@@ -46,11 +46,12 @@ internal fun ViewInteraction.waitNotVisible(timeout: Long = 3000L): ViewInteract
     return check(isNotDisplayed())
 }
 
-fun isNotDisplayed() = ViewAssertion { view, _ ->
-    if (isDisplayed().matches(view)) {
-        throw AssertionError(
-            "View is present in the hierarchy and Displayed: " +
-                HumanReadables.describe(view),
-        )
+fun isNotDisplayed() =
+    ViewAssertion { view, _ ->
+        if (isDisplayed().matches(view)) {
+            throw AssertionError(
+                "View is present in the hierarchy and Displayed: " +
+                    HumanReadables.describe(view),
+            )
+        }
     }
-}

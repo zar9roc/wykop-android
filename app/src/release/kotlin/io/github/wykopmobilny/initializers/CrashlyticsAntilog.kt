@@ -5,8 +5,12 @@ import io.github.aakira.napier.Antilog
 import io.github.aakira.napier.LogLevel
 
 internal class CrashlyticsAntilog : Antilog() {
-
-    override fun performLog(priority: LogLevel, tag: String?, throwable: Throwable?, message: String?) {
+    override fun performLog(
+        priority: LogLevel,
+        tag: String?,
+        throwable: Throwable?,
+        message: String?,
+    ) {
         message?.let { FirebaseCrashlytics.getInstance().log(message) }
 
         if (priority >= LogLevel.WARNING) {

@@ -14,7 +14,6 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class TwoFactorAuthTest : BaseActivityTest() {
-
     @Test
     fun goesThroughTwoFactorAuthFlow() {
         launchLoggedInApp()

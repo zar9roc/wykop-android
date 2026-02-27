@@ -8,7 +8,6 @@ import io.github.wykopmobilny.utils.waitVisible
 import org.hamcrest.Matchers.startsWith
 
 object AboutDialogRegion : Page {
-
     private val appInfo = withText(startsWith("Wypok"))
 
     fun tapAppInfo() {

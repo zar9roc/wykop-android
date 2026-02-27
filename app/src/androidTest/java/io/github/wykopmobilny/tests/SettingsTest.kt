@@ -15,7 +15,6 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class SettingsTest : BaseActivityTest() {
-
     @Before
     fun setUp() {
         mockWebServerRule.callsOnAppStart()

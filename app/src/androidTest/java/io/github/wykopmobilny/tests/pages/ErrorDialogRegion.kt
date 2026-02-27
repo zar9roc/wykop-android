@@ -8,7 +8,6 @@ import io.github.wykopmobilny.tests.base.Page
 import io.github.wykopmobilny.utils.waitVisible
 
 object ErrorDialogRegion : Page {
-
     fun assertVisible(text: String) {
         onView(withText(text)).waitVisible()
     }

@@ -18,11 +18,12 @@ object MediaMapperV3 : Mapper<MediaResponseV3, Embed?> {
     }
 
     private fun mapPhoto(photo: PhotoResponseV3): Embed {
-        val size = if (photo.width != null && photo.height != null) {
-            "${photo.width}x${photo.height}"
-        } else {
-            ""
-        }
+        val size =
+            if (photo.width != null && photo.height != null) {
+                "${photo.width}x${photo.height}"
+            } else {
+                ""
+            }
         return Embed(
             type = "image",
             preview = photo.url,
@@ -34,8 +35,8 @@ object MediaMapperV3 : Mapper<MediaResponseV3, Embed?> {
         )
     }
 
-    private fun mapEmbed(embed: EmbedResponseV3): Embed {
-        return Embed(
+    private fun mapEmbed(embed: EmbedResponseV3): Embed =
+        Embed(
             type = embed.type,
             preview = embed.thumbnail.orEmpty(),
             url = embed.url,
@@ -44,5 +45,4 @@ object MediaMapperV3 : Mapper<MediaResponseV3, Embed?> {
             isAnimated = false,
             size = "",
         )
-    }
 }

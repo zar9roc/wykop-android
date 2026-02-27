@@ -10,7 +10,6 @@ import io.github.wykopmobilny.utils.waitVisible
 import org.hamcrest.Matchers.startsWith
 
 object TwoFactorAuthPage : Page {
-
     private val codeInput = withHint("6 cyfrowy kod")
 
     fun assertVisible() {

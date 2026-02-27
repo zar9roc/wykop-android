@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class ExtensionsTest {
-
     @Test
     fun `test youtubeTimestampToMsOrNull`() {
         val format1 = "5" // 5 seconds = 5.000ms

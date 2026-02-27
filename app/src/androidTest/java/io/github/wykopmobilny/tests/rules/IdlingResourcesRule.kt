@@ -12,8 +12,11 @@ import org.junit.runners.model.Statement
 import kotlin.coroutines.CoroutineContext
 
 class IdlingResourcesRule : TestRule {
-    override fun apply(base: Statement, description: Description?): Statement {
-        return object : Statement() {
+    override fun apply(
+        base: Statement,
+        description: Description?,
+    ): Statement =
+        object : Statement() {
             override fun evaluate() {
                 val idlingRegistry = IdlingRegistry.getInstance()
                 val okHttp3IdlingResource = OkHttp3IdlingResource(TestApp.instance.okHttpClient.dispatcher)
@@ -26,45 +29,54 @@ class IdlingResourcesRule : TestRule {
                 }
             }
         }
-    }
 }
 
 class DispatcherIdlerRule : TestRule {
-    override fun apply(base: Statement?, description: Description?): Statement = object : Statement() {
-        override fun evaluate() {
-            val espressoTrackedDispatcherIO = EspressoTrackedDispatcher(Dispatchers.IO)
-            val espressoTrackedDispatcherDefault = EspressoTrackedDispatcher(Dispatchers.Default)
-            AppDispatchers.replaceDispatchers(
-                io = espressoTrackedDispatcherIO,
-                default = espressoTrackedDispatcherDefault,
-            )
-            try {
-                base?.evaluate()
-            } finally {
-                espressoTrackedDispatcherIO.cleanUp()
-                espressoTrackedDispatcherDefault.cleanUp()
-                AppDispatchers.replaceDispatchers()
+    override fun apply(
+        base: Statement?,
+        description: Description?,
+    ): Statement =
+        object : Statement() {
+            override fun evaluate() {
+                val espressoTrackedDispatcherIO = EspressoTrackedDispatcher(Dispatchers.IO)
+                val espressoTrackedDispatcherDefault = EspressoTrackedDispatcher(Dispatchers.Default)
+                AppDispatchers.replaceDispatchers(
+                    io = espressoTrackedDispatcherIO,
+                    default = espressoTrackedDispatcherDefault,
+                )
+                try {
+                    base?.evaluate()
+                } finally {
+                    espressoTrackedDispatcherIO.cleanUp()
+                    espressoTrackedDispatcherDefault.cleanUp()
+                    AppDispatchers.replaceDispatchers()
+                }
             }
         }
-    }
 }
 
-class EspressoTrackedDispatcher(private val wrappedCoroutineDispatcher: CoroutineDispatcher) : CoroutineDispatcher() {
+class EspressoTrackedDispatcher(
+    private val wrappedCoroutineDispatcher: CoroutineDispatcher,
+) : CoroutineDispatcher() {
     private val counter = CountingIdlingResource("EspressoTrackedDispatcher for $wrappedCoroutineDispatcher")
 
     init {
         IdlingRegistry.getInstance().register(counter)
     }
 
-    override fun dispatch(context: CoroutineContext, block: Runnable) {
+    override fun dispatch(
+        context: CoroutineContext,
+        block: Runnable,
+    ) {
         counter.increment()
-        val blockWithDecrement = Runnable {
-            try {
-                block.run()
-            } finally {
-                counter.decrement()
+        val blockWithDecrement =
+            Runnable {
+                try {
+                    block.run()
+                } finally {
+                    counter.decrement()
+                }
             }
-        }
         wrappedCoroutineDispatcher.dispatch(context, blockWithDecrement)
     }
 

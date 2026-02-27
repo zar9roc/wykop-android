@@ -16,28 +16,30 @@ import org.junit.Rule
 import org.junit.rules.RuleChain
 
 abstract class BaseActivityTest {
-
     val mockWebServerRule = MockWebServerRule()
 
     @get:Rule
-    val rules: RuleChain = RuleChain.outerRule(IdlingResourcesRule())
-        .around(CleanupRule())
-        .around(DispatcherIdlerRule())
-        .around(mockWebServerRule)
+    val rules: RuleChain =
+        RuleChain
+            .outerRule(IdlingResourcesRule())
+            .around(CleanupRule())
+            .around(DispatcherIdlerRule())
+            .around(mockWebServerRule)
 
-    protected fun logUserIn() = runBlocking {
-        val storages = TestApp.instance.storages
-        storages.sessionStorage().updateSession(UserSession(login = "fixture-user", token = "fixture_token"))
-        storages.userInfoStorage().updateLoggedUser(
-            LoggedUserInfo(
-                id = "Fixture name",
-                userToken = "fixture_token",
-                avatarUrl = "https://wykop.pl/cdn/avatarfixture-avatar.png",
-                backgroundUrl = null,
-            ),
-        )
-        Espresso.onIdle()
-    }
+    protected fun logUserIn() =
+        runBlocking {
+            val storages = TestApp.instance.storages
+            storages.sessionStorage().updateSession(UserSession(login = "fixture-user", token = "fixture_token"))
+            storages.userInfoStorage().updateLoggedUser(
+                LoggedUserInfo(
+                    id = "Fixture name",
+                    userToken = "fixture_token",
+                    avatarUrl = "https://wykop.pl/cdn/avatarfixture-avatar.png",
+                    backgroundUrl = null,
+                ),
+            )
+            Espresso.onIdle()
+        }
 
     protected fun launchLoggedInApp() {
         logUserIn()

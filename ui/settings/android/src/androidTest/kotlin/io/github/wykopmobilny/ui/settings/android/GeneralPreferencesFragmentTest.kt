@@ -11,7 +11,6 @@ import io.github.wykopmobilny.ui.settings.MikroblogScreenUi
 import org.junit.Test
 
 internal class GeneralPreferencesFragmentTest : BaseScreenshotTest() {
-
     override fun createFragment() = AppearancePreferencesFragment()
 
     @Test
@@ -19,37 +18,43 @@ internal class GeneralPreferencesFragmentTest : BaseScreenshotTest() {
         registerSettings(
             appearance = {
                 AppearancePreferencesUi(
-                    appearance = AppearancePreferencesUi.AppearanceSectionUi(
-                        userThemeSetting = stubListSetting(value = AppThemeUi.Light),
-                        useAmoledTheme = stubSetting(value = true),
-                        startScreen = stubListSetting(value = MainScreenUi.Mikroblog),
-                        fontSize = stubListSetting(value = FontSizeUi.Large),
-                        disableEdgeSlide = stubSetting(value = true),
-                    ),
-                    mediaPlayerSection = AppearancePreferencesUi.MediaPlayerSectionUi(
-                        enableYoutubePlayer = stubSetting(value = true),
-                        enableEmbedPlayer = stubSetting(value = true),
-                    ),
-                    mikroblogSection = AppearancePreferencesUi.MikroblogSectionUi(
-                        mikroblogScreen = stubListSetting(value = MikroblogScreenUi.TwelveHours),
-                        cutLongEntries = stubSetting(value = true),
-                        openSpoilersInDialog = stubSetting(value = true),
-                    ),
-                    linksSection = AppearancePreferencesUi.LinksSectionUi(
-                        useSimpleList = stubSetting(value = true),
-                        showLinkThumbnail = stubSetting(value = true),
-                        imagePosition = stubListSetting(value = LinkImagePositionUi.Left),
-                        showAuthor = stubSetting(value = true),
-                        hideLinkComments = stubSetting(value = false),
-                    ),
-                    imagesSection = AppearancePreferencesUi.ImagesSectionUi(
-                        showMinifiedImages = stubSetting(value = true),
-                        cutImages = stubSetting(value = true),
-                        cutImagesProportion = stubSliderSetting(
-                            value = 70,
-                            range = 30..150,
+                    appearance =
+                        AppearancePreferencesUi.AppearanceSectionUi(
+                            userThemeSetting = stubListSetting(value = AppThemeUi.Light),
+                            useAmoledTheme = stubSetting(value = true),
+                            startScreen = stubListSetting(value = MainScreenUi.Mikroblog),
+                            fontSize = stubListSetting(value = FontSizeUi.Large),
+                            disableEdgeSlide = stubSetting(value = true),
                         ),
-                    ),
+                    mediaPlayerSection =
+                        AppearancePreferencesUi.MediaPlayerSectionUi(
+                            enableYoutubePlayer = stubSetting(value = true),
+                            enableEmbedPlayer = stubSetting(value = true),
+                        ),
+                    mikroblogSection =
+                        AppearancePreferencesUi.MikroblogSectionUi(
+                            mikroblogScreen = stubListSetting(value = MikroblogScreenUi.TwelveHours),
+                            cutLongEntries = stubSetting(value = true),
+                            openSpoilersInDialog = stubSetting(value = true),
+                        ),
+                    linksSection =
+                        AppearancePreferencesUi.LinksSectionUi(
+                            useSimpleList = stubSetting(value = true),
+                            showLinkThumbnail = stubSetting(value = true),
+                            imagePosition = stubListSetting(value = LinkImagePositionUi.Left),
+                            showAuthor = stubSetting(value = true),
+                            hideLinkComments = stubSetting(value = false),
+                        ),
+                    imagesSection =
+                        AppearancePreferencesUi.ImagesSectionUi(
+                            showMinifiedImages = stubSetting(value = true),
+                            cutImages = stubSetting(value = true),
+                            cutImagesProportion =
+                                stubSliderSetting(
+                                    value = 70,
+                                    range = 30..150,
+                                ),
+                        ),
                 )
             },
         )

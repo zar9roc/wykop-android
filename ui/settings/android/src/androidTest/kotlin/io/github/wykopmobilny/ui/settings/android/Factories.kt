@@ -16,31 +16,42 @@ internal fun BaseScreenshotTest.registerSettings(
     appearance: () -> AppearancePreferencesUi = { error("unsupported") },
 ) = registerDependencies<SettingsDependencies>(
     object : SettingsDependencies {
+        override fun general() =
+            object : GetGeneralPreferences {
+                override fun invoke() = flowOf(general())
+            }
 
-        override fun general() = object : GetGeneralPreferences {
-            override fun invoke() = flowOf(general())
-        }
-
-        override fun appearance() = object : GetAppearancePreferences {
-            override fun invoke() = flowOf(appearance())
-        }
+        override fun appearance() =
+            object : GetAppearancePreferences {
+                override fun invoke() = flowOf(appearance())
+            }
     },
 )
 
-internal fun stubSetting(value: Boolean, isEnabled: Boolean = true) = Setting(
+internal fun stubSetting(
+    value: Boolean,
+    isEnabled: Boolean = true,
+) = Setting(
     currentValue = value,
     isEnabled = isEnabled,
     onClicked = {},
 )
 
-internal fun <T> stubListSetting(value: T, isEnabled: Boolean = true) = ListSetting(
+internal fun <T> stubListSetting(
+    value: T,
+    isEnabled: Boolean = true,
+) = ListSetting(
     currentValue = value,
     isEnabled = isEnabled,
     values = emptyList(),
     onSelected = {},
 )
 
-internal fun stubSliderSetting(value: Int, range: IntRange, isEnabled: Boolean = true) = SliderSetting(
+internal fun stubSliderSetting(
+    value: Int,
+    range: IntRange,
+    isEnabled: Boolean = true,
+) = SliderSetting(
     currentValue = value,
     isEnabled = isEnabled,
     values = range,

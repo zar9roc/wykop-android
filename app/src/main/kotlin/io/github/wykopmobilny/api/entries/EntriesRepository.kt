@@ -25,7 +25,6 @@ class EntriesRepository
         private val entriesApiV3: io.github.wykopmobilny.api.endpoints.v3.EntriesV3RetrofitApi,
         private val userTokenRefresher: UserTokenRefresher,
         private val owmContentFilter: OWMContentFilter,
-        private val patronsApi: PatronsApi,
     ) : EntriesApi {
         override val entryVoteSubject = PublishSubject.create<EntryVotePublishModel>()
         override val entryUnVoteSubject = PublishSubject.create<EntryVotePublishModel>()
@@ -173,10 +172,10 @@ class EntriesRepository
             period: String,
         ) = rxSingle { entriesApiV3.getHot(page, "best") }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
-            .map { response ->
+            .compose(ErrorHandlerTransformer<List<io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3>>())
+            .map { entries ->
                 io.github.wykopmobilny.models.mapper.apiv3.filterEntriesV3(
-                    response.data.orEmpty(),
+                    entries,
                     owmContentFilter = owmContentFilter,
                 )
             }
@@ -224,7 +223,7 @@ class EntriesRepository
                             it,
                             owmContentFilter = owmContentFilter,
                         )
-                    } ?: throw IllegalStateException("Entry not found")
+                    } ?: error("Entry not found")
                 }
 
         override fun getEntryVoters(id: Long) =
@@ -233,7 +232,8 @@ class EntriesRepository
                 .compose(ErrorHandlerTransformer())
                 .map { response ->
                     response.data.orEmpty().map { userResponse ->
-                        io.github.wykopmobilny.models.mapper.apiv3.VoterMapperV3.map(userResponse)
+                        io.github.wykopmobilny.models.mapper.apiv3.VoterMapperV3
+                            .map(userResponse)
                     }
                 }
 
@@ -243,7 +243,8 @@ class EntriesRepository
                 .compose(ErrorHandlerTransformer())
                 .map { response ->
                     response.data.orEmpty().map { userResponse ->
-                        io.github.wykopmobilny.models.mapper.apiv3.VoterMapperV3.map(userResponse)
+                        io.github.wykopmobilny.models.mapper.apiv3.VoterMapperV3
+                            .map(userResponse)
                     }
                 }
     }

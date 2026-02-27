@@ -27,11 +27,12 @@ fun LinkResponseV3.filterLinkV3(owmContentFilter: OWMContentFilter) =
             plus18 = adult ?: false,
             canVote = true,
             isHot = hot ?: false,
-            userVote = when (voted) {
-                1 -> "dig"
-                -1 -> "bury"
-                else -> null
-            },
+            userVote =
+                when (voted) {
+                    1 -> "dig"
+                    -1 -> "bury"
+                    else -> null
+                },
             userFavorite = favourite ?: false,
             app = null,
             violationUrl = null,

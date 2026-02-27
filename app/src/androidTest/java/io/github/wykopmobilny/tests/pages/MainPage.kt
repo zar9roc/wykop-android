@@ -12,7 +12,6 @@ import io.github.wykopmobilny.tests.base.Page
 import io.github.wykopmobilny.utils.waitVisible
 
 object MainPage : Page {
-
     private val drawer = isAssignableFrom(DrawerLayout::class.java)
 
     private val navigationView = isAssignableFrom(NavigationView::class.java)
@@ -21,7 +20,9 @@ object MainPage : Page {
         onView(drawer).waitVisible()
     }
 
-    fun tapDrawerOption(@IdRes option: Int) {
+    fun tapDrawerOption(
+        @IdRes option: Int,
+    ) {
         onView(navigationView).waitVisible().perform(navigateTo(option))
     }
 

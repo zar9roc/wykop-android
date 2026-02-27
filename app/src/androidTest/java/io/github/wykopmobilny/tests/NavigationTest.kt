@@ -17,7 +17,6 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class NavigationTest : BaseActivityTest() {
-
     @Test
     fun navigation() {
         mockWebServerRule.callsOnAppStart()

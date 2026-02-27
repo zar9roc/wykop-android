@@ -31,10 +31,8 @@ import javax.inject.Singleton
     ],
 )
 internal interface TestAppComponent : AppComponent {
-
     @Component.Factory
     interface Factory {
-
         fun create(
             @BindsInstance instance: TestApp,
             @BindsInstance okHttpClient: OkHttpClient,

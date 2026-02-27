@@ -2,9 +2,10 @@ package io.github.wykopmobilny.fakes
 
 import javax.inject.Inject
 
-class FakeCookieProvider @Inject constructor() {
+class FakeCookieProvider
+    @Inject
+    constructor() {
+        val cookies = mutableMapOf<String, String>()
 
-    val cookies = mutableMapOf<String, String>()
-
-    fun cookieForSite(url: String) = cookies[url]
-}
+        fun cookieForSite(url: String) = cookies[url]
+    }

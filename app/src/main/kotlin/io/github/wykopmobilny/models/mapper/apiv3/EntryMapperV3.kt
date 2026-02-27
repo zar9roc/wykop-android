@@ -18,7 +18,11 @@ fun EntryResponseV3.filterEntryV3(owmContentFilter: OWMContentFilter) =
             embed = media?.let(MediaMapperV3::map),
             voteCount = votes.up - votes.down,
             commentsCount = comments.count,
-            comments = comments.items.orEmpty().map { EntryCommentMapperV3.map(it, owmContentFilter) }.toMutableList(),
+            comments =
+                comments.items
+                    .orEmpty()
+                    .map { EntryCommentMapperV3.map(it, owmContentFilter) }
+                    .toMutableList(),
             app = device,
             violationUrl = null,
             isNsfw = content?.lowercase()?.contains("#nsfw") == true,

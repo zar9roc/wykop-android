@@ -7,7 +7,6 @@ import androidx.test.espresso.matcher.ViewMatchers.withText
 import io.github.wykopmobilny.utils.waitVisible
 
 object AppearanceSettingsPage {
-
     fun assertVisible() {
         onView(withText("Ustawienia")).waitVisible().check(matches(isDisplayed()))
     }
