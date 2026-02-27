@@ -5,13 +5,20 @@ import io.github.wykopmobilny.api.WykopImageFile
 import io.github.wykopmobilny.api.endpoints.LinksRetrofitApi
 import io.github.wykopmobilny.api.entries.allowImageOnly
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformer
+import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
 import io.github.wykopmobilny.api.filters.OWMContentFilter
+import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
+import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
+import io.github.wykopmobilny.api.responses.v3.links.RelatedResponseV3
+import io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3
 import io.github.wykopmobilny.api.toRequestBody
 import io.github.wykopmobilny.models.dataclass.LinkVoteResponsePublishModel
 import io.github.wykopmobilny.models.mapper.apiv2.LinkCommentMapper
 import io.github.wykopmobilny.models.mapper.apiv2.RelatedMapper
 import io.github.wykopmobilny.models.mapper.apiv2.filterLink
 import io.github.wykopmobilny.models.mapper.apiv2.filterLinks
+import io.github.wykopmobilny.models.mapper.apiv3.filterLinkV3
+import io.github.wykopmobilny.models.mapper.apiv3.filterLinksV3
 import io.reactivex.subjects.PublishSubject
 import kotlinx.coroutines.rx2.rxSingle
 import javax.inject.Inject
@@ -33,9 +40,9 @@ class LinksRepository
         override fun getPromoted(page: Int) =
             rxSingle { linksApiV3.getPromoted(page) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
-                .map { response ->
-                    response.data.orEmpty().filterLinksV3(owmContentFilter)
+                .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
+                .map { links ->
+                    links.filterLinksV3(owmContentFilter)
                 }
 
         override fun getUpcoming(
@@ -43,17 +50,17 @@ class LinksRepository
             sortBy: String,
         ) = rxSingle { linksApiV3.getUpcoming(page, sortBy) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
-            .map { response ->
-                response.data.orEmpty().filterLinksV3(owmContentFilter)
+            .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
+            .map { links ->
+                links.filterLinksV3(owmContentFilter)
             }
 
         override fun getObserved(page: Int) =
             rxSingle { linksApiV3.getObserved(page) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
-                .map { response ->
-                    response.data.orEmpty().filterLinksV3(owmContentFilter)
+                .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
+                .map { links ->
+                    links.filterLinksV3(owmContentFilter)
                 }
 
         override fun getLinkComments(
@@ -61,9 +68,9 @@ class LinksRepository
             sortBy: String,
         ) = rxSingle { linksApiV3.getLinkComments(linkId, sortBy) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
-            .map { response ->
-                response.data.orEmpty().map { commentResponse ->
+            .compose(ErrorHandlerTransformerV3<List<LinkCommentResponseV3>>())
+            .map { comments ->
+                comments.map { commentResponse ->
                     io.github.wykopmobilny.models.mapper.apiv3.LinkCommentMapperV3.map(
                         commentResponse,
                         owmContentFilter,
@@ -84,10 +91,9 @@ class LinksRepository
         override fun getLink(linkId: Long) =
             rxSingle { linksApiV3.getLink(linkId) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
-                .map { response ->
-                    response.data?.filterLinkV3(owmContentFilter)
-                        ?: error("Link not found")
+                .compose(ErrorHandlerTransformerV3<LinkResponseV3>())
+                .map { link ->
+                    link.filterLinkV3(owmContentFilter)
                 }
 
         override fun commentVoteUp(
@@ -244,14 +250,15 @@ class LinksRepository
         override fun getDownvoters(linkId: Long) =
             rxSingle { linksApiV3.getDownvoters(linkId) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
-                .map { response ->
-                    response.data.orEmpty().map { userResponse ->
+                .compose(ErrorHandlerTransformerV3<List<UserShortResponseV3>>())
+                .map { users ->
+                    users.map { userResponse ->
                         io.github.wykopmobilny.models.dataclass.Downvoter(
                             author =
                                 io.github.wykopmobilny.models.mapper.apiv3.AuthorMapperV3
                                     .map(userResponse),
                             date = "",
+                            reason = 0,
                         )
                     }
                 }
@@ -259,9 +266,9 @@ class LinksRepository
         override fun getUpvoters(linkId: Long) =
             rxSingle { linksApiV3.getUpvoters(linkId) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
-                .map { response ->
-                    response.data.orEmpty().map { userResponse ->
+                .compose(ErrorHandlerTransformerV3<List<UserShortResponseV3>>())
+                .map { users ->
+                    users.map { userResponse ->
                         io.github.wykopmobilny.models.dataclass.Upvoter(
                             author =
                                 io.github.wykopmobilny.models.mapper.apiv3.AuthorMapperV3
@@ -274,9 +281,9 @@ class LinksRepository
         override fun getRelated(linkId: Long) =
             rxSingle { linksApiV3.getRelated(linkId) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
-                .map { response ->
-                    response.data.orEmpty().map { relatedResponse ->
+                .compose(ErrorHandlerTransformerV3<List<RelatedResponseV3>>())
+                .map { related ->
+                    related.map { relatedResponse ->
                         io.github.wykopmobilny.models.mapper.apiv3.RelatedMapperV3
                             .map(relatedResponse)
                     }
