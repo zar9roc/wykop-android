@@ -24,7 +24,7 @@ interface NotificationsDomainComponent : NotificationDependencies
 internal abstract class NotificationsModule {
 
     @Binds
-    abstract fun HandleNotificationDismissedImpl.handleNotificationDismissed(): HandleNotificationDismissed
+    abstract fun handleNotificationDismissed(impl: HandleNotificationDismissedImpl): HandleNotificationDismissed
 }
 
 internal class HandleNotificationDismissedImpl @Inject constructor(

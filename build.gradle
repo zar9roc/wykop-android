@@ -4,6 +4,12 @@ import com.android.build.gradle.internal.tasks.databinding.DataBindingMergeDepen
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapperKt
 
+buildscript {
+    dependencies {
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.21")
+    }
+}
+
 plugins {
     alias(libs.plugins.starter.config)
     alias(libs.plugins.starter.versioning)
@@ -62,11 +68,6 @@ allprojects {
     }
     configurations.matching { it.name != "detekt" }.configureEach {
         resolutionStrategy.eachDependency {
-            if (requested.group == "org.checkerframework" && requested.name != "checker-compat-qual") {
-                useVersion(libs.versions.mavencentral.checker.get())
-                because("https://github.com/google/ExoPlayer/issues/10007")
-            }
-
             def kotlinVersion = KotlinPluginWrapperKt.getKotlinPluginVersion(project)
             if (requested.group == 'org.jetbrains.kotlin' && requested.name.startsWith("kotlin")) {
                 useVersion kotlinVersion

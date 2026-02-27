@@ -11,7 +11,7 @@ import io.github.wykopmobilny.ui.login.Login
 internal abstract class LoginModule {
 
     @Binds
-    abstract fun LoginQuery.login(): Login
+    abstract fun login(impl: LoginQuery): Login
 
     companion object {
 

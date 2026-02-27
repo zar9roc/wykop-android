@@ -1,13 +1,13 @@
 plugins {
     id("com.starter.library.android")
-    id("org.jetbrains.kotlin.kapt")
+    alias(libs.plugins.google.devtools.ksp)
 }
 
 dependencies {
     api(projects.data.cache.api)
     implementation(libs.sqldelight.android)
     implementation(libs.dagger.core)
-    kapt(libs.dagger.compiler)
+    ksp(libs.dagger.compiler)
 }
 
 

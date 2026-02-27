@@ -15,5 +15,5 @@ interface TwoFactorAuthDomainComponent : TwoFactorAuthDependencies
 internal abstract class TwoFactorAuthModule {
 
     @Binds
-    abstract fun GetTwoFactorAuthDetailsQuery.bind(): GetTwoFactorAuthDetails
+    abstract fun bind(impl: GetTwoFactorAuthDetailsQuery): GetTwoFactorAuthDetails
 }

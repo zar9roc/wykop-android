@@ -8,5 +8,5 @@ import dagger.Module
 abstract class LinkDetailsModule {
 
     @Binds
-    abstract fun LinkDetailsActivity.activity(): Activity
+    abstract fun activity(impl: LinkDetailsActivity): Activity
 }

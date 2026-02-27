@@ -35,44 +35,44 @@ import io.github.wykopmobilny.api.user.LoginRepository
 class RepositoryModule {
 
     @Provides
-    fun EntriesRepository.provideEntriesApi(): EntriesApi = this
+    fun provideEntriesApi(impl: EntriesRepository): EntriesApi = impl
 
     @Provides
-    fun NotificationsRepository.notifications(): NotificationsApi = this
+    fun notifications(impl: NotificationsRepository): NotificationsApi = impl
 
     @Provides
-    fun MyWykopRepository.myWykop(): MyWykopApi = this
+    fun myWykop(impl: MyWykopRepository): MyWykopApi = impl
 
     @Provides
-    fun LinksRepository.links(): LinksApi = this
+    fun links(impl: LinksRepository): LinksApi = impl
 
     @Provides
-    fun TagRepository.tag(): TagApi = this
+    fun tag(impl: TagRepository): TagApi = impl
 
     @Provides
-    fun LoginRepository.login(): LoginApi = this
+    fun login(impl: LoginRepository): LoginApi = impl
 
     @Provides
-    fun PMRepository.pm(): PMApi = this
+    fun pm(impl: PMRepository): PMApi = impl
 
     @Provides
-    fun SuggestRepository.suggest(): SuggestApi = this
+    fun suggest(impl: SuggestRepository): SuggestApi = impl
 
     @Provides
-    fun SearchRepository.search(): SearchApi = this
+    fun search(impl: SearchRepository): SearchApi = impl
 
     @Provides
-    fun HitsRepository.hits(): HitsApi = this
+    fun hits(impl: HitsRepository): HitsApi = impl
 
     @Provides
-    fun ProfileRepository.profile(): ProfileApi = this
+    fun profile(impl: ProfileRepository): ProfileApi = impl
 
     @Provides
-    fun ExternalRepository.external(): ExternalApi = this
+    fun external(impl: ExternalRepository): ExternalApi = impl
 
     @Provides
-    fun AddLinkRepository.addLink(): AddLinkApi = this
+    fun addLink(impl: AddLinkRepository): AddLinkApi = impl
 
     @Provides
-    fun PatronsRepository.patrons(): PatronsApi = this
+    fun patrons(impl: PatronsRepository): PatronsApi = impl
 }

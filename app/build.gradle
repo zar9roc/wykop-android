@@ -4,7 +4,8 @@ import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 plugins {
     id("com.starter.application.android")
     id("com.starter.easylauncher")
-    id("org.jetbrains.kotlin.kapt")
+    alias(libs.plugins.google.devtools.ksp)
+    id("kotlin-kapt")
     id("org.jetbrains.kotlin.plugin.parcelize")
     alias(libs.plugins.google.playservices)
     alias(libs.plugins.google.firebase.crashlytics)
@@ -21,11 +22,14 @@ def findProperty(key) {
 }
 
 android {
+    compileSdk 34
+
     buildFeatures {
         buildConfig = true
     }
     defaultConfig {
         applicationId "io.github.wykopmobilny"
+        targetSdk 34
 
         testInstrumentationRunner = "io.github.wykopmobilny.DefaultTestRunner"
         buildConfigField 'String', 'APP_SECRET', "\"${findProperty("wykop.secretKey")}\""
@@ -146,8 +150,9 @@ dependencies {
     implementation(libs.usefulness.slidr)
     implementation(libs.chrisbanes.photoview)
     implementation(libs.davemorrissey.subsamplingimageview)
-    implementation(libs.exoplayer.core)
-    implementation(libs.exoplayer.okhttp)
+    implementation(libs.media3.exoplayer)
+    implementation(libs.media3.datasource.okhttp)
+    implementation(libs.media3.ui)
     implementation(libs.coroutines.rxjava)
     implementation(libs.retrofit.core)
     implementation(libs.jetbrains.markdown)
@@ -169,10 +174,10 @@ dependencies {
 
     implementation(libs.dagger.core)
     implementation(libs.dagger.android)
-    kapt(libs.dagger.compiler)
-    kapt(libs.dagger.compiler.android)
-    kaptAndroidTest(libs.dagger.compiler)
-    kaptAndroidTest(libs.dagger.compiler.android)
+    ksp(libs.dagger.compiler)
+    ksp(libs.dagger.compiler.android)
+    kspAndroidTest(libs.dagger.compiler)
+    kspAndroidTest(libs.dagger.compiler.android)
 
     implementation(libs.glide.core)
     implementation(libs.glide.okhttp)

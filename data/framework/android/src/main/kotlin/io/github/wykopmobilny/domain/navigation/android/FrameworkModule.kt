@@ -14,20 +14,20 @@ import io.github.wykopmobilny.domain.navigation.AppGateway
 internal abstract class FrameworkModule {
 
     @Binds
-    abstract fun AndroidAppRestarter.appRestarter(): AppRestarter
+    abstract fun appRestarter(impl: AndroidAppRestarter): AppRestarter
 
     @Binds
-    abstract fun Application.context(): Context
+    abstract fun context(impl: Application): Context
 
     @Binds
-    abstract fun AndroidSystemSettingsDetector.nightModeDetector(): SystemSettingsDetector
+    abstract fun nightModeDetector(impl: AndroidSystemSettingsDetector): SystemSettingsDetector
 
     @Binds
-    abstract fun AndroidAppGateway.youtubeDetector(): AppGateway
+    abstract fun youtubeDetector(impl: AndroidAppGateway): AppGateway
 
     @Binds
-    abstract fun AndroidWykopTextUtils.htmlUtils(): WykopTextUtils
+    abstract fun htmlUtils(impl: AndroidWykopTextUtils): WykopTextUtils
 
     @Binds
-    abstract fun AndroidClipboardService.clipboardService(): ClipboardService
+    abstract fun clipboardService(impl: AndroidClipboardService): ClipboardService
 }

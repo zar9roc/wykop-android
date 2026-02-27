@@ -1,6 +1,6 @@
 plugins {
     id("com.starter.library.android")
-    id("org.jetbrains.kotlin.kapt")
+    alias(libs.plugins.google.devtools.ksp)
     id("io.github.wykopmobilny.screenshots")
 }
 
@@ -16,5 +16,5 @@ dependencies {
 
     implementation(projects.common.kotlinHelpers)
     implementation(libs.dagger.core)
-    kapt(libs.dagger.compiler)
+    ksp(libs.dagger.compiler)
 }

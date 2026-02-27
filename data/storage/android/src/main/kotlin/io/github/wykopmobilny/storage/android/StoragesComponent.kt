@@ -46,8 +46,8 @@ internal abstract class StoragesModule {
     }
 
     @Binds
-    abstract fun CredentialsPreferences.sessionStorage(): SessionStorage
+    abstract fun sessionStorage(impl: CredentialsPreferences): SessionStorage
 
     @Binds
-    abstract fun CredentialsPreferences.userInfoStorage(): UserInfoStorage
+    abstract fun userInfoStorage(impl: CredentialsPreferences): UserInfoStorage
 }

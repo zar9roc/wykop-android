@@ -31,5 +31,5 @@ internal abstract class WorkManagerModule {
     }
 
     @Binds
-    abstract fun WorkManagerScheduler.bind(): WorkScheduler
+    abstract fun bind(impl: WorkManagerScheduler): WorkScheduler
 }

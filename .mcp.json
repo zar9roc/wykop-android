@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "abc-memory": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "C:\\Users\\Adam\\AppData\\Local\\Programs\\ABC Architect\\resources\\backend\\dist\\mcp\\memory-mcp-server.cjs"
+      ],
+      "env": {
+        "ABC_BACKEND_PORT": "5145",
+        "ABC_PROJECT_ID": "1",
+        "ABC_TASK_ID": "5"
+      }
+    }
+  }
+}

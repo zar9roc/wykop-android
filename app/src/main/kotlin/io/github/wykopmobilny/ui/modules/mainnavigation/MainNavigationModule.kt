@@ -8,5 +8,5 @@ import dagger.Module
 abstract class MainNavigationModule {
 
     @Binds
-    abstract fun MainNavigationActivity.activity(): Activity
+    abstract fun activity(impl: MainNavigationActivity): Activity
 }

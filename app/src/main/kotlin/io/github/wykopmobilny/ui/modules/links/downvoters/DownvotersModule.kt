@@ -8,5 +8,5 @@ import dagger.Module
 abstract class DownvotersModule {
 
     @Binds
-    abstract fun DownvotersActivity.activity(): Activity
+    abstract fun activity(impl: DownvotersActivity): Activity
 }

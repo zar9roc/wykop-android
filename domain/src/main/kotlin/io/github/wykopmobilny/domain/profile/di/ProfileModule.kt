@@ -116,13 +116,13 @@ internal abstract class ProfileModule {
     }
 
     @Binds
-    abstract fun GetProfileDetailsQuery.getProfileDetails(): GetProfileDetails
+    abstract fun getProfileDetails(impl: GetProfileDetailsQuery): GetProfileDetails
 
     @Binds
-    abstract fun GetProfileActionsQuery.getProfileEntries(): GetProfileActions
+    abstract fun getProfileEntries(impl: GetProfileActionsQuery): GetProfileActions
 
     @Binds
-    abstract fun InitializeProfile.scopeInitializer(): ScopeInitializer
+    abstract fun scopeInitializer(impl: InitializeProfile): ScopeInitializer
 }
 
 private fun ProfileResponse.toProfileEntity() = ProfileEntity(

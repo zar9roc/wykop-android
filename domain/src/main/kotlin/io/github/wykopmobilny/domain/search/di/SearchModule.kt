@@ -9,5 +9,5 @@ import io.github.wykopmobilny.ui.search.GetSearchDetails
 internal abstract class SearchModule {
 
     @Binds
-    abstract fun GetSearchDetailsQuery.getBlacklistDetails(): GetSearchDetails
+    abstract fun getBlacklistDetails(impl: GetSearchDetailsQuery): GetSearchDetails
 }

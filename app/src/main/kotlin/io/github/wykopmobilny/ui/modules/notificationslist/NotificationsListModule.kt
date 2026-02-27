@@ -8,5 +8,5 @@ import dagger.Module
 abstract class NotificationsListModule {
 
     @Binds
-    abstract fun NotificationsListActivity.activity(): Activity
+    abstract fun activity(impl: NotificationsListActivity): Activity
 }

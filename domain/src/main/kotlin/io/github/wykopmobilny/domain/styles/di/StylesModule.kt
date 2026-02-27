@@ -9,5 +9,5 @@ import io.github.wykopmobilny.styles.GetAppStyle
 internal abstract class StylesModule {
 
     @Binds
-    abstract fun GetAppStyleQuery.getAppStyle(): GetAppStyle
+    abstract fun getAppStyle(impl: GetAppStyleQuery): GetAppStyle
 }

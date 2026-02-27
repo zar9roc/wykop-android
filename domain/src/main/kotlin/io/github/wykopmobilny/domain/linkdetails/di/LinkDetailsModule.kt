@@ -74,8 +74,8 @@ internal abstract class LinkDetailsModule {
     }
 
     @Binds
-    abstract fun GetLinkDetailsQuery.getProfileDetails(): GetLinkDetails
+    abstract fun getProfileDetails(impl: GetLinkDetailsQuery): GetLinkDetails
 
     @Binds
-    abstract fun InitializeLinkDetails.scopeInitializer(): ScopeInitializer
+    abstract fun scopeInitializer(impl: InitializeLinkDetails): ScopeInitializer
 }

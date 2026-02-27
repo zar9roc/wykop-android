@@ -22,13 +22,13 @@ import javax.inject.Singleton
 internal abstract class InteropModule {
 
     @Binds
-    abstract fun InMemoryInteropRequestService.navigationRequestsController(): InteropRequestsProvider
+    abstract fun navigationRequestsController(impl: InMemoryInteropRequestService): InteropRequestsProvider
 
     @Binds
-    abstract fun InMemoryInteropRequestService.navigationRequestsInterop(): InteropRequestService
+    abstract fun navigationRequestsInterop(impl: InMemoryInteropRequestService): InteropRequestService
 
     @Binds
-    abstract fun InteropSettingPreferencesApi.settingsPreferencesApi(): SettingsPreferencesApi
+    abstract fun settingsPreferencesApi(impl: InteropSettingPreferencesApi): SettingsPreferencesApi
 }
 
 @Singleton

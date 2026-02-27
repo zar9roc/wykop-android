@@ -15,7 +15,7 @@ import javax.inject.Provider
 internal abstract class PromotedModule {
 
     @Binds
-    abstract fun GetPromotedQuery.bind(): GetPromoted
+    abstract fun bind(impl: GetPromotedQuery): GetPromoted
 
     companion object {
 

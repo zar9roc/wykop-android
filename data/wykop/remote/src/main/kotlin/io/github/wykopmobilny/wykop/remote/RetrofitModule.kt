@@ -18,7 +18,7 @@ internal class RetrofitModule {
 
     @Provides
     @PathFixingInterceptor
-    fun AppKeyReplacingInterceptor.pathFixingInterceptor(): Interceptor = this
+    fun pathFixingInterceptor(impl: AppKeyReplacingInterceptor): Interceptor = impl
 
     @Provides
     @Reusable

@@ -8,5 +8,5 @@ import dagger.Module
 abstract class ProfileModule {
 
     @Binds
-    abstract fun ProfileActivity.activity(): Activity
+    abstract fun activity(impl: ProfileActivity): Activity
 }

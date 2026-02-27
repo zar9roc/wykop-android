@@ -11,8 +11,8 @@ import io.github.wykopmobilny.ui.settings.GetGeneralPreferences
 internal abstract class SettingsModule {
 
     @Binds
-    abstract fun GetGeneralPreferencesQuery.generalPreferences(): GetGeneralPreferences
+    abstract fun generalPreferences(impl: GetGeneralPreferencesQuery): GetGeneralPreferences
 
     @Binds
-    abstract fun GetAppearancePreferencesQuery.appearancePreferences(): GetAppearancePreferences
+    abstract fun appearancePreferences(impl: GetAppearancePreferencesQuery): GetAppearancePreferences
 }

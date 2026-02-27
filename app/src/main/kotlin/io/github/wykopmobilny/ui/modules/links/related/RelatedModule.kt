@@ -8,5 +8,5 @@ import dagger.Module
 abstract class RelatedModule {
 
     @Binds
-    abstract fun RelatedActivity.activity(): Activity
+    abstract fun activity(impl: RelatedActivity): Activity
 }

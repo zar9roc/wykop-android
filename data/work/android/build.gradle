@@ -1,6 +1,6 @@
 plugins {
     id("com.starter.library.android")
-    id("org.jetbrains.kotlin.kapt")
+    alias(libs.plugins.google.devtools.ksp)
 }
 
 dependencies {
@@ -8,5 +8,5 @@ dependencies {
     implementation(projects.common.kotlinHelpers)
     implementation(libs.work.runtime)
     implementation(libs.dagger.core)
-    kapt(libs.dagger.compiler)
+    ksp(libs.dagger.compiler)
 }

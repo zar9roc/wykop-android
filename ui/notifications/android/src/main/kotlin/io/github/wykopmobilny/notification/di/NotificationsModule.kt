@@ -9,5 +9,5 @@ import io.github.wykopmobilny.notification.NotificationsManager
 internal abstract class NotificationsModule {
 
     @Binds
-    abstract fun AndroidNotificationManager.bind(): NotificationsManager
+    abstract fun bind(impl: AndroidNotificationManager): NotificationsManager
 }

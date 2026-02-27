@@ -19,7 +19,7 @@ class NetworkModule {
     fun provideWykopSchedulers(): io.github.wykopmobilny.base.Schedulers = WykopSchedulers()
 
     @Provides
-    fun UserManager.provideUserManagerApi(): UserManagerApi = this
+    fun provideUserManagerApi(impl: UserManager): UserManagerApi = impl
 
     @Provides
     fun provideNotificationManager(context: Context): NotificationManager =
