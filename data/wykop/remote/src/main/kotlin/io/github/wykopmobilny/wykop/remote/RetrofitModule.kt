@@ -35,6 +35,7 @@ internal class RetrofitModule {
         okHttpClient: OkHttpClient,
         @PathFixingInterceptor pathFixing: Interceptor,
         @SigningInterceptor signing: Interceptor,
+        bearerAuthInterceptor: BearerAuthInterceptor,
         jwtAuthInterceptor: JwtAuthInterceptor,
         tokenRefreshAuthenticator: TokenRefreshAuthenticator,
         @BaseUrl apiUrl: String,
@@ -47,6 +48,7 @@ internal class RetrofitModule {
                 .newBuilder()
                 .cache(Cache(cacheDir, maxSize = CACHE_SIZE))
                 .addInterceptor(pathFixing)
+                .addInterceptor(bearerAuthInterceptor)
                 .addInterceptor(jwtAuthInterceptor)
                 .addInterceptor(signing)
                 .authenticator(tokenRefreshAuthenticator)

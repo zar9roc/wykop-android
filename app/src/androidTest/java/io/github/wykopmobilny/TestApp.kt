@@ -38,6 +38,8 @@ internal class TestApp : WykopApp() {
             baseUrl = "http://localhost:8000",
             appKey = { "fixture-app-key" },
             signingInterceptor = { it.proceed(it.request()) },
+            jwtTokenStorage = storages.jwtTokenStorage(),
+            bearerTokenStorage = storages.bearerTokenStorage(),
             cacheDir = cacheDir.resolve("tests/okhttp-cache"),
         )
     }

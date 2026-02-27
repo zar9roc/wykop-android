@@ -28,8 +28,8 @@ internal class TokenRefreshAuthenticator
         ): Request? {
             val path = response.request.url.encodedPath
 
-            // Only handle 401 for v3 API endpoints (except auth endpoints)
-            if (!path.startsWith("/v3/") || path.startsWith("/v3/auth")) {
+            // Only handle 401 for v3 API endpoints (except auth and connect endpoints)
+            if (!path.startsWith("/v3/") || path.startsWith("/v3/auth") || path == "/v3/connect") {
                 return null
             }
 
