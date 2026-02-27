@@ -5,6 +5,6 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class AuthRequestV3(
-    @field:Json(name = "username") val username: String,
-    @field:Json(name = "password") val password: String,
+    @field:Json(name = "key") val key: String,
+    @field:Json(name = "secret") val secret: String,
 )

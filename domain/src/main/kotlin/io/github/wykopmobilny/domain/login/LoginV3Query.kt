@@ -55,10 +55,12 @@ class LoginV3Query
             viewStateStorage.update { it.copy(isLoading = true) }
 
             runCatching {
-                // Call JWT auth endpoint
+                // TODO: Faza 3.8 - To jest tymczasowe rozwiązanie. AuthRequestV3 wymaga key/secret (app credentials),
+                // nie username/password (user credentials). Cała logika zostanie przepisana na nowy flow:
+                // POST /v3/auth(apiKey, apiSecret) → GET /v3/connect → WebView → token parsing
                 val response =
                     authV3Api.authenticate(
-                        AuthRequestV3(username = username, password = password),
+                        AuthRequestV3(key = username, secret = password),
                     )
 
                 val authData = response.data
