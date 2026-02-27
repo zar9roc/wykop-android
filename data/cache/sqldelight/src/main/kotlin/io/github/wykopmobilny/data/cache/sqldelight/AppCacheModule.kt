@@ -13,6 +13,7 @@ import io.github.wykopmobilny.data.cache.api.EntryEntity
 import io.github.wykopmobilny.data.cache.api.GenderEntity
 import io.github.wykopmobilny.data.cache.api.LinkCommentsEntity
 import io.github.wykopmobilny.data.cache.api.LinkEntity
+import io.github.wykopmobilny.data.cache.api.ProfileActionsEntity
 import io.github.wykopmobilny.data.cache.api.ProfileEntity
 import io.github.wykopmobilny.data.cache.api.RelatedLinkEntity
 import io.github.wykopmobilny.data.cache.api.UserColorEntity
@@ -43,29 +44,55 @@ internal class AppCacheModule {
                     signupAtAdapter = InstantAdapter,
                     colorAdapter = EnumAdapter(UserColorEntity.entries),
                     genderAdapter = EnumAdapter(GenderEntity.entries),
+                    linksAddedCountAdapter = IntAdapter,
+                    linksPublishedCountAdapter = IntAdapter,
+                    commentsCountAdapter = IntAdapter,
+                    rankAdapter = IntAdapter,
+                    followersAdapter = IntAdapter,
+                    followingAdapter = IntAdapter,
+                    entriesCountAdapter = IntAdapter,
+                    entriesCommentsCountAdapter = IntAdapter,
+                    diggsCountAdapter = IntAdapter,
+                    buriesCountAdapter = IntAdapter,
                 ),
             linkEntityAdapter =
                 LinkEntity.Adapter(
                     postedAtAdapter = InstantAdapter,
                     userVoteAdapter = EnumAdapter(UserVote.entries),
+                    voteCountAdapter = IntAdapter,
+                    buryCountAdapter = IntAdapter,
+                    commentsCountAdapter = IntAdapter,
+                    relatedCountAdapter = IntAdapter,
                 ),
             entryEntityAdapter =
                 EntryEntity.Adapter(
                     postedAtAdapter = InstantAdapter,
                     userVoteAdapter = EnumAdapter(UserVote.entries),
+                    voteCountAdapter = IntAdapter,
+                    commentsCountAdapter = IntAdapter,
                 ),
             embedAdapter =
                 Embed.Adapter(
                     typeAdapter = EnumAdapter(EmbedType.entries),
+                    ratioAdapter = FloatAdapter,
                 ),
             linkCommentsEntityAdapter =
                 LinkCommentsEntity.Adapter(
                     postedAtAdapter = InstantAdapter,
                     userVoteAdapter = EnumAdapter(UserVote.entries),
+                    voteCountAdapter = IntAdapter,
+                    voteCountPlusAdapter = IntAdapter,
                 ),
             relatedLinkEntityAdapter =
                 RelatedLinkEntity.Adapter(
                     userVoteAdapter = EnumAdapter(UserVote.entries),
+                    voteCountAdapter = IntAdapter,
+                    orderOnPageAdapter = IntAdapter,
+                ),
+            profileActionsEntityAdapter =
+                ProfileActionsEntity.Adapter(
+                    pageAdapter = IntAdapter,
+                    orderOnPageAdapter = IntAdapter,
                 ),
         )
 }
@@ -74,6 +101,18 @@ internal object InstantAdapter : ColumnAdapter<Instant, Long> {
     override fun decode(databaseValue: Long) = Instant.fromEpochMilliseconds(databaseValue)
 
     override fun encode(value: Instant) = value.toEpochMilliseconds()
+}
+
+internal object IntAdapter : ColumnAdapter<Int, Long> {
+    override fun decode(databaseValue: Long) = databaseValue.toInt()
+
+    override fun encode(value: Int) = value.toLong()
+}
+
+internal object FloatAdapter : ColumnAdapter<Float, Double> {
+    override fun decode(databaseValue: Double) = databaseValue.toFloat()
+
+    override fun encode(value: Float) = value.toDouble()
 }
 
 class EnumAdapter<T : Enum<T>>(
