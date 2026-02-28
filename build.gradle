@@ -19,9 +19,9 @@ plugins {
 }
 
 commonConfig {
-    javaVersion JavaVersion.VERSION_11
+    javaVersion = JavaVersion.VERSION_11
     androidPlugin {
-        minSdkVersion 24
+        minSdkVersion = 24
     }
 }
 

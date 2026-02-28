@@ -13,7 +13,7 @@ plugins {
 }
 
 projectConfig {
-    javaFilesAllowed true
+    javaFilesAllowed = true
 }
 
 def findProperty(key) {
@@ -62,28 +62,28 @@ android {
 
     buildTypes {
         named("debug") {
-            signingConfig signingConfigs.getByName("debug")
-            applicationIdSuffix ".debug"
-            versionNameSuffix "-debug"
+            signingConfig = signingConfigs.getByName("debug")
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
         }
         named("release") {
-            minifyEnabled true
-            signingConfig signingConfigs.getByName("release")
+            minifyEnabled = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            firebaseCrashlytics.mappingFileUploadEnabled findProperty("uploadMapping") == "true"
+            firebaseCrashlytics.mappingFileUploadEnabled = findProperty("uploadMapping") == "true"
         }
         register("releaseTest") {
-            minifyEnabled true
-            signingConfig signingConfigs.getByName("debug")
+            minifyEnabled = true
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             testProguardFile "proguard-rules-test.pro"
-            firebaseCrashlytics.mappingFileUploadEnabled false
+            firebaseCrashlytics.mappingFileUploadEnabled = false
         }
     }
 
     buildFeatures {
-        viewBinding true
-        resValues true
+        viewBinding = true
+        resValues = true
     }
 
     packagingOptions {
