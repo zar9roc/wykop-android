@@ -18,6 +18,7 @@ import io.github.wykopmobilny.ui.login.LoginV3Ui
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.util.Base64
 import javax.inject.Inject
@@ -77,6 +78,9 @@ class LoginV3Query
                 // Step 2: Save bearer token to BearerTokenStorage (used by BearerAuthInterceptor for /v3/connect)
                 bearerTokenStorage.updateBearerToken(authData.token)
 
+                // Wait for token to be available in Flow (DataStore is async)
+                bearerTokenStorage.bearerToken.first { it != null }
+
                 // Step 3: GET /v3/connect to get connectUrl for WebView
                 val connectResponse = authV3Api.connect()
 
@@ -129,6 +133,10 @@ class LoginV3Query
                             expiresAt = expiresAt,
                         ),
                     )
+
+                    // Wait for token to be available in Flow (DataStore is async)
+                    jwtTokenStorage.jwtToken.first { it != null }
+
                     appRestarter.restart()
                 }.onFailure { throwable ->
                     jwtTokenStorage.updateJwtToken(null)

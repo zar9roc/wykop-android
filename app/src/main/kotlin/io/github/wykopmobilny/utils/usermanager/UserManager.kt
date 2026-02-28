@@ -1,6 +1,7 @@
 package io.github.wykopmobilny.utils.usermanager
 
 import android.content.Context
+import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.api.endpoints.v3.UsersV3RetrofitApi
 import io.github.wykopmobilny.api.responses.LoginResponse
 import io.github.wykopmobilny.api.responses.v3.auth.AuthResponseV3
@@ -98,6 +99,9 @@ class UserManager
                 ),
             )
 
+            // Wait for token to be available in Flow (DataStore is async)
+            jwtTokenStorage.jwtToken.first { it != null }
+
             // Fetch user profile using JWT
             val profileResponse = usersV3Api.getUserProfile()
             profileResponse.data?.let { profile ->
@@ -106,7 +110,11 @@ class UserManager
                     try {
                         val fullProfileResponse = usersV3Api.getUserFullProfile(profile.username)
                         fullProfileResponse.data?.background
-                    } catch (e: Exception) {
+                    } catch (e: retrofit2.HttpException) {
+                        Napier.w("Failed to fetch full profile for background: HTTP ${e.code()}", e)
+                        null // Fallback to null if full profile fetch fails
+                    } catch (e: java.io.IOException) {
+                        Napier.w("Failed to fetch full profile for background: network error", e)
                         null // Fallback to null if full profile fetch fails
                     }
 
