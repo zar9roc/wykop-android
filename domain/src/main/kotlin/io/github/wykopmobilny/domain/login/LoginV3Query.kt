@@ -2,12 +2,15 @@ package io.github.wykopmobilny.domain.login
 
 import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.api.endpoints.v3.AuthV3RetrofitApi
+import io.github.wykopmobilny.api.endpoints.v3.ProfileV3RetrofitApi
 import io.github.wykopmobilny.domain.login.di.LoginScope
 import io.github.wykopmobilny.domain.navigation.AppRestarter
 import io.github.wykopmobilny.domain.utils.safe
 import io.github.wykopmobilny.kotlin.AppScopes
 import io.github.wykopmobilny.storage.api.JwtToken
 import io.github.wykopmobilny.storage.api.JwtTokenStorage
+import io.github.wykopmobilny.storage.api.LoggedUserInfo
+import io.github.wykopmobilny.storage.api.UserInfoStorage
 import io.github.wykopmobilny.ui.base.FailedAction
 import io.github.wykopmobilny.ui.base.SimpleViewStateStorage
 import io.github.wykopmobilny.ui.base.components.ErrorDialogUi
@@ -25,7 +28,9 @@ class LoginV3Query
     @Inject
     constructor(
         private val authV3Api: AuthV3RetrofitApi,
+        private val profileV3Api: ProfileV3RetrofitApi,
         private val jwtTokenStorage: JwtTokenStorage,
+        private val userInfoStorage: UserInfoStorage,
         private val appRestarter: AppRestarter,
         private val viewStateStorage: SimpleViewStateStorage,
         private val appScopes: AppScopes,
@@ -144,11 +149,36 @@ class LoginV3Query
                     // Wait for token to be available in Flow (DataStore is async)
                     jwtTokenStorage.jwtToken.first { it != null }
 
-                    Napier.i(tag = TAG) { "onUrlInvoked: Token saved, restarting app" }
+                    Napier.i(tag = TAG) { "onUrlInvoked: Token saved, fetching user profile" }
+                    // Fetch user profile data to get username, avatar, background
+                    val profileResponse = profileV3Api.getProfile()
+                    val profile = profileResponse.data
+                    if (profile == null) {
+                        val errorMsg = profileResponse.error?.messagePl ?: "Failed to fetch user profile"
+                        Napier.e(tag = TAG) { "onUrlInvoked: Profile data is null: $errorMsg" }
+                        throw IllegalStateException(errorMsg)
+                    }
+
+                    Napier.d(tag = TAG) { "onUrlInvoked: Profile fetched, username=${profile.username}" }
+                    // Save user info to storage
+                    userInfoStorage.updateLoggedUser(
+                        LoggedUserInfo(
+                            id = profile.username,
+                            userToken = profile.username, // v3 doesn't have userKey, use username instead
+                            avatarUrl = profile.avatar ?: "",
+                            backgroundUrl = profile.background,
+                        ),
+                    )
+
+                    Napier.d(tag = TAG) { "onUrlInvoked: User info saved, waiting for availability in Flow" }
+                    userInfoStorage.loggedUser.first { it != null }
+
+                    Napier.i(tag = TAG) { "onUrlInvoked: Login completed, restarting app" }
                     appRestarter.restart()
                 }.onFailure { throwable ->
                     Napier.e(tag = TAG, throwable = throwable) { "onUrlInvoked: Failed to save token or restart app" }
                     jwtTokenStorage.updateJwtToken(null)
+                    userInfoStorage.updateLoggedUser(null)
                     connectUrlState.value = null
                     viewStateStorage.update { it.copy(isLoading = false, failedAction = FailedAction(cause = throwable)) }
                 }.onSuccess {
