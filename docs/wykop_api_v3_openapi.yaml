@@ -1,0 +1,5050 @@
+openapi: 3.0.3
+info:
+  version: 3.0.0-beta
+  title: Wykop API v3 (beta)
+  description: >
+    Kazda aplikacja korzystajaca z API musi autoryzowac sie appkey+secret
+    w celu otrzymania tokena JWT. Brak autoryzacji=403, brak EP=404,
+    zablokowane EP=401 key=3, limit=400 message=limit_exceeded.
+  license:
+    name: Wykop Sp. z o.o.
+servers:
+  - url: https://wykop.pl/api/v3/
+    description: Wersja produkcyjna
+security:
+  - bearerAuth: []
+
+paths:
+
+  # ========== BEZPIECZENSTWO ==========
+
+  /auth:
+    post:
+      summary: Autoryzacja aplikacji (generowanie tokenu JWT)
+      security: []
+      tags: [Bezpieczenstwo]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    key:
+                      type: string
+                    secret:
+                      type: string
+      responses:
+        '200':
+          description: Poprawna autoryzacja
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                    required: [token]
+        '401':
+          description: Nieprawidlowe dane
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicError'
+
+  /refresh-token:
+    post:
+      summary: Logowanie przy uzyciu refresh_token
+      security: []
+      tags: [Bezpieczenstwo]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    refresh_token:
+                      type: string
+      responses:
+        '200':
+          description: Nowy JWT + refresh_token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      refresh_token:
+                        type: string
+                      token:
+                        type: string
+                    required: [refresh_token, token]
+        '401':
+          description: Bledny refresh_token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicError'
+        '423':
+          description: IP na czarnej liscie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicError'
+
+  /connect:
+    get:
+      summary: Inicjowanie logowania przez WykopConnect
+      tags: [Bezpieczenstwo]
+      responses:
+        '200':
+          description: URL do logowania
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      connect_url:
+                        type: string
+                    required: [connect_url]
+
+  /logout:
+    get:
+      summary: Wylogowanie uzytkownika
+      tags: [Bezpieczenstwo]
+      responses:
+        '204':
+          description: Wylogowano
+
+  # ========== UZYTKOWNICY ==========
+
+  /users/autocomplete:
+    get:
+      summary: Podpowiada uzytkownikow po nickname
+      tags: [Uzytkownicy]
+      parameters:
+        - name: query
+          in: query
+          schema:
+            type: string
+        - name: context
+          in: query
+          description: entry, link, link_comment, pm
+          schema:
+            type: string
+        - name: target_id
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        username:
+                          type: string
+                        color:
+                          $ref: '#/components/schemas/Color'
+                        gender:
+                          type: string
+                          nullable: true
+                        avatar:
+                          type: string
+                        followers_qty:
+                          type: integer
+        '400':
+          description: Brak parametru query
+
+  # ========== TAGI ==========
+
+  /tags/autocomplete:
+    get:
+      summary: Podpowiada tagi
+      tags: [Tagi]
+      parameters:
+        - name: query
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Max 10 wynikow
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        observed_qty:
+                          type: integer
+        '400':
+          description: Brak/krotki query
+
+  /tags/popular:
+    get:
+      summary: Lista popularnych tagow
+      tags: [Tagi]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Tag'
+
+  /tags/popular-user-tags:
+    get:
+      summary: Popularne tagi autorskie
+      tags: [Tagi]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ShortTag'
+
+  /tags/{tagName}/related:
+    get:
+      summary: Powiazane tagi
+      tags: [Tagi]
+      parameters:
+        - $ref: '#/components/parameters/TagName'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ShortTag'
+
+  /tags/{tagName}:
+    get:
+      summary: Szczegoly tagu
+      tags: [Tagi]
+      parameters:
+        - $ref: '#/components/parameters/TagName'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Tag'
+    put:
+      summary: Edycja tagu (tlo + opis)
+      tags: [Tagi]
+      parameters:
+        - $ref: '#/components/parameters/TagName'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    photo:
+                      type: string
+                    description:
+                      type: string
+                      maxLength: 1000
+      responses:
+        '204':
+          description: Sukces
+        '400':
+          description: Brak uprawnien
+        '404':
+          description: Tag nie istnieje
+        '409':
+          description: Blad walidacji
+
+  /tags/{tagName}/stream:
+    get:
+      summary: Wpisy i znaleziska z tagu
+      tags: [Tagi]
+      parameters:
+        - $ref: '#/components/parameters/TagName'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/TagsSort'
+        - $ref: '#/components/parameters/TagsType'
+        - $ref: '#/components/parameters/DateYear'
+        - $ref: '#/components/parameters/DateMonth'
+        - $ref: '#/components/parameters/Multimedia'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      anyOf:
+                        - $ref: '#/components/schemas/Link'
+                        - $ref: '#/components/schemas/Entry'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '404':
+          description: Tag nie istnieje
+
+  /tags/{tagName}/newer:
+    get:
+      summary: Czy sa nowe wpisy/linki w tagu
+      tags: [Tagi]
+      parameters:
+        - $ref: '#/components/parameters/TagName'
+        - $ref: '#/components/parameters/TagsType'
+        - $ref: '#/components/parameters/TagsSort'
+        - name: date
+          in: query
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Multimedia'
+        - name: id
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+        '404':
+          description: Tag nie istnieje
+
+  /tags/{tagName}/users:
+    get:
+      summary: Autorzy tagu autorskiego
+      tags: [Tagi]
+      parameters:
+        - $ref: '#/components/parameters/TagName'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserShort'
+        '404':
+          description: Tag nie istnieje
+
+  /tags/{tagName}/users/{username}:
+    post:
+      summary: Dodanie wspolautora tagu
+      tags: [Tagi]
+      parameters:
+        - $ref: '#/components/parameters/TagName'
+        - $ref: '#/components/parameters/Username'
+      responses:
+        '201':
+          description: Dodano
+        '400':
+          description: Brak uprawnien
+        '404':
+          description: Tag nie istnieje
+    delete:
+      summary: Usuniecie wspolautora tagu
+      tags: [Tagi]
+      parameters:
+        - $ref: '#/components/parameters/TagName'
+        - $ref: '#/components/parameters/Username'
+      responses:
+        '204':
+          description: Usunieto
+        '400':
+          description: Brak uprawnien
+        '404':
+          description: Tag nie istnieje
+
+  /tags/{tagName}/pinned:
+    get:
+      summary: Zawartosc przypieta do tagu
+      tags: [Tagi]
+      parameters:
+        - $ref: '#/components/parameters/TagName'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      anyOf:
+                        - $ref: '#/components/schemas/Link'
+                        - $ref: '#/components/schemas/Entry'
+        '404':
+          description: Tag nie istnieje
+
+  /tags/{tagName}/pin/{resource}/{id}:
+    post:
+      summary: Przypiecie zawartosci do tagu
+      tags: [Tagi]
+      parameters:
+        - $ref: '#/components/parameters/TagName'
+        - name: resource
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      limit_reached:
+                        type: boolean
+        '400':
+          description: Niepoprawne dane
+        '409':
+          description: Limit przypiec
+
+  /tags/{tagName}/unpin/{resource}/{id}:
+    delete:
+      summary: Odpiecie zawartosci z tagu
+      tags: [Tagi]
+      parameters:
+        - $ref: '#/components/parameters/TagName'
+        - name: resource
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Odpieto
+        '404':
+          description: Tag nie istnieje
+
+  /tags/{tagName}/notifications:
+    get:
+      summary: Stan powiadomien tagu autorskiego
+      tags: [Tagi]
+      parameters:
+        - $ref: '#/components/parameters/TagName'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      notifications:
+                        type: string
+                        enum: [all, only_author]
+        '400':
+          description: Brak uprawnien
+        '404':
+          description: Tag nie istnieje
+    put:
+      summary: Edycja powiadomien tagu autorskiego
+      tags: [Tagi]
+      parameters:
+        - $ref: '#/components/parameters/TagName'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    notifications:
+                      type: string
+                      enum: [all, only_author]
+      responses:
+        '204':
+          description: Zmieniono
+        '400':
+          description: Brak uprawnien
+
+  /pinned-tags:
+    get:
+      summary: Lista przypietych tagow
+      tags: [Przypiete tagi]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+
+  # ========== POWIADOMIENIA ==========
+
+  /notifications/status:
+    get:
+      summary: Status nowych powiadomien
+      tags: [Powiadomienia]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      pm:
+                        type: boolean
+                      pm_notification:
+                        type: boolean
+                      entry_notification:
+                        type: boolean
+                      tag_notification:
+                        type: boolean
+                      observed_discussions_notification:
+                        type: boolean
+                      pm_notification_count:
+                        type: integer
+                      entry_notification_count:
+                        type: integer
+                      tag_notification_count:
+                        type: integer
+                      observed_discussions_notification_count:
+                        type: integer
+
+  /notifications/entries:
+    get:
+      summary: Lista powiadomien
+      tags: [Powiadomienia]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/NotificationEntry'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /notifications/entries/all:
+    put:
+      summary: Oznacz wszystkie jako przeczytane
+      tags: [Powiadomienia]
+      responses:
+        '204':
+          description: Oznaczono
+    delete:
+      summary: Usun wszystkie
+      tags: [Powiadomienia]
+      responses:
+        '204':
+          description: Usunieto
+
+  /notifications/entries/{id}:
+    get:
+      summary: Pobranie jednej notyfikacji (NotificationEntry)
+      tags: [Powiadomienia]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/NotificationEntry'
+        '404':
+          description: Brak powiadomienia
+    put:
+      summary: Oznacz jako przeczytane
+      tags: [Powiadomienia]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Oznaczono
+        '404':
+          description: Brak powiadomienia
+    delete:
+      summary: Usun powiadomienie
+      tags: [Powiadomienia]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Usunieto
+        '404':
+          description: Brak powiadomienia
+
+  /notifications/pm:
+    get:
+      summary: Lista powiadomien
+      tags: [Powiadomienia]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/NotificationPm'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /notifications/pm/all:
+    put:
+      summary: Oznacz wszystkie jako przeczytane
+      tags: [Powiadomienia]
+      responses:
+        '204':
+          description: Oznaczono
+    delete:
+      summary: Usun wszystkie
+      tags: [Powiadomienia]
+      responses:
+        '204':
+          description: Usunieto
+
+  /notifications/pm/{id}:
+    get:
+      summary: Pobranie jednej notyfikacji (NotificationPm)
+      tags: [Powiadomienia]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/NotificationPm'
+        '404':
+          description: Brak powiadomienia
+    put:
+      summary: Oznacz jako przeczytane
+      tags: [Powiadomienia]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Oznaczono
+        '404':
+          description: Brak powiadomienia
+    delete:
+      summary: Usun powiadomienie
+      tags: [Powiadomienia]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Usunieto
+        '404':
+          description: Brak powiadomienia
+
+  /notifications/tags:
+    get:
+      summary: Lista powiadomien
+      tags: [Powiadomienia]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/ShowGrouped'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/NotificationTag'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /notifications/tags/all:
+    put:
+      summary: Oznacz wszystkie jako przeczytane
+      tags: [Powiadomienia]
+      responses:
+        '204':
+          description: Oznaczono
+    delete:
+      summary: Usun wszystkie
+      tags: [Powiadomienia]
+      responses:
+        '204':
+          description: Usunieto
+
+  /notifications/tags/{id}:
+    get:
+      summary: Pobranie jednej notyfikacji (NotificationTag)
+      tags: [Powiadomienia]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/NotificationTag'
+        '404':
+          description: Brak powiadomienia
+    put:
+      summary: Oznacz jako przeczytane
+      tags: [Powiadomienia]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Oznaczono
+        '404':
+          description: Brak powiadomienia
+    delete:
+      summary: Usun powiadomienie
+      tags: [Powiadomienia]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Usunieto
+        '404':
+          description: Brak powiadomienia
+
+  /notifications/observed-discussions:
+    get:
+      summary: Lista powiadomien
+      tags: [Powiadomienia]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/ShowGrouped'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/NotificationObservedDiscussion'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /notifications/observed-discussions/all:
+    put:
+      summary: Oznacz wszystkie jako przeczytane
+      tags: [Powiadomienia]
+      responses:
+        '204':
+          description: Oznaczono
+    delete:
+      summary: Usun wszystkie
+      tags: [Powiadomienia]
+      responses:
+        '204':
+          description: Usunieto
+
+  /notifications/observed-discussions/{id}:
+    get:
+      summary: Pobranie jednej notyfikacji (NotificationObservedDiscussion)
+      tags: [Powiadomienia]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/NotificationObservedDiscussion'
+        '404':
+          description: Brak powiadomienia
+    put:
+      summary: Oznacz jako przeczytane
+      tags: [Powiadomienia]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Oznaczono
+        '404':
+          description: Brak powiadomienia
+    delete:
+      summary: Usun powiadomienie
+      tags: [Powiadomienia]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Usunieto
+        '404':
+          description: Brak powiadomienia
+
+  /notifications/groups/{group_id}:
+    get:
+      summary: Powiadomienia w grupie
+      tags: [Powiadomienia]
+      parameters:
+        - name: group_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      oneOf:
+                        - $ref: '#/components/schemas/NotificationObservedDiscussion'
+                        - $ref: '#/components/schemas/NotificationTag'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+    delete:
+      summary: Usun powiadomienia z grupy
+      tags: [Powiadomienia]
+      parameters:
+        - name: group_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Usunieto
+
+  # ========== PROFILE ==========
+
+  /profile:
+    get:
+      summary: Dane publiczne i prywatne zalogowanego uzytkownika
+      tags: [Profile]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserFullPrivate'
+        '404':
+          description: Uzytkownik nie istnieje
+
+  /profile/short:
+    get:
+      summary: Dane publiczne zalogowanego uzytkownika - skrocone
+      tags: [Profile]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserShort'
+        '404':
+          description: Uzytkownik nie istnieje
+
+  /profile/users-year-summaries/{year}/{token}:
+    get:
+      summary: Podsumowanie roku uzytkownika
+      tags: [Profile]
+      parameters:
+        - name: year
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserYearSummary'
+        '404':
+          description: Podsumowanie nie istnieje
+
+  /profile/users/{username}:
+    get:
+      summary: Dane publiczne uzytkownika
+      tags: [Profile]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserFull'
+        '404':
+          description: Uzytkownik nie istnieje
+
+  /profile/users/{username}/short:
+    get:
+      summary: Dane publiczne uzytkownika - skrocone
+      tags: [Profile]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserShort'
+        '404':
+          description: Uzytkownik nie istnieje
+
+  /profile/users/{username}/actions:
+    get:
+      summary: Akcje uzytkownika (wpisy+znaleziska)
+      tags: [Profile]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Entry'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '404':
+          description: Uzytkownik nie istnieje
+
+  /profile/users/{username}/entries/added:
+    get:
+      summary: Wpisy autorstwa uzytkownika
+      tags: [Profile]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Multimedia'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Entry'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '404':
+          description: Uzytkownik nie istnieje
+
+  /profile/users/{username}/entries/voted:
+    get:
+      summary: Plusowane wpisy
+      tags: [Profile]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Entry'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '404':
+          description: Uzytkownik nie istnieje
+
+  /profile/users/{username}/entries/commented:
+    get:
+      summary: Komentowane wpisy
+      tags: [Profile]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Entry'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '404':
+          description: Uzytkownik nie istnieje
+
+  /profile/users/{username}/links/added:
+    get:
+      summary: Znaleziska uzytkownika
+      tags: [Profile]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Link'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '404':
+          description: Uzytkownik nie istnieje
+
+  /profile/users/{username}/links/published:
+    get:
+      summary: Znaleziska na glownej
+      tags: [Profile]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Link'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '404':
+          description: Uzytkownik nie istnieje
+
+  /profile/users/{username}/links/up:
+    get:
+      summary: Wykopane znaleziska
+      tags: [Profile]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Link'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '404':
+          description: Uzytkownik nie istnieje
+
+  /profile/users/{username}/links/down:
+    get:
+      summary: Zakopane znaleziska
+      tags: [Profile]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Link'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '404':
+          description: Uzytkownik nie istnieje
+
+  /profile/users/{username}/links/commented:
+    get:
+      summary: Komentowane znaleziska
+      tags: [Profile]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LinkWithComments'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '404':
+          description: Uzytkownik nie istnieje
+
+  /profile/users/{username}/links/related:
+    get:
+      summary: Linki powiazane uzytkownika
+      tags: [Profile]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LinkWithRelated'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '404':
+          description: Uzytkownik nie istnieje
+
+  /profile/users/{username}/badges:
+    get:
+      summary: Osiagniecia uzytkownika
+      tags: [Profile]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Badge'
+        '404':
+          description: Uzytkownik nie istnieje
+
+  /profile/users/{username}/tags:
+    get:
+      summary: Tagi autorskie uzytkownika
+      tags: [Profile]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ShortTag'
+        '404':
+          description: Uzytkownik nie istnieje
+
+  /profile/users/{username}/observed/tags:
+    get:
+      summary: Obserwowane tagi uzytkownika
+      tags: [Profile]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ShortTag'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '400':
+          description: Uzytkownik nie pozwala na wglad
+        '404':
+          description: Uzytkownik nie istnieje
+
+  /profile/users/{username}/observed/users/following:
+    get:
+      summary: Obserwowani przez uzytkownika
+      tags: [Profile]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserShort'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '404':
+          description: Uzytkownik nie istnieje
+
+  /profile/users/{username}/observed/users/followers:
+    get:
+      summary: Obserwujacy uzytkownika
+      tags: [Profile]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserShort'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '404':
+          description: Uzytkownik nie istnieje
+
+  /profile/users/{username}/observed/tags/menu:
+    get:
+      summary: Obserwowane tagi (dla menu)
+      tags: [Profile]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ShortTag'
+        '404':
+          description: Uzytkownik nie istnieje
+
+  # ========== REKOMENDACJE ==========
+
+  /recommendation/user/stream:
+    get:
+      summary: Stream rekomendacji
+      tags: [Rekomendacje]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      anyOf:
+                        - $ref: '#/components/schemas/Link'
+                        - $ref: '#/components/schemas/Entry'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /recommendation/user/not-interesting/link/{link_id}:
+    post:
+      summary: Oznacz link jako not interesting
+      tags: [Rekomendacje]
+      parameters:
+        - name: link_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Oznaczono
+
+  /recommendation/user/interesting/link/{link_id}:
+    post:
+      summary: Oznacz link jako interesting
+      tags: [Rekomendacje]
+      parameters:
+        - name: link_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Oznaczono
+
+  /recommendation/user/not-interesting/entry/{entry_id}:
+    post:
+      summary: Oznacz entry jako not interesting
+      tags: [Rekomendacje]
+      parameters:
+        - name: entry_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Oznaczono
+
+  /recommendation/user/interesting/entry/{entry_id}:
+    post:
+      summary: Oznacz entry jako interesting
+      tags: [Rekomendacje]
+      parameters:
+        - name: entry_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Oznaczono
+
+  # ========== USTAWIENIA ==========
+
+  /settings/blacklists/stats:
+    get:
+      summary: Statystyki czarnych list
+      tags: [Ustawienia]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      total_users:
+                        type: integer
+                      total_tags:
+                        type: integer
+                      total_domains:
+                        type: integer
+
+  /settings/blacklists/domains:
+    get:
+      summary: Lista domains na czarnej liscie
+      tags: [Ustawienia]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        domain:
+                          type: string
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /settings/blacklists/domains/{domain}:
+    post:
+      summary: Dodaj domain do czarnej listy
+      tags: [Ustawienia]
+      parameters:
+        - name: domain
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Dodano
+        '404':
+          description: Domains nie istnieje
+    delete:
+      summary: Usun domain z czarnej listy
+      tags: [Ustawienia]
+      parameters:
+        - name: domain
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Usunieto
+        '404':
+          description: Domains nie istnieje
+
+  /settings/blacklists/tags:
+    get:
+      summary: Lista tags na czarnej liscie
+      tags: [Ustawienia]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tag:
+                          type: string
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /settings/blacklists/tags/{tag}:
+    post:
+      summary: Dodaj tag do czarnej listy
+      tags: [Ustawienia]
+      parameters:
+        - name: tag
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Dodano
+        '404':
+          description: Tags nie istnieje
+    delete:
+      summary: Usun tag z czarnej listy
+      tags: [Ustawienia]
+      parameters:
+        - name: tag
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Usunieto
+        '404':
+          description: Tags nie istnieje
+
+  /settings/blacklists/users:
+    get:
+      summary: Lista users na czarnej liscie
+      tags: [Ustawienia]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        username:
+                          type: string
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /settings/blacklists/users/{username}:
+    post:
+      summary: Dodaj username do czarnej listy
+      tags: [Ustawienia]
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Dodano
+        '404':
+          description: Users nie istnieje
+    delete:
+      summary: Usun username z czarnej listy
+      tags: [Ustawienia]
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Usunieto
+        '404':
+          description: Users nie istnieje
+
+  /settings/profile:
+    get:
+      summary: Pobranie ustawien profilu
+      tags: [Ustawienia]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserFullPrivate'
+    put:
+      summary: Edycja ustawien profilu
+      tags: [Ustawienia]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    gender:
+                      type: string
+                      enum: [m, f]
+                    city:
+                      type: string
+                    website:
+                      type: string
+                    public_email:
+                      type: string
+                    about:
+                      type: string
+                    facebook:
+                      type: string
+                    twitter:
+                      type: string
+                    instagram:
+                      type: string
+      responses:
+        '204':
+          description: Zaktualizowano
+        '409':
+          description: Blad walidacji
+
+  /settings/profile/avatar:
+    post:
+      summary: Upload avatara
+      tags: [Ustawienia]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Avatar zaktualizowany
+
+  /settings/profile/background:
+    post:
+      summary: Upload tla profilu
+      tags: [Ustawienia]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Tlo zaktualizowane
+
+  /settings/general:
+    get:
+      summary: Pobranie ustawien ogolnych
+      tags: [Ustawienia]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+    put:
+      summary: Edycja ustawien ogolnych
+      tags: [Ustawienia]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '204':
+          description: Zaktualizowano
+
+  # ========== ZNALEZISKA ==========
+
+  /links:
+    get:
+      summary: Lista znalezisk
+      tags: [Znaleziska]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Type'
+        - $ref: '#/components/parameters/Category'
+        - $ref: '#/components/parameters/Bucket'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      anyOf:
+                        - $ref: '#/components/schemas/Link'
+                        - $ref: '#/components/schemas/Entry'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '400':
+          description: Limit paginacji
+
+  /links/{linkId}:
+    get:
+      summary: Szczegoly znaleziska
+      tags: [Znaleziska]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Link'
+        '404':
+          description: Znalezisko nie istnieje
+    put:
+      summary: Edycja znaleziska
+      tags: [Znaleziska]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Zaktualizowano
+        '400':
+          description: Brak uprawnien
+        '404':
+          description: Nie znaleziono
+    delete:
+      summary: Usuwanie znaleziska
+      tags: [Znaleziska]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Usunieto
+        '400':
+          description: Brak uprawnien
+        '404':
+          description: Nie znaleziono
+
+  /links/{linkId}/votes/up:
+    post:
+      summary: Wykop znalezisko
+      tags: [Znaleziska]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: Glos oddany
+        '400':
+          description: Juz glosowal
+
+  /links/{linkId}/votes/down/{reason}:
+    post:
+      summary: Zakop znalezisko
+      tags: [Znaleziska]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: reason
+          in: path
+          required: true
+          description: Powod zakopania (1-5)
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: Zakopano
+        '400':
+          description: Juz glosowal
+
+  /links/{linkId}/votes:
+    delete:
+      summary: Cofniecie glosu
+      tags: [Znaleziska]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Cofnieto
+
+  /links/{linkId}/upvotes/{type}:
+    get:
+      summary: Lista glosujacych na znalezisko
+      tags: [Znaleziska]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: type
+          in: path
+          required: true
+          description: up lub down
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserShort'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /links/stats/upcoming:
+    get:
+      summary: Statystyki wykopaliska
+      tags: [Znaleziska]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+
+  /links/url:
+    post:
+      summary: Sprawdzanie URL
+      tags: [Znaleziska]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    url:
+                      type: string
+      responses:
+        '200':
+          description: Informacje o URL
+
+  /links/{linkId}/redirect:
+    get:
+      summary: Redirect do zrodla znaleziska
+      tags: [Znaleziska]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '301':
+          description: Redirect
+
+  /links/{linkId}/observed-discussions:
+    post:
+      summary: Obserwuj dyskusje w znalezisku
+      tags: [Znaleziska]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Obserwujesz
+    delete:
+      summary: Przestan obserwowac dyskusje w znalezisku
+      tags: [Znaleziska]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Przestal obserwowac
+
+  /links/{linkId}/ama/start:
+    post:
+      summary: AMA - start
+      tags: [Znaleziska]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Sukces
+        '400':
+          description: Brak uprawnien
+
+  /links/{linkId}/ama/finish:
+    post:
+      summary: AMA - finish
+      tags: [Znaleziska]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Sukces
+        '400':
+          description: Brak uprawnien
+
+  /links/{linkId}/ama/mute:
+    post:
+      summary: AMA - mute
+      tags: [Znaleziska]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Sukces
+        '400':
+          description: Brak uprawnien
+
+  /links/{linkId}/ama/unmute:
+    post:
+      summary: AMA - unmute
+      tags: [Znaleziska]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Sukces
+        '400':
+          description: Brak uprawnien
+
+  # ========== KOMENTARZE ZNALEZISK ==========
+
+  /links/{linkId}/comments:
+    get:
+      summary: Lista komentarzy znaleziska
+      tags: [Komentarze znalezisk]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [best, newest, oldest]
+        - name: ama
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LinkComment'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+    post:
+      summary: Dodanie komentarza do znaleziska
+      tags: [Komentarze znalezisk]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/CreateUpdateComment'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/LinkComment'
+        '409':
+          description: Blad walidacji
+
+  /links/{linkId}/comments/{commentId}:
+    get:
+      summary: Pobranie komentarza znaleziska
+      tags: [Komentarze znalezisk]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/LinkComment'
+        '404':
+          description: Nie znaleziono
+    put:
+      summary: Edycja komentarza znaleziska
+      tags: [Komentarze znalezisk]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/CreateUpdateComment'
+      responses:
+        '200':
+          description: Zaktualizowano
+        '400':
+          description: Brak uprawnien
+    delete:
+      summary: Usuwanie komentarza znaleziska
+      tags: [Komentarze znalezisk]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Usunieto
+        '400':
+          description: Brak uprawnien
+
+  /links/{linkId}/comments/{commentId}/comments:
+    get:
+      summary: Podkomentarze
+      tags: [Komentarze znalezisk]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LinkComment'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /links/{linkId}/comments/{commentId}/votes:
+    delete:
+      summary: Cofniecie glosu na komentarz
+      tags: [Komentarze znalezisk]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Cofnieto
+
+  /links/{linkId}/comments/{commentId}/votes/{type}:
+    post:
+      summary: Glos na komentarz (up/down)
+      tags: [Komentarze znalezisk]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: type
+          in: path
+          required: true
+          description: up lub down
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Glos oddany
+        '400':
+          description: Juz glosowal
+
+  /links/{linkId}/comments/{commentId}/observed-discussions:
+    post:
+      summary: Obserwuj dyskusje w komentarzu
+      tags: [Komentarze znalezisk]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Obserwujesz
+    delete:
+      summary: Przestan obserwowac dyskusje w komentarzu
+      tags: [Komentarze znalezisk]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Przestal obserwowac
+
+  # ========== LINKI POWIAZANE ==========
+
+  /links/{linkId}/related:
+    get:
+      summary: Lista linkow powiazanych
+      tags: [Linki powiazane]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LinkRelated'
+    post:
+      summary: Dodanie linku powiazanego
+      tags: [Linki powiazane]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Dodano
+        '409':
+          description: Blad walidacji
+
+  /links/{linkId}/related/{relatedId}:
+    get:
+      summary: Szczegoly linku powiazanego
+      tags: [Linki powiazane]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: relatedId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/LinkRelated'
+    put:
+      summary: Edycja linku powiazanego
+      tags: [Linki powiazane]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: relatedId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Zaktualizowano
+    delete:
+      summary: Usuwanie linku powiazanego
+      tags: [Linki powiazane]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: relatedId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Usunieto
+
+  /links/{linkId}/related/{relatedId}/votes:
+    delete:
+      summary: Cofniecie glosu na link powiazany
+      tags: [Linki powiazane]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: relatedId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Cofnieto
+
+  /links/{linkId}/related/{relatedId}/votes/{type}:
+    post:
+      summary: Glos na link powiazany (up/down)
+      tags: [Linki powiazane]
+      parameters:
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: relatedId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Glos oddany
+
+  # ========== DRAFT ZNALEZISK ==========
+
+  /links/draft:
+    get:
+      summary: Lista draftow
+      tags: [Draft znalezisk]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+    post:
+      summary: Utworzenie draftu
+      tags: [Draft znalezisk]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Utworzono
+
+  /links/draft/{key}:
+    get:
+      summary: Pobranie draftu
+      tags: [Draft znalezisk]
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Draft
+    put:
+      summary: Edycja draftu
+      tags: [Draft znalezisk]
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Zaktualizowano
+    delete:
+      summary: Usuwanie draftu
+      tags: [Draft znalezisk]
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Usunieto
+
+  # ========== MIKROBLOG ==========
+
+  /entries:
+    get:
+      summary: Lista wpisow
+      tags: [Mikroblog]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/EntriesSort'
+        - $ref: '#/components/parameters/EntriesFilter'
+        - $ref: '#/components/parameters/Category'
+        - $ref: '#/components/parameters/Bucket'
+        - $ref: '#/components/parameters/Multimedia'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Entry'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+    post:
+      summary: Dodanie wpisu
+      tags: [Mikroblog]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/CreateUpdateEntry'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Entry'
+        '400':
+          description: Niepoprawny request lub limit
+        '409':
+          description: Blad walidacji
+
+  /entries/{entryId}:
+    get:
+      summary: Szczegoly wpisu
+      tags: [Mikroblog]
+      parameters:
+        - $ref: '#/components/parameters/EntryId'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Entry'
+        '404':
+          description: Wpis nie istnieje
+    put:
+      summary: Edycja wpisu (15 min od dodania)
+      tags: [Mikroblog]
+      parameters:
+        - $ref: '#/components/parameters/EntryId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/CreateUpdateEntry'
+      responses:
+        '200':
+          description: Zaktualizowano
+        '400':
+          description: Brak uprawnien
+        '404':
+          description: Nie znaleziono
+    delete:
+      summary: Usuwanie wpisu
+      tags: [Mikroblog]
+      parameters:
+        - $ref: '#/components/parameters/EntryId'
+      responses:
+        '204':
+          description: Usunieto
+        '400':
+          description: Brak uprawnien
+
+  /entries/{entryId}/votes:
+    get:
+      summary: Glosujacy na wpis
+      tags: [Mikroblog]
+      parameters:
+        - $ref: '#/components/parameters/EntryId'
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserShort'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+    post:
+      summary: Glos na wpis
+      tags: [Mikroblog]
+      parameters:
+        - $ref: '#/components/parameters/EntryId'
+      responses:
+        '201':
+          description: Glos oddany
+        '400':
+          description: Juz glosowal
+    delete:
+      summary: Cofniecie glosu
+      tags: [Mikroblog]
+      parameters:
+        - $ref: '#/components/parameters/EntryId'
+      responses:
+        '204':
+          description: Cofnieto
+
+  /entries/{entryId}/newer:
+    get:
+      summary: Liczba nowszych wpisow
+      tags: [Mikroblog]
+      parameters:
+        - $ref: '#/components/parameters/EntryId'
+        - $ref: '#/components/parameters/Category'
+        - $ref: '#/components/parameters/Multimedia'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+
+  /entries/{entryId}/observed-discussions:
+    post:
+      summary: Obserwuj dyskusje we wpisie
+      tags: [Mikroblog]
+      parameters:
+        - $ref: '#/components/parameters/EntryId'
+      responses:
+        '204':
+          description: Obserwujesz
+    delete:
+      summary: Przestan obserwowac
+      tags: [Mikroblog]
+      parameters:
+        - $ref: '#/components/parameters/EntryId'
+      responses:
+        '204':
+          description: Przestal obserwowac
+
+  /entries/{entryId}/comments:
+    get:
+      summary: Komentarze do wpisu
+      tags: [Mikroblog - Komentarz]
+      parameters:
+        - $ref: '#/components/parameters/EntryId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EntryComment'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+    post:
+      summary: Dodanie komentarza do wpisu
+      tags: [Mikroblog - Komentarz]
+      parameters:
+        - $ref: '#/components/parameters/EntryId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/CreateUpdateComment'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/EntryComment'
+        '409':
+          description: Blad walidacji
+
+  /entries/{entryId}/comments/newer:
+    get:
+      summary: Liczba nowszych komentarzy
+      tags: [Mikroblog - Komentarz]
+      parameters:
+        - $ref: '#/components/parameters/EntryId'
+        - name: date
+          in: query
+          description: "yyyy-MM-dd HH:mm:ss"
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+
+  /entries/{entryId}/comments/{commentId}:
+    get:
+      summary: Pobranie komentarza
+      tags: [Mikroblog - Komentarz]
+      parameters:
+        - $ref: '#/components/parameters/EntryId'
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/EntryComment'
+    put:
+      summary: Edycja komentarza (15 min)
+      tags: [Mikroblog - Komentarz]
+      parameters:
+        - $ref: '#/components/parameters/EntryId'
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/CreateUpdateComment'
+      responses:
+        '200':
+          description: Zaktualizowano
+        '400':
+          description: Brak uprawnien
+    delete:
+      summary: Usuwanie komentarza
+      tags: [Mikroblog - Komentarz]
+      parameters:
+        - $ref: '#/components/parameters/EntryId'
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Usunieto
+
+  /entries/{entryId}/comments/{commentId}/votes:
+    get:
+      summary: Glosujacy na komentarz
+      tags: [Mikroblog - Komentarz]
+      parameters:
+        - $ref: '#/components/parameters/EntryId'
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserShort'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+    post:
+      summary: Glos na komentarz
+      tags: [Mikroblog - Komentarz]
+      parameters:
+        - $ref: '#/components/parameters/EntryId'
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: Glos oddany
+    delete:
+      summary: Cofniecie glosu na komentarz
+      tags: [Mikroblog - Komentarz]
+      parameters:
+        - $ref: '#/components/parameters/EntryId'
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Cofnieto
+
+  /entries/survey:
+    post:
+      summary: Dodanie ankiety
+      tags: [Mikroblog - Ankieta]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/CreateUpdateSurvey'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      survey_id:
+                        type: string
+
+  /entries/{id}/survey/votes:
+    post:
+      summary: Glosowanie na ankiete
+      tags: [Mikroblog - Ankieta]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    vote:
+                      type: integer
+                      minimum: 1
+                      maximum: 10
+      responses:
+        '201':
+          description: Glos oddany
+        '400':
+          description: Juz glosowal
+
+  # ========== ARTYKULY ==========
+
+  /articles:
+    post:
+      summary: Dodanie artykulu
+      tags: [Artykuly]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/CreateUpdateArticle'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      key:
+                        type: string
+
+  /articles/{id}:
+    get:
+      summary: Pobranie artykulu
+      tags: [Artykuly]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Article'
+        '404':
+          description: Nie znaleziono
+    put:
+      summary: Edycja artykulu
+      tags: [Artykuly]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/CreateUpdateArticle'
+      responses:
+        '200':
+          description: Zaktualizowano
+    delete:
+      summary: Usuwanie artykulu
+      tags: [Artykuly]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '204':
+          description: Usunieto
+
+  /articles/{articleId}/histories/{articleContentId}:
+    get:
+      summary: Wersja historyczna artykulu
+      tags: [Artykuly]
+      parameters:
+        - name: articleId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: articleContentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Article'
+
+  # ========== PRYWATNE WIADOMOSCI ==========
+
+  /pm/open:
+    get:
+      summary: Ostatnia otwarta konwersacja
+      tags: [PM]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: string
+
+  /pm/read-all:
+    put:
+      summary: Oznacz wszystkie wiadomosci jako odczytane
+      tags: [PM]
+      responses:
+        '204':
+          description: Oznaczono
+
+  /pm/conversations:
+    get:
+      summary: Lista konwersacji
+      tags: [PM]
+      parameters:
+        - name: query
+          in: query
+          description: Nazwa uzytkownika (min 3 znaki)
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PmConversation'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /pm/conversations/{username}:
+    get:
+      summary: Wiadomosci z uzytkownikiem
+      tags: [PM]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+        - name: prev_message
+          in: query
+          schema:
+            type: string
+        - name: next_message
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/UserShort'
+                      messages:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PmMessage'
+                      actions:
+                        type: object
+                        properties:
+                          create:
+                            type: boolean
+    post:
+      summary: Wyslanie wiadomosci
+      tags: [PM]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/PmCreateMessage'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/PmMessage'
+        '400':
+          description: Brak uprawnien
+    delete:
+      summary: Usuwanie konwersacji
+      tags: [PM]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+      responses:
+        '204':
+          description: Usunieto
+
+  /pm/conversations/{username}/newer:
+    get:
+      summary: Czy sa nowsze wiadomosci
+      tags: [PM]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: boolean
+
+  # ========== MEDIA ==========
+
+  /media/photos/upload:
+    post:
+      summary: Upload zdjecia
+      description: "Max 10MB. Mime: jpeg, jpg, pjpeg, gif, png, x-png."
+      tags: [Media]
+      parameters:
+        - name: type
+          in: query
+          description: settings, comments, links, content
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Photo'
+        '400':
+          description: Brak pliku
+        '413':
+          description: Za duzy plik
+        '415':
+          description: Nieobslugiwany mime type
+
+  /media/photos:
+    post:
+      summary: Upload zdjecia z URL
+      tags: [Media]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    url:
+                      type: string
+                    type:
+                      type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Photo'
+
+  /media/photos/{key}:
+    delete:
+      summary: Usuwanie zdjecia
+      tags: [Media]
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Usunieto
+
+  /media/embed:
+    post:
+      summary: Pobranie informacji o embed
+      tags: [Media]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    url:
+                      type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Embed'
+
+  # ========== ULUBIONE ==========
+
+  /favourites:
+    get:
+      summary: Lista ulubionych
+      tags: [Ulubione]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      anyOf:
+                        - $ref: '#/components/schemas/Link'
+                        - $ref: '#/components/schemas/Entry'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  # ========== NOTATKI ==========
+
+  /notes:
+    get:
+      summary: Lista notatek
+      tags: [Notatki]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /notes/{username}:
+    get:
+      summary: Notatka o uzytkowniku
+      tags: [Notatki]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+    put:
+      summary: Edycja notatki
+      tags: [Notatki]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '204':
+          description: Zapisano
+    delete:
+      summary: Usuwanie notatki
+      tags: [Notatki]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+      responses:
+        '204':
+          description: Usunieto
+
+  # ========== HITY ==========
+
+  /hits/links:
+    get:
+      summary: Hity - znaleziska
+      tags: [Hity]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - name: year
+          in: query
+          schema:
+            type: integer
+        - name: month
+          in: query
+          schema:
+            type: integer
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [day, week, month, year, all]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Link'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /hits/entires:
+    get:
+      summary: Hity - wpisy
+      tags: [Hity]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - name: year
+          in: query
+          schema:
+            type: integer
+        - name: month
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Entry'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /search/all:
+    get:
+      summary: Wyszukiwanie - all
+      tags: [Wyszukiwanie]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /search/stream:
+    get:
+      summary: Wyszukiwanie - stream
+      tags: [Wyszukiwanie]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /search/links:
+    get:
+      summary: Wyszukiwanie - links
+      tags: [Wyszukiwanie]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /search/entries:
+    get:
+      summary: Wyszukiwanie - entries
+      tags: [Wyszukiwanie]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /search/users:
+    get:
+      summary: Wyszukiwanie - users
+      tags: [Wyszukiwanie]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /saved-search:
+    get:
+      summary: Lista zapisanych wyszukiwan
+      tags: [Zapisane wyszukiwania]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+    post:
+      summary: Dodanie zapisanego wyszukiwania
+      tags: [Zapisane wyszukiwania]
+      responses:
+        '201':
+          description: Dodano
+
+  /saved-search/{id}:
+    get:
+      summary: Pobranie zapisanego wyszukiwania
+      tags: [Zapisane wyszukiwania]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Dane wyszukiwania
+    put:
+      summary: Edycja zapisanego wyszukiwania
+      tags: [Zapisane wyszukiwania]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Zaktualizowano
+    delete:
+      summary: Usuwanie zapisanego wyszukiwania
+      tags: [Zapisane wyszukiwania]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '204':
+          description: Usunieto
+
+  /categories:
+    get:
+      summary: Lista kategorii
+      tags: [Kategorie]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # ========== OBSERWOWANE ==========
+
+  /observed/users:
+    get:
+      summary: Stream obserwowanych uzytkownikow
+      tags: [Obserwowane]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      anyOf:
+                        - $ref: '#/components/schemas/Link'
+                        - $ref: '#/components/schemas/Entry'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /observed/users/newer:
+    get:
+      summary: Czy sa nowsze tresci od obserwowanych
+      tags: [Obserwowane]
+      parameters:
+        - name: id
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+
+  /observed/users/{username}:
+    post:
+      summary: Obserwuj uzytkownika
+      tags: [Obserwowane]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+      responses:
+        '204':
+          description: Obserwujesz
+    delete:
+      summary: Przestan obserwowac uzytkownika
+      tags: [Obserwowane]
+      parameters:
+        - $ref: '#/components/parameters/Username'
+      responses:
+        '204':
+          description: Przestal
+
+  /observed/tags/{tagName}:
+    post:
+      summary: Obserwuj tag
+      tags: [Obserwowane]
+      parameters:
+        - $ref: '#/components/parameters/TagName'
+      responses:
+        '204':
+          description: Obserwujesz
+    delete:
+      summary: Przestan obserwowac tag
+      tags: [Obserwowane]
+      parameters:
+        - $ref: '#/components/parameters/TagName'
+      responses:
+        '204':
+          description: Przestal
+
+  /observed/tags/stream:
+    get:
+      summary: Stream obserwowanych tagow
+      tags: [Obserwowane]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      anyOf:
+                        - $ref: '#/components/schemas/Link'
+                        - $ref: '#/components/schemas/Entry'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /observed/discussions:
+    get:
+      summary: Obserwowane dyskusje
+      tags: [Obserwowane]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /observed/all:
+    get:
+      summary: Wszystko obserwowane
+      tags: [Obserwowane]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /observed/tags/{tagName}/notifications:
+    put:
+      summary: Wlacz/wylacz powiadomienia z tagu
+      tags: [Obserwowane]
+      parameters:
+        - $ref: '#/components/parameters/TagName'
+      responses:
+        '204':
+          description: Zmieniono
+
+  /observed/tags/{tagName}/pinned:
+    put:
+      summary: Przypnij/odepnij obserwowany tag
+      tags: [Obserwowane]
+      parameters:
+        - $ref: '#/components/parameters/TagName'
+      responses:
+        '204':
+          description: Zmieniono
+
+  # ========== ODZNAKI ==========
+
+  /badges:
+    get:
+      summary: Lista odznak
+      tags: [Odznaki]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Badge'
+
+  /badges/{slug}:
+    get:
+      summary: Szczegoly odznaki
+      tags: [Odznaki]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Badge'
+
+  /badges/{slug}/users:
+    get:
+      summary: Uzytkownicy z odznaka
+      tags: [Odznaki]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserShort'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  # ========== RANKING ==========
+
+  /rank:
+    get:
+      summary: Ranking uzytkownikow
+      tags: [Ranking]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserShort'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+# ================================================================
+# COMPONENTS
+# ================================================================
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  # ========== PARAMETERS ==========
+
+  parameters:
+    Page:
+      name: page
+      in: query
+      description: Numer strony
+      schema:
+        type: integer
+        default: 1
+    Limit:
+      name: limit
+      in: query
+      description: Limit obiektow na stronie (1-50)
+      schema:
+        type: integer
+        default: 25
+        minimum: 1
+        maximum: 50
+    TagName:
+      name: tagName
+      in: path
+      required: true
+      description: Nazwa tagu
+      schema:
+        type: string
+    Username:
+      name: username
+      in: path
+      required: true
+      description: Nazwa uzytkownika
+      schema:
+        type: string
+    EntryId:
+      name: entryId
+      in: path
+      required: true
+      description: Identyfikator wpisu
+      schema:
+        type: integer
+    Id:
+      name: id
+      in: path
+      required: true
+      description: Identyfikator
+      schema:
+        type: integer
+    TagsSort:
+      name: sort
+      in: query
+      description: Sortowanie tagow
+      schema:
+        type: string
+        default: best
+        enum: [all, best]
+    TagsType:
+      name: type
+      in: query
+      description: Typ tresci w tagu
+      schema:
+        type: string
+        default: all
+        enum: [all, author, link, entry]
+    DateYear:
+      name: year
+      in: query
+      schema:
+        type: integer
+    DateMonth:
+      name: month
+      in: query
+      schema:
+        type: integer
+    Multimedia:
+      name: multimedia
+      in: query
+      description: Tylko obiekty ze zdjeciami/embed
+      schema:
+        type: boolean
+        default: false
+    Sort:
+      name: sort
+      in: query
+      description: Sortowanie znalezisk
+      schema:
+        type: string
+        enum: [newest, active, commented, digged]
+    Type:
+      name: type
+      in: query
+      description: Typ tresci (homepage/upcoming)
+      schema:
+        type: string
+        enum: [homepage, upcoming]
+    Category:
+      name: category
+      in: query
+      schema:
+        type: string
+    Bucket:
+      name: bucket
+      in: query
+      description: Hash kategorii uzytkownika
+      schema:
+        type: string
+    EntriesSort:
+      name: sort
+      in: query
+      description: Sortowanie wpisow
+      schema:
+        type: string
+        default: hot
+        enum: [newest, active, hot]
+    EntriesFilter:
+      name: last_update
+      in: query
+      description: Wyniki z ostatnich X godzin (tylko z sort=hot)
+      schema:
+        type: integer
+        default: 12
+        enum: [1, 2, 3, 6, 12, 24]
+    ShowGrouped:
+      name: show_grouped
+      in: query
+      description: Zgrupuj powiadomienia
+      schema:
+        type: boolean
+        default: false
+
+  # ========== SCHEMAS ==========
+
+  schemas:
+
+    BasicError:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: Kod HTTP
+        hash:
+          type: string
+          description: Wewnetrzny identyfikator bledu
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            key:
+              type: integer
+          required: [message]
+      required: [code, error]
+
+    Color:
+      type: object
+      properties:
+        name:
+          type: string
+          example: burgundy
+        hex:
+          type: string
+          example: dddddd
+        hex_dark:
+          type: string
+          example: cccccc
+
+    Pagination:
+      type: object
+      properties:
+        per_page:
+          type: integer
+        total:
+          type: integer
+      required: [per_page, total]
+
+    UserPagination:
+      type: object
+      properties:
+        next:
+          type: string
+          description: Hash kolejnej strony
+        prev:
+          type: string
+          description: Hash poprzedniej strony
+
+    Photo:
+      type: object
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        mime_type:
+          type: string
+        url:
+          type: string
+        size:
+          type: integer
+        width:
+          type: integer
+        height:
+          type: integer
+      required: [key, label, mime_type, url, size, width, height]
+
+    Embed:
+      type: object
+      properties:
+        key:
+          type: string
+        type:
+          type: string
+          description: youtube, twitter, instagram, gfycat, streamable
+        url:
+          type: string
+        thumbnail:
+          type: string
+        video_metadata:
+          type: object
+          properties:
+            title:
+              type: string
+            description:
+              type: string
+            video_id:
+              type: string
+            published_at:
+              type: string
+            duration_in_seconds:
+              type: integer
+        age_category:
+          type: string
+          enum: [all, age_12, age_16, age_18]
+        commercial:
+          type: boolean
+      required: [key, type, url, thumbnail]
+
+    Survey:
+      type: object
+      properties:
+        key:
+          type: string
+        question:
+          type: string
+        voted:
+          type: integer
+          description: 1=glosowal, 0=nie
+        count:
+          type: integer
+        answers:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              answer:
+                type: string
+              count:
+                type: integer
+              percentage:
+                type: number
+
+    ShortTag:
+      type: object
+      properties:
+        name:
+          type: string
+        pinned:
+          type: boolean
+
+    Tag:
+      type: object
+      properties:
+        name:
+          type: string
+        author:
+          $ref: '#/components/schemas/UserShort'
+        personal:
+          type: boolean
+          description: Czy tag autorski
+        media:
+          type: object
+          properties:
+            photo:
+              $ref: '#/components/schemas/Photo'
+        description:
+          type: string
+        followers:
+          type: integer
+        follow:
+          type: boolean
+        notifications:
+          type: boolean
+        blacklist:
+          type: boolean
+        promoted:
+          type: boolean
+        editable:
+          type: boolean
+        created_at:
+          type: string
+
+    UserShort:
+      type: object
+      properties:
+        username:
+          type: string
+        company:
+          type: boolean
+        gender:
+          type: string
+          description: m lub f
+        avatar:
+          type: string
+        note:
+          type: boolean
+        online:
+          type: boolean
+        status:
+          type: string
+          description: active, banned, removed, inactive, suspended
+        color:
+          $ref: '#/components/schemas/Color'
+        verified:
+          type: boolean
+        follow:
+          type: boolean
+        rank:
+          type: object
+          properties:
+            position:
+              type: integer
+              nullable: true
+            trend:
+              type: integer
+              description: 1=awansowal, 0=bez zmian, -1=spadl
+
+    UserFull:
+      allOf:
+        - $ref: '#/components/schemas/UserShort'
+        - type: object
+          properties:
+            name:
+              type: string
+            city:
+              type: string
+            website:
+              type: string
+            about:
+              type: string
+            public_email:
+              type: string
+            background:
+              type: string
+            followers:
+              type: integer
+            member_since:
+              type: string
+            summary:
+              type: object
+              properties:
+                actions:
+                  type: integer
+                links:
+                  type: integer
+                links_details:
+                  type: object
+                  properties:
+                    added:
+                      type: integer
+                    commented:
+                      type: integer
+                    published:
+                      type: integer
+                    related:
+                      type: integer
+                    up:
+                      type: integer
+                    down:
+                      type: integer
+                entries:
+                  type: integer
+                entries_details:
+                  type: object
+                  properties:
+                    added:
+                      type: integer
+                    commented:
+                      type: integer
+                    voted:
+                      type: integer
+                following_users:
+                  type: integer
+                following_tags:
+                  type: integer
+                followers:
+                  type: integer
+            social_media:
+              type: object
+              properties:
+                facebook:
+                  type: string
+                instagram:
+                  type: string
+                twitter:
+                  type: string
+            banned:
+              type: object
+              properties:
+                reason:
+                  type: string
+                expired:
+                  type: string
+                  nullable: true
+
+    UserFullPrivate:
+      allOf:
+        - $ref: '#/components/schemas/UserFull'
+        - type: object
+          properties:
+            can_change_gender:
+              type: boolean
+            onboarding_step:
+              type: string
+              nullable: true
+              description: profile, tags, lub null
+            over18:
+              type: boolean
+            user_year_summaries:
+              type: array
+              items:
+                type: object
+                properties:
+                  year:
+                    type: integer
+                  token:
+                    type: string
+
+    Entry:
+      type: object
+      properties:
+        id:
+          type: integer
+        author:
+          $ref: '#/components/schemas/UserShort'
+        device:
+          type: string
+        created_at:
+          type: string
+        voted:
+          type: integer
+          description: 1=glosowal, 0=nie
+        content:
+          type: string
+        media:
+          type: object
+          properties:
+            photo:
+              $ref: '#/components/schemas/Photo'
+            embed:
+              $ref: '#/components/schemas/Embed'
+            survey:
+              $ref: '#/components/schemas/Survey'
+        adult:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+        favourite:
+          type: boolean
+        deletable:
+          type: boolean
+        editable:
+          type: boolean
+        slug:
+          type: string
+        votes:
+          type: object
+          properties:
+            up:
+              type: integer
+            down:
+              type: integer
+            users:
+              type: array
+              items:
+                $ref: '#/components/schemas/UserShort'
+        comments:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/EntryComment'
+            count:
+              type: integer
+        resource:
+          type: string
+          example: entry
+        archive:
+          type: boolean
+        deleted:
+          type: boolean
+        observed_discussion:
+          type: boolean
+        pinnable:
+          type: boolean
+
+    EntryComment:
+      type: object
+      properties:
+        id:
+          type: integer
+        author:
+          $ref: '#/components/schemas/UserShort'
+        device:
+          type: string
+        created_at:
+          type: string
+        voted:
+          type: integer
+        content:
+          type: string
+        media:
+          type: object
+          properties:
+            photo:
+              $ref: '#/components/schemas/Photo'
+            embed:
+              $ref: '#/components/schemas/Embed'
+        adult:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+        favourite:
+          type: boolean
+        votes:
+          type: object
+          properties:
+            up:
+              type: integer
+            down:
+              type: integer
+        deletable:
+          type: boolean
+        editable:
+          type: boolean
+        resource:
+          type: string
+          example: entry_comment
+        archive:
+          type: boolean
+        slug:
+          type: string
+        parent:
+          type: object
+          nullable: true
+          properties:
+            resource:
+              type: string
+            id:
+              type: integer
+            slug:
+              type: string
+            author:
+              $ref: '#/components/schemas/UserShort'
+
+    Link:
+      type: object
+      properties:
+        id:
+          type: integer
+        created_at:
+          type: string
+        title:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        source:
+          type: object
+          properties:
+            label:
+              type: string
+            url:
+              type: string
+            type:
+              type: string
+              description: anchor lub article
+            type_id:
+              type: integer
+        author:
+          $ref: '#/components/schemas/UserShort'
+        published_at:
+          type: string
+        votes:
+          type: object
+          properties:
+            up:
+              type: integer
+            down:
+              type: integer
+            count:
+              type: integer
+        voted:
+          type: integer
+          description: 1=glosowal, 0=nie
+        comments:
+          type: object
+          properties:
+            hot:
+              type: boolean
+            count:
+              type: integer
+        tags:
+          type: array
+          items:
+            type: string
+        hot:
+          type: boolean
+        adult:
+          type: boolean
+        media:
+          type: object
+          properties:
+            photo:
+              $ref: '#/components/schemas/Photo'
+            embed:
+              $ref: '#/components/schemas/Embed'
+        deletable:
+          type: boolean
+        editable:
+          type: boolean
+        resource:
+          type: string
+          example: link
+        archive:
+          type: boolean
+        deleted:
+          type: boolean
+        observed_discussion:
+          type: boolean
+        pinnable:
+          type: boolean
+
+    LinkComment:
+      type: object
+      properties:
+        id:
+          type: integer
+        author:
+          $ref: '#/components/schemas/UserShort'
+        device:
+          type: string
+        created_at:
+          type: string
+        voted:
+          type: integer
+        content:
+          type: string
+        media:
+          type: object
+          properties:
+            photo:
+              $ref: '#/components/schemas/Photo'
+            embed:
+              $ref: '#/components/schemas/Embed'
+        adult:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+        favourite:
+          type: boolean
+        votes:
+          type: object
+          properties:
+            up:
+              type: integer
+            down:
+              type: integer
+        deletable:
+          type: boolean
+        editable:
+          type: boolean
+        parent_id:
+          type: integer
+          nullable: true
+        observed_discussion:
+          type: boolean
+        resource:
+          type: string
+          example: link_comment
+        archive:
+          type: boolean
+        slug:
+          type: string
+
+    LinkRelated:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        created_at:
+          type: string
+        author:
+          $ref: '#/components/schemas/UserShort'
+        media:
+          type: object
+          properties:
+            photo:
+              $ref: '#/components/schemas/Photo'
+            embed:
+              $ref: '#/components/schemas/Embed'
+        source:
+          type: object
+          properties:
+            label:
+              type: string
+            url:
+              type: string
+        votes:
+          type: object
+          properties:
+            up:
+              type: integer
+            down:
+              type: integer
+            count:
+              type: integer
+        voted:
+          type: integer
+        adult:
+          type: boolean
+        editable:
+          type: boolean
+        archive:
+          type: boolean
+        deleted:
+          type: boolean
+
+    LinkWithComments:
+      allOf:
+        - $ref: '#/components/schemas/Link'
+        - type: object
+          properties:
+            comments:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/LinkComment'
+
+    LinkWithRelated:
+      allOf:
+        - $ref: '#/components/schemas/Link'
+        - type: object
+          properties:
+            related:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/LinkRelated'
+
+    Article:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        slug:
+          type: string
+        content:
+          type: string
+        content_html:
+          type: string
+        author:
+          $ref: '#/components/schemas/UserShort'
+        deletable:
+          type: boolean
+        editable:
+          type: boolean
+        published:
+          type: boolean
+        created_at:
+          type: string
+        updated_at:
+          type: string
+        link:
+          $ref: '#/components/schemas/Link'
+          nullable: true
+        histories:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              created_at:
+                type: string
+
+    Badge:
+      type: object
+      properties:
+        label:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          description: check lub progress
+        media:
+          type: object
+          properties:
+            icon:
+              $ref: '#/components/schemas/Photo'
+        color:
+          type: object
+          properties:
+            hex:
+              type: string
+            hex_dark:
+              type: string
+        level:
+          type: integer
+        progress:
+          type: integer
+          description: Procent postepy
+        achieved_at:
+          type: string
+          nullable: true
+
+    CreateUpdateEntry:
+      type: object
+      properties:
+        content:
+          type: string
+          minLength: 5
+          maxLength: 20000
+        photo:
+          type: string
+          description: Key pliku z media/photo (typ comments)
+        embed:
+          type: string
+          description: Key embed
+        survey:
+          type: string
+          description: ID ankiety
+        adult:
+          type: boolean
+
+    CreateUpdateComment:
+      type: object
+      properties:
+        content:
+          type: string
+          description: Min 5 znakow (chyba ze inne multimedia)
+        photo:
+          type: string
+          description: Key pliku z media/photo (typ comments)
+        embed:
+          type: string
+          description: Key embed
+        adult:
+          type: boolean
+
+    CreateUpdateSurvey:
+      type: object
+      properties:
+        question:
+          type: string
+          minLength: 5
+          maxLength: 100
+        answers:
+          type: array
+          items:
+            type: string
+          minItems: 2
+          maxItems: 10
+      required: [question, answers]
+
+    CreateUpdateArticle:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 10
+          maxLength: 80
+        content:
+          type: string
+          maxLength: 20000
+      required: [content]
+
+    NotificationEntry:
+      type: object
+      properties:
+        type:
+          type: string
+          description: >
+            new_link, new_comment_in_link, new_entry, new_comment_in_entry,
+            new_follower, link_in_upcoming, link_on_homepage,
+            link_was_buried, moderation_action, new_badge, system, new_issue_response
+        id:
+          type: string
+        read:
+          type: integer
+        group_id:
+          type: string
+        group_count:
+          type: integer
+        show_as_group:
+          type: boolean
+        created_at:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserShort'
+        comment:
+          type: object
+          properties:
+            id:
+              type: integer
+        link:
+          $ref: '#/components/schemas/Link'
+        entry:
+          $ref: '#/components/schemas/Entry'
+        message:
+          type: string
+          description: Wiadomosc systemowa
+        url:
+          type: string
+        badge:
+          type: object
+          properties:
+            name:
+              type: string
+            slug:
+              type: string
+
+    NotificationPm:
+      type: object
+      properties:
+        type:
+          type: string
+          example: pm
+        id:
+          type: string
+        read:
+          type: integer
+        group_id:
+          type: string
+        group_count:
+          type: integer
+        show_as_group:
+          type: boolean
+        created_at:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserShort'
+        content:
+          type: string
+
+    NotificationTag:
+      type: object
+      properties:
+        type:
+          type: string
+          description: new_link_with_observed_tag, new_entry_with_observed_tag
+        id:
+          type: string
+        read:
+          type: integer
+        group_id:
+          type: string
+        group_count:
+          type: integer
+        show_as_group:
+          type: boolean
+        group_updated_at:
+          type: string
+        created_at:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserShort'
+        link:
+          $ref: '#/components/schemas/Link'
+        entry:
+          $ref: '#/components/schemas/Entry'
+        tag:
+          type: object
+          properties:
+            name:
+              type: string
+
+    NotificationObservedDiscussion:
+      type: object
+      properties:
+        type:
+          type: string
+          description: >
+            entry_observed_discussion_new_content,
+            link_observed_discussion_new_content,
+            link_comment_observed_discussion_new_content
+        id:
+          type: string
+        read:
+          type: integer
+        group_id:
+          type: string
+        group_count:
+          type: integer
+        show_as_group:
+          type: boolean
+        group_updated_at:
+          type: string
+        created_at:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserShort'
+        link:
+          $ref: '#/components/schemas/Link'
+        entry:
+          $ref: '#/components/schemas/Entry'
+        comment:
+          type: object
+        sub_comment:
+          type: object
+
+    PmConversation:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserShort'
+        last_message:
+          $ref: '#/components/schemas/PmMessage'
+        unread:
+          type: boolean
+
+    PmMessage:
+      type: object
+      properties:
+        created_at:
+          type: string
+        content:
+          type: string
+        type:
+          type: integer
+          description: 0=zalogowany, 1=rozmowca
+        adult:
+          type: boolean
+        media:
+          type: object
+          properties:
+            photo:
+              $ref: '#/components/schemas/Photo'
+            embed:
+              $ref: '#/components/schemas/Embed'
+        read:
+          type: boolean
+        key:
+          type: string
+
+    PmCreateMessage:
+      type: object
+      properties:
+        content:
+          type: string
+          maxLength: 10000
+        photo:
+          type: string
+        embed:
+          type: string
+
+    UserYearSummary:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserFull'
+        followers_qty:
+          type: integer
+        followers_new_qty:
+          type: integer
+        entries_and_comments_given_qty:
+          type: integer
+        day_of_user_the_highest_activity:
+          type: string
+        top_tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+        top_users:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserShort'
+        top_entry:
+          $ref: '#/components/schemas/Entry'
+        avg_entry_votes_received:
+          type: number
+        badges:
+          type: array
+          items:
+            $ref: '#/components/schemas/Badge'
+        votes_received_qty:
+          type: integer
+        votes_given_qty:
+          type: integer
+        more_active_than_percent_of_users:
+          type: number
+
+    AdRss:
+      type: object
+      properties:
+        resource:
+          type: string
+          example: recommended_link
+        title:
+          type: string
+        description:
+          type: string
+        target_url:
+          type: string
+        image_url:
+          type: string
+
+    LimitExceeded:
+      type: object
+      properties:
+        code:
+          type: integer
+        hash:
+          type: string
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+              example: limit_exceeded
+            key:
+              type: integer
+      required: [code, error]
