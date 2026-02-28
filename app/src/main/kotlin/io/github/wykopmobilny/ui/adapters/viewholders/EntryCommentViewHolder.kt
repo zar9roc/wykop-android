@@ -8,6 +8,7 @@ import androidx.core.view.isVisible
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import io.github.aakira.napier.Napier
+import kotlinx.datetime.toLocalDateTime
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.databinding.CommentListItemBinding
 import io.github.wykopmobilny.databinding.EntryCommentMenuBottomsheetBinding
@@ -225,12 +226,18 @@ class EntryCommentViewHolder(
         (bottomSheetView.root.parent as View).setBackgroundColor(Color.TRANSPARENT)
         bottomSheetView.apply {
             author.text = comment.author.nick
-            date.text = comment.fullDate
+            val dateAsString =
+                comment.fullDate
+                    .toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
+                    .run {
+                        org.threeten.bp.LocalDateTime.of(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond)
+                    }.format(org.threeten.bp.format.DateTimeFormatter.ofLocalizedDateTime(org.threeten.bp.format.FormatStyle.MEDIUM))
+            date.text = dateAsString
             comment.app?.let {
                 date.text =
                     root.context.getString(
                         R.string.date_with_user_app,
-                        comment.fullDate,
+                        dateAsString,
                         comment.app,
                     )
             }

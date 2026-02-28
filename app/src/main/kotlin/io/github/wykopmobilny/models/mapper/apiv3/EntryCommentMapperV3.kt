@@ -14,7 +14,7 @@ object EntryCommentMapperV3 {
             entryId = value.parentId ?: 0L,
             author = AuthorMapperV3.map(value.author),
             body = value.content.orEmpty(),
-            fullDate = value.createdAt.toString(),
+            fullDate = value.createdAt,
             isVoted = (value.voted ?: 0) > 0,
             embed = value.media?.let(MediaMapperV3::map),
             voteCount = value.votes.up - value.votes.down,

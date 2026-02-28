@@ -28,6 +28,7 @@ import io.github.wykopmobilny.utils.usermanager.isUserAuthorized
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
+import org.threeten.bp.format.FormatStyle
 
 typealias EntryListener = (Entry) -> Unit
 
@@ -264,12 +265,13 @@ class EntryViewHolder(
         bottomSheetView.apply {
             author.text = entry.author.nick
             val localDateTime = Instant.ofEpochMilli(entry.fullDate.toEpochMilliseconds()).atZone(ZoneId.systemDefault())
-            date.text = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd kk:mm:ss"))
+            val dateAsString = localDateTime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM))
+            date.text = dateAsString
             entry.app?.let {
                 date.text =
                     activityContext.getString(
                         R.string.date_with_user_app,
-                        entry.fullDate,
+                        dateAsString,
                         entry.app,
                     )
             }

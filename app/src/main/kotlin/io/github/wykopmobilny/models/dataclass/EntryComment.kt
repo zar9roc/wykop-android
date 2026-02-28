@@ -1,13 +1,14 @@
 package io.github.wykopmobilny.models.dataclass
 
 import io.github.wykopmobilny.utils.toPrettyDate
+import kotlinx.datetime.Instant
 
 class EntryComment(
     val id: Long,
     var entryId: Long,
     val author: Author,
     var body: String,
-    val fullDate: String,
+    val fullDate: Instant,
     var isVoted: Boolean,
     var embed: Embed?,
     var voteCount: Int,
