@@ -9,7 +9,7 @@ import io.github.wykopmobilny.models.dataclass.Link
 import io.github.wykopmobilny.ui.fragments.links.LinkActionListener
 import io.github.wykopmobilny.ui.modules.NewNavigator
 import io.github.wykopmobilny.utils.layoutInflater
-import io.github.wykopmobilny.utils.loadImage
+import io.github.wykopmobilny.utils.loadImageThumbnail
 import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 
 class LinkViewHolder(
@@ -149,7 +149,7 @@ class LinkViewHolder(
         }
 
         if (type == TYPE_IMAGE) {
-            link.fullImage?.let(previewImageView::loadImage)
+            link.fullImage?.let(previewImageView::loadImageThumbnail)
         }
         if (linkShowAuthor && link.author != null) {
             binding.authorHeaderView.setAuthorData(link.author, link.date, link.app)

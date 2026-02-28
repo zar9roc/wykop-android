@@ -58,6 +58,22 @@ fun RecyclerView.prepareNoDivider() {
     layoutManager = LinearLayoutManager(context)
 }
 
+/**
+ * Transformuje URL obrazka na format z miniaturą dla widoków głównych.
+ * Format: [adres bez rozszerzenia],w220h142[rozszerzenie]
+ *
+ * Przykład:
+ * "https://example.com/image.jpg" -> "https://example.com/image,w220h142.jpg"
+ */
+fun String.toThumbnailUrl(): String {
+    val lastDotIndex = lastIndexOf('.')
+    return if (lastDotIndex > 0) {
+        "${substring(0, lastDotIndex)},w220h142${substring(lastDotIndex)}"
+    } else {
+        this // Jeśli nie ma rozszerzenia, zwróć oryginalny URL
+    }
+}
+
 fun ImageView.loadImage(
     url: String,
     signature: Int? = null,
@@ -76,6 +92,17 @@ fun ImageView.loadImage(
                     .signature(ObjectKey(signature)),
             ).into(this)
     }
+}
+
+/**
+ * Ładuje obrazek w formie miniatury (w220h142) dla widoków głównych
+ * (Strona Główna, Wykopalisko, Hity).
+ */
+fun ImageView.loadImageThumbnail(
+    url: String,
+    signature: Int? = null,
+) {
+    loadImage(url.toThumbnailUrl(), signature)
 }
 
 fun String.toPrettyDate(): String = PrettyTime(Locale("pl")).format(parseDate(this))

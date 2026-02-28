@@ -11,7 +11,7 @@ import io.github.wykopmobilny.models.dataclass.Link
 import io.github.wykopmobilny.ui.fragments.links.LinkActionListener
 import io.github.wykopmobilny.ui.modules.NewNavigator
 import io.github.wykopmobilny.utils.layoutInflater
-import io.github.wykopmobilny.utils.loadImage
+import io.github.wykopmobilny.utils.loadImageThumbnail
 import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 
 class SimpleLinkViewHolder(
@@ -93,7 +93,7 @@ class SimpleLinkViewHolder(
                 link.previewImage
             } else {
                 link.fullImage
-            }?.let { binding.simpleImage.loadImage(it) }
+            }?.let { binding.simpleImage.loadImageThumbnail(it) }
         }
 
         itemView.setOnClickListener {
