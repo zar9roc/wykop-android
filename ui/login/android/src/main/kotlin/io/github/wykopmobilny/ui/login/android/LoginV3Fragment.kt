@@ -1,8 +1,13 @@
 package io.github.wykopmobilny.ui.login.android
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.view.View
+import android.webkit.CookieManager
+import android.webkit.WebResourceRequest
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
@@ -38,8 +43,18 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
     ) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupWebView()
         setupClickListeners()
         observeState()
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    private fun setupWebView() {
+        CookieManager.getInstance().apply {
+            setAcceptCookie(true)
+            setAcceptThirdPartyCookies(binding.webView, true)
+        }
+        binding.webView.settings.javaScriptEnabled = true
     }
 
     private fun setupClickListeners() {
@@ -90,6 +105,31 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 val sharedFlow = loginV3().stateIn(this)
+
+                binding.webView.webViewClient =
+                    object : WebViewClient() {
+                        override fun shouldOverrideUrlLoading(
+                            view: WebView,
+                            request: WebResourceRequest,
+                        ): Boolean {
+                            sharedFlow.value.parseUrlAction(request.url.toString())
+                            return super.shouldOverrideUrlLoading(view, request)
+                        }
+                    }
+
+                launch {
+                    sharedFlow
+                        .map { it.connectUrl }
+                        .distinctUntilChanged()
+                        .collect { connectUrl ->
+                            val showWebView = connectUrl != null
+                            binding.webView.isVisible = showWebView
+                            binding.loginCard.isVisible = !showWebView
+                            if (connectUrl != null) {
+                                binding.webView.loadUrl(connectUrl)
+                            }
+                        }
+                }
 
                 launch {
                     sharedFlow

@@ -17,4 +17,5 @@ data class LoginV3Ui(
     val errorDialog: ErrorDialogUi?,
     val isLoggedIn: Boolean,
     val connectUrl: String? = null,
+    val parseUrlAction: (String) -> Unit = {},
 )

@@ -1,19 +1,28 @@
 package io.github.wykopmobilny.domain.login
 
+import com.dropbox.android.external.store4.Store
+import com.dropbox.android.external.store4.fresh
 import io.github.wykopmobilny.api.endpoints.v3.AuthV3RetrofitApi
 import io.github.wykopmobilny.api.requests.v3.auth.AuthRequestV3
 import io.github.wykopmobilny.domain.login.di.LoginScope
+import io.github.wykopmobilny.domain.navigation.AppRestarter
 import io.github.wykopmobilny.domain.startup.AppConfig
 import io.github.wykopmobilny.domain.utils.safe
 import io.github.wykopmobilny.kotlin.AppScopes
 import io.github.wykopmobilny.storage.api.BearerTokenStorage
+import io.github.wykopmobilny.storage.api.Blacklist
+import io.github.wykopmobilny.storage.api.LoggedUserInfo
+import io.github.wykopmobilny.storage.api.SessionStorage
+import io.github.wykopmobilny.storage.api.UserSession
 import io.github.wykopmobilny.ui.base.FailedAction
 import io.github.wykopmobilny.ui.base.SimpleViewStateStorage
 import io.github.wykopmobilny.ui.base.components.ErrorDialogUi
 import io.github.wykopmobilny.ui.login.LoginV3
 import io.github.wykopmobilny.ui.login.LoginV3Ui
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class LoginV3Query
@@ -21,6 +30,10 @@ class LoginV3Query
     constructor(
         private val authV3Api: AuthV3RetrofitApi,
         private val bearerTokenStorage: BearerTokenStorage,
+        private val sessionStorage: SessionStorage,
+        private val userInfoStore: Store<UserSession, LoggedUserInfo>,
+        private val blacklistStore: Store<Unit, Blacklist>,
+        private val appRestarter: AppRestarter,
         private val viewStateStorage: SimpleViewStateStorage,
         private val appScopes: AppScopes,
         private val appConfig: AppConfig,
@@ -41,6 +54,7 @@ class LoginV3Query
                         },
                     isLoggedIn = false,
                     connectUrl = connectUrl,
+                    parseUrlAction = ::onUrlInvoked,
                 )
             }
 
@@ -76,14 +90,6 @@ class LoginV3Query
 
                 // Step 4: Set connectUrl for UI to open WebView
                 connectUrlState.value = connectData.connectUrl
-
-                // TODO: Faza 3.x - WebView callback handling
-                // After user logs in via WebView, we need to:
-                // 1. Parse JWT token from callback URL
-                // 2. Save JWT token to JwtTokenStorage
-                // 3. Fetch user info and blacklist
-                // 4. Restart app to apply login
-                // For now, this is just the first part of the auth flow.
             }.onFailure { throwable ->
                 viewStateStorage.update {
                     it.copy(isLoading = false, failedAction = FailedAction(cause = throwable, retryAction = null))
@@ -94,8 +100,46 @@ class LoginV3Query
             }
         }
 
+        private fun onUrlInvoked(url: String) =
+            appScopes.safe<LoginScope> {
+                val userSession =
+                    withContext(Dispatchers.Default) {
+                        val match = connectCallbackPattern.find(url) ?: return@withContext null
+
+                        val login = match.groups[1]?.value?.takeIf { it.isNotBlank() }
+                        val token = match.groups[2]?.value?.takeIf { it.isNotBlank() }
+
+                        if (login.isNullOrBlank() || token.isNullOrBlank()) {
+                            null
+                        } else {
+                            UserSession(login, token)
+                        }
+                    } ?: return@safe
+                viewStateStorage.update { it.copy(isLoading = true) }
+                connectUrlState.value = null
+
+                runCatching {
+                    sessionStorage.updateSession(userSession)
+                    userInfoStore.fresh(userSession)
+                    blacklistStore.fresh(Unit)
+                    appRestarter.restart()
+                }.onFailure { throwable ->
+                    sessionStorage.updateSession(null)
+                    userInfoStore.clearAll()
+                    blacklistStore.clearAll()
+                    viewStateStorage.update { it.copy(isLoading = false, failedAction = FailedAction(cause = throwable)) }
+                }.onSuccess {
+                    viewStateStorage.update { it.copy(isLoading = false, failedAction = null) }
+                }
+            }
+
         override fun clearError() =
             appScopes.safe<LoginScope> {
                 viewStateStorage.update { it.copy(failedAction = null) }
             }
+
+        companion object {
+            private val connectCallbackPattern =
+                "/ConnectSuccess/appkey/.+/login/(.+)/token/(.+)/".toRegex()
+        }
     }
