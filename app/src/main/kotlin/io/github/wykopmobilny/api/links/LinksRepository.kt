@@ -48,7 +48,7 @@ class LinksRepository
         override fun getUpcoming(
             page: Int,
             sortBy: String,
-        ) = rxSingle { linksApiV3.getUpcoming(page, sortBy) }
+        ) = rxSingle { linksApiV3.getLinks(page = page, type = "upcoming", sort = sortBy) }
             .retryWhen(userTokenRefresher)
             .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
             .map { links ->

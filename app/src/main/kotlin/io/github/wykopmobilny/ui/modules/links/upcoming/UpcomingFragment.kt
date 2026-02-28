@@ -112,7 +112,15 @@ class UpcomingFragment :
         (activity as BaseActivity).supportActionBar?.setTitle(SettingsR.string.wykopalisko)
         presenter.subscribe(this)
         presenter.sortBy = runBlocking {
-            appStorage.preferencesQueries.getPreference("settings.links.upcoming_sort").executeAsOneOrNull()
+            val savedSort = appStorage.preferencesQueries.getPreference("settings.links.upcoming_sort").executeAsOneOrNull()
+            // Migrate old sort values to new API v3 format
+            when (savedSort) {
+                "comments" -> UpcomingPresenter.SORTBY_COMMENTS
+                "votes" -> UpcomingPresenter.SORTBY_VOTES
+                "date" -> UpcomingPresenter.SORTBY_DATE
+                "active" -> UpcomingPresenter.SORTBY_ACTIVE
+                else -> savedSort
+            }
         } ?: UpcomingPresenter.SORTBY_COMMENTS
         linksAdapter.linksActionListener = presenter
         linksAdapter.loadNewDataListener = { loadDataListener(false) }

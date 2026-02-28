@@ -17,6 +17,7 @@ interface LinksV3RetrofitApi {
         @Query("sort") sort: String? = null,
     ): WykopApiResponseV3<List<LinkResponseV3>>
 
+    @Deprecated("Use getLinks(page, type = \"upcoming\", sort = sortBy) instead")
     @GET("v3/links/upcoming")
     suspend fun getUpcoming(
         @Query("page") page: Int,

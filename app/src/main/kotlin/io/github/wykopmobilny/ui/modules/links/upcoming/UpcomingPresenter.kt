@@ -16,14 +16,14 @@ class UpcomingPresenter(
 ) : BasePresenter<UpcomingView>(),
     LinkActionListener {
     companion object {
-        const val SORTBY_COMMENTS = "comments"
-        const val SORTBY_VOTES = "votes"
-        const val SORTBY_DATE = "date"
+        const val SORTBY_COMMENTS = "commented"
+        const val SORTBY_VOTES = "digged"
+        const val SORTBY_DATE = "newest"
         const val SORTBY_ACTIVE = "active"
     }
 
     var page = 1
-    var sortBy = "comments"
+    var sortBy = "commented"
 
     fun getUpcomingLinks(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
