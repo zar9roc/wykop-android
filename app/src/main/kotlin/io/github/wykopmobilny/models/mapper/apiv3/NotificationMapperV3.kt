@@ -11,7 +11,7 @@ object NotificationEntryMapperV3 : Mapper<NotificationEntryResponseV3, Notificat
     override fun map(value: NotificationEntryResponseV3) =
         Notification(
             id = value.id.toLongOrNull() ?: 0L,
-            author = value.user?.let(UserShortMapperV3::map),
+            author = value.user?.let(AuthorMapperV3::map),
             body = value.message.orEmpty(),
             date = runCatching { Instant.parse(value.createdAt) }.getOrNull(),
             type = value.type,
@@ -24,7 +24,7 @@ object NotificationPmMapperV3 : Mapper<NotificationPmResponseV3, Notification> {
     override fun map(value: NotificationPmResponseV3) =
         Notification(
             id = value.id.toLongOrNull() ?: 0L,
-            author = value.user?.let(UserShortMapperV3::map),
+            author = value.user?.let(AuthorMapperV3::map),
             body = value.content.orEmpty(),
             date = runCatching { Instant.parse(value.createdAt) }.getOrNull(),
             type = value.type,
@@ -37,7 +37,7 @@ object NotificationTagMapperV3 : Mapper<NotificationTagResponseV3, Notification>
     override fun map(value: NotificationTagResponseV3) =
         Notification(
             id = value.id.toLongOrNull() ?: 0L,
-            author = value.user?.let(UserShortMapperV3::map),
+            author = value.user?.let(AuthorMapperV3::map),
             body = value.tag?.name.orEmpty(),
             date = runCatching { Instant.parse(value.createdAt) }.getOrNull(),
             type = value.type,

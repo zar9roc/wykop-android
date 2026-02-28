@@ -59,6 +59,7 @@ class ProfileRepository
                 .map { entries ->
                     entries
                         .filterEntriesV3(owmContentFilter = owmContentFilter)
+                        .filtered
                         .map { entry -> EntryLink(link = null, entry = entry) }
                 }
 
@@ -94,7 +95,10 @@ class ProfileRepository
             rxSingle { profileApiV3.getUserLinksCommented(username, page) }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<List<LinkCommentResponseV3>>())
-                .map { it.map { response -> LinkCommentMapperV3.map(response, owmContentFilter) } }
+                .map { it.map { response ->
+                    val linkId = response.resource.substringAfter("/links/").substringBefore("/").toLongOrNull() ?: 0L
+                    LinkCommentMapperV3.map(response, owmContentFilter, linkId)
+                } }
 
         override fun getBuried(
             username: String,
@@ -133,19 +137,19 @@ class ProfileRepository
         override fun observe(tag: String) =
             rxSingle { profileApiV3.observeUser(tag) }
                 .retryWhen(userTokenRefresher)
-                .map { ObserveStateResponse(observe = true) }
+                .map { ObserveStateResponse(isObserved = true, isBlocked = false) }
 
         override fun unobserve(tag: String) =
             rxSingle { profileApiV3.unobserveUser(tag) }
                 .retryWhen(userTokenRefresher)
-                .map { ObserveStateResponse(observe = false) }
+                .map { ObserveStateResponse(isObserved = false, isBlocked = false) }
 
         override fun block(tag: String) =
             rxSingle { profileApiV3.blockUser(tag) }
                 .retryWhen(userTokenRefresher)
                 .map {
                     appStorage.blacklistQueries.insertOrReplaceProfile(tag.removePrefix("@"))
-                    ObserveStateResponse(observe = false)
+                    ObserveStateResponse(isObserved = false, isBlocked = true)
                 }
 
         override fun unblock(tag: String) =
@@ -153,6 +157,6 @@ class ProfileRepository
                 .retryWhen(userTokenRefresher)
                 .map {
                     appStorage.blacklistQueries.deleteProfile(tag.removePrefix("@"))
-                    ObserveStateResponse(observe = false)
+                    ObserveStateResponse(isObserved = false, isBlocked = false)
                 }
     }
