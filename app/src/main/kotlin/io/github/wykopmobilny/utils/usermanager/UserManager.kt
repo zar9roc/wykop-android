@@ -101,12 +101,21 @@ class UserManager
             // Fetch user profile using JWT
             val profileResponse = usersV3Api.getUserProfile()
             profileResponse.data?.let { profile ->
+                // Fetch full profile to get background
+                val backgroundUrl =
+                    try {
+                        val fullProfileResponse = usersV3Api.getUserFullProfile(profile.username)
+                        fullProfileResponse.data?.background
+                    } catch (e: Exception) {
+                        null // Fallback to null if full profile fetch fails
+                    }
+
                 userInfoStorage.updateLoggedUser(
                     LoggedUserInfo(
                         id = profile.username,
                         userToken = "", // Empty for JWT flow (legacy field)
                         avatarUrl = profile.avatar,
-                        backgroundUrl = null, // /v3/profile/short does not return background
+                        backgroundUrl = backgroundUrl,
                     ),
                 )
             }
