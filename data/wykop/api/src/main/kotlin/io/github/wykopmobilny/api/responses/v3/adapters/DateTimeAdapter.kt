@@ -9,13 +9,16 @@ import kotlinx.datetime.toLocalDateTime
 
 class DateTimeAdapter {
     @FromJson
-    fun fromJson(value: String): Instant {
-        val localDateTime =
-            kotlinx.datetime.LocalDateTime.parse(
-                value.replace(" ", "T"),
-            )
-        return localDateTime.toInstant(TimeZone.UTC)
-    }
+    fun fromJson(value: String): Instant =
+        runCatching {
+            // Try ISO 8601 format with timezone (e.g., "2026-02-28T07:26:37Z")
+            Instant.parse(value)
+        }.recoverCatching {
+            // Fallback: try parsing as LocalDateTime with UTC timezone
+            kotlinx.datetime.LocalDateTime
+                .parse(value.replace(" ", "T"))
+                .toInstant(TimeZone.UTC)
+        }.getOrThrow()
 
     @ToJson
     fun toJson(value: Instant): String =

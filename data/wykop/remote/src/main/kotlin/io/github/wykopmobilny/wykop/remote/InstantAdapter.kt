@@ -16,9 +16,20 @@ internal class InstantAdapter {
 
     @FromJson
     fun fromJson(date: String) =
-        runCatching { date.replace(' ', 'T').toLocalDateTime() }
-            .recoverCatching { date.toLocalDateTime() }
-            .onFailure { Napier.e("Could parse $date", it) }
-            .getOrNull()
-            ?.toInstant(apiTimeZone)
+        runCatching {
+            // Try ISO 8601 format with timezone (e.g., "2026-02-28T07:26:37Z")
+            Instant.parse(date)
+        }.recoverCatching {
+            // Fallback: try parsing as LocalDateTime and convert to Instant with API timezone
+            kotlinx.datetime.LocalDateTime
+                .parse(date.replace(' ', 'T'))
+                .toInstant(apiTimeZone)
+        }.recoverCatching {
+            // Second fallback: try without space replacement
+            kotlinx.datetime.LocalDateTime
+                .parse(date)
+                .toInstant(apiTimeZone)
+        }.onFailure {
+            Napier.e("Could not parse date: $date", it)
+        }.getOrNull()
 }
