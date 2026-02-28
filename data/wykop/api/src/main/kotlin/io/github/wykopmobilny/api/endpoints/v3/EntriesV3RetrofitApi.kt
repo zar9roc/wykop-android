@@ -8,38 +8,38 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface EntriesV3RetrofitApi {
-    @GET("/v3/entries/popular")
+    @GET("v3/entries/popular")
     suspend fun getHot(
         @Query("page") page: Int,
         @Query("sort") sort: String = "best",
     ): WykopApiResponseV3<List<EntryResponseV3>>
 
-    @GET("/v3/entries/newest")
+    @GET("v3/entries/newest")
     suspend fun getStream(
         @Query("page") page: Int,
     ): WykopApiResponseV3<List<EntryResponseV3>>
 
-    @GET("/v3/entries/active")
+    @GET("v3/entries/active")
     suspend fun getActive(
         @Query("page") page: Int,
     ): WykopApiResponseV3<List<EntryResponseV3>>
 
-    @GET("/v3/entries/observed")
+    @GET("v3/entries/observed")
     suspend fun getObserved(
         @Query("page") page: Int,
     ): WykopApiResponseV3<List<EntryResponseV3>>
 
-    @GET("/v3/entries/{id}")
+    @GET("v3/entries/{id}")
     suspend fun getEntry(
         @Path("id") id: Long,
     ): WykopApiResponseV3<EntryResponseV3>
 
-    @GET("/v3/entries/{id}/votes/up")
+    @GET("v3/entries/{id}/votes/up")
     suspend fun getEntryVoters(
         @Path("id") id: Long,
     ): WykopApiResponseV3<List<UserShortResponseV3>>
 
-    @GET("/v3/entries/comments/{id}/votes/up")
+    @GET("v3/entries/comments/{id}/votes/up")
     suspend fun getCommentUpvoters(
         @Path("id") id: Long,
     ): WykopApiResponseV3<List<UserShortResponseV3>>

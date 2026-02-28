@@ -22,7 +22,7 @@ internal class BearerAuthInterceptor
             val path = request.url.encodedPath
 
             // Only add bearer token for v3 API endpoints (skip /v3/auth where we obtain it)
-            if (!path.startsWith("/v3/") || path.startsWith("/v3/auth")) {
+            if (!path.startsWith("v3/") || path.startsWith("v3/auth")) {
                 return chain.proceed(request)
             }
 

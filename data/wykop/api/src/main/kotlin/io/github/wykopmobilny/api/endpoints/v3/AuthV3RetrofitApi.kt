@@ -10,16 +10,16 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 
 interface AuthV3RetrofitApi {
-    @POST("/v3/auth")
+    @POST("v3/auth")
     suspend fun authenticate(
         @Body request: AuthRequestV3,
     ): WykopApiResponseV3<AuthResponseV3>
 
-    @POST("/v3/auth/refresh")
+    @POST("v3/auth/refresh")
     suspend fun refreshToken(
         @Body request: RefreshTokenRequestV3,
     ): WykopApiResponseV3<AuthResponseV3>
 
-    @GET("/v3/connect")
+    @GET("v3/connect")
     suspend fun connect(): WykopApiResponseV3<ConnectResponseV3>
 }

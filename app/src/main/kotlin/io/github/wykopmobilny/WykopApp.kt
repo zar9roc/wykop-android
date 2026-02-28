@@ -94,7 +94,7 @@ open class WykopApp :
     ApplicationInjector,
     AppScopes {
     companion object {
-        const val WYKOP_API_URL = "https://a2.wykop.pl"
+        const val WYKOP_API_URL = "https://wykop.pl/api/"
     }
 
     @Inject
@@ -157,7 +157,8 @@ open class WykopApp :
             appScopes = this,
             connectConfig = {
                 val appKey = FirebaseRemoteConfig.getInstance().getString(RemoteConfigKeys.API_APP_KEY)
-                ConnectConfig(connectUrl = "https://a2.wykop.pl/login/connect/appkey/$appKey")
+                ConnectConfig(connectUrl = "https://wykop.pl/api/v3/connect")
+                //ConnectConfig(connectUrl = "https://wykop.pl/api/v3/connect/appkey/$appKey")
             },
             clock = Clock.System,
             storages = storages,

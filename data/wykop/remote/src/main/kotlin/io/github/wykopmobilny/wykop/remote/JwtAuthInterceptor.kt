@@ -17,12 +17,12 @@ internal class JwtAuthInterceptor
             val path = request.url.encodedPath
 
             // Only add JWT token for v3 API endpoints
-            if (!path.startsWith("/v3/")) {
+            if (!path.startsWith("v3/")) {
                 return chain.proceed(request)
             }
 
             // Skip JWT for auth and connect endpoints
-            if (path.startsWith("/v3/auth") || path == "/v3/connect") {
+            if (path.startsWith("v3/auth") || path == "v3/connect") {
                 return chain.proceed(request)
             }
 
