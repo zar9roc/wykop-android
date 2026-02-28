@@ -26,6 +26,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 fun loginV3Fragment(): Fragment = LoginV3Fragment()
 
@@ -142,7 +144,9 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
                             binding.loginCard.isVisible = !showWebView
                             if (connectUrl != null) {
                                 Napier.i(tag = TAG) { "Loading connect URL in WebView" }
-                                CookieManager.getInstance().removeAllCookies(null)
+                                Napier.d(tag = TAG) { "Removing all cookies before loading URL" }
+                                removeAllCookiesAndWait()
+                                Napier.d(tag = TAG) { "Cookies removed, loading URL" }
                                 binding.webView.loadUrl(connectUrl)
                             } else {
                                 Napier.d(tag = TAG) { "WebView hidden, showing login card" }
@@ -183,6 +187,19 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
             }
         }
     }
+
+    /**
+     * Suspends until all cookies are removed from CookieManager.
+     * This ensures that the WebView loads the login page without any existing session cookies,
+     * preventing automatic redirects before the user can interact with the GDPR overlay.
+     */
+    private suspend fun removeAllCookiesAndWait() =
+        suspendCancellableCoroutine { continuation ->
+            CookieManager.getInstance().removeAllCookies { success ->
+                Napier.d(tag = TAG) { "removeAllCookiesAndWait: success=$success" }
+                continuation.resume(Unit)
+            }
+        }
 
     companion object {
         private const val TAG = "LoginV3Fragment"
