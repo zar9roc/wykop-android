@@ -1,5 +1,6 @@
 package io.github.wykopmobilny.domain.login
 
+import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.api.endpoints.v3.AuthV3RetrofitApi
 import io.github.wykopmobilny.domain.login.di.LoginScope
 import io.github.wykopmobilny.domain.navigation.AppRestarter
@@ -53,6 +54,7 @@ class LoginV3Query
 
         override fun login() =
             appScopes.safe<LoginScope> {
+                Napier.i(tag = TAG) { "login: Starting login flow" }
                 isLoginFlowActive = true
                 viewStateStorage.update { it.copy(isLoading = true) }
                 connectUrlState.value = null
@@ -60,48 +62,75 @@ class LoginV3Query
                 runCatching {
                     // Bearer token is already available from app startup (InitializeApp).
                     // GET /v3/connect to get connectUrl for WebView
+                    Napier.d(tag = TAG) { "login: Calling authV3Api.connect()" }
                     val connectResponse = authV3Api.connect()
+                    Napier.d(
+                        tag = TAG,
+                    ) { "login: Received connect response: data=${connectResponse.data != null}, error=${connectResponse.error}" }
 
                     val connectData = connectResponse.data
                     if (connectData == null) {
-                        throw IllegalStateException(connectResponse.error?.messagePl ?: "Failed to get connect URL")
+                        val errorMsg = connectResponse.error?.messagePl ?: "Failed to get connect URL"
+                        Napier.e(tag = TAG) { "login: Connect data is null: $errorMsg" }
+                        throw IllegalStateException(errorMsg)
                     }
 
+                    Napier.i(tag = TAG) { "login: Setting connectUrl: ${connectData.connectUrl}" }
                     connectUrlState.value = connectData.connectUrl
                 }.onFailure { throwable ->
+                    Napier.e(tag = TAG, throwable = throwable) { "login: Failed to get connect URL" }
                     isLoginFlowActive = false
                     viewStateStorage.update {
                         it.copy(isLoading = false, failedAction = FailedAction(cause = throwable, retryAction = null))
                     }
                     connectUrlState.value = null
                 }.onSuccess {
+                    Napier.i(tag = TAG) { "login: Connect URL obtained successfully" }
                     viewStateStorage.update { it.copy(isLoading = false, failedAction = null) }
                 }
             }
 
         private fun onUrlInvoked(url: String) =
             appScopes.safe<LoginScope> {
-                if (!isLoginFlowActive) return@safe
+                Napier.i(tag = TAG) { "onUrlInvoked: Processing callback URL" }
+                if (!isLoginFlowActive) {
+                    Napier.w(tag = TAG) { "onUrlInvoked: Login flow is not active, ignoring callback" }
+                    return@safe
+                }
+                Napier.d(tag = TAG) { "onUrlInvoked: Parsing credentials from URL" }
                 val credentials =
                     withContext(Dispatchers.Default) {
-                        val match = connectCallbackPattern.find(url) ?: return@withContext null
+                        val match = connectCallbackPattern.find(url)
+                        if (match == null) {
+                            Napier.w(tag = TAG) { "onUrlInvoked: URL does not match callback pattern" }
+                            return@withContext null
+                        }
 
                         val token = match.groups[1]?.value?.takeIf { it.isNotBlank() }
                         val refreshToken = match.groups[2]?.value?.takeIf { it.isNotBlank() }
 
                         if (token.isNullOrBlank() || refreshToken.isNullOrBlank()) {
+                            Napier.e(tag = TAG) { "onUrlInvoked: Token or refreshToken is blank" }
                             null
                         } else {
+                            Napier.d(tag = TAG) { "onUrlInvoked: Token extracted, decoding JWT expiration" }
                             // Decode JWT expiration timestamp
                             val expiresAt = decodeJwtExpiration(token)
+                            Napier.d(tag = TAG) { "onUrlInvoked: JWT expiration decoded: $expiresAt" }
                             Triple(token, refreshToken, expiresAt)
                         }
-                    } ?: return@safe
+                    }
+                if (credentials == null) {
+                    Napier.e(tag = TAG) { "onUrlInvoked: Failed to extract credentials from URL" }
+                    return@safe
+                }
+                Napier.i(tag = TAG) { "onUrlInvoked: Credentials extracted successfully, saving to storage" }
                 viewStateStorage.update { it.copy(isLoading = true) }
 
                 val (token, refreshToken, expiresAt) = credentials
 
                 runCatching {
+                    Napier.d(tag = TAG) { "onUrlInvoked: Updating JWT token in storage" }
                     // Save JWT token
                     jwtTokenStorage.updateJwtToken(
                         JwtToken(
@@ -111,15 +140,19 @@ class LoginV3Query
                         ),
                     )
 
+                    Napier.d(tag = TAG) { "onUrlInvoked: Waiting for token to be available in Flow" }
                     // Wait for token to be available in Flow (DataStore is async)
                     jwtTokenStorage.jwtToken.first { it != null }
 
+                    Napier.i(tag = TAG) { "onUrlInvoked: Token saved, restarting app" }
                     appRestarter.restart()
                 }.onFailure { throwable ->
+                    Napier.e(tag = TAG, throwable = throwable) { "onUrlInvoked: Failed to save token or restart app" }
                     jwtTokenStorage.updateJwtToken(null)
                     connectUrlState.value = null
                     viewStateStorage.update { it.copy(isLoading = false, failedAction = FailedAction(cause = throwable)) }
                 }.onSuccess {
+                    Napier.i(tag = TAG) { "onUrlInvoked: Login completed successfully" }
                     connectUrlState.value = null
                     viewStateStorage.update { it.copy(isLoading = false, failedAction = null) }
                 }
@@ -131,6 +164,8 @@ class LoginV3Query
             }
 
         companion object {
+            private const val TAG = "LoginV3Query"
+
             // API v3 callback format: https://wykop.pl/?token={JWT}&rtoken={REFRESH_TOKEN}
             private val connectCallbackPattern =
                 "[?]token=([^&]+)&rtoken=([^&]+)".toRegex()

@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.webkit.CookieManager
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -14,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.ui.login.LoginDependencies
 import io.github.wykopmobilny.ui.login.LoginV3
 import io.github.wykopmobilny.ui.login.android.databinding.FragmentLoginV3Binding
@@ -49,19 +51,23 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView() {
+        Napier.d(tag = TAG) { "setupWebView: Initializing WebView settings" }
         CookieManager.getInstance().apply {
             setAcceptCookie(true)
             setAcceptThirdPartyCookies(binding.webView, true)
         }
         binding.webView.settings.javaScriptEnabled = true
+        Napier.d(tag = TAG) { "setupWebView: WebView configured successfully" }
     }
 
     private fun setupClickListeners() {
         binding.loginButton.setOnClickListener {
+            Napier.i(tag = TAG) { "loginButton clicked: Starting login flow" }
             loginV3.login()
         }
 
         binding.switchToOAuthButton.setOnClickListener {
+            Napier.i(tag = TAG) { "switchToOAuthButton clicked: Switching to OAuth login" }
             // Switch back to OAuth login
             val containerId = (requireView().parent as? View)?.id ?: return@setOnClickListener
             parentFragmentManager
@@ -78,14 +84,47 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
 
                 binding.webView.webViewClient =
                     object : WebViewClient() {
+                        override fun onPageStarted(
+                            view: WebView?,
+                            url: String?,
+                            favicon: android.graphics.Bitmap?,
+                        ) {
+                            Napier.d(tag = TAG) { "onPageStarted: $url" }
+                            super.onPageStarted(view, url, favicon)
+                        }
+
+                        override fun onPageFinished(
+                            view: WebView?,
+                            url: String?,
+                        ) {
+                            Napier.d(tag = TAG) { "onPageFinished: $url" }
+                            super.onPageFinished(view, url)
+                        }
+
+                        override fun onReceivedError(
+                            view: WebView?,
+                            request: WebResourceRequest?,
+                            error: WebResourceError?,
+                        ) {
+                            Napier.e(tag = TAG) {
+                                "onReceivedError: url=${request?.url}, errorCode=${error?.errorCode}, description=${error?.description}"
+                            }
+                            super.onReceivedError(view, request, error)
+                        }
+
                         override fun shouldOverrideUrlLoading(
                             view: WebView,
                             request: WebResourceRequest,
                         ): Boolean {
                             val url = request.url.toString()
+                            Napier.d(tag = TAG) { "shouldOverrideUrlLoading: URL=$url" }
                             val state = sharedFlow.value
-                            if (state.isCallbackUrl(url)) {
+                            val isCallback = state.isCallbackUrl(url)
+                            Napier.d(tag = TAG) { "shouldOverrideUrlLoading: isCallbackUrl=$isCallback" }
+                            if (isCallback) {
+                                Napier.i(tag = TAG) { "shouldOverrideUrlLoading: Callback URL detected, parsing credentials" }
                                 state.parseUrlAction(url)
+                                Napier.i(tag = TAG) { "shouldOverrideUrlLoading: parseUrlAction completed" }
                                 return true
                             }
                             return false
@@ -97,12 +136,16 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
                         .map { it.connectUrl }
                         .distinctUntilChanged()
                         .collect { connectUrl ->
+                            Napier.i(tag = TAG) { "connectUrl changed: $connectUrl" }
                             val showWebView = connectUrl != null
                             binding.webView.isVisible = showWebView
                             binding.loginCard.isVisible = !showWebView
                             if (connectUrl != null) {
+                                Napier.i(tag = TAG) { "Loading connect URL in WebView" }
                                 CookieManager.getInstance().removeAllCookies(null)
                                 binding.webView.loadUrl(connectUrl)
+                            } else {
+                                Napier.d(tag = TAG) { "WebView hidden, showing login card" }
                             }
                         }
                 }
@@ -112,6 +155,7 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
                         .map { it.isLoading }
                         .distinctUntilChanged()
                         .collect { isLoading ->
+                            Napier.i(tag = TAG) { "isLoading changed: $isLoading" }
                             binding.fullScreenProgress.isVisible = isLoading
                             binding.loginButton.isEnabled = !isLoading
                         }
@@ -128,7 +172,9 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
                         .map { it.isLoggedIn }
                         .distinctUntilChanged()
                         .collect { isLoggedIn ->
+                            Napier.i(tag = TAG) { "isLoggedIn changed: $isLoggedIn" }
                             if (isLoggedIn) {
+                                Napier.i(tag = TAG) { "Login successful, finishing activity" }
                                 Toast.makeText(requireContext(), "Zalogowano pomyślnie!", Toast.LENGTH_SHORT).show()
                                 requireActivity().finish()
                             }
@@ -136,5 +182,9 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
                 }
             }
         }
+    }
+
+    companion object {
+        private const val TAG = "LoginV3Fragment"
     }
 }
