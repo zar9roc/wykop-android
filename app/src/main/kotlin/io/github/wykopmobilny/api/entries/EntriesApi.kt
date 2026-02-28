@@ -102,6 +102,8 @@ interface EntriesApi {
 
     fun getEntry(id: Long): Single<Entry>
 
+    fun getEntryComments(id: Long): Single<List<io.github.wykopmobilny.models.dataclass.EntryComment>>
+
     fun getEntryVoters(id: Long): Single<List<Voter>>
 
     fun getEntryCommentVoters(entryId: Long, commentId: Long): Single<List<Voter>>

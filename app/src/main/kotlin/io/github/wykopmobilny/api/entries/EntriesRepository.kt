@@ -13,6 +13,7 @@ import io.github.wykopmobilny.models.mapper.apiv2.SurveyMapper
 import io.github.wykopmobilny.models.mapper.apiv2.VoterMapper
 import io.github.wykopmobilny.models.mapper.apiv2.filterEntries
 import io.github.wykopmobilny.models.mapper.apiv2.filterEntry
+import io.github.wykopmobilny.models.mapper.apiv3.EntryCommentMapperV3
 import io.github.wykopmobilny.models.mapper.apiv3.filterEntriesV3
 import io.github.wykopmobilny.models.mapper.apiv3.filterEntryV3
 import io.reactivex.subjects.PublishSubject
@@ -235,6 +236,16 @@ class EntriesRepository
                 .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3>())
                 .map { entry ->
                     entry.filterEntryV3(owmContentFilter = owmContentFilter)
+                }
+
+        override fun getEntryComments(id: Long) =
+            rxSingle { entriesApiV3.getEntryComments(id) }
+                .retryWhen(userTokenRefresher)
+                .compose(ErrorHandlerTransformerV3<List<io.github.wykopmobilny.api.responses.v3.entries.EntryCommentResponseV3>>())
+                .map { comments ->
+                    comments.map { comment ->
+                        EntryCommentMapperV3.map(comment, owmContentFilter)
+                    }
                 }
 
         override fun getEntryVoters(id: Long) =

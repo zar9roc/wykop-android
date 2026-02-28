@@ -81,6 +81,17 @@ class EntryDetailPresenter
             view?.hideInputToolbar()
             entriesApi
                 .getEntry(entryId)
+                .flatMap { entry ->
+                    entriesApi
+                        .getEntryComments(entryId)
+                        .map { comments ->
+                            comments.forEach { it.entryId = entry.id }
+                            entry.comments.clear()
+                            entry.comments.addAll(comments)
+                            entry
+                        }
+                        .onErrorReturn { entry }
+                }
                 .subscribeOn(schedulers.backgroundThread())
                 .observeOn(schedulers.mainThread())
                 .subscribe(
