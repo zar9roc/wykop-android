@@ -110,7 +110,7 @@
                         android:textIsSelectable="true"
                         android:textSize="12sp"
                         android:fontFamily="monospace"
-                        android:background="?attr/colorSurfaceVariant"
+                        android:background="?attr/itemBackgroundColorSelected"
                         android:padding="12dp"
                         android:layout_marginBottom="12dp"
                         />
