@@ -4,6 +4,7 @@ import dagger.Lazy
 import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.api.endpoints.v3.AuthV3RetrofitApi
 import io.github.wykopmobilny.api.requests.v3.auth.RefreshTokenRequestV3
+import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
 import io.github.wykopmobilny.storage.api.JwtToken
 import io.github.wykopmobilny.storage.api.JwtTokenStorage
 import kotlinx.coroutines.flow.first
@@ -65,7 +66,9 @@ internal class TokenRefreshAuthenticator
                 runBlocking {
                     try {
                         authApiLazy.get().refreshToken(
-                            RefreshTokenRequestV3(refreshToken = currentToken.refreshToken),
+                            WykopApiRequestV3(
+                                data = RefreshTokenRequestV3(refreshToken = currentToken.refreshToken),
+                            ),
                         )
                     } catch (e: HttpException) {
                         Napier.w("JWT refresh failed with HTTP ${e.code()}: ${e.message()}", e)

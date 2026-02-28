@@ -3,6 +3,7 @@ package io.github.wykopmobilny.domain.startup
 import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.api.endpoints.v3.AuthV3RetrofitApi
 import io.github.wykopmobilny.api.requests.v3.auth.AuthRequestV3
+import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
 import io.github.wykopmobilny.domain.settings.prefs.GetNotificationPreferences
 import io.github.wykopmobilny.storage.api.BearerTokenStorage
 import io.github.wykopmobilny.work.WorkScheduler
@@ -52,7 +53,9 @@ class InitializeApp
         private suspend fun authenticateApp() {
             try {
                 val response = authV3Api.authenticate(
-                    AuthRequestV3(key = appConfig.v3ApiKey, secret = appConfig.v3ApiSecret),
+                    WykopApiRequestV3(
+                        data = AuthRequestV3(key = appConfig.v3ApiKey, secret = appConfig.v3ApiSecret),
+                    ),
                 )
                 val token = response.data?.token
                 if (token != null) {
