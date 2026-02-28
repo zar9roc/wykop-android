@@ -10,8 +10,8 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface LinksV3RetrofitApi {
-    @GET("/v3/links/promoted")
-    suspend fun getPromoted(
+    @GET("/v3/links")
+    suspend fun getLinks(
         @Query("page") page: Int,
     ): WykopApiResponseV3<List<LinkResponseV3>>
 
