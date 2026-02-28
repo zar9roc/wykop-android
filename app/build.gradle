@@ -16,8 +16,15 @@ projectConfig {
     javaFilesAllowed = true
 }
 
+// Load local.properties file for API keys and credentials
+ext.localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withInputStream { ext.localProperties.load(it) }
+}
+
 def findProperty(key) {
-    return properties[key] ?: System.getenv(key) ?: System.getenv(key.replace(".", "_").toUpperCase()) ?: ""
+    return ext.localProperties.getProperty(key) ?: properties[key] ?: System.getenv(key) ?: System.getenv(key.replace(".", "_").toUpperCase()) ?: ""
 }
 
 android {
