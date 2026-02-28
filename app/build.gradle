@@ -159,6 +159,7 @@ dependencies {
     implementation(libs.coroutines.rxjava)
     implementation(libs.retrofit.core)
     implementation(libs.jetbrains.markdown)
+    debugImplementation(libs.okhttp.logging)
     debugImplementation(libs.leakcanary.core)
     implementation(platform("com.google.firebase:firebase-bom:34.9.0"))
     implementation("com.google.firebase:firebase-analytics")
