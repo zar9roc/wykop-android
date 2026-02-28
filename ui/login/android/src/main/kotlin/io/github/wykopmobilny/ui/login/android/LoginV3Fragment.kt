@@ -1,11 +1,13 @@
 package io.github.wykopmobilny.ui.login.android
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -24,12 +26,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 fun loginV3Fragment(): Fragment = LoginV3Fragment()
-
-fun Fragment.handleLoginV3Callback(url: String) {
-    if (this is LoginV3Fragment) {
-        this.handleCallback(url)
-    }
-}
 
 internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
     private val binding by viewBinding(FragmentLoginV3Binding::bind)
@@ -56,14 +52,52 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
             loginV3.login()
         }
 
+        binding.copyUrlButton.setOnClickListener {
+            val url = binding.connectUrlText.text?.toString() ?: return@setOnClickListener
+            val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            clipboard.setPrimaryClip(ClipData.newPlainText("login_url", url))
+            Toast.makeText(requireContext(), getString(R.string.login_url_copied), Toast.LENGTH_SHORT).show()
+        }
+
+        binding.openBrowserButton.setOnClickListener {
+            val url = binding.connectUrlText.text?.toString() ?: return@setOnClickListener
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(intent)
+        }
+
+        binding.submitCallbackButton.setOnClickListener {
+            val callbackUrl = binding.callbackUrlInput.text?.toString()?.trim()
+            if (callbackUrl.isNullOrBlank()) {
+                binding.callbackUrlInputLayout.error = getString(R.string.login_paste_url)
+                return@setOnClickListener
+            }
+            binding.callbackUrlInputLayout.error = null
+            submitCallbackUrl(callbackUrl)
+        }
+
         binding.switchToOAuthButton.setOnClickListener {
             Napier.i(tag = TAG) { "switchToOAuthButton clicked: Switching to OAuth login" }
-            // Switch back to OAuth login
             val containerId = (requireView().parent as? View)?.id ?: return@setOnClickListener
             parentFragmentManager
                 .beginTransaction()
                 .replace(containerId, loginFragment())
                 .commit()
+        }
+    }
+
+    private fun submitCallbackUrl(url: String) {
+        Napier.i(tag = TAG) { "submitCallbackUrl: URL=$url" }
+        viewLifecycleOwner.lifecycleScope.launch {
+            val state = loginV3().stateIn(viewLifecycleOwner.lifecycleScope).value
+            val isCallback = state.isCallbackUrl(url)
+            Napier.d(tag = TAG) { "submitCallbackUrl: isCallbackUrl=$isCallback" }
+            if (isCallback) {
+                Napier.i(tag = TAG) { "submitCallbackUrl: Valid callback URL, parsing credentials" }
+                state.parseUrlAction(url)
+            } else {
+                Napier.w(tag = TAG) { "submitCallbackUrl: Invalid callback URL" }
+                binding.callbackUrlInputLayout.error = getString(R.string.login_invalid_url)
+            }
         }
     }
 
@@ -78,9 +112,11 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
                         .distinctUntilChanged()
                         .collect { connectUrl ->
                             Napier.i(tag = TAG) { "connectUrl changed: $connectUrl" }
-                            if (connectUrl != null) {
-                                Napier.i(tag = TAG) { "Opening Chrome Custom Tab with connect URL" }
-                                openChromeCustomTab(connectUrl)
+                            val hasUrl = connectUrl != null
+                            binding.urlCard.isVisible = hasUrl
+                            binding.callbackCard.isVisible = hasUrl
+                            if (hasUrl) {
+                                binding.connectUrlText.text = connectUrl
                             }
                         }
                 }
@@ -110,34 +146,15 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
                             Napier.i(tag = TAG) { "isLoggedIn changed: $isLoggedIn" }
                             if (isLoggedIn) {
                                 Napier.i(tag = TAG) { "Login successful, finishing activity" }
-                                Toast.makeText(requireContext(), "Zalogowano pomyślnie!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    requireContext(),
+                                    getString(R.string.login_success),
+                                    Toast.LENGTH_SHORT,
+                                ).show()
                                 requireActivity().finish()
                             }
                         }
                 }
-            }
-        }
-    }
-
-    private fun openChromeCustomTab(url: String) {
-        val customTabsIntent =
-            CustomTabsIntent
-                .Builder()
-                .setShowTitle(true)
-                .build()
-        customTabsIntent.launchUrl(requireContext(), Uri.parse(url))
-    }
-
-    fun handleCallback(url: String) {
-        Napier.i(tag = TAG) { "handleCallback: URL=$url" }
-        viewLifecycleOwner.lifecycleScope.launch {
-            val state = loginV3().stateIn(viewLifecycleOwner.lifecycleScope).value
-            val isCallback = state.isCallbackUrl(url)
-            Napier.d(tag = TAG) { "handleCallback: isCallbackUrl=$isCallback" }
-            if (isCallback) {
-                Napier.i(tag = TAG) { "handleCallback: Callback URL detected, parsing credentials" }
-                state.parseUrlAction(url)
-                Napier.i(tag = TAG) { "handleCallback: parseUrlAction completed" }
             }
         }
     }

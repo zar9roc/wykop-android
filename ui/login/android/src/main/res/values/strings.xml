@@ -4,4 +4,18 @@
     <string name="login_jwt">Logowanie</string>
     <string name="login_connect">Zaloguj się przez WykopConnect</string>
     <string name="use_oauth_login">Użyj OAuth (stary sposób)</string>
+    <string name="login_step1_title">Krok 1: Pobierz adres logowania</string>
+    <string name="login_step1_description">Kliknij przycisk poniżej, aby pobrać adres URL logowania przez WykopConnect.</string>
+    <string name="login_get_url">Pobierz adres logowania</string>
+    <string name="login_step2_title">Krok 2: Otwórz adres w przeglądarce</string>
+    <string name="login_copy_url">Kopiuj adres</string>
+    <string name="login_open_browser">Otwórz w przeglądarce</string>
+    <string name="login_step3_title">Krok 3: Wklej adres po zalogowaniu</string>
+    <string name="login_step3_description">Po zalogowaniu na stronie Wykop, skopiuj pełny adres URL z paska przeglądarki i wklej go poniżej.</string>
+    <string name="login_callback_url_hint">Wklej adres URL po zalogowaniu</string>
+    <string name="login_submit">Zaloguj</string>
+    <string name="login_url_copied">Skopiowano adres URL</string>
+    <string name="login_invalid_url">Nieprawidłowy adres URL. Upewnij się, że skopiowałeś pełny adres z przeglądarki.</string>
+    <string name="login_paste_url">Wklej adres URL</string>
+    <string name="login_success">Zalogowano pomyślnie!</string>
 </resources>
