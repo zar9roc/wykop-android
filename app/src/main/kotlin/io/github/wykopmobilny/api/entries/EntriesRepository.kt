@@ -222,7 +222,7 @@ class EntriesRepository
                 }
 
         override fun getObserved(page: Int) =
-            rxSingle { entriesApiV3.getObserved(page) }
+            rxSingle { entriesApiV3.getObservedTagsStream(page) }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<List<io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3>>())
                 .map { entries ->
@@ -248,8 +248,8 @@ class EntriesRepository
                     }
                 }
 
-        override fun getEntryCommentVoters(id: Long) =
-            rxSingle { entriesApiV3.getCommentUpvoters(id) }
+        override fun getEntryCommentVoters(entryId: Long, commentId: Long) =
+            rxSingle { entriesApiV3.getCommentVoters(entryId, commentId) }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<List<io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3>>())
                 .map { users ->

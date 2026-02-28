@@ -64,7 +64,7 @@ class EntryDetailPresenter
         override fun getVoters(comment: EntryComment) {
             view?.openVotersMenu()
             entriesApi
-                .getEntryCommentVoters(comment.id)
+                .getEntryCommentVoters(comment.entryId, comment.id)
                 .subscribeOn(schedulers.backgroundThread())
                 .observeOn(schedulers.mainThread())
                 .subscribe(

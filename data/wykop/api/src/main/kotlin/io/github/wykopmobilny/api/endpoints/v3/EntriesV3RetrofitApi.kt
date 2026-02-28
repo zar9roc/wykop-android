@@ -43,23 +43,24 @@ interface EntriesV3RetrofitApi {
         @Query("last_update") lastUpdate: EntriesLastUpdate? = null,
     ): WykopApiResponseV3<List<EntryResponseV3>>
 
-    @GET("v3/entries/observed")
-    suspend fun getObserved(
+    @GET("v3/observed/tags/stream")
+    suspend fun getObservedTagsStream(
         @Query("page") page: Int,
     ): WykopApiResponseV3<List<EntryResponseV3>>
 
-    @GET("v3/entries/{id}")
+    @GET("v3/entries/{entryId}")
     suspend fun getEntry(
-        @Path("id") id: Long,
+        @Path("entryId") entryId: Long,
     ): WykopApiResponseV3<EntryResponseV3>
 
-    @GET("v3/entries/{id}/votes/up")
+    @GET("v3/entries/{entryId}/votes")
     suspend fun getEntryVoters(
-        @Path("id") id: Long,
+        @Path("entryId") entryId: Long,
     ): WykopApiResponseV3<List<UserShortResponseV3>>
 
-    @GET("v3/entries/comments/{id}/votes/up")
-    suspend fun getCommentUpvoters(
-        @Path("id") id: Long,
+    @GET("v3/entries/{entryId}/comments/{commentId}/votes")
+    suspend fun getCommentVoters(
+        @Path("entryId") entryId: Long,
+        @Path("commentId") commentId: Long,
     ): WykopApiResponseV3<List<UserShortResponseV3>>
 }
