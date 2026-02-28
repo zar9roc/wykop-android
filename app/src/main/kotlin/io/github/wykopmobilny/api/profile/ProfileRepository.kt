@@ -1,22 +1,31 @@
 package io.github.wykopmobilny.api.profile
 
 import io.github.wykopmobilny.api.UserTokenRefresher
-import io.github.wykopmobilny.api.endpoints.ProfileRetrofitApi
-import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformer
+import io.github.wykopmobilny.api.endpoints.v3.ProfileV3RetrofitApi
+import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
 import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.responses.BadgeResponse
+import io.github.wykopmobilny.api.responses.ObserveStateResponse
 import io.github.wykopmobilny.api.responses.ProfileResponse
+import io.github.wykopmobilny.api.responses.v3.entries.EntryCommentResponseV3
+import io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3
+import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
+import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
+import io.github.wykopmobilny.api.responses.v3.links.RelatedResponseV3
+import io.github.wykopmobilny.api.responses.v3.profile.BadgeResponseV3
+import io.github.wykopmobilny.api.responses.v3.user.UserFullResponseV3
 import io.github.wykopmobilny.data.storage.api.AppStorage
 import io.github.wykopmobilny.models.dataclass.EntryComment
 import io.github.wykopmobilny.models.dataclass.EntryLink
 import io.github.wykopmobilny.models.dataclass.LinkComment
 import io.github.wykopmobilny.models.dataclass.Related
-import io.github.wykopmobilny.models.mapper.apiv2.EntryCommentMapper
-import io.github.wykopmobilny.models.mapper.apiv2.EntryLinkMapper
-import io.github.wykopmobilny.models.mapper.apiv2.LinkCommentMapper
-import io.github.wykopmobilny.models.mapper.apiv2.RelatedMapper
-import io.github.wykopmobilny.models.mapper.apiv2.filterEntries
-import io.github.wykopmobilny.models.mapper.apiv2.filterLinks
+import io.github.wykopmobilny.models.mapper.apiv3.BadgeMapperV3
+import io.github.wykopmobilny.models.mapper.apiv3.EntryCommentMapperV3
+import io.github.wykopmobilny.models.mapper.apiv3.LinkCommentMapperV3
+import io.github.wykopmobilny.models.mapper.apiv3.RelatedMapperV3
+import io.github.wykopmobilny.models.mapper.apiv3.UserFullMapperV3
+import io.github.wykopmobilny.models.mapper.apiv3.filterEntriesV3
+import io.github.wykopmobilny.models.mapper.apiv3.filterLinksV3
 import io.reactivex.Single
 import kotlinx.coroutines.rx2.rxSingle
 import javax.inject.Inject
@@ -24,126 +33,126 @@ import javax.inject.Inject
 class ProfileRepository
     @Inject
     constructor(
-        private val profileApi: ProfileRetrofitApi,
+        private val profileApiV3: ProfileV3RetrofitApi,
         private val userTokenRefresher: UserTokenRefresher,
         private val owmContentFilter: OWMContentFilter,
         private val appStorage: AppStorage,
     ) : ProfileApi {
         override fun getIndex(username: String): Single<ProfileResponse> =
-            rxSingle { profileApi.getIndex(username) }
+            rxSingle { profileApiV3.getUserProfile(username) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
+                .compose(ErrorHandlerTransformerV3<UserFullResponseV3>())
+                .map { UserFullMapperV3.map(it) }
 
         override fun getAdded(
             username: String,
             page: Int,
-        ) = rxSingle { profileApi.getAdded(username, page) }
+        ) = rxSingle { profileApiV3.getUserLinksAdded(username, page) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
-            .map { it.filterLinks(owmContentFilter = owmContentFilter) }
+            .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
+            .map { it.filterLinksV3(owmContentFilter = owmContentFilter) }
 
         override fun getActions(username: String): Single<List<EntryLink>> =
-            rxSingle { profileApi.getActions(username) }
+            rxSingle { profileApiV3.getUserActions(username) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
-                .map { it.map { EntryLinkMapper.map(it, owmContentFilter) } }
+                .compose(ErrorHandlerTransformerV3<List<EntryResponseV3>>())
+                .map { entries ->
+                    entries
+                        .filterEntriesV3(owmContentFilter = owmContentFilter)
+                        .map { entry -> EntryLink(link = null, entry = entry) }
+                }
 
         override fun getPublished(
             username: String,
             page: Int,
-        ) = rxSingle { profileApi.getPublished(username, page) }
+        ) = rxSingle { profileApiV3.getUserLinksPublished(username, page) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
-            .map { it.filterLinks(owmContentFilter = owmContentFilter) }
+            .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
+            .map { it.filterLinksV3(owmContentFilter = owmContentFilter) }
 
         override fun getEntries(
             username: String,
             page: Int,
-        ) = rxSingle { profileApi.getEntries(username, page) }
+        ) = rxSingle { profileApiV3.getUserEntriesAdded(username, page) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
-            .map { it.filterEntries(owmContentFilter = owmContentFilter) }
+            .compose(ErrorHandlerTransformerV3<List<EntryResponseV3>>())
+            .map { it.filterEntriesV3(owmContentFilter = owmContentFilter) }
 
         override fun getEntriesComments(
             username: String,
             page: Int,
         ): Single<List<EntryComment>> =
-            rxSingle { profileApi.getEntriesComments(username, page) }
+            rxSingle { profileApiV3.getUserEntriesCommented(username, page) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
-                .map { it.map { EntryCommentMapper.map(it, owmContentFilter) } }
+                .compose(ErrorHandlerTransformerV3<List<EntryCommentResponseV3>>())
+                .map { it.map { response -> EntryCommentMapperV3.map(response, owmContentFilter) } }
 
         override fun getLinkComments(
             username: String,
             page: Int,
         ): Single<List<LinkComment>> =
-            rxSingle { profileApi.getLinkComments(username, page) }
+            rxSingle { profileApiV3.getUserLinksCommented(username, page) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
-                .map { it.map { LinkCommentMapper.map(it, owmContentFilter) } }
+                .compose(ErrorHandlerTransformerV3<List<LinkCommentResponseV3>>())
+                .map { it.map { response -> LinkCommentMapperV3.map(response, owmContentFilter) } }
 
         override fun getBuried(
             username: String,
             page: Int,
-        ) = rxSingle { profileApi.getBuried(username, page) }
+        ) = rxSingle { profileApiV3.getUserLinksDown(username, page) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
-            .map { it.filterLinks(owmContentFilter = owmContentFilter) }
+            .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
+            .map { it.filterLinksV3(owmContentFilter = owmContentFilter) }
 
         override fun getDigged(
             username: String,
             page: Int,
-        ) = rxSingle { profileApi.getDigged(username, page) }
+        ) = rxSingle { profileApiV3.getUserLinksUp(username, page) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
-            .map { it.filterLinks(owmContentFilter = owmContentFilter) }
+            .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
+            .map { it.filterLinksV3(owmContentFilter = owmContentFilter) }
 
         override fun getBadges(
             username: String,
             page: Int,
         ): Single<List<BadgeResponse>> =
-            rxSingle { profileApi.getBadges(username, page) }
+            rxSingle { profileApiV3.getUserBadges(username) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
+                .compose(ErrorHandlerTransformerV3<List<BadgeResponseV3>>())
+                .map { it.map { response -> BadgeMapperV3.map(response) } }
 
         override fun getRelated(
             username: String,
             page: Int,
         ): Single<List<Related>> =
-            rxSingle { profileApi.getRelated(username, page) }
+            rxSingle { profileApiV3.getUserLinksRelated(username, page) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
-                .map { it.map { RelatedMapper.map(it) } }
+                .compose(ErrorHandlerTransformerV3<List<RelatedResponseV3>>())
+                .map { it.map { response -> RelatedMapperV3.map(response) } }
 
         override fun observe(tag: String) =
-            rxSingle { profileApi.observe(tag) }
+            rxSingle { profileApiV3.observeUser(tag) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
+                .map { ObserveStateResponse(observe = true) }
 
         override fun unobserve(tag: String) =
-            rxSingle { profileApi.unobserve(tag) }
+            rxSingle { profileApiV3.unobserveUser(tag) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
+                .map { ObserveStateResponse(observe = false) }
 
         override fun block(tag: String) =
-            rxSingle { profileApi.block(tag) }
+            rxSingle { profileApiV3.blockUser(tag) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
-                .flatMap { response ->
-                    rxSingle {
-                        appStorage.blacklistQueries.insertOrReplaceProfile(tag.removePrefix("@"))
-                        response
-                    }
+                .map {
+                    appStorage.blacklistQueries.insertOrReplaceProfile(tag.removePrefix("@"))
+                    ObserveStateResponse(observe = false)
                 }
 
         override fun unblock(tag: String) =
-            rxSingle { profileApi.unblock(tag) }
+            rxSingle { profileApiV3.unblockUser(tag) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
-                .flatMap { response ->
-                    rxSingle {
-                        appStorage.blacklistQueries.deleteProfile(tag.removePrefix("@"))
-                        response
-                    }
+                .map {
+                    appStorage.blacklistQueries.deleteProfile(tag.removePrefix("@"))
+                    ObserveStateResponse(observe = false)
                 }
     }
