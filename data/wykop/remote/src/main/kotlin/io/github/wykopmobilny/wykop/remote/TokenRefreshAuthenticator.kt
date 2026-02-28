@@ -15,6 +15,7 @@ import okhttp3.Response
 import okhttp3.Route
 import retrofit2.HttpException
 import java.io.IOException
+import java.util.Base64
 import javax.inject.Inject
 
 internal class TokenRefreshAuthenticator
@@ -30,7 +31,7 @@ internal class TokenRefreshAuthenticator
             val path = response.request.url.encodedPath
 
             // Only handle 401 for v3 API endpoints (except auth and connect endpoints)
-            if (!path.startsWith("/v3/") || path.startsWith("/v3/auth") || path == "/v3/connect") {
+            if (!path.startsWith("v3/") || path.startsWith("v3/auth") || path == "/v3/connect") {
                 return null
             }
 
@@ -85,8 +86,8 @@ internal class TokenRefreshAuthenticator
 
             val newAuthData = newTokenResponse?.data ?: return null
 
-            // Calculate expiration timestamp
-            val expiresAt = System.currentTimeMillis() + (newAuthData.expiresIn * 1000)
+            // Decode expiration from JWT token payload
+            val expiresAt = decodeJwtExpiration(newAuthData.token)
 
             // Save new tokens
             val newToken =
@@ -105,5 +106,16 @@ internal class TokenRefreshAuthenticator
                 .newBuilder()
                 .header("Authorization", "Bearer ${newToken.accessToken}")
                 .build()
+        }
+
+        private fun decodeJwtExpiration(token: String): Long {
+            val parts = token.split(".")
+            if (parts.size != 3) return 0L
+
+            val payloadJson = String(Base64.getUrlDecoder().decode(parts[1]))
+            val expMatch = """"exp"\s*:\s*(\d+)""".toRegex().find(payloadJson)
+            val expSeconds = expMatch?.groups?.get(1)?.value?.toLongOrNull() ?: return 0L
+
+            return expSeconds * 1000
         }
     }

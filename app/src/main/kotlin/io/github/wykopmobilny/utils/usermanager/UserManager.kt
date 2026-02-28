@@ -1,10 +1,7 @@
 package io.github.wykopmobilny.utils.usermanager
 
 import android.content.Context
-import io.github.aakira.napier.Napier
-import io.github.wykopmobilny.api.endpoints.v3.UsersV3RetrofitApi
 import io.github.wykopmobilny.api.responses.LoginResponse
-import io.github.wykopmobilny.api.responses.v3.auth.AuthResponseV3
 import io.github.wykopmobilny.storage.api.JwtToken
 import io.github.wykopmobilny.storage.api.JwtTokenStorage
 import io.github.wykopmobilny.storage.api.LoggedUserInfo
@@ -38,11 +35,6 @@ interface UserManagerApi : SimpleUserManagerApi {
 
     suspend fun saveCredentials(credentials: LoginResponse)
 
-    suspend fun saveJwtCredentials(
-        username: String,
-        authResponse: AuthResponseV3,
-    )
-
     suspend fun getJwtToken(): JwtToken?
 
     suspend fun isJwtAuthorized(): Boolean
@@ -61,7 +53,6 @@ class UserManager
     constructor(
         private val userInfoStorage: UserInfoStorage,
         private val jwtTokenStorage: JwtTokenStorage,
-        private val usersV3Api: UsersV3RetrofitApi,
         private val appScopes: AppScopes,
     ) : UserManagerApi {
         private val userInfo =
@@ -84,49 +75,6 @@ class UserManager
                         backgroundUrl = credentials.profile.background,
                     ),
             )
-        }
-
-        override suspend fun saveJwtCredentials(
-            username: String,
-            authResponse: AuthResponseV3,
-        ) {
-            val expiresAt = System.currentTimeMillis() + (authResponse.expiresIn * 1000)
-            jwtTokenStorage.updateJwtToken(
-                JwtToken(
-                    accessToken = authResponse.token,
-                    refreshToken = authResponse.refreshToken,
-                    expiresAt = expiresAt,
-                ),
-            )
-
-            // Wait for token to be available in Flow (DataStore is async)
-            jwtTokenStorage.jwtToken.first { it != null }
-
-            // Fetch user profile using JWT
-            val profileResponse = usersV3Api.getUserProfile()
-            profileResponse.data?.let { profile ->
-                // Fetch full profile to get background
-                val backgroundUrl =
-                    try {
-                        val fullProfileResponse = usersV3Api.getUserFullProfile(profile.username)
-                        fullProfileResponse.data?.background
-                    } catch (e: retrofit2.HttpException) {
-                        Napier.w("Failed to fetch full profile for background: HTTP ${e.code()}", e)
-                        null // Fallback to null if full profile fetch fails
-                    } catch (e: java.io.IOException) {
-                        Napier.w("Failed to fetch full profile for background: network error", e)
-                        null // Fallback to null if full profile fetch fails
-                    }
-
-                userInfoStorage.updateLoggedUser(
-                    LoggedUserInfo(
-                        id = profile.username,
-                        userToken = "", // Empty for JWT flow (legacy field)
-                        avatarUrl = profile.avatar,
-                        backgroundUrl = backgroundUrl,
-                    ),
-                )
-            }
         }
 
         override suspend fun getJwtToken(): JwtToken? = jwtTokenStorage.jwtToken.first()
