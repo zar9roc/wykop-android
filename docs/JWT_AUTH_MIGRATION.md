@@ -210,17 +210,38 @@ userManager.logoutUser()
 // Czyści: sessionStorage, userInfoStorage, jwtTokenStorage
 ```
 
+## Faza 2 - User Profile Endpoint (✅ COMPLETED 2026-02-28)
+
+### Zaimplementowano:
+1. ✅ **UserMeResponseV3** - Model response dla endpointu `/v3/users/me`
+2. ✅ **UsersV3RetrofitApi** - Nowy interfejs Retrofit z metodą `getUserProfile()`
+3. ✅ **Integracja w UserManager** - `saveJwtCredentials()` teraz pobiera profil po logowaniu
+4. ✅ **Zapis profilu** - Automatyczne zapisywanie do `UserInfoStorage` z JWT flow
+
+### Zmienione pliki:
+- `data/wykop/api/.../responses/v3/user/UserMeResponseV3.kt` - Created
+- `data/wykop/api/.../endpoints/v3/UsersV3RetrofitApi.kt` - Created
+- `data/wykop/api/.../WykopApi.kt` - Dodano `usersV3RetrofitApi()`
+- `data/wykop/remote/.../WykopModule.kt` - Dodano provider dla UsersV3RetrofitApi
+- `app/.../utils/usermanager/UserManager.kt` - Pobieranie profilu po logowaniu JWT
+
+### Flow po logowaniu JWT:
+1. Użytkownik loguje się przez `/v3/auth` → otrzymuje token
+2. Token zapisywany do `JwtTokenStorage`
+3. **NOWE**: Automatyczne wywołanie `/v3/users/me` dla pobrania profilu
+4. Profil zapisywany do `UserInfoStorage` (z pustym `userToken` - legacy field)
+5. Użytkownik w pełni zalogowany z profilem
+
 ## Ograniczenia i TODO
 
 ### Obecne ograniczenia:
-1. ❌ Brak integracji z UI - nie ma ekranu logowania JWT (wymaga implementacji)
-2. ❌ `saveJwtCredentials()` nie pobiera profilu użytkownika - tylko zapisuje token
-3. ⚠️ `isJwtAuthorized()` nie sprawdza expiration - tylko czy token istnieje
-4. ⚠️ Stary system autentykacji (v1/v2) nadal aktywny - równoległa praca
+1. ⚠️ `isJwtAuthorized()` nie sprawdza expiration - tylko czy token istnieje
+2. ⚠️ Stary system autentykacji (v1/v2) nadal aktywny - równoległa praca
+3. ⚠️ `userToken` w `LoggedUserInfo` jest pusty dla JWT flow (legacy field)
 
 ### TODO (kolejne fazy):
-- **Faza 1**: Utworzyć LoginV3Activity z formularzem username/password
-- **Faza 2**: Dodać endpoint GET `/v3/users/me` i pobieranie profilu po logowaniu JWT
+- ~~**Faza 1**: Utworzyć LoginV3Activity z formularzem username/password~~ ✅ COMPLETED
+- ~~**Faza 2**: Dodać endpoint GET `/v3/users/me` i pobieranie profilu po logowaniu JWT~~ ✅ COMPLETED
 - **Faza 3**: Sprawdzanie expiration w `isJwtAuthorized()` (currentTime < expiresAt)
 - **Faza 4**: Migracja wszystkich endpointów zapisu (POST/PUT/DELETE) na v3
 - **Faza 5**: Deprecation starego systemu autentykacji (po pełnej migracji)

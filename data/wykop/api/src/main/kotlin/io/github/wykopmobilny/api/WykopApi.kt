@@ -16,6 +16,7 @@ import io.github.wykopmobilny.api.endpoints.TagRetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.AuthV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.EntriesV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.LinksV3RetrofitApi
+import io.github.wykopmobilny.api.endpoints.v3.UsersV3RetrofitApi
 
 interface WykopApi {
     fun addLinkRetrofitApi(): AddLinkRetrofitApi
@@ -49,6 +50,8 @@ interface WykopApi {
     fun linksV3RetrofitApi(): LinksV3RetrofitApi
 
     fun authV3RetrofitApi(): AuthV3RetrofitApi
+
+    fun usersV3RetrofitApi(): UsersV3RetrofitApi
 
     fun errorBodyParser(): ErrorBodyParser
 }

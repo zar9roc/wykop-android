@@ -1,6 +1,7 @@
 package io.github.wykopmobilny.utils.usermanager
 
 import android.content.Context
+import io.github.wykopmobilny.api.endpoints.v3.UsersV3RetrofitApi
 import io.github.wykopmobilny.api.responses.LoginResponse
 import io.github.wykopmobilny.api.responses.v3.auth.AuthResponseV3
 import io.github.wykopmobilny.storage.api.JwtToken
@@ -61,6 +62,7 @@ class UserManager
         private val sessionStorage: SessionStorage,
         private val userInfoStorage: UserInfoStorage,
         private val jwtTokenStorage: JwtTokenStorage,
+        private val usersV3Api: UsersV3RetrofitApi,
         private val appScopes: AppScopes,
     ) : UserManagerApi {
         private val userInfo =
@@ -98,8 +100,19 @@ class UserManager
                     expiresAt = expiresAt,
                 ),
             )
-            // TODO: Fetch user profile using JWT and save to userInfoStorage
-            // For now, we only save JWT token
+
+            // Fetch user profile using JWT
+            val profileResponse = usersV3Api.getUserProfile()
+            profileResponse.data?.let { profile ->
+                userInfoStorage.updateLoggedUser(
+                    LoggedUserInfo(
+                        id = profile.username,
+                        userToken = "", // Empty for JWT flow (legacy field)
+                        avatarUrl = profile.avatar,
+                        backgroundUrl = profile.background,
+                    ),
+                )
+            }
         }
 
         override suspend fun getJwtToken(): JwtToken? = jwtTokenStorage.jwtToken.first()
