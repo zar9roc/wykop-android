@@ -30,6 +30,18 @@ internal class MoshiErrorBodyParserV3
 
         override suspend fun parse(body: ResponseBody) =
             withContext(AppDispatchers.Default) {
+                // Check Content-Type before attempting to parse as JSON
+                val contentType = body.contentType()
+                if (contentType != null && contentType.toString().contains("text/html", ignoreCase = true)) {
+                    Napier.w(
+                        message =
+                            "API v3 returned HTML instead of JSON. " +
+                                "This usually indicates a server error (500) or maintenance page. " +
+                                "Content-Type: $contentType",
+                    )
+                    return@withContext null
+                }
+
                 try {
                     adapter.fromJson(body.source())
                 } catch (e: JsonDataException) {
