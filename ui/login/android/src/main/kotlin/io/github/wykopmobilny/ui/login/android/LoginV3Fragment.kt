@@ -10,7 +10,6 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.core.view.isVisible
-import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -59,27 +58,7 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
 
     private fun setupClickListeners() {
         binding.loginButton.setOnClickListener {
-            val username =
-                binding.usernameEditText.text
-                    ?.toString()
-                    ?.trim()
-            val password = binding.passwordEditText.text?.toString()
-
-            when {
-                username.isNullOrBlank() -> {
-                    binding.usernameLayout.error = getString(R.string.username_required)
-                }
-
-                password.isNullOrBlank() -> {
-                    binding.passwordLayout.error = getString(R.string.password_required)
-                }
-
-                else -> {
-                    binding.usernameLayout.error = null
-                    binding.passwordLayout.error = null
-                    loginV3.login(username, password)
-                }
-            }
+            loginV3.login()
         }
 
         binding.switchToOAuthButton.setOnClickListener {
@@ -89,15 +68,6 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
                 .beginTransaction()
                 .replace(containerId, loginFragment())
                 .commit()
-        }
-
-        // Clear errors on text change
-        binding.usernameEditText.doAfterTextChanged {
-            binding.usernameLayout.error = null
-        }
-
-        binding.passwordEditText.doAfterTextChanged {
-            binding.passwordLayout.error = null
         }
     }
 
@@ -138,8 +108,6 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
                         .collect { isLoading ->
                             binding.fullScreenProgress.isVisible = isLoading
                             binding.loginButton.isEnabled = !isLoading
-                            binding.usernameEditText.isEnabled = !isLoading
-                            binding.passwordEditText.isEnabled = !isLoading
                         }
                 }
 

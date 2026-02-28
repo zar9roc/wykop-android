@@ -47,52 +47,14 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="24dp"
+            android:gravity="center_horizontal"
             >
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/usernameLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/username"
-                app:startIconDrawable="@android:drawable/ic_dialog_email"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                >
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/usernameEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="text"
-                    android:maxLines="1"
-                    />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/passwordLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:hint="@string/password"
-                app:startIconDrawable="@android:drawable/ic_lock_lock"
-                app:endIconMode="password_toggle"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                >
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/passwordEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textPassword"
-                    android:maxLines="1"
-                    />
-            </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/loginButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="@string/login"
+                android:text="@string/login_connect"
                 android:textSize="16sp"
                 style="@style/Widget.Material3.Button"
                 />

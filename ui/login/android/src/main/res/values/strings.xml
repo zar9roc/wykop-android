@@ -1,10 +1,7 @@
 <resources>
 
     <string name="login">Zaloguj się</string>
-    <string name="login_jwt">Logowanie JWT</string>
-    <string name="username">Nazwa użytkownika</string>
-    <string name="password">Hasło</string>
+    <string name="login_jwt">Logowanie</string>
+    <string name="login_connect">Zaloguj się przez WykopConnect</string>
     <string name="use_oauth_login">Użyj OAuth (stary sposób)</string>
-    <string name="username_required">Nazwa użytkownika jest wymagana</string>
-    <string name="password_required">Hasło jest wymagane</string>
 </resources>

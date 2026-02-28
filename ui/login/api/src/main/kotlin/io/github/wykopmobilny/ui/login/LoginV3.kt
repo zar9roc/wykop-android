@@ -4,10 +4,7 @@ import io.github.wykopmobilny.ui.base.Query
 import io.github.wykopmobilny.ui.base.components.ErrorDialogUi
 
 interface LoginV3 : Query<LoginV3Ui> {
-    fun login(
-        username: String,
-        password: String,
-    )
+    fun login()
 
     fun clearError()
 }

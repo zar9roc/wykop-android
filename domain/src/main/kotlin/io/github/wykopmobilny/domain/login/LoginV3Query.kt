@@ -35,7 +35,7 @@ class LoginV3Query
         private val appConfig: AppConfig,
     ) : LoginV3 {
         private val connectUrlState = MutableStateFlow<String?>(null)
-        private var currentUsername: String? = null
+        private var isLoginFlowActive = false
 
         override fun invoke() =
             combine(viewStateStorage.state, connectUrlState) { viewState, connectUrl ->
@@ -55,11 +55,8 @@ class LoginV3Query
                 )
             }
 
-        override fun login(
-            username: String,
-            password: String,
-        ) = appScopes.safe<LoginScope> {
-            currentUsername = username
+        override fun login() = appScopes.safe<LoginScope> {
+            isLoginFlowActive = true
             viewStateStorage.update { it.copy(isLoading = true) }
             connectUrlState.value = null
 
@@ -92,6 +89,7 @@ class LoginV3Query
                 // Step 4: Set connectUrl for UI to open WebView
                 connectUrlState.value = connectData.connectUrl
             }.onFailure { throwable ->
+                isLoginFlowActive = false
                 viewStateStorage.update {
                     it.copy(isLoading = false, failedAction = FailedAction(cause = throwable, retryAction = null))
                 }
@@ -103,7 +101,7 @@ class LoginV3Query
 
         private fun onUrlInvoked(url: String) =
             appScopes.safe<LoginScope> {
-                val username = currentUsername ?: return@safe
+                if (!isLoginFlowActive) return@safe
                 val credentials =
                     withContext(Dispatchers.Default) {
                         val match = connectCallbackPattern.find(url) ?: return@withContext null
