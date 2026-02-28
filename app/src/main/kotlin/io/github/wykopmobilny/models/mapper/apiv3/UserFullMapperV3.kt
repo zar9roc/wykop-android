@@ -3,6 +3,7 @@ package io.github.wykopmobilny.models.mapper.apiv3
 import io.github.wykopmobilny.api.responses.ProfileResponse
 import io.github.wykopmobilny.api.responses.v3.user.UserFullResponseV3
 import io.github.wykopmobilny.models.mapper.Mapper
+import io.github.wykopmobilny.utils.api.colorNameToGroupId
 import kotlinx.datetime.Instant
 
 object UserFullMapperV3 : Mapper<UserFullResponseV3, ProfileResponse> {
@@ -42,11 +43,7 @@ object UserFullMapperV3 : Mapper<UserFullResponseV3, ProfileResponse> {
                     )
                 },
             id = value.username,
-            color =
-                value.color
-                    ?.hex
-                    ?.removePrefix("#")
-                    ?.toIntOrNull(16) ?: 0,
+            color = colorNameToGroupId(value.color),
             sex = value.gender,
             avatar = value.avatar.orEmpty(),
         )

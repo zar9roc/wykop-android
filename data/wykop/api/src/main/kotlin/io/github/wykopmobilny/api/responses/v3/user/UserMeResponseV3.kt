@@ -12,18 +12,12 @@ data class UserMeResponseV3(
     @field:Json(name = "note") val note: Boolean?,
     @field:Json(name = "online") val online: Boolean?,
     @field:Json(name = "status") val status: String?,
-    @field:Json(name = "color") val color: UserColorResponseV3?,
+    @field:Json(name = "color") val color: String?,
     @field:Json(name = "verified") val verified: Boolean?,
     @field:Json(name = "follow") val follow: Boolean?,
     @field:Json(name = "rank") val rank: UserRankResponseV3?,
     @field:Json(name = "donation") val donation: UserDonationResponseV3?,
     @field:Json(name = "actions") val actions: UserActionsResponseV3?,
-)
-
-@JsonClass(generateAdapter = true)
-data class UserColorResponseV3(
-    @field:Json(name = "hex") val hex: String?,
-    @field:Json(name = "name") val name: String?,
 )
 
 @JsonClass(generateAdapter = true)

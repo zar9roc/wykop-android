@@ -18,54 +18,44 @@ fun parseDate(date: String): Date? {
     return format.parse(date)
 }
 
+/**
+ * Maps v3 API color name to a stable group ID used by [getGroupColor].
+ * Color definitions from /v3/config endpoint.
+ */
+fun colorNameToGroupId(name: String?): Int =
+    when (name) {
+        "green" -> 0
+        "orange" -> 1
+        "burgundy" -> 2
+        "purple" -> 3
+        "red" -> 4
+        "black" -> 5
+        else -> 0
+    }
+
 fun getGroupColor(
     role: Int,
     isUsingDarkTheme: Boolean = true,
 ): Int =
     when (role) {
-        0 -> {
-            Color.parseColor("#339933")
-        }
-
-        1 -> {
-            Color.parseColor("#ff5917")
-        }
-
-        2 -> {
-            Color.parseColor("#BB0000")
-        }
-
-        5 -> {
-            if (isUsingDarkTheme) {
-                Color.parseColor("#ffffff")
-            } else {
-                Color.parseColor("#000000")
-            }
-        }
-
-        999 -> {
-            Color.parseColor("#BF9B30")
-        }
-
-        1001 -> {
-            Color.parseColor("#999999")
-        }
-
-        1002 -> {
-            Color.parseColor("#999999")
-        }
-
-        2001 -> {
-            Color.parseColor("#3F6FA0")
-        }
-
-        else -> {
-            Color.BLUE
-        }
+        0 -> Color.parseColor("#339933")
+        1 -> Color.parseColor("#ff5917")
+        2 -> if (isUsingDarkTheme) Color.parseColor("#bb1111") else Color.parseColor("#990000")
+        3 -> if (isUsingDarkTheme) Color.parseColor("#694797") else Color.parseColor("#593787")
+        4 -> Color.parseColor("#d81e04")
+        5 -> if (isUsingDarkTheme) Color.parseColor("#ffffff") else Color.parseColor("#000000")
+        999 -> Color.parseColor("#BF9B30")
+        1001 -> Color.parseColor("#999999")
+        1002 -> Color.parseColor("#999999")
+        2001 -> Color.parseColor("#3F6FA0")
+        else -> Color.BLUE
     }
 
-fun Context.getGroupColor(role: Int): Int =
-    when (role) {
+fun Context.getGroupColor(role: Int): Int {
+    val isDark =
+        (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
+            android.content.res.Configuration.UI_MODE_NIGHT_YES
+    return when (role) {
         0 -> {
             Color.parseColor("#339933")
         }
@@ -75,7 +65,15 @@ fun Context.getGroupColor(role: Int): Int =
         }
 
         2 -> {
-            Color.parseColor("#BB0000")
+            if (isDark) Color.parseColor("#bb1111") else Color.parseColor("#990000")
+        }
+
+        3 -> {
+            if (isDark) Color.parseColor("#694797") else Color.parseColor("#593787")
+        }
+
+        4 -> {
+            Color.parseColor("#d81e04")
         }
 
         5 -> {
@@ -104,6 +102,7 @@ fun Context.getGroupColor(role: Int): Int =
             Color.BLUE
         }
     }
+}
 
 fun getGenderStripResource(authorSex: String): Int =
     when (authorSex) {

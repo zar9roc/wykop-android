@@ -66,7 +66,10 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
         }
 
         binding.submitCallbackButton.setOnClickListener {
-            val callbackUrl = binding.callbackUrlInput.text?.toString()?.trim()
+            val callbackUrl =
+                binding.callbackUrlInput.text
+                    ?.toString()
+                    ?.trim()
             if (callbackUrl.isNullOrBlank()) {
                 binding.callbackUrlInputLayout.error = getString(R.string.login_paste_url)
                 return@setOnClickListener
@@ -146,11 +149,12 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
                             Napier.i(tag = TAG) { "isLoggedIn changed: $isLoggedIn" }
                             if (isLoggedIn) {
                                 Napier.i(tag = TAG) { "Login successful, finishing activity" }
-                                Toast.makeText(
-                                    requireContext(),
-                                    getString(R.string.login_success),
-                                    Toast.LENGTH_SHORT,
-                                ).show()
+                                Toast
+                                    .makeText(
+                                        requireContext(),
+                                        getString(R.string.login_success),
+                                        Toast.LENGTH_SHORT,
+                                    ).show()
                                 requireActivity().finish()
                             }
                         }

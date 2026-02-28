@@ -13,7 +13,7 @@ data class UserFullResponseV3(
     @field:Json(name = "note") val note: Boolean?,
     @field:Json(name = "online") val online: Boolean?,
     @field:Json(name = "status") val status: String?,
-    @field:Json(name = "color") val color: UserColorResponseV3?,
+    @field:Json(name = "color") val color: String?,
     @field:Json(name = "verified") val verified: Boolean?,
     @field:Json(name = "follow") val follow: Boolean?,
     @field:Json(name = "rank") val rank: UserRankResponseV3?,
