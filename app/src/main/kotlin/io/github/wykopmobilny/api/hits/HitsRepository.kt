@@ -19,25 +19,28 @@ class HitsRepository
         override fun byMonth(
             year: Int,
             month: Int,
-        ) = rxSingle { hitsApiV3.getHits(page = 1, sort = "all", year = year, month = month) }
+            page: Int,
+        ) = rxSingle { hitsApiV3.getHits(page = page, sort = "all", year = year, month = month) }
             .retryWhen(userTokenRefresher)
             .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
             .map { links -> links.filterLinksV3(owmContentFilter) }
 
-        override fun currentDay() =
-            rxSingle { hitsApiV3.getHits(page = 1, sort = "day") }
+        override fun currentDay(page: Int) =
+            rxSingle { hitsApiV3.getHits(page = page, sort = "day") }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
                 .map { links -> links.filterLinksV3(owmContentFilter) }
 
-        override fun byYear(year: Int) =
-            rxSingle { hitsApiV3.getHits(page = 1, sort = "all", year = year) }
-                .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
-                .map { links -> links.filterLinksV3(owmContentFilter) }
+        override fun byYear(
+            year: Int,
+            page: Int,
+        ) = rxSingle { hitsApiV3.getHits(page = page, sort = "all", year = year) }
+            .retryWhen(userTokenRefresher)
+            .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
+            .map { links -> links.filterLinksV3(owmContentFilter) }
 
-        override fun currentWeek() =
-            rxSingle { hitsApiV3.getHits(page = 1, sort = "week") }
+        override fun currentWeek(page: Int) =
+            rxSingle { hitsApiV3.getHits(page = page, sort = "week") }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
                 .map { links -> links.filterLinksV3(owmContentFilter) }
