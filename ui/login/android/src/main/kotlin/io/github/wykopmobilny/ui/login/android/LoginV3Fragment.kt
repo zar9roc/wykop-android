@@ -1,15 +1,11 @@
 package io.github.wykopmobilny.ui.login.android
 
-import android.annotation.SuppressLint
 import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
-import android.webkit.CookieManager
-import android.webkit.WebResourceError
-import android.webkit.WebResourceRequest
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.widget.Toast
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -26,10 +22,14 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.resume
 
 fun loginV3Fragment(): Fragment = LoginV3Fragment()
+
+fun Fragment.handleLoginV3Callback(url: String) {
+    if (this is LoginV3Fragment) {
+        this.handleCallback(url)
+    }
+}
 
 internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
     private val binding by viewBinding(FragmentLoginV3Binding::bind)
@@ -46,20 +46,8 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
     ) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupWebView()
         setupClickListeners()
         observeState()
-    }
-
-    @SuppressLint("SetJavaScriptEnabled")
-    private fun setupWebView() {
-        Napier.d(tag = TAG) { "setupWebView: Initializing WebView settings" }
-        CookieManager.getInstance().apply {
-            setAcceptCookie(true)
-            setAcceptThirdPartyCookies(binding.webView, true)
-        }
-        binding.webView.settings.javaScriptEnabled = true
-        Napier.d(tag = TAG) { "setupWebView: WebView configured successfully" }
     }
 
     private fun setupClickListeners() {
@@ -81,57 +69,8 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
 
     private fun observeState() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 val sharedFlow = loginV3().stateIn(this)
-
-                binding.webView.webViewClient =
-                    object : WebViewClient() {
-                        override fun onPageStarted(
-                            view: WebView?,
-                            url: String?,
-                            favicon: android.graphics.Bitmap?,
-                        ) {
-                            Napier.d(tag = TAG) { "onPageStarted: $url" }
-                            super.onPageStarted(view, url, favicon)
-                        }
-
-                        override fun onPageFinished(
-                            view: WebView?,
-                            url: String?,
-                        ) {
-                            Napier.d(tag = TAG) { "onPageFinished: $url" }
-                            super.onPageFinished(view, url)
-                        }
-
-                        override fun onReceivedError(
-                            view: WebView?,
-                            request: WebResourceRequest?,
-                            error: WebResourceError?,
-                        ) {
-                            Napier.e(tag = TAG) {
-                                "onReceivedError: url=${request?.url}, errorCode=${error?.errorCode}, description=${error?.description}"
-                            }
-                            super.onReceivedError(view, request, error)
-                        }
-
-                        override fun shouldOverrideUrlLoading(
-                            view: WebView,
-                            request: WebResourceRequest,
-                        ): Boolean {
-                            val url = request.url.toString()
-                            Napier.d(tag = TAG) { "shouldOverrideUrlLoading: URL=$url" }
-                            val state = sharedFlow.value
-                            val isCallback = state.isCallbackUrl(url)
-                            Napier.d(tag = TAG) { "shouldOverrideUrlLoading: isCallbackUrl=$isCallback" }
-                            if (isCallback) {
-                                Napier.i(tag = TAG) { "shouldOverrideUrlLoading: Callback URL detected, parsing credentials" }
-                                state.parseUrlAction(url)
-                                Napier.i(tag = TAG) { "shouldOverrideUrlLoading: parseUrlAction completed" }
-                                return true
-                            }
-                            return false
-                        }
-                    }
 
                 launch {
                     sharedFlow
@@ -139,17 +78,9 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
                         .distinctUntilChanged()
                         .collect { connectUrl ->
                             Napier.i(tag = TAG) { "connectUrl changed: $connectUrl" }
-                            val showWebView = connectUrl != null
-                            binding.webView.isVisible = showWebView
-                            binding.loginCard.isVisible = !showWebView
                             if (connectUrl != null) {
-                                Napier.i(tag = TAG) { "Loading connect URL in WebView" }
-                                Napier.d(tag = TAG) { "Removing all cookies before loading URL" }
-                                removeAllCookiesAndWait()
-                                Napier.d(tag = TAG) { "Cookies removed, loading URL" }
-                                binding.webView.loadUrl(connectUrl)
-                            } else {
-                                Napier.d(tag = TAG) { "WebView hidden, showing login card" }
+                                Napier.i(tag = TAG) { "Opening Chrome Custom Tab with connect URL" }
+                                openChromeCustomTab(connectUrl)
                             }
                         }
                 }
@@ -188,18 +119,28 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
         }
     }
 
-    /**
-     * Suspends until all cookies are removed from CookieManager.
-     * This ensures that the WebView loads the login page without any existing session cookies,
-     * preventing automatic redirects before the user can interact with the GDPR overlay.
-     */
-    private suspend fun removeAllCookiesAndWait() =
-        suspendCancellableCoroutine { continuation ->
-            CookieManager.getInstance().removeAllCookies { success ->
-                Napier.d(tag = TAG) { "removeAllCookiesAndWait: success=$success" }
-                continuation.resume(Unit)
+    private fun openChromeCustomTab(url: String) {
+        val customTabsIntent =
+            CustomTabsIntent
+                .Builder()
+                .setShowTitle(true)
+                .build()
+        customTabsIntent.launchUrl(requireContext(), Uri.parse(url))
+    }
+
+    fun handleCallback(url: String) {
+        Napier.i(tag = TAG) { "handleCallback: URL=$url" }
+        viewLifecycleOwner.lifecycleScope.launch {
+            val state = loginV3().stateIn(viewLifecycleOwner.lifecycleScope).value
+            val isCallback = state.isCallbackUrl(url)
+            Napier.d(tag = TAG) { "handleCallback: isCallbackUrl=$isCallback" }
+            if (isCallback) {
+                Napier.i(tag = TAG) { "handleCallback: Callback URL detected, parsing credentials" }
+                state.parseUrlAction(url)
+                Napier.i(tag = TAG) { "handleCallback: parseUrlAction completed" }
             }
         }
+    }
 
     companion object {
         private const val TAG = "LoginV3Fragment"
