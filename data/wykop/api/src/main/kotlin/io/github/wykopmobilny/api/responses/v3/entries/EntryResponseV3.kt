@@ -3,7 +3,6 @@ package io.github.wykopmobilny.api.responses.v3.entries
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import io.github.wykopmobilny.api.responses.v3.common.ActionsResponseV3
-import io.github.wykopmobilny.api.responses.v3.media.CardResponseV3
 import io.github.wykopmobilny.api.responses.v3.media.MediaResponseV3
 import io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3
 import kotlinx.datetime.Instant
@@ -28,6 +27,5 @@ data class EntryResponseV3(
     @field:Json(name = "actions") val actions: ActionsResponseV3?,
     @field:Json(name = "deleted") val deleted: Boolean?,
     @field:Json(name = "archive") val archive: Boolean?,
-    @field:Json(name = "card") val card: CardResponseV3?,
     @field:Json(name = "survey") val survey: SurveyResponseV3?,
 )
