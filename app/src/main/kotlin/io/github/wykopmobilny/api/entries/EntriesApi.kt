@@ -106,7 +106,10 @@ interface EntriesApi {
 
     fun getEntryVoters(id: Long): Single<List<Voter>>
 
-    fun getEntryCommentVoters(entryId: Long, commentId: Long): Single<List<Voter>>
+    fun getEntryCommentVoters(
+        entryId: Long,
+        commentId: Long,
+    ): Single<List<Voter>>
 }
 
 data class FilteredData<T>(

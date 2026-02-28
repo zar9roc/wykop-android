@@ -230,8 +230,12 @@ class EntryCommentViewHolder(
                 comment.fullDate
                     .toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
                     .run {
-                        org.threeten.bp.LocalDateTime.of(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond)
-                    }.format(org.threeten.bp.format.DateTimeFormatter.ofLocalizedDateTime(org.threeten.bp.format.FormatStyle.MEDIUM))
+                        org.threeten.bp.LocalDateTime
+                            .of(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond)
+                    }.format(
+                        org.threeten.bp.format.DateTimeFormatter
+                            .ofLocalizedDateTime(org.threeten.bp.format.FormatStyle.MEDIUM),
+                    )
             date.text = dateAsString
             comment.app?.let {
                 date.text =

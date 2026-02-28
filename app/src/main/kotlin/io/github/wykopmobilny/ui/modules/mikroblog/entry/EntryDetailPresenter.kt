@@ -89,10 +89,8 @@ class EntryDetailPresenter
                             entry.comments.clear()
                             entry.comments.addAll(comments)
                             entry
-                        }
-                        .onErrorReturn { entry }
-                }
-                .subscribeOn(schedulers.backgroundThread())
+                        }.onErrorReturn { entry }
+                }.subscribeOn(schedulers.backgroundThread())
                 .observeOn(schedulers.mainThread())
                 .subscribe(
                     { view?.showEntry(it) },

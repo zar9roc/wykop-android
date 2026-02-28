@@ -259,16 +259,18 @@ class EntriesRepository
                     }
                 }
 
-        override fun getEntryCommentVoters(entryId: Long, commentId: Long) =
-            rxSingle { entriesApiV3.getCommentVoters(entryId, commentId) }
-                .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3>>())
-                .map { users ->
-                    users.map { userResponse ->
-                        io.github.wykopmobilny.models.mapper.apiv3.VoterMapperV3
-                            .map(userResponse)
-                    }
+        override fun getEntryCommentVoters(
+            entryId: Long,
+            commentId: Long,
+        ) = rxSingle { entriesApiV3.getCommentVoters(entryId, commentId) }
+            .retryWhen(userTokenRefresher)
+            .compose(ErrorHandlerTransformerV3<List<io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3>>())
+            .map { users ->
+                users.map { userResponse ->
+                    io.github.wykopmobilny.models.mapper.apiv3.VoterMapperV3
+                        .map(userResponse)
                 }
+            }
     }
 
 internal fun String.allowImageOnly() = ifEmpty { " " }

@@ -39,7 +39,7 @@ class LinkComment(
         parcel.readInt(),
         parcel.readInt(),
         parcel.readInt(),
-        parcel.readValue(Long::class.java.classLoader) as Long?,
+        parcel.readValue(Long::class.java.classLoader) as? Long,
         parcel.readByte() != 0.toByte(),
         parcel.readLong(),
         parcel.readParcelable(Embed::class.java.classLoader),

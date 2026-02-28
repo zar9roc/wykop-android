@@ -98,7 +98,6 @@ class LoginV3Query
                         }
                     } ?: return@safe
                 viewStateStorage.update { it.copy(isLoading = true) }
-                connectUrlState.value = null
 
                 val (token, refreshToken, expiresAt) = credentials
 
@@ -118,8 +117,10 @@ class LoginV3Query
                     appRestarter.restart()
                 }.onFailure { throwable ->
                     jwtTokenStorage.updateJwtToken(null)
+                    connectUrlState.value = null
                     viewStateStorage.update { it.copy(isLoading = false, failedAction = FailedAction(cause = throwable)) }
                 }.onSuccess {
+                    connectUrlState.value = null
                     viewStateStorage.update { it.copy(isLoading = false, failedAction = null) }
                 }
             }
