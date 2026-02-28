@@ -16,4 +16,5 @@ data class LoginV3Ui(
     val isLoading: Boolean,
     val errorDialog: ErrorDialogUi?,
     val isLoggedIn: Boolean,
+    val connectUrl: String? = null,
 )
