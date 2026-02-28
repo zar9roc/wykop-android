@@ -11,6 +11,8 @@ import io.github.wykopmobilny.domain.utils.safe
 import io.github.wykopmobilny.kotlin.AppScopes
 import io.github.wykopmobilny.storage.api.BearerTokenStorage
 import io.github.wykopmobilny.storage.api.Blacklist
+import io.github.wykopmobilny.storage.api.JwtToken
+import io.github.wykopmobilny.storage.api.JwtTokenStorage
 import io.github.wykopmobilny.storage.api.LoggedUserInfo
 import io.github.wykopmobilny.storage.api.SessionStorage
 import io.github.wykopmobilny.storage.api.UserSession
@@ -23,6 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
+import java.util.Base64
 import javax.inject.Inject
 
 class LoginV3Query
@@ -30,6 +33,11 @@ class LoginV3Query
     constructor(
         private val authV3Api: AuthV3RetrofitApi,
         private val bearerTokenStorage: BearerTokenStorage,
+        private val jwtTokenStorage: JwtTokenStorage,
+        // TODO: Remove when UserManager is migrated to use jwtTokenStorage instead of sessionStorage
+        // Currently needed for backward compatibility:
+        // - UserManager.getUserCredentials() reads from userInfoStorage
+        // - UserManager.runIfLoggedIn() checks sessionStorage.session
         private val sessionStorage: SessionStorage,
         private val userInfoStore: Store<UserSession, LoggedUserInfo>,
         private val blacklistStore: Store<Unit, Blacklist>,
@@ -105,7 +113,7 @@ class LoginV3Query
         private fun onUrlInvoked(url: String) =
             appScopes.safe<LoginScope> {
                 val username = currentUsername ?: return@safe
-                val userSession =
+                val credentials =
                     withContext(Dispatchers.Default) {
                         val match = connectCallbackPattern.find(url) ?: return@withContext null
 
@@ -115,19 +123,34 @@ class LoginV3Query
                         if (token.isNullOrBlank() || refreshToken.isNullOrBlank()) {
                             null
                         } else {
-                            // TODO: Save refreshToken to JwtTokenStorage in future phase
-                            UserSession(username, token)
+                            // Decode JWT expiration timestamp
+                            val expiresAt = decodeJwtExpiration(token)
+                            Triple(token, refreshToken, expiresAt)
                         }
                     } ?: return@safe
                 viewStateStorage.update { it.copy(isLoading = true) }
                 connectUrlState.value = null
 
+                val (token, refreshToken, expiresAt) = credentials
+
                 runCatching {
+                    // Save JWT token (v3 proper way)
+                    jwtTokenStorage.updateJwtToken(
+                        JwtToken(
+                            accessToken = token,
+                            refreshToken = refreshToken,
+                            expiresAt = expiresAt,
+                        ),
+                    )
+
+                    // Keep backward compatibility (userInfoStore requires UserSession)
+                    val userSession = UserSession(username, token)
                     sessionStorage.updateSession(userSession)
                     userInfoStore.fresh(userSession)
                     blacklistStore.fresh(Unit)
                     appRestarter.restart()
                 }.onFailure { throwable ->
+                    jwtTokenStorage.updateJwtToken(null)
                     sessionStorage.updateSession(null)
                     userInfoStore.clearAll()
                     blacklistStore.clearAll()
@@ -146,5 +169,35 @@ class LoginV3Query
             // API v3 callback format: https://wykop.pl/?token={JWT}&rtoken={REFRESH_TOKEN}
             private val connectCallbackPattern =
                 "[?]token=([^&]+)&rtoken=([^&]+)".toRegex()
+
+            /**
+             * Decodes JWT token and extracts expiration timestamp.
+             * JWT format: header.payload.signature (all base64-encoded)
+             * Payload contains "exp" claim as Unix timestamp in seconds.
+             *
+             * @param token JWT access token
+             * @return Expiration timestamp in milliseconds (System.currentTimeMillis() format)
+             * @throws IllegalArgumentException if JWT is malformed or missing exp claim
+             */
+            private fun decodeJwtExpiration(token: String): Long {
+                val parts = token.split(".")
+                require(parts.size == 3) { "Invalid JWT format: expected 3 parts separated by dots" }
+
+                // Decode payload (second part) using Java Base64 decoder
+                val payloadJson = String(Base64.getUrlDecoder().decode(parts[1]))
+
+                // Extract exp claim using regex (avoiding JSONObject dependency)
+                val expMatch = """"exp"\s*:\s*(\d+)""".toRegex().find(payloadJson)
+                val expSeconds =
+                    expMatch
+                        ?.groups
+                        ?.get(1)
+                        ?.value
+                        ?.toLongOrNull()
+                        ?: throw IllegalArgumentException("JWT missing or invalid 'exp' claim")
+
+                // Convert from seconds to milliseconds
+                return expSeconds * 1000
+            }
         }
     }
