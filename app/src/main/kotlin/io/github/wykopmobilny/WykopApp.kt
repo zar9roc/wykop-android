@@ -174,6 +174,10 @@ open class WykopApp :
                 get() = firebase.getBoolean(RemoteConfigKeys.NOTIFICATIONS_ENABLED)
             override val youtubeKey
                 get() = firebase.getString(RemoteConfigKeys.YOUTUBE_KEY)
+            override val v3ApiKey: String
+                get() = BuildConfig.V3_API_KEY
+            override val v3ApiSecret: String
+                get() = BuildConfig.V3_API_SECRET
         }
 
     protected open val notifications by lazy {

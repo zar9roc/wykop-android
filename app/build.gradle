@@ -34,6 +34,9 @@ android {
         buildConfigField 'String', 'APP_SECRET', "\"${findProperty("wykop.secretKey")}\""
         buildConfigField 'String', 'APP_KEY', "\"${findProperty("wykop.appKey")}\""
         buildConfigField 'String', 'YOUTUBE_API_KEY', "\"${findProperty("wykop.youtubeKey")}\""
+        // API v3 credentials
+        buildConfigField 'String', 'V3_API_KEY', "\"${findProperty("wykop.v3.appKey")}\""
+        buildConfigField 'String', 'V3_API_SECRET', "\"${findProperty("wykop.v3.appSecret")}\""
     }
     namespace defaultConfig.applicationId
     testBuildType findProperty("testBuildType") ?: "debug"

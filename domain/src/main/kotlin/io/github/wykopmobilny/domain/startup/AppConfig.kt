@@ -7,4 +7,6 @@ interface AppConfig {
     val blacklistFlexInterval: Duration
     val notificationsEnabled: Boolean
     val youtubeKey: String
+    val v3ApiKey: String
+    val v3ApiSecret: String
 }

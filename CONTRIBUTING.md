@@ -3,7 +3,8 @@
 👍🎉 First off, thanks for taking the time to contribute! 🎉👍
 
 ## Useful links for external services
-- `wykop.appKey` and `wykop.secretKey` are API keys from Wykop, that shall be obtained [from wykop api site][wykop-api] (giving all permissions).
+- `wykop.appKey` and `wykop.secretKey` are API keys from Wykop (v1/v2 - deprecated), that shall be obtained [from wykop api site][wykop-api] (giving all permissions).
+- `wykop.v3.appKey` and `wykop.v3.appSecret` are API keys for Wykop API v3. These should be added to `local.properties` file and are required for the new authentication flow.
 - `wykop.googleKey` is an API key for YouTube player. It shall be obtained following [those developers.google.com instructions][youtube-api]. 
 
 ## Submitting changes

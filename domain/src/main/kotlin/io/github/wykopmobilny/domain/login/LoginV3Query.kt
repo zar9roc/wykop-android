@@ -3,6 +3,7 @@ package io.github.wykopmobilny.domain.login
 import io.github.wykopmobilny.api.endpoints.v3.AuthV3RetrofitApi
 import io.github.wykopmobilny.api.requests.v3.auth.AuthRequestV3
 import io.github.wykopmobilny.domain.login.di.LoginScope
+import io.github.wykopmobilny.domain.startup.AppConfig
 import io.github.wykopmobilny.domain.utils.safe
 import io.github.wykopmobilny.kotlin.AppScopes
 import io.github.wykopmobilny.storage.api.BearerTokenStorage
@@ -22,6 +23,7 @@ class LoginV3Query
         private val bearerTokenStorage: BearerTokenStorage,
         private val viewStateStorage: SimpleViewStateStorage,
         private val appScopes: AppScopes,
+        private val appConfig: AppConfig,
     ) : LoginV3 {
         private val connectUrlState = MutableStateFlow<String?>(null)
 
@@ -50,15 +52,10 @@ class LoginV3Query
             connectUrlState.value = null
 
             runCatching {
-                // TODO: Faza 3.x - Replace placeholder credentials with actual app credentials from BuildConfig/AppConfig
-                // These should be stored securely and not hardcoded.
-                val apiKey = "PLACEHOLDER_API_KEY"
-                val apiSecret = "PLACEHOLDER_API_SECRET"
-
                 // Step 1: POST /v3/auth to get app-level bearer token
                 val authResponse =
                     authV3Api.authenticate(
-                        AuthRequestV3(key = apiKey, secret = apiSecret),
+                        AuthRequestV3(key = appConfig.v3ApiKey, secret = appConfig.v3ApiSecret),
                     )
 
                 val authData = authResponse.data
