@@ -19,8 +19,8 @@ data class EntryCommentResponseV3(
     @field:Json(name = "adult") val adult: Boolean?,
     @field:Json(name = "deletable") val deletable: Boolean?,
     @field:Json(name = "votes") val votes: VotesResponseV3,
-    @field:Json(name = "parent_id") val parentId: Long,
+    @field:Json(name = "parent_id") val parentId: Long?,
     @field:Json(name = "resource") val resource: String,
     @field:Json(name = "actions") val actions: ActionsResponseV3?,
-    @field:Json(name = "deleted") val deleted: Boolean?,
+    @field:Json(name = "deleted") val deleted: String?,
 )

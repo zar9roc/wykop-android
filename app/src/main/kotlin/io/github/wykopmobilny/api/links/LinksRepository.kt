@@ -80,7 +80,7 @@ class LinksRepository
             }.map { list ->
                 list.forEach { comment ->
                     if (
-                        comment.id == comment.parentId
+                        comment.parentId == null || comment.id == comment.parentId
                     ) {
                         comment.childCommentCount = list.filter { item -> comment.id == item.parentId }.size - 1
                     }

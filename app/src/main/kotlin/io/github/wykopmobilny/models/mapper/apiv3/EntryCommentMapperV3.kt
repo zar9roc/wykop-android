@@ -11,7 +11,7 @@ object EntryCommentMapperV3 {
     ) = owmContentFilter.filterEntryComment(
         EntryComment(
             id = value.id,
-            entryId = value.parentId,
+            entryId = value.parentId ?: 0L,
             author = AuthorMapperV3.map(value.author),
             body = value.content.orEmpty(),
             fullDate = value.createdAt.toString(),
@@ -21,7 +21,7 @@ object EntryCommentMapperV3 {
             app = value.device,
             violationUrl = null,
             isNsfw = value.content?.lowercase()?.contains("#nsfw") ?: false,
-            isBlocked = value.deleted ?: false,
+            isBlocked = value.deleted == "true",
         ),
     )
 }

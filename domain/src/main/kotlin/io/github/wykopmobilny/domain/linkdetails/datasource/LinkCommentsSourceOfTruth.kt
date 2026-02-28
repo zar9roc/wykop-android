@@ -31,13 +31,13 @@ internal fun linkCommentsSourceOfTruth(cache: AppCache) =
                     val commentsById =
                         comments
                             .asSequence()
-                            .filter { it.id == it.parentId }
+                            .filter { it.parentId == null || it.id == it.parentId }
                             .associateBy { it.id }
                     comments
-                        .groupBy { commentsById.getValue(it.parentId) }
+                        .groupBy { commentsById.getValue(it.parentId ?: it.id) }
                         .map { (key, value) ->
                             val parent = key.toContent()
-                            val children = value.filterNot { it.id == it.parentId }.map { it.toContent() }
+                            val children = value.filterNot { it.parentId == null || it.id == it.parentId }.map { it.toContent() }
 
                             parent to children
                         }.toMap()

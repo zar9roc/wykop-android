@@ -15,7 +15,7 @@ class LinkComment(
     var voteCountPlus: Int,
     var voteCountMinus: Int,
     var userVote: Int,
-    var parentId: Long,
+    var parentId: Long?,
     val canVote: Boolean,
     val linkId: Long,
     var embed: Embed?,
@@ -39,7 +39,7 @@ class LinkComment(
         parcel.readInt(),
         parcel.readInt(),
         parcel.readInt(),
-        parcel.readLong(),
+        parcel.readValue(Long::class.java.classLoader) as Long?,
         parcel.readByte() != 0.toByte(),
         parcel.readLong(),
         parcel.readParcelable(Embed::class.java.classLoader),
@@ -65,7 +65,7 @@ class LinkComment(
         parcel.writeInt(voteCountPlus)
         parcel.writeInt(voteCountMinus)
         parcel.writeInt(userVote)
-        parcel.writeLong(parentId)
+        parcel.writeValue(parentId)
         parcel.writeByte(if (canVote) 1 else 0)
         parcel.writeLong(linkId)
         parcel.writeParcelable(embed, flags)
