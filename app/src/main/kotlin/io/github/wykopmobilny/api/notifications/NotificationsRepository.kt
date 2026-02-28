@@ -36,8 +36,8 @@ class NotificationsRepository
                 .compose(ErrorHandlerTransformerV3<NotificationStatusResponseV3>())
                 .map {
                     NotificationsCountResponse(
-                        entries = it.entryNotificationCount ?: 0,
-                        hashtags = it.tagNotificationCount ?: 0,
+                        count = it.entryNotificationCount ?: 0,
+//                        hashtags = it.tagNotificationCount ?: 0,
                     )
                 }
 
@@ -58,8 +58,8 @@ class NotificationsRepository
                 .compose(ErrorHandlerTransformerV3<NotificationStatusResponseV3>())
                 .map {
                     NotificationsCountResponse(
-                        entries = it.entryNotificationCount ?: 0,
-                        hashtags = it.tagNotificationCount ?: 0,
+//                        entries = it.entryNotificationCount ?: 0,
+                        count = it.tagNotificationCount ?: 0,
                     )
                 }
     }

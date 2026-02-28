@@ -38,19 +38,19 @@ android {
         buildConfigField 'String', 'V3_API_KEY', "\"${findProperty("wykop.v3.appKey")}\""
         buildConfigField 'String', 'V3_API_SECRET', "\"${findProperty("wykop.v3.appSecret")}\""
     }
-    namespace defaultConfig.applicationId
-    testBuildType findProperty("testBuildType") ?: "debug"
+    namespace = defaultConfig.applicationId
+    testBuildType = findProperty("testBuildType") ?: "debug"
 
     compileOptions {
-        coreLibraryDesugaringEnabled true
+        coreLibraryDesugaringEnabled = true
     }
 
     signingConfigs {
         named("debug") {
-            storeFile rootProject.file("keys/debug.keystore")
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
+            storeFile = rootProject.file("keys/debug.keystore")
+            storePassword = 'android'
+            keyAlias = 'androiddebugkey'
+            keyPassword = 'android'
         }
         register("release") {
             storeFile rootProject.file("keys/release.keystore")

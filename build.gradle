@@ -21,7 +21,7 @@ plugins {
 commonConfig {
     javaVersion = JavaVersion.VERSION_11
     androidPlugin {
-        minSdkVersion = 24
+        minSdkVersion 24
     }
 }
 
@@ -55,7 +55,7 @@ allprojects {
     }
     pluginManager.withPlugin("com.android.library") {
         android {
-            namespace "io.github.wykopmobilny${path.replace(":", ".").replace("-", "_")}"
+            namespace = "io.github.wykopmobilny${path.replace(":", ".").replace("-", "_")}"
         }
         // AGP 9.0: variantFilter replaced with androidComponents API
         androidComponents {
