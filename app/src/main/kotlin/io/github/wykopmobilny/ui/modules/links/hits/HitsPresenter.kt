@@ -25,18 +25,29 @@ class HitsPresenter(
     var currentScreen = "day"
     var yearSelection = 0
     var monthSelection = 0
+    private var currentPage = 1
 
     fun loadData() {
+        currentPage = 1
+        loadPage(shouldRefresh = true)
+    }
+
+    fun loadMore() {
+        currentPage++
+        loadPage(shouldRefresh = false)
+    }
+
+    private fun loadPage(shouldRefresh: Boolean) {
         when (currentScreen) {
-            HITS_DAY -> hitsApi.currentDay()
-            HITS_WEEK -> hitsApi.currentWeek()
-            HITS_MONTH -> hitsApi.byMonth(yearSelection, monthSelection)
-            else -> hitsApi.byYear(yearSelection)
+            HITS_DAY -> hitsApi.currentDay(currentPage)
+            HITS_WEEK -> hitsApi.currentWeek(currentPage)
+            HITS_MONTH -> hitsApi.byMonth(yearSelection, monthSelection, currentPage)
+            else -> hitsApi.byYear(yearSelection, currentPage)
         }.subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
                 {
-                    view?.addItems(it.filtered, true)
+                    view?.addItems(it.filtered, shouldRefresh)
                     view?.disableLoading()
                 },
                 { view?.showErrorDialog(it) },

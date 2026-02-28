@@ -29,8 +29,12 @@ class HitsFragment :
     @Inject
     lateinit var presenter: HitsPresenter
 
-    override var loadDataListener: (Boolean) -> Unit = {
-        presenter.loadData()
+    override var loadDataListener: (Boolean) -> Unit = { isRefresh ->
+        if (isRefresh) {
+            presenter.loadData()
+        } else {
+            presenter.loadMore()
+        }
     }
 
     override fun onCreateView(
