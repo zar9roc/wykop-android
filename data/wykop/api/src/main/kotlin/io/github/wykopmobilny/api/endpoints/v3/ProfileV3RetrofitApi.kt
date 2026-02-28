@@ -53,25 +53,25 @@ interface ProfileV3RetrofitApi {
     @GET("v3/profile/users/{username}/links/added")
     suspend fun getUserLinksAdded(
         @Path("username") username: String,
-        @Query("page") page: Int,
+        @Query("page") page: String? = null,
     ): WykopApiResponseV3<List<LinkResponseV3>>
 
     @GET("v3/profile/users/{username}/links/published")
     suspend fun getUserLinksPublished(
         @Path("username") username: String,
-        @Query("page") page: Int,
+        @Query("page") page: String? = null,
     ): WykopApiResponseV3<List<LinkResponseV3>>
 
     @GET("v3/profile/users/{username}/links/up")
     suspend fun getUserLinksUp(
         @Path("username") username: String,
-        @Query("page") page: Int,
+        @Query("page") page: String? = null,
     ): WykopApiResponseV3<List<LinkResponseV3>>
 
     @GET("v3/profile/users/{username}/links/down")
     suspend fun getUserLinksDown(
         @Path("username") username: String,
-        @Query("page") page: Int,
+        @Query("page") page: String? = null,
     ): WykopApiResponseV3<List<LinkResponseV3>>
 
     @GET("v3/profile/users/{username}/links/commented")

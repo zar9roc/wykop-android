@@ -2,6 +2,7 @@ package io.github.wykopmobilny.models.mapper.apiv3
 
 import io.github.wykopmobilny.api.entries.FilteredData
 import io.github.wykopmobilny.api.filters.OWMContentFilter
+import io.github.wykopmobilny.api.responses.v3.common.PaginationResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
 import io.github.wykopmobilny.models.dataclass.Link
 import io.github.wykopmobilny.utils.api.stripImageCompression
@@ -41,8 +42,11 @@ fun LinkResponseV3.filterLinkV3(owmContentFilter: OWMContentFilter) =
         ),
     )
 
-fun List<LinkResponseV3>.filterLinksV3(owmContentFilter: OWMContentFilter) =
-    FilteredData(
-        totalCount = size,
-        filtered = map { response -> response.filterLinkV3(owmContentFilter) },
-    )
+fun List<LinkResponseV3>.filterLinksV3(
+    owmContentFilter: OWMContentFilter,
+    pagination: PaginationResponseV3? = null,
+) = FilteredData(
+    totalCount = size,
+    filtered = map { response -> response.filterLinkV3(owmContentFilter) },
+    nextPage = pagination?.next,
+)

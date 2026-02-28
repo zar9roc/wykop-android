@@ -115,4 +115,5 @@ interface EntriesApi {
 data class FilteredData<T>(
     val totalCount: Int,
     val filtered: List<T>,
+    val nextPage: String? = null,
 )

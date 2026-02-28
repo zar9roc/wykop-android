@@ -46,11 +46,12 @@ class ProfileRepository
 
         override fun getAdded(
             username: String,
-            page: Int,
+            page: String?,
         ) = rxSingle { profileApiV3.getUserLinksAdded(username, page) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
-            .map { it.filterLinksV3(owmContentFilter = owmContentFilter) }
+            .map { response ->
+                response.data.orEmpty().filterLinksV3(owmContentFilter, response.pagination)
+            }
 
         override fun getActions(username: String): Single<List<EntryLink>> =
             rxSingle { profileApiV3.getUserActions(username) }
@@ -65,11 +66,12 @@ class ProfileRepository
 
         override fun getPublished(
             username: String,
-            page: Int,
+            page: String?,
         ) = rxSingle { profileApiV3.getUserLinksPublished(username, page) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
-            .map { it.filterLinksV3(owmContentFilter = owmContentFilter) }
+            .map { response ->
+                response.data.orEmpty().filterLinksV3(owmContentFilter, response.pagination)
+            }
 
         override fun getEntries(
             username: String,
@@ -108,19 +110,21 @@ class ProfileRepository
 
         override fun getBuried(
             username: String,
-            page: Int,
+            page: String?,
         ) = rxSingle { profileApiV3.getUserLinksDown(username, page) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
-            .map { it.filterLinksV3(owmContentFilter = owmContentFilter) }
+            .map { response ->
+                response.data.orEmpty().filterLinksV3(owmContentFilter, response.pagination)
+            }
 
         override fun getDigged(
             username: String,
-            page: Int,
+            page: String?,
         ) = rxSingle { profileApiV3.getUserLinksUp(username, page) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
-            .map { it.filterLinksV3(owmContentFilter = owmContentFilter) }
+            .map { response ->
+                response.data.orEmpty().filterLinksV3(owmContentFilter, response.pagination)
+            }
 
         override fun getBadges(
             username: String,

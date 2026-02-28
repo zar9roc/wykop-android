@@ -8,7 +8,7 @@ import retrofit2.http.Query
 interface HitsV3RetrofitApi {
     @GET("v3/hits/links")
     suspend fun getHits(
-        @Query("page") page: Int = 1,
+        @Query("page") page: String? = null,
         @Query("sort") sort: String,
         @Query("year") year: Int? = null,
         @Query("month") month: Int? = null,

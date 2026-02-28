@@ -37,30 +37,27 @@ class LinksRepository
         override val digSubject = PublishSubject.create<LinkVoteResponsePublishModel>()
         override val burySubject = PublishSubject.create<LinkVoteResponsePublishModel>()
 
-        override fun getPromoted(page: Int) =
+        override fun getPromoted(page: String?) =
             rxSingle { linksApiV3.getLinks(page = page, type = "homepage", sort = "newest") }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
-                .map { links ->
-                    links.filterLinksV3(owmContentFilter)
+                .map { response ->
+                    response.data.orEmpty().filterLinksV3(owmContentFilter, response.pagination)
                 }
 
         override fun getUpcoming(
-            page: Int,
+            page: String?,
             sortBy: String,
         ) = rxSingle { linksApiV3.getLinks(page = page, type = "upcoming", sort = sortBy) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
-            .map { links ->
-                links.filterLinksV3(owmContentFilter)
+            .map { response ->
+                response.data.orEmpty().filterLinksV3(owmContentFilter, response.pagination)
             }
 
-        override fun getObserved(page: Int) =
+        override fun getObserved(page: String?) =
             rxSingle { linksApiV3.getObserved(page) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
-                .map { links ->
-                    links.filterLinksV3(owmContentFilter)
+                .map { response ->
+                    response.data.orEmpty().filterLinksV3(owmContentFilter, response.pagination)
                 }
 
         override fun getLinkComments(

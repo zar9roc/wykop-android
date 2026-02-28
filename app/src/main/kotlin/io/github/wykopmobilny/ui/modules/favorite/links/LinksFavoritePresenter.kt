@@ -15,10 +15,10 @@ class LinksFavoritePresenter(
     val linksInteractor: LinksInteractor,
 ) : BasePresenter<LinksFavoriteView>(),
     LinkActionListener {
-    var page = 1
+    var page: String? = null
 
     fun loadData(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = 1
+        if (shouldRefresh) page = null
         linksApi
             .getObserved(page)
             .subscribeOn(schedulers.backgroundThread())
@@ -26,7 +26,7 @@ class LinksFavoritePresenter(
             .subscribe(
                 {
                     if (it.totalCount > 0) {
-                        page++
+                        page = it.nextPage
                         view?.addItems(it.filtered, shouldRefresh)
                     } else {
                         view?.disableLoading()

@@ -25,15 +25,14 @@ class HitsPresenter(
     var currentScreen = "day"
     var yearSelection = 0
     var monthSelection = 0
-    private var currentPage = 1
+    private var currentPage: String? = null
 
     fun loadData() {
-        currentPage = 1
+        currentPage = null
         loadPage(shouldRefresh = true)
     }
 
     fun loadMore() {
-        currentPage++
         loadPage(shouldRefresh = false)
     }
 
@@ -47,6 +46,7 @@ class HitsPresenter(
             .observeOn(schedulers.mainThread())
             .subscribe(
                 {
+                    currentPage = it.nextPage
                     view?.addItems(it.filtered, shouldRefresh)
                     view?.disableLoading()
                 },

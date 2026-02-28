@@ -19,22 +19,22 @@ interface ProfileApi {
 
     fun getAdded(
         username: String,
-        page: Int,
+        page: String? = null,
     ): Single<FilteredData<Link>>
 
     fun getPublished(
         username: String,
-        page: Int,
+        page: String? = null,
     ): Single<FilteredData<Link>>
 
     fun getDigged(
         username: String,
-        page: Int,
+        page: String? = null,
     ): Single<FilteredData<Link>>
 
     fun getBuried(
         username: String,
-        page: Int,
+        page: String? = null,
     ): Single<FilteredData<Link>>
 
     fun getLinkComments(

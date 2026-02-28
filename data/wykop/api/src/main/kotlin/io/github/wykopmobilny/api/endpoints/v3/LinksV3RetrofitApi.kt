@@ -12,7 +12,7 @@ import retrofit2.http.Query
 interface LinksV3RetrofitApi {
     @GET("v3/links")
     suspend fun getLinks(
-        @Query("page") page: Int,
+        @Query("page") page: String? = null,
         @Query("type") type: String? = null,
         @Query("sort") sort: String? = null,
     ): WykopApiResponseV3<List<LinkResponseV3>>
@@ -20,13 +20,13 @@ interface LinksV3RetrofitApi {
     @Deprecated("Use getLinks(page, type = \"upcoming\", sort = sortBy) instead")
     @GET("v3/links/upcoming")
     suspend fun getUpcoming(
-        @Query("page") page: Int,
+        @Query("page") page: String? = null,
         @Query("sort") sortBy: String,
     ): WykopApiResponseV3<List<LinkResponseV3>>
 
     @GET("v3/links/observed")
     suspend fun getObserved(
-        @Query("page") page: Int,
+        @Query("page") page: String? = null,
     ): WykopApiResponseV3<List<LinkResponseV3>>
 
     @GET("v3/links/{id}/comments")

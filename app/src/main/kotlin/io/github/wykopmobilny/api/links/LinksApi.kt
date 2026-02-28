@@ -19,14 +19,14 @@ interface LinksApi {
     val digSubject: PublishSubject<LinkVoteResponsePublishModel>
     val voteRemoveSubject: PublishSubject<LinkVoteResponsePublishModel>
 
-    fun getPromoted(page: Int): Single<FilteredData<Link>>
+    fun getPromoted(page: String? = null): Single<FilteredData<Link>>
 
     fun getUpcoming(
-        page: Int,
+        page: String? = null,
         sortBy: String,
     ): Single<FilteredData<Link>>
 
-    fun getObserved(page: Int): Single<FilteredData<Link>>
+    fun getObserved(page: String? = null): Single<FilteredData<Link>>
 
     fun getLinkComments(
         linkId: Long,

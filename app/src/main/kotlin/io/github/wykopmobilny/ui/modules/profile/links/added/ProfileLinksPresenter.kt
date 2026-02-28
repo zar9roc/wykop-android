@@ -15,11 +15,11 @@ class ProfileLinksPresenter(
     val linksInteractor: LinksInteractor,
 ) : BasePresenter<ProfileLinksView>(),
     LinkActionListener {
-    var page = 1
+    var page: String? = null
     lateinit var username: String
 
     fun loadAdded(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = 1
+        if (shouldRefresh) page = null
         profileApi
             .getAdded(username, page)
             .subscribeOn(schedulers.backgroundThread())
@@ -27,7 +27,7 @@ class ProfileLinksPresenter(
             .subscribe(
                 {
                     if (it.totalCount > 0) {
-                        page++
+                        page = it.nextPage
                         view?.addItems(it.filtered, shouldRefresh)
                     } else {
                         view?.disableLoading()
@@ -38,7 +38,7 @@ class ProfileLinksPresenter(
     }
 
     fun loadBurried(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = 1
+        if (shouldRefresh) page = null
         profileApi
             .getBuried(username, page)
             .subscribeOn(schedulers.backgroundThread())
@@ -46,7 +46,7 @@ class ProfileLinksPresenter(
             .subscribe(
                 {
                     if (it.totalCount > 0) {
-                        page++
+                        page = it.nextPage
                         view?.addItems(it.filtered, shouldRefresh)
                     } else {
                         view?.disableLoading()
@@ -57,7 +57,7 @@ class ProfileLinksPresenter(
     }
 
     fun loadDigged(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = 1
+        if (shouldRefresh) page = null
         profileApi
             .getDigged(username, page)
             .subscribeOn(schedulers.backgroundThread())
@@ -65,7 +65,7 @@ class ProfileLinksPresenter(
             .subscribe(
                 {
                     if (it.totalCount > 0) {
-                        page++
+                        page = it.nextPage
                         view?.addItems(it.filtered, shouldRefresh)
                     } else {
                         view?.disableLoading()
@@ -76,7 +76,7 @@ class ProfileLinksPresenter(
     }
 
     fun loadPublished(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = 1
+        if (shouldRefresh) page = null
         profileApi
             .getPublished(username, page)
             .subscribeOn(schedulers.backgroundThread())
@@ -84,7 +84,7 @@ class ProfileLinksPresenter(
             .subscribe(
                 {
                     if (it.totalCount > 0) {
-                        page++
+                        page = it.nextPage
                         view?.addItems(it.filtered, shouldRefresh)
                     } else {
                         view?.disableLoading()

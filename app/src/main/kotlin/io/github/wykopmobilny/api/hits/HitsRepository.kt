@@ -19,29 +19,33 @@ class HitsRepository
         override fun byMonth(
             year: Int,
             month: Int,
-            page: Int,
+            page: String?,
         ) = rxSingle { hitsApiV3.getHits(page = page, sort = "all", year = year, month = month) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
-            .map { links -> links.filterLinksV3(owmContentFilter) }
+            .map { response ->
+                response.data.orEmpty().filterLinksV3(owmContentFilter, response.pagination)
+            }
 
-        override fun currentDay(page: Int) =
+        override fun currentDay(page: String?) =
             rxSingle { hitsApiV3.getHits(page = page, sort = "day") }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
-                .map { links -> links.filterLinksV3(owmContentFilter) }
+                .map { response ->
+                    response.data.orEmpty().filterLinksV3(owmContentFilter, response.pagination)
+                }
 
         override fun byYear(
             year: Int,
-            page: Int,
+            page: String?,
         ) = rxSingle { hitsApiV3.getHits(page = page, sort = "all", year = year) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
-            .map { links -> links.filterLinksV3(owmContentFilter) }
+            .map { response ->
+                response.data.orEmpty().filterLinksV3(owmContentFilter, response.pagination)
+            }
 
-        override fun currentWeek(page: Int) =
+        override fun currentWeek(page: String?) =
             rxSingle { hitsApiV3.getHits(page = page, sort = "week") }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
-                .map { links -> links.filterLinksV3(owmContentFilter) }
+                .map { response ->
+                    response.data.orEmpty().filterLinksV3(owmContentFilter, response.pagination)
+                }
     }

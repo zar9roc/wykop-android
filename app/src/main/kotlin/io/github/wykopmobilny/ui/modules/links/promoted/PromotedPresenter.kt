@@ -15,10 +15,10 @@ class PromotedPresenter(
     val linksInteractor: LinksInteractor,
 ) : BasePresenter<PromotedView>(),
     LinkActionListener {
-    var page = 1
+    var page: String? = null
 
     fun getPromotedLinks(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = 1
+        if (shouldRefresh) page = null
         linksApi
             .getPromoted(page)
             .subscribeOn(schedulers.backgroundThread())
@@ -26,7 +26,7 @@ class PromotedPresenter(
             .subscribe(
                 {
                     if (it.totalCount > 0) {
-                        page++
+                        page = it.nextPage
                         view?.addItems(it.filtered, shouldRefresh)
                     } else {
                         view?.disableLoading()
