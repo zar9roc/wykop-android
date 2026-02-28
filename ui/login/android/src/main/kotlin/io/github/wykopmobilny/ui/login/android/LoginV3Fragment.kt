@@ -82,8 +82,13 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
                             view: WebView,
                             request: WebResourceRequest,
                         ): Boolean {
-                            sharedFlow.value.parseUrlAction(request.url.toString())
-                            return super.shouldOverrideUrlLoading(view, request)
+                            val url = request.url.toString()
+                            val state = sharedFlow.value
+                            if (state.isCallbackUrl(url)) {
+                                state.parseUrlAction(url)
+                                return true
+                            }
+                            return false
                         }
                     }
 
@@ -96,6 +101,7 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
                             binding.webView.isVisible = showWebView
                             binding.loginCard.isVisible = !showWebView
                             if (connectUrl != null) {
+                                CookieManager.getInstance().removeAllCookies(null)
                                 binding.webView.loadUrl(connectUrl)
                             }
                         }

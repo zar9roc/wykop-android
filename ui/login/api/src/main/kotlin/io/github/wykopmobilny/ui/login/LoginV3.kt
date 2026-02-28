@@ -15,4 +15,5 @@ data class LoginV3Ui(
     val isLoggedIn: Boolean,
     val connectUrl: String? = null,
     val parseUrlAction: (String) -> Unit = {},
+    val isCallbackUrl: (String) -> Boolean = { false },
 )

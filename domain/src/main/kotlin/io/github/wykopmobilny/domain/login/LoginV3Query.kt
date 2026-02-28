@@ -47,6 +47,7 @@ class LoginV3Query
                     isLoggedIn = false,
                     connectUrl = connectUrl,
                     parseUrlAction = ::onUrlInvoked,
+                    isCallbackUrl = { url -> connectCallbackPattern.containsMatchIn(url) },
                 )
             }
 
