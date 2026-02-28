@@ -38,8 +38,9 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:host="wykop.pl"
                     android:scheme="https"
+                    android:host="wykop.pl"
+                    android:path="/"
                     />
             </intent-filter>
         </activity>
