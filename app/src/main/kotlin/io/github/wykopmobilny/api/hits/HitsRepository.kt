@@ -1,56 +1,44 @@
 package io.github.wykopmobilny.api.hits
 
 import io.github.wykopmobilny.api.UserTokenRefresher
-import io.github.wykopmobilny.api.endpoints.HitsRetrofitApi
-import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformer
+import io.github.wykopmobilny.api.endpoints.v3.HitsV3RetrofitApi
+import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
 import io.github.wykopmobilny.api.filters.OWMContentFilter
-import io.github.wykopmobilny.api.patrons.PatronsApi
-import io.github.wykopmobilny.models.mapper.apiv2.filterLinks
+import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
+import io.github.wykopmobilny.models.mapper.apiv3.filterLinksV3
 import kotlinx.coroutines.rx2.rxSingle
 import javax.inject.Inject
 
 class HitsRepository
     @Inject
     constructor(
-        private val hitsApi: HitsRetrofitApi,
+        private val hitsApiV3: HitsV3RetrofitApi,
         private val userTokenRefresher: UserTokenRefresher,
         private val owmContentFilter: OWMContentFilter,
-        private val patronsApi: PatronsApi,
     ) : HitsApi {
         override fun byMonth(
             year: Int,
             month: Int,
-        ) = rxSingle { hitsApi.byMonth(year, month) }
+        ) = rxSingle { hitsApiV3.getHits(page = 1, sort = "all", year = year, month = month) }
             .retryWhen(userTokenRefresher)
-            .flatMap { patronsApi.ensurePatrons(it) }
-            .compose(ErrorHandlerTransformer())
-            .map { it.filterLinks(owmContentFilter = owmContentFilter) }
+            .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
+            .map { links -> links.filterLinksV3(owmContentFilter) }
 
         override fun currentDay() =
-            rxSingle { hitsApi.currentDay() }
+            rxSingle { hitsApiV3.getHits(page = 1, sort = "day") }
                 .retryWhen(userTokenRefresher)
-                .flatMap { patronsApi.ensurePatrons(it) }
-                .compose(ErrorHandlerTransformer())
-                .map { it.filterLinks(owmContentFilter = owmContentFilter) }
+                .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
+                .map { links -> links.filterLinksV3(owmContentFilter) }
 
         override fun byYear(year: Int) =
-            rxSingle { hitsApi.byYear(year) }
+            rxSingle { hitsApiV3.getHits(page = 1, sort = "all", year = year) }
                 .retryWhen(userTokenRefresher)
-                .flatMap { patronsApi.ensurePatrons(it) }
-                .compose(ErrorHandlerTransformer())
-                .map { it.filterLinks(owmContentFilter = owmContentFilter) }
+                .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
+                .map { links -> links.filterLinksV3(owmContentFilter) }
 
         override fun currentWeek() =
-            rxSingle { hitsApi.currentWeek() }
+            rxSingle { hitsApiV3.getHits(page = 1, sort = "week") }
                 .retryWhen(userTokenRefresher)
-                .flatMap { patronsApi.ensurePatrons(it) }
-                .compose(ErrorHandlerTransformer())
-                .map { it.filterLinks(owmContentFilter = owmContentFilter) }
-
-        override fun popular() =
-            rxSingle { hitsApi.popular() }
-                .retryWhen(userTokenRefresher)
-                .flatMap { patronsApi.ensurePatrons(it) }
-                .compose(ErrorHandlerTransformer())
-                .map { it.filterLinks(owmContentFilter = owmContentFilter) }
+                .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
+                .map { links -> links.filterLinksV3(owmContentFilter) }
     }

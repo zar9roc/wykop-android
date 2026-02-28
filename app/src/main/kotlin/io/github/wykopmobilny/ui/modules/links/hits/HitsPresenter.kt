@@ -16,20 +16,18 @@ class HitsPresenter(
 ) : BasePresenter<HitsView>(),
     LinkActionListener {
     companion object {
-        const val HITS_POPULAR = "popular"
         const val HITS_DAY = "day"
         const val HITS_WEEK = "week"
         const val HITS_MONTH = "month"
         const val HITS_YEAR = "year"
     }
 
-    var currentScreen = "popular"
+    var currentScreen = "day"
     var yearSelection = 0
     var monthSelection = 0
 
     fun loadData() {
         when (currentScreen) {
-            HITS_POPULAR -> hitsApi.popular()
             HITS_DAY -> hitsApi.currentDay()
             HITS_WEEK -> hitsApi.currentWeek()
             HITS_MONTH -> hitsApi.byMonth(yearSelection, monthSelection)

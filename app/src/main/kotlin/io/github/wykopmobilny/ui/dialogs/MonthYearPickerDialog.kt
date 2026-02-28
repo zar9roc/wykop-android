@@ -46,7 +46,10 @@ class MonthYearPickerDialog : DialogFragment() {
             setPositiveButton(android.R.string.ok) { _, _ ->
                 val data = Intent()
                 data.putExtra(EXTRA_YEAR, yearSelection)
-                data.putExtra(EXTRA_MONTH, selectedMonth + 1)
+                // Only add EXTRA_MONTH if a specific month was selected (not "Cały rok")
+                if (selectedMonth < 12) {
+                    data.putExtra(EXTRA_MONTH, selectedMonth + 1)
+                }
                 targetFragment?.onActivityResult(targetRequestCode, RESULT_CODE, data)
             }
             setView(dialogView.root)
@@ -76,14 +79,26 @@ class MonthYearPickerDialog : DialogFragment() {
         binding.apply {
             when (yearSelection) {
                 currentYear -> {
-                    monthPicker.displayedValues = (1..12).map { getMonthString(it) }.toTypedArray()
-                    monthPicker.minValue = 0
-                    monthPicker.value = currentMonth - 1
-                    monthPicker.maxValue = currentMonth - 1
-                    selectedMonth = currentMonth - 1
+                    // For current year (2025), show only December + "Cały rok" option
+                    if (currentMonth == 12) {
+                        monthPicker.displayedValues = arrayOf(getMonthString(12), getString(R.string.whole_year))
+                        monthPicker.minValue = 11
+                        monthPicker.maxValue = 12
+                        monthPicker.value = 11
+                        selectedMonth = 11
+                    } else {
+                        // For future years, show available months + "Cały rok"
+                        val months = (1..currentMonth).map { getMonthString(it) } + getString(R.string.whole_year)
+                        monthPicker.displayedValues = months.toTypedArray()
+                        monthPicker.minValue = 0
+                        monthPicker.value = currentMonth - 1
+                        monthPicker.maxValue = currentMonth
+                        selectedMonth = currentMonth - 1
+                    }
                 }
 
                 2005 -> {
+                    // For 2005, only December is available (no "Cały rok" option)
                     monthPicker.minValue = 11
                     monthPicker.maxValue = 11
                     monthPicker.value = 11
@@ -92,9 +107,11 @@ class MonthYearPickerDialog : DialogFragment() {
                 }
 
                 else -> {
-                    monthPicker.displayedValues = (1..12).map { getMonthString(it) }.toTypedArray()
+                    // For all other years, show all 12 months + "Cały rok" option
+                    val months = (1..12).map { getMonthString(it) } + getString(R.string.whole_year)
+                    monthPicker.displayedValues = months.toTypedArray()
                     monthPicker.minValue = 0
-                    monthPicker.maxValue = 11
+                    monthPicker.maxValue = 12
                 }
             }
             setTitleDate(this)
@@ -102,7 +119,12 @@ class MonthYearPickerDialog : DialogFragment() {
     }
 
     private fun setTitleDate(view: YearMonthPickerBinding) {
-        view.monthTextView.text = getMonthString(selectedMonth + 1)
+        view.monthTextView.text =
+            if (selectedMonth == 12) {
+                getString(R.string.whole_year)
+            } else {
+                getMonthString(selectedMonth + 1)
+            }
         view.yearTextView.text = yearSelection.toString()
     }
 

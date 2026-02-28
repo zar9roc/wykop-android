@@ -79,17 +79,11 @@ class HitsFragment :
                 setTitle()
             }
 
-            R.id.popular -> {
-                binding.swipeRefresh.isRefreshing = true
-                presenter.currentScreen = HitsPresenter.HITS_POPULAR
-                presenter.loadData()
-                setTitle()
-            }
-
             R.id.byYear -> {
-                val pickerFragment = YearPickerDialog.newInstance(presenter.yearSelection)
+                val pickerFragment = MonthYearPickerDialog.newInstance(presenter.monthSelection, presenter.yearSelection)
                 pickerFragment.setTargetFragment(this, PICKER_REQUEST_CODE)
                 pickerFragment.show(supportFragmentManager, "pickerDialogFragment")
+                setTitle()
             }
         }
         return super.onOptionsItemSelected(item)
@@ -116,9 +110,8 @@ class HitsFragment :
     fun setTitle() {
         (activity as BaseActivity).supportActionBar?.title =
             when (presenter.currentScreen) {
-                HitsPresenter.HITS_POPULAR -> getString(R.string.hits_popular)
                 HitsPresenter.HITS_MONTH -> getString(R.string.hits_month_toolbar, presenter.monthSelection, presenter.yearSelection)
-                HitsPresenter.HITS_YEAR -> getString(R.string.hits_year_toolbar, presenter.yearSelection)
+                HitsPresenter.HITS_YEAR -> getString(R.string.hits_archive_toolbar, presenter.yearSelection)
                 HitsPresenter.HITS_WEEK -> getString(R.string.hits_week)
                 else -> getString(R.string.hits_day)
             }

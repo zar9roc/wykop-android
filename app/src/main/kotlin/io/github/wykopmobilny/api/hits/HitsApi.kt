@@ -9,8 +9,6 @@ interface HitsApi {
 
     fun currentDay(): Single<FilteredData<Link>>
 
-    fun popular(): Single<FilteredData<Link>>
-
     fun byMonth(
         year: Int,
         month: Int,
