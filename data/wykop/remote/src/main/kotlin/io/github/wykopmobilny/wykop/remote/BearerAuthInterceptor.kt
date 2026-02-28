@@ -8,8 +8,9 @@ import okhttp3.Response
 import javax.inject.Inject
 
 /**
- * OkHttp interceptor that adds app-level bearer token to /v3/connect requests.
- * Bearer token is obtained from app-level authentication (POST /v3/auth with apiKey/apiSecret).
+ * OkHttp interceptor that adds app-level bearer token to all /v3/ requests.
+ * Bearer token is obtained at app startup via POST /v3/auth.
+ * For logged-in users, JwtAuthInterceptor will override this header with the JWT token.
  */
 internal class BearerAuthInterceptor
     @Inject
@@ -20,8 +21,8 @@ internal class BearerAuthInterceptor
             val request = chain.request()
             val path = request.url.encodedPath
 
-            // Only add bearer token for /v3/connect endpoint
-            if (path != "/v3/connect") {
+            // Only add bearer token for v3 API endpoints (skip /v3/auth where we obtain it)
+            if (!path.startsWith("/v3/") || path.startsWith("/v3/auth")) {
                 return chain.proceed(request)
             }
 
@@ -40,7 +41,7 @@ internal class BearerAuthInterceptor
             val newRequest =
                 request
                     .newBuilder()
-                    .addHeader("Authorization", "Bearer $bearerToken")
+                    .header("Authorization", "Bearer $bearerToken")
                     .build()
 
             return chain.proceed(newRequest)

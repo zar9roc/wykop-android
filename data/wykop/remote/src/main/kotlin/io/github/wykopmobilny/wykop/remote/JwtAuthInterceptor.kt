@@ -37,11 +37,11 @@ internal class JwtAuthInterceptor
                 return chain.proceed(request)
             }
 
-            // Add Authorization header with Bearer token
+            // Replace Authorization header with JWT token (overrides bearer set by BearerAuthInterceptor)
             val newRequest =
                 request
                     .newBuilder()
-                    .addHeader("Authorization", "Bearer ${jwtToken.accessToken}")
+                    .header("Authorization", "Bearer ${jwtToken.accessToken}")
                     .build()
 
             return chain.proceed(newRequest)

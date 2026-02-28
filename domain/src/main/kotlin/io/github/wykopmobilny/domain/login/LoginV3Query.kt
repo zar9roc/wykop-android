@@ -1,13 +1,10 @@
 package io.github.wykopmobilny.domain.login
 
 import io.github.wykopmobilny.api.endpoints.v3.AuthV3RetrofitApi
-import io.github.wykopmobilny.api.requests.v3.auth.AuthRequestV3
 import io.github.wykopmobilny.domain.login.di.LoginScope
 import io.github.wykopmobilny.domain.navigation.AppRestarter
-import io.github.wykopmobilny.domain.startup.AppConfig
 import io.github.wykopmobilny.domain.utils.safe
 import io.github.wykopmobilny.kotlin.AppScopes
-import io.github.wykopmobilny.storage.api.BearerTokenStorage
 import io.github.wykopmobilny.storage.api.JwtToken
 import io.github.wykopmobilny.storage.api.JwtTokenStorage
 import io.github.wykopmobilny.ui.base.FailedAction
@@ -27,12 +24,10 @@ class LoginV3Query
     @Inject
     constructor(
         private val authV3Api: AuthV3RetrofitApi,
-        private val bearerTokenStorage: BearerTokenStorage,
         private val jwtTokenStorage: JwtTokenStorage,
         private val appRestarter: AppRestarter,
         private val viewStateStorage: SimpleViewStateStorage,
         private val appScopes: AppScopes,
-        private val appConfig: AppConfig,
     ) : LoginV3 {
         private val connectUrlState = MutableStateFlow<String?>(null)
         private var isLoginFlowActive = false
@@ -61,24 +56,8 @@ class LoginV3Query
             connectUrlState.value = null
 
             runCatching {
-                // Step 1: POST /v3/auth to get app-level bearer token
-                val authResponse =
-                    authV3Api.authenticate(
-                        AuthRequestV3(key = appConfig.v3ApiKey, secret = appConfig.v3ApiSecret),
-                    )
-
-                val authData = authResponse.data
-                if (authData == null) {
-                    throw IllegalStateException(authResponse.error?.messagePl ?: "Failed to authenticate app")
-                }
-
-                // Step 2: Save bearer token to BearerTokenStorage (used by BearerAuthInterceptor for /v3/connect)
-                bearerTokenStorage.updateBearerToken(authData.token)
-
-                // Wait for token to be available in Flow (DataStore is async)
-                bearerTokenStorage.bearerToken.first { it != null }
-
-                // Step 3: GET /v3/connect to get connectUrl for WebView
+                // Bearer token is already available from app startup (InitializeApp).
+                // GET /v3/connect to get connectUrl for WebView
                 val connectResponse = authV3Api.connect()
 
                 val connectData = connectResponse.data
@@ -86,7 +65,6 @@ class LoginV3Query
                     throw IllegalStateException(connectResponse.error?.messagePl ?: "Failed to get connect URL")
                 }
 
-                // Step 4: Set connectUrl for UI to open WebView
                 connectUrlState.value = connectData.connectUrl
             }.onFailure { throwable ->
                 isLoginFlowActive = false
