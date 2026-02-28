@@ -29,11 +29,18 @@ internal class TokenRefreshAuthenticator
             response: Response,
         ): Request? {
             val path = response.request.url.encodedPath
+            val url = response.request.url.toString()
+
+            Napier.d("TokenRefreshAuthenticator - 401 response for URL: $url", tag = "TokenRefreshAuthenticator")
+            Napier.d("TokenRefreshAuthenticator - Path: $path", tag = "TokenRefreshAuthenticator")
 
             // Only handle 401 for v3 API endpoints (except auth and connect endpoints)
-            if (!path.startsWith("v3/") || path.startsWith("v3/auth") || path == "/v3/connect") {
+            if (!path.startsWith("/api/v3/") || path.startsWith("/api/v3/auth") || path == "/api/v3/connect") {
+                Napier.d("TokenRefreshAuthenticator - Skipping: not v3 API or auth/connect endpoint", tag = "TokenRefreshAuthenticator")
                 return null
             }
+
+            Napier.d("TokenRefreshAuthenticator - Attempting to refresh JWT token", tag = "TokenRefreshAuthenticator")
 
             // Get current JWT token
             val currentToken =
@@ -100,6 +107,8 @@ internal class TokenRefreshAuthenticator
             runBlocking {
                 jwtTokenStorage.updateJwtToken(newToken)
             }
+
+            Napier.d("TokenRefreshAuthenticator - JWT token refreshed successfully", tag = "TokenRefreshAuthenticator")
 
             // Retry the original request with new token
             return response.request

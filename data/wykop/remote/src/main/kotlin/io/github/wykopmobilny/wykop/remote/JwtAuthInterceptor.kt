@@ -1,5 +1,6 @@
 package io.github.wykopmobilny.wykop.remote
 
+import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.storage.api.JwtTokenStorage
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -15,14 +16,20 @@ internal class JwtAuthInterceptor
         override fun intercept(chain: Interceptor.Chain): Response {
             val request = chain.request()
             val path = request.url.encodedPath
+            val url = request.url.toString()
+
+            Napier.d("JwtAuthInterceptor - URL: $url", tag = "JwtAuthInterceptor")
+            Napier.d("JwtAuthInterceptor - Path: $path", tag = "JwtAuthInterceptor")
 
             // Only add JWT token for v3 API endpoints
-            if (!path.startsWith("v3/")) {
+            if (!path.startsWith("/api/v3/")) {
+                Napier.d("JwtAuthInterceptor - Skipping: path does not start with '/api/v3/'", tag = "JwtAuthInterceptor")
                 return chain.proceed(request)
             }
 
             // Skip JWT for auth and connect endpoints
-            if (path.startsWith("v3/auth") || path == "v3/connect") {
+            if (path.startsWith("/api/v3/auth") || path == "/api/v3/connect") {
+                Napier.d("JwtAuthInterceptor - Skipping: auth or connect endpoint", tag = "JwtAuthInterceptor")
                 return chain.proceed(request)
             }
 
@@ -34,8 +41,11 @@ internal class JwtAuthInterceptor
 
             // If no token, proceed without Authorization header
             if (jwtToken == null) {
+                Napier.w("JwtAuthInterceptor - No JWT token available", tag = "JwtAuthInterceptor")
                 return chain.proceed(request)
             }
+
+            Napier.d("JwtAuthInterceptor - Adding JWT token: Bearer ${jwtToken.accessToken.take(20)}...", tag = "JwtAuthInterceptor")
 
             // Replace Authorization header with JWT token (overrides bearer set by BearerAuthInterceptor)
             val newRequest =

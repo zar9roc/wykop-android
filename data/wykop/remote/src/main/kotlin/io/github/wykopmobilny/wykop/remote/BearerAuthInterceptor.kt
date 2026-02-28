@@ -1,5 +1,6 @@
 package io.github.wykopmobilny.wykop.remote
 
+import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.storage.api.BearerTokenStorage
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -20,9 +21,14 @@ internal class BearerAuthInterceptor
         override fun intercept(chain: Interceptor.Chain): Response {
             val request = chain.request()
             val path = request.url.encodedPath
+            val url = request.url.toString()
+
+            Napier.d("BearerAuthInterceptor - URL: $url", tag = "BearerAuthInterceptor")
+            Napier.d("BearerAuthInterceptor - Path: $path", tag = "BearerAuthInterceptor")
 
             // Only add bearer token for v3 API endpoints (skip /v3/auth where we obtain it)
-            if (!path.startsWith("v3/") || path.startsWith("v3/auth")) {
+            if (!path.startsWith("/api/v3/") || path.startsWith("/api/v3/auth")) {
+                Napier.d("BearerAuthInterceptor - Skipping: not v3 API or auth endpoint", tag = "BearerAuthInterceptor")
                 return chain.proceed(request)
             }
 
@@ -34,8 +40,11 @@ internal class BearerAuthInterceptor
 
             // If no token, proceed without Authorization header
             if (bearerToken == null) {
+                Napier.w("BearerAuthInterceptor - No bearer token available", tag = "BearerAuthInterceptor")
                 return chain.proceed(request)
             }
+
+            Napier.d("BearerAuthInterceptor - Adding bearer token: Bearer ${bearerToken.take(20)}...", tag = "BearerAuthInterceptor")
 
             // Add Authorization header with Bearer token
             val newRequest =
