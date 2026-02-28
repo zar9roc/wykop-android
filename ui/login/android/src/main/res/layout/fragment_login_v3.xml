@@ -71,7 +71,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/login_get_url"
-                        style="@style/Widget.Material3.Button"
+                        style="@style/Widget.MaterialComponents.Button"
                         />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -110,7 +110,7 @@
                         android:textIsSelectable="true"
                         android:textSize="12sp"
                         android:fontFamily="monospace"
-                        android:background="?attr/itemBackgroundColorSelected"
+                        android:background="@drawable/rounded_background_light"
                         android:padding="12dp"
                         android:layout_marginBottom="12dp"
                         />
@@ -127,7 +127,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="@string/login_copy_url"
-                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                             android:layout_marginEnd="8dp"
                             />
 
@@ -137,7 +137,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="@string/login_open_browser"
-                            style="@style/Widget.Material3.Button"
+                            style="@style/Widget.MaterialComponents.Button"
                             />
                     </LinearLayout>
                 </LinearLayout>
@@ -183,7 +183,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="@string/login_callback_url_hint"
-                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_marginBottom="16dp"
                         >
 
@@ -201,7 +201,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/login_submit"
-                        style="@style/Widget.Material3.Button"
+                        style="@style/Widget.MaterialComponents.Button"
                         />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
