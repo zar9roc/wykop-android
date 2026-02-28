@@ -106,7 +106,7 @@ class UserManager
                         id = profile.username,
                         userToken = "", // Empty for JWT flow (legacy field)
                         avatarUrl = profile.avatar,
-                        backgroundUrl = profile.background,
+                        backgroundUrl = null, // /v3/profile/short does not return background
                     ),
                 )
             }

@@ -213,7 +213,7 @@ userManager.logoutUser()
 ## Faza 2 - User Profile Endpoint (✅ COMPLETED 2026-02-28)
 
 ### Zaimplementowano:
-1. ✅ **UserMeResponseV3** - Model response dla endpointu `/v3/users/me`
+1. ✅ **UserMeResponseV3** - Model response dla endpointu `/v3/profile/short`
 2. ✅ **UsersV3RetrofitApi** - Nowy interfejs Retrofit z metodą `getUserProfile()`
 3. ✅ **Integracja w UserManager** - `saveJwtCredentials()` teraz pobiera profil po logowaniu
 4. ✅ **Zapis profilu** - Automatyczne zapisywanie do `UserInfoStorage` z JWT flow
@@ -228,9 +228,11 @@ userManager.logoutUser()
 ### Flow po logowaniu JWT:
 1. Użytkownik loguje się przez `/v3/auth` → otrzymuje token
 2. Token zapisywany do `JwtTokenStorage`
-3. **NOWE**: Automatyczne wywołanie `/v3/users/me` dla pobrania profilu
+3. **NOWE**: Automatyczne wywołanie `/v3/profile/short` dla pobrania profilu
 4. Profil zapisywany do `UserInfoStorage` (z pustym `userToken` - legacy field)
 5. Użytkownik w pełni zalogowany z profilem
+
+**Uwaga**: Endpoint `/v3/profile/short` nie zwraca pola `background` — `backgroundUrl` ustawiany na `null` w JWT flow.
 
 ## Ograniczenia i TODO
 
@@ -241,7 +243,7 @@ userManager.logoutUser()
 
 ### TODO (kolejne fazy):
 - ~~**Faza 1**: Utworzyć LoginV3Activity z formularzem username/password~~ ✅ COMPLETED
-- ~~**Faza 2**: Dodać endpoint GET `/v3/users/me` i pobieranie profilu po logowaniu JWT~~ ✅ COMPLETED
+- ~~**Faza 2**: Dodać endpoint GET `/v3/profile/short` i pobieranie profilu po logowaniu JWT~~ ✅ COMPLETED
 - **Faza 3**: Sprawdzanie expiration w `isJwtAuthorized()` (currentTime < expiresAt)
 - **Faza 4**: Migracja wszystkich endpointów zapisu (POST/PUT/DELETE) na v3
 - **Faza 5**: Deprecation starego systemu autentykacji (po pełnej migracji)

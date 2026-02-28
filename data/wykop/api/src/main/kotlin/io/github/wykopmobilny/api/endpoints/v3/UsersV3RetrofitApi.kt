@@ -5,6 +5,6 @@ import io.github.wykopmobilny.api.responses.v3.user.UserMeResponseV3
 import retrofit2.http.GET
 
 interface UsersV3RetrofitApi {
-    @GET("/v3/users/me")
+    @GET("/v3/profile/short")
     suspend fun getUserProfile(): WykopApiResponseV3<UserMeResponseV3>
 }
