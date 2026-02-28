@@ -7,21 +7,40 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 
+enum class EntriesSort {
+    HOT,
+    ACTIVE,
+    NEWEST,
+    ;
+
+    override fun toString(): String =
+        when (this) {
+            HOT -> "hot"
+            ACTIVE -> "active"
+            NEWEST -> "newest"
+        }
+}
+
+enum class EntriesLastUpdate(
+    val hours: Int,
+) {
+    ONE_HOUR(1),
+    TWO_HOURS(2),
+    THREE_HOURS(3),
+    SIX_HOURS(6),
+    TWELVE_HOURS(12),
+    TWENTY_FOUR_HOURS(24),
+    ;
+
+    override fun toString(): String = hours.toString()
+}
+
 interface EntriesV3RetrofitApi {
-    @GET("v3/entries/popular")
-    suspend fun getHot(
+    @GET("v3/entries")
+    suspend fun getEntries(
         @Query("page") page: Int,
-        @Query("sort") sort: String = "best",
-    ): WykopApiResponseV3<List<EntryResponseV3>>
-
-    @GET("v3/entries/newest")
-    suspend fun getStream(
-        @Query("page") page: Int,
-    ): WykopApiResponseV3<List<EntryResponseV3>>
-
-    @GET("v3/entries/active")
-    suspend fun getActive(
-        @Query("page") page: Int,
+        @Query("sort") sort: EntriesSort = EntriesSort.HOT,
+        @Query("last_update") lastUpdate: EntriesLastUpdate? = null,
     ): WykopApiResponseV3<List<EntryResponseV3>>
 
     @GET("v3/entries/observed")

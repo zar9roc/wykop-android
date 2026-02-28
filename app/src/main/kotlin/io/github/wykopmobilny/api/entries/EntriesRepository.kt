@@ -173,24 +173,49 @@ class EntriesRepository
         override fun getHot(
             page: Int,
             period: String,
-        ) = rxSingle { entriesApiV3.getHot(page, "best") }
-            .retryWhen(userTokenRefresher)
+        ) = rxSingle {
+            val lastUpdate =
+                when (period) {
+                    "1" -> io.github.wykopmobilny.api.endpoints.v3.EntriesLastUpdate.ONE_HOUR
+                    "2" -> io.github.wykopmobilny.api.endpoints.v3.EntriesLastUpdate.TWO_HOURS
+                    "3" -> io.github.wykopmobilny.api.endpoints.v3.EntriesLastUpdate.THREE_HOURS
+                    "6" -> io.github.wykopmobilny.api.endpoints.v3.EntriesLastUpdate.SIX_HOURS
+                    "12" -> io.github.wykopmobilny.api.endpoints.v3.EntriesLastUpdate.TWELVE_HOURS
+                    "24" -> io.github.wykopmobilny.api.endpoints.v3.EntriesLastUpdate.TWENTY_FOUR_HOURS
+                    else -> io.github.wykopmobilny.api.endpoints.v3.EntriesLastUpdate.TWELVE_HOURS
+                }
+            entriesApiV3.getEntries(
+                page = page,
+                sort = io.github.wykopmobilny.api.endpoints.v3.EntriesSort.HOT,
+                lastUpdate = lastUpdate,
+            )
+        }.retryWhen(userTokenRefresher)
             .compose(ErrorHandlerTransformerV3<List<io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3>>())
             .map { entries ->
                 entries.filterEntriesV3(owmContentFilter = owmContentFilter)
             }
 
         override fun getStream(page: Int) =
-            rxSingle { entriesApiV3.getStream(page) }
-                .retryWhen(userTokenRefresher)
+            rxSingle {
+                entriesApiV3.getEntries(
+                    page = page,
+                    sort = io.github.wykopmobilny.api.endpoints.v3.EntriesSort.NEWEST,
+                    lastUpdate = null,
+                )
+            }.retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<List<io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3>>())
                 .map { entries ->
                     entries.filterEntriesV3(owmContentFilter = owmContentFilter)
                 }
 
         override fun getActive(page: Int) =
-            rxSingle { entriesApiV3.getActive(page) }
-                .retryWhen(userTokenRefresher)
+            rxSingle {
+                entriesApiV3.getEntries(
+                    page = page,
+                    sort = io.github.wykopmobilny.api.endpoints.v3.EntriesSort.ACTIVE,
+                    lastUpdate = null,
+                )
+            }.retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<List<io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3>>())
                 .map { entries ->
                     entries.filterEntriesV3(owmContentFilter = owmContentFilter)
