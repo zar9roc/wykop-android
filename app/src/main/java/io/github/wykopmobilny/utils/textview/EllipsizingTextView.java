@@ -236,10 +236,13 @@ public class EllipsizingTextView extends AppCompatTextView {
          * @return {@link android.text.Layout} with the given text.
          */
         protected Layout createWorkingLayout(CharSequence workingText) {
-            return new StaticLayout(workingText, getPaint(),
-                getWidth() - getCompoundPaddingLeft() - getCompoundPaddingRight(),
-                Alignment.ALIGN_NORMAL, lineSpacingMult,
-                lineAddVertPad, false /* includepad */);
+            return StaticLayout.Builder
+                .obtain(workingText, 0, workingText.length(), getPaint(),
+                    getWidth() - getCompoundPaddingLeft() - getCompoundPaddingRight())
+                .setAlignment(Alignment.ALIGN_NORMAL)
+                .setLineSpacing(lineAddVertPad, lineSpacingMult)
+                .setIncludePad(false)
+                .build();
         }
 
         /**
