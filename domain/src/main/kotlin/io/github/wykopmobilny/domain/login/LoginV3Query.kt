@@ -39,6 +39,7 @@ class LoginV3Query
         private val appConfig: AppConfig,
     ) : LoginV3 {
         private val connectUrlState = MutableStateFlow<String?>(null)
+        private var currentUsername: String? = null
 
         override fun invoke() =
             combine(viewStateStorage.state, connectUrlState) { viewState, connectUrl ->
@@ -62,6 +63,7 @@ class LoginV3Query
             username: String,
             password: String,
         ) = appScopes.safe<LoginScope> {
+            currentUsername = username
             viewStateStorage.update { it.copy(isLoading = true) }
             connectUrlState.value = null
 
@@ -102,17 +104,19 @@ class LoginV3Query
 
         private fun onUrlInvoked(url: String) =
             appScopes.safe<LoginScope> {
+                val username = currentUsername ?: return@safe
                 val userSession =
                     withContext(Dispatchers.Default) {
                         val match = connectCallbackPattern.find(url) ?: return@withContext null
 
-                        val login = match.groups[1]?.value?.takeIf { it.isNotBlank() }
-                        val token = match.groups[2]?.value?.takeIf { it.isNotBlank() }
+                        val token = match.groups[1]?.value?.takeIf { it.isNotBlank() }
+                        val refreshToken = match.groups[2]?.value?.takeIf { it.isNotBlank() }
 
-                        if (login.isNullOrBlank() || token.isNullOrBlank()) {
+                        if (token.isNullOrBlank() || refreshToken.isNullOrBlank()) {
                             null
                         } else {
-                            UserSession(login, token)
+                            // TODO: Save refreshToken to JwtTokenStorage in future phase
+                            UserSession(username, token)
                         }
                     } ?: return@safe
                 viewStateStorage.update { it.copy(isLoading = true) }
@@ -139,7 +143,8 @@ class LoginV3Query
             }
 
         companion object {
+            // API v3 callback format: https://wykop.pl/?token={JWT}&rtoken={REFRESH_TOKEN}
             private val connectCallbackPattern =
-                "/ConnectSuccess/appkey/.+/login/(.+)/token/(.+)/".toRegex()
+                "[?]token=([^&]+)&rtoken=([^&]+)".toRegex()
         }
     }
