@@ -123,7 +123,12 @@ internal class TokenRefreshAuthenticator
 
             val payloadJson = String(Base64.getUrlDecoder().decode(parts[1]))
             val expMatch = """"exp"\s*:\s*(\d+)""".toRegex().find(payloadJson)
-            val expSeconds = expMatch?.groups?.get(1)?.value?.toLongOrNull() ?: return 0L
+            val expSeconds =
+                expMatch
+                    ?.groups
+                    ?.get(1)
+                    ?.value
+                    ?.toLongOrNull() ?: return 0L
 
             return expSeconds * 1000
         }

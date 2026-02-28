@@ -50,32 +50,33 @@ class LoginV3Query
                 )
             }
 
-        override fun login() = appScopes.safe<LoginScope> {
-            isLoginFlowActive = true
-            viewStateStorage.update { it.copy(isLoading = true) }
-            connectUrlState.value = null
-
-            runCatching {
-                // Bearer token is already available from app startup (InitializeApp).
-                // GET /v3/connect to get connectUrl for WebView
-                val connectResponse = authV3Api.connect()
-
-                val connectData = connectResponse.data
-                if (connectData == null) {
-                    throw IllegalStateException(connectResponse.error?.messagePl ?: "Failed to get connect URL")
-                }
-
-                connectUrlState.value = connectData.connectUrl
-            }.onFailure { throwable ->
-                isLoginFlowActive = false
-                viewStateStorage.update {
-                    it.copy(isLoading = false, failedAction = FailedAction(cause = throwable, retryAction = null))
-                }
+        override fun login() =
+            appScopes.safe<LoginScope> {
+                isLoginFlowActive = true
+                viewStateStorage.update { it.copy(isLoading = true) }
                 connectUrlState.value = null
-            }.onSuccess {
-                viewStateStorage.update { it.copy(isLoading = false, failedAction = null) }
+
+                runCatching {
+                    // Bearer token is already available from app startup (InitializeApp).
+                    // GET /v3/connect to get connectUrl for WebView
+                    val connectResponse = authV3Api.connect()
+
+                    val connectData = connectResponse.data
+                    if (connectData == null) {
+                        throw IllegalStateException(connectResponse.error?.messagePl ?: "Failed to get connect URL")
+                    }
+
+                    connectUrlState.value = connectData.connectUrl
+                }.onFailure { throwable ->
+                    isLoginFlowActive = false
+                    viewStateStorage.update {
+                        it.copy(isLoading = false, failedAction = FailedAction(cause = throwable, retryAction = null))
+                    }
+                    connectUrlState.value = null
+                }.onSuccess {
+                    viewStateStorage.update { it.copy(isLoading = false, failedAction = null) }
+                }
             }
-        }
 
         private fun onUrlInvoked(url: String) =
             appScopes.safe<LoginScope> {

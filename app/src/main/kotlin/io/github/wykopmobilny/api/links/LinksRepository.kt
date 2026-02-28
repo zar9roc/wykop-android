@@ -38,7 +38,7 @@ class LinksRepository
         override val burySubject = PublishSubject.create<LinkVoteResponsePublishModel>()
 
         override fun getPromoted(page: Int) =
-            rxSingle { linksApiV3.getLinks(page) }
+            rxSingle { linksApiV3.getLinks(page = page, type = "homepage", sort = "newest") }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>())
                 .map { links ->

@@ -95,10 +95,16 @@ class ProfileRepository
             rxSingle { profileApiV3.getUserLinksCommented(username, page) }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<List<LinkCommentResponseV3>>())
-                .map { it.map { response ->
-                    val linkId = response.resource.substringAfter("/links/").substringBefore("/").toLongOrNull() ?: 0L
-                    LinkCommentMapperV3.map(response, owmContentFilter, linkId)
-                } }
+                .map {
+                    it.map { response ->
+                        val linkId =
+                            response.resource
+                                .substringAfter("/links/")
+                                .substringBefore("/")
+                                .toLongOrNull() ?: 0L
+                        LinkCommentMapperV3.map(response, owmContentFilter, linkId)
+                    }
+                }
 
         override fun getBuried(
             username: String,

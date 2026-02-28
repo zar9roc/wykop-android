@@ -13,6 +13,8 @@ interface LinksV3RetrofitApi {
     @GET("v3/links")
     suspend fun getLinks(
         @Query("page") page: Int,
+        @Query("type") type: String? = null,
+        @Query("sort") sort: String? = null,
     ): WykopApiResponseV3<List<LinkResponseV3>>
 
     @GET("v3/links/upcoming")

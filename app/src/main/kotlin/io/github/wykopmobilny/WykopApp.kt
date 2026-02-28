@@ -158,7 +158,7 @@ open class WykopApp :
             connectConfig = {
                 val appKey = FirebaseRemoteConfig.getInstance().getString(RemoteConfigKeys.API_APP_KEY)
                 ConnectConfig(connectUrl = "https://wykop.pl/api/v3/connect")
-                //ConnectConfig(connectUrl = "https://wykop.pl/api/v3/connect/appkey/$appKey")
+                // ConnectConfig(connectUrl = "https://wykop.pl/api/v3/connect/appkey/$appKey")
             },
             clock = Clock.System,
             storages = storages,

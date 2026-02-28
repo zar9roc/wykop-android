@@ -52,11 +52,12 @@ class InitializeApp
 
         private suspend fun authenticateApp() {
             try {
-                val response = authV3Api.authenticate(
-                    WykopApiRequestV3(
-                        data = AuthRequestV3(key = appConfig.v3ApiKey, secret = appConfig.v3ApiSecret),
-                    ),
-                )
+                val response =
+                    authV3Api.authenticate(
+                        WykopApiRequestV3(
+                            data = AuthRequestV3(key = appConfig.v3ApiKey, secret = appConfig.v3ApiSecret),
+                        ),
+                    )
                 val token = response.data?.token
                 if (token != null) {
                     bearerTokenStorage.updateBearerToken(token)
