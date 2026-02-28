@@ -1,7 +1,5 @@
 package io.github.wykopmobilny.domain.login
 
-import com.dropbox.android.external.store4.Store
-import com.dropbox.android.external.store4.fresh
 import io.github.wykopmobilny.api.endpoints.v3.AuthV3RetrofitApi
 import io.github.wykopmobilny.api.requests.v3.auth.AuthRequestV3
 import io.github.wykopmobilny.domain.login.di.LoginScope
@@ -10,12 +8,8 @@ import io.github.wykopmobilny.domain.startup.AppConfig
 import io.github.wykopmobilny.domain.utils.safe
 import io.github.wykopmobilny.kotlin.AppScopes
 import io.github.wykopmobilny.storage.api.BearerTokenStorage
-import io.github.wykopmobilny.storage.api.Blacklist
 import io.github.wykopmobilny.storage.api.JwtToken
 import io.github.wykopmobilny.storage.api.JwtTokenStorage
-import io.github.wykopmobilny.storage.api.LoggedUserInfo
-import io.github.wykopmobilny.storage.api.SessionStorage
-import io.github.wykopmobilny.storage.api.UserSession
 import io.github.wykopmobilny.ui.base.FailedAction
 import io.github.wykopmobilny.ui.base.SimpleViewStateStorage
 import io.github.wykopmobilny.ui.base.components.ErrorDialogUi
@@ -34,13 +28,6 @@ class LoginV3Query
         private val authV3Api: AuthV3RetrofitApi,
         private val bearerTokenStorage: BearerTokenStorage,
         private val jwtTokenStorage: JwtTokenStorage,
-        // TODO: Remove when UserManager is migrated to use jwtTokenStorage instead of sessionStorage
-        // Currently needed for backward compatibility:
-        // - UserManager.getUserCredentials() reads from userInfoStorage
-        // - UserManager.runIfLoggedIn() checks sessionStorage.session
-        private val sessionStorage: SessionStorage,
-        private val userInfoStore: Store<UserSession, LoggedUserInfo>,
-        private val blacklistStore: Store<Unit, Blacklist>,
         private val appRestarter: AppRestarter,
         private val viewStateStorage: SimpleViewStateStorage,
         private val appScopes: AppScopes,
@@ -134,7 +121,7 @@ class LoginV3Query
                 val (token, refreshToken, expiresAt) = credentials
 
                 runCatching {
-                    // Save JWT token (v3 proper way)
+                    // Save JWT token
                     jwtTokenStorage.updateJwtToken(
                         JwtToken(
                             accessToken = token,
@@ -142,18 +129,9 @@ class LoginV3Query
                             expiresAt = expiresAt,
                         ),
                     )
-
-                    // Keep backward compatibility (userInfoStore requires UserSession)
-                    val userSession = UserSession(username, token)
-                    sessionStorage.updateSession(userSession)
-                    userInfoStore.fresh(userSession)
-                    blacklistStore.fresh(Unit)
                     appRestarter.restart()
                 }.onFailure { throwable ->
                     jwtTokenStorage.updateJwtToken(null)
-                    sessionStorage.updateSession(null)
-                    userInfoStore.clearAll()
-                    blacklistStore.clearAll()
                     viewStateStorage.update { it.copy(isLoading = false, failedAction = FailedAction(cause = throwable)) }
                 }.onSuccess {
                     viewStateStorage.update { it.copy(isLoading = false, failedAction = null) }

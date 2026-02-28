@@ -7,7 +7,6 @@ import io.github.wykopmobilny.api.responses.v3.auth.AuthResponseV3
 import io.github.wykopmobilny.storage.api.JwtToken
 import io.github.wykopmobilny.storage.api.JwtTokenStorage
 import io.github.wykopmobilny.storage.api.LoggedUserInfo
-import io.github.wykopmobilny.storage.api.SessionStorage
 import io.github.wykopmobilny.storage.api.UserInfoStorage
 import io.github.wykopmobilny.kotlin.AppDispatchers
 import io.github.wykopmobilny.kotlin.AppScopes
@@ -59,7 +58,6 @@ fun UserManagerApi.isUserAuthorized() = getUserCredentials() != null
 class UserManager
     @Inject
     constructor(
-        private val sessionStorage: SessionStorage,
         private val userInfoStorage: UserInfoStorage,
         private val jwtTokenStorage: JwtTokenStorage,
         private val usersV3Api: UsersV3RetrofitApi,
@@ -70,7 +68,6 @@ class UserManager
                 .stateIn(appScopes.applicationScope, SharingStarted.Eagerly, null)
 
         override suspend fun logoutUser() {
-            sessionStorage.updateSession(null)
             userInfoStorage.updateLoggedUser(null)
             jwtTokenStorage.updateJwtToken(null)
             userInfo.first { it == null }
@@ -134,7 +131,7 @@ class UserManager
             callback: () -> Unit,
         ) {
             appScopes.applicationScope.launch(Dispatchers.Main, start = CoroutineStart.UNDISPATCHED) {
-                val isLoggedIn = sessionStorage.session.first()
+                val isLoggedIn = jwtTokenStorage.jwtToken.first()
                 if (isLoggedIn != null) {
                     callback.invoke()
                 } else {

@@ -9,7 +9,7 @@ import io.github.wykopmobilny.domain.strings.Strings
 import io.github.wykopmobilny.notification.AppNotification
 import io.github.wykopmobilny.notification.NotificationsManager
 import io.github.wykopmobilny.notification.cancelNotification
-import io.github.wykopmobilny.storage.api.SessionStorage
+import io.github.wykopmobilny.storage.api.JwtTokenStorage
 import io.github.wykopmobilny.kotlin.AppDispatchers
 import io.github.wykopmobilny.work.GetNotificationsRefreshWorkDetails
 import io.github.wykopmobilny.work.WorkData
@@ -20,7 +20,7 @@ import javax.inject.Inject
 internal class GetNotificationsRefreshWorkDetailsQuery
     @Inject
     constructor(
-        private val sessionStorage: SessionStorage,
+        private val jwtTokenStorage: JwtTokenStorage,
         private val store: Store<Int, List<NotificationResponse>>,
         private val notificationsManager: NotificationsManager,
         private val appStorage: AppStorage,
@@ -28,7 +28,7 @@ internal class GetNotificationsRefreshWorkDetailsQuery
         override fun invoke() =
             WorkData(
                 onWorkRequested = {
-                    if (sessionStorage.session.first() != null) {
+                    if (jwtTokenStorage.jwtToken.first() != null) {
                         runCatching { doRefresh() }
                     } else {
                         Napier.i("User not logged in, skipping notification refresh")

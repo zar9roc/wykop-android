@@ -4,7 +4,7 @@ import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.fresh
 import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.storage.api.Blacklist
-import io.github.wykopmobilny.storage.api.SessionStorage
+import io.github.wykopmobilny.storage.api.JwtTokenStorage
 import io.github.wykopmobilny.work.GetBlacklistRefreshWorkDetails
 import io.github.wykopmobilny.work.WorkData
 import kotlinx.coroutines.flow.first
@@ -13,14 +13,14 @@ import javax.inject.Inject
 internal class GetBlacklistRefreshWorkDetailsQuery
     @Inject
     constructor(
-        private val sessionStorage: SessionStorage,
+        private val jwtTokenStorage: JwtTokenStorage,
         private val store: Store<Unit, Blacklist>,
     ) : GetBlacklistRefreshWorkDetails {
         override fun invoke() =
             run {
                 WorkData(
                     onWorkRequested = {
-                        if (sessionStorage.session.first() != null) {
+                        if (jwtTokenStorage.jwtToken.first() != null) {
                             runCatching {
                                 store.fresh(Unit)
                                 Unit
