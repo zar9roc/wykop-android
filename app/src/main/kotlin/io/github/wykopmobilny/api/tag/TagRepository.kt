@@ -1,11 +1,10 @@
 package io.github.wykopmobilny.api.tag
 
 import io.github.wykopmobilny.api.UserTokenRefresher
-import io.github.wykopmobilny.api.endpoints.TagRetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.TagsV3RetrofitApi
-import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformer
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
 import io.github.wykopmobilny.api.filters.OWMContentFilter
+import io.github.wykopmobilny.api.responses.ObserveStateResponse
 import io.github.wykopmobilny.api.responses.ObservedTagResponse
 import io.github.wykopmobilny.api.responses.TagMetaResponse
 import io.github.wykopmobilny.api.responses.v3.tags.TagDetailsResponseV3
@@ -21,7 +20,6 @@ import javax.inject.Inject
 class TagRepository
     @Inject
     constructor(
-        private val tagApi: TagRetrofitApi,
         private val tagsApiV3: TagsV3RetrofitApi,
         private val userTokenRefresher: UserTokenRefresher,
         private val owmContentFilter: OWMContentFilter,
@@ -66,40 +64,33 @@ class TagRepository
                     )
                 }
 
+        // TODO: Migrate to v3 /profile/users/{username}/observed/tags
         override fun getObservedTags(): Single<List<ObservedTagResponse>> =
-            rxSingle { tagApi.getObservedTags() }
-                .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
+            Single.just(emptyList())
 
         override fun observe(tag: String) =
-            rxSingle { tagApi.observe(tag) }
+            rxSingle { tagsApiV3.observeTag(tag) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
+                .map { ObserveStateResponse(isObserved = true, isBlocked = false) }
 
         override fun unobserve(tag: String) =
-            rxSingle { tagApi.unobserve(tag) }
+            rxSingle { tagsApiV3.unobserveTag(tag) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
+                .map { ObserveStateResponse(isObserved = false, isBlocked = false) }
 
         override fun block(tag: String) =
-            rxSingle { tagApi.block(tag) }
+            rxSingle { tagsApiV3.blockTag(tag) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
-                .flatMap { response ->
-                    rxSingle {
-                        appStorage.blacklistQueries.insertOrReplaceTag(tag.removePrefix("#"))
-                        response
-                    }
+                .map {
+                    appStorage.blacklistQueries.insertOrReplaceTag(tag.removePrefix("#"))
+                    ObserveStateResponse(isObserved = false, isBlocked = true)
                 }
 
         override fun unblock(tag: String) =
-            rxSingle { tagApi.unblock(tag) }
+            rxSingle { tagsApiV3.unblockTag(tag) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
-                .flatMap { response ->
-                    rxSingle {
-                        appStorage.blacklistQueries.deleteTag(tag.removePrefix("#"))
-                        response
-                    }
+                .map {
+                    appStorage.blacklistQueries.deleteTag(tag.removePrefix("#"))
+                    ObserveStateResponse(isObserved = false, isBlocked = false)
                 }
     }
