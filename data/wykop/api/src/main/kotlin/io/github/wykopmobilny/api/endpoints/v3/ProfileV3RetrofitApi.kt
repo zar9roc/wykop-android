@@ -7,6 +7,7 @@ import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.RelatedResponseV3
 import io.github.wykopmobilny.api.responses.v3.profile.BadgeResponseV3
+import io.github.wykopmobilny.api.responses.v3.tags.ShortTagResponseV3
 import io.github.wykopmobilny.api.responses.v3.user.UserFullResponseV3
 import io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3
 import retrofit2.http.DELETE
@@ -96,6 +97,11 @@ interface ProfileV3RetrofitApi {
     suspend fun getUserBadges(
         @Path("username") username: String,
     ): WykopApiResponseV3<List<BadgeResponseV3>>
+
+    @GET("v3/profile/users/{username}/observed/tags/menu")
+    suspend fun getObservedTagsMenu(
+        @Path("username") username: String,
+    ): WykopApiResponseV3<List<ShortTagResponseV3>>
 
     @POST("v3/observed/users/{username}")
     suspend fun observeUser(

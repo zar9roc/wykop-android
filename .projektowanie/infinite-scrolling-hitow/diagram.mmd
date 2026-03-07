@@ -1,6 +1,112 @@
 flowchart TD
-    A[Start] --> B{Decision}
-    B -->|Yes| C[Action 1]
-    B -->|No| D[Action 2]
-    C --> E[End]
-    D --> E
+    subgraph Fragment["HitsFragment / BaseLinksFragment"]
+        A["onViewCreated()"] --> B["loadDataListener(true)"]
+        B --> C["presenter.loadData()"]
+    end
+
+    subgraph Presenter["HitsPresenter"]
+        C --> D["currentPage = null"]
+        D --> E["loadPage(shouldRefresh = true)"]
+
+        LOAD_MORE["presenter.loadMore()"] --> E2["loadPage(shouldRefresh = false)"]
+
+        E --> SW{currentScreen?}
+        E2 --> SW
+
+        SW -->|HITS_DAY| API_DAY["hitsApi.currentDay(currentPage)"]
+        SW -->|HITS_WEEK| API_WEEK["hitsApi.currentWeek(currentPage)"]
+        SW -->|HITS_MONTH| API_MONTH["hitsApi.byMonth(year, month, currentPage)"]
+        SW -->|HITS_YEAR| API_YEAR["hitsApi.byYear(year, currentPage)"]
+    end
+
+    subgraph Repository["HitsRepository"]
+        API_DAY --> REPO["hitsApiV3.getHits(page, sort)"]
+        API_WEEK --> REPO
+        API_MONTH --> REPO
+        API_YEAR --> REPO
+
+        REPO --> RETROFIT["GET v3/hits/links?page=...&sort=..."]
+        RETROFIT --> RESPONSE["WykopApiResponseV3&lt;List&lt;LinkResponseV3&gt;&gt;"]
+    end
+
+    subgraph Auth["Wariant: zalogowany vs niezalogowany"]
+        RESPONSE --> TOKEN_CHECK{"JWT token obecny?"}
+
+        TOKEN_CHECK -->|"Zalogowany"| TOKEN_OK["Request z Authorization: Bearer JWT"]
+        TOKEN_CHECK -->|"Niezalogowany"| TOKEN_NONE["Request bez tokena"]
+
+        TOKEN_OK --> TOKEN_EXPIRED{"Token wygasł?"}
+        TOKEN_EXPIRED -->|Tak| REFRESH["UserTokenRefresher\nodświeża token\ni ponawia request"]
+        REFRESH --> API_RESP
+        TOKEN_EXPIRED -->|Nie| API_RESP["API Response"]
+        TOKEN_NONE --> API_RESP
+
+        API_RESP --> VOTED_CHECK{"Pole 'voted' w response"}
+        VOTED_CHECK -->|"Zalogowany: voted=1/-1"| VOTE_STATE["userVote = dig / bury"]
+        VOTED_CHECK -->|"Niezalogowany: voted=null"| NO_VOTE["userVote = null"]
+    end
+
+    subgraph Mapping["filterLinksV3()"]
+        VOTE_STATE --> FILTER["OWMContentFilter\nfiltruje zablokowane"]
+        NO_VOTE --> FILTER
+        FILTER --> FILTERED_DATA["FilteredData&lt;Link&gt;\n- totalCount\n- filtered: List&lt;Link&gt;\n- nextPage: String?"]
+    end
+
+    subgraph HandleResponse["Presenter: obsługa odpowiedzi"]
+        FILTERED_DATA --> HAS_DATA{"it.totalCount > 0?"}
+
+        HAS_DATA -->|Tak| SAVE_PAGE["currentPage = it.nextPage"]
+        SAVE_PAGE --> ADD_ITEMS["view.addItems(filtered, shouldRefresh)"]
+
+        HAS_DATA -->|Nie| DISABLE["view.disableLoading()"]
+    end
+
+    subgraph ErrorHandling["Obsługa błędów"]
+        FILTERED_DATA -.->|"onError"| ERROR["view.showErrorDialog(error)"]
+    end
+
+    subgraph AdapterLogic["EndlessProgressAdapter"]
+        ADD_ITEMS --> REFRESH_CHECK{"shouldRefresh?"}
+
+        REFRESH_CHECK -->|"true (pierwsze ładowanie)"| CLEAR["clear() → addAll(items)\n+ add(null) jako progress\nscrollToTop"]
+        REFRESH_CHECK -->|"false (doładowanie)"| APPEND["usuń null z końca\naddAll(nowe items)\n+ add(null) jako progress"]
+
+        DISABLE --> REMOVE_NULL["usuń null z końca\nisLoading = true\n⛔ koniec paginacji"]
+    end
+
+    subgraph InfiniteScroll["EndlessScrollListener"]
+        CLEAR --> DISPLAY["Wyświetl listę + ProgressBar na dole"]
+        APPEND --> DISPLAY
+
+        DISPLAY --> USER_SCROLL["Użytkownik scrolluje w dół"]
+        USER_SCROLL --> THRESHOLD{"lastVisible + 2\n>= totalItemCount?"}
+
+        THRESHOLD -->|Nie| USER_SCROLL
+        THRESHOLD -->|Tak| CHECK_LOADING{"isLoading?\nlast == null?"}
+
+        CHECK_LOADING -->|"Można ładować"| LOAD_MORE
+        CHECK_LOADING -->|"Już ładuje / brak progressa"| USER_SCROLL
+    end
+
+    subgraph VoteActions["Akcje głosowania (tylko zalogowany)"]
+        DISPLAY --> USER_DIG["Użytkownik klika Wykop/Zakop"]
+        USER_DIG --> IS_LOGGED{"Zalogowany?"}
+
+        IS_LOGGED -->|Tak| DIG_API["linksInteractor.dig(link)\nlub .voteRemove(link)"]
+        DIG_API --> DIG_OK{"Sukces?"}
+        DIG_OK -->|Tak| UPDATE_LINK["view.updateLink(updatedLink)"]
+        DIG_OK -->|Nie| DIG_ERR["showErrorDialog()\nview.updateLink(original) ← revert"]
+
+        IS_LOGGED -->|Nie| NO_AUTH["API zwróci błąd\n→ showErrorDialog()"]
+    end
+
+    style Fragment fill:#e1f5fe,stroke:#0288d1
+    style Presenter fill:#fff3e0,stroke:#f57c00
+    style Repository fill:#f3e5f5,stroke:#7b1fa2
+    style Auth fill:#fce4ec,stroke:#c62828
+    style Mapping fill:#e8f5e9,stroke:#2e7d32
+    style HandleResponse fill:#fff8e1,stroke:#f9a825
+    style AdapterLogic fill:#e0f2f1,stroke:#00695c
+    style InfiniteScroll fill:#ede7f6,stroke:#4527a0
+    style VoteActions fill:#fbe9e7,stroke:#d84315
+    style ErrorHandling fill:#ffebee,stroke:#b71c1c
