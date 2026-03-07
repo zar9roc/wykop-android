@@ -26,9 +26,11 @@ class HitsPresenter(
     var yearSelection = 0
     var monthSelection = 0
     private var currentPage: String? = null
+    private var pageNumber = 1
 
     fun loadData() {
         currentPage = null
+        pageNumber = 1
         loadPage(shouldRefresh = true)
     }
 
@@ -47,7 +49,7 @@ class HitsPresenter(
             .subscribe(
                 {
                     if (it.totalCount > 0) {
-                        currentPage = it.nextPage
+                        currentPage = it.nextPage ?: (++pageNumber).toString()
                         view?.addItems(it.filtered, shouldRefresh)
                     } else {
                         view?.disableLoading()

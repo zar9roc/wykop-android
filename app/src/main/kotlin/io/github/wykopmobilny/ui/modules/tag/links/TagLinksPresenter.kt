@@ -16,10 +16,14 @@ class TagLinksPresenter(
 ) : BasePresenter<TagLinksView>(),
     LinkActionListener {
     var page: String? = null
+    private var pageNumber = 1
     var tag = ""
 
     fun loadData(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = null
+        if (shouldRefresh) {
+            page = null
+            pageNumber = 1
+        }
         tagApi
             .getTagLinks(tag, page)
             .subscribeOn(schedulers.backgroundThread())
@@ -27,7 +31,7 @@ class TagLinksPresenter(
             .subscribe(
                 {
                     if (it.entries.isNotEmpty()) {
-                        page = it.nextPage
+                        page = it.nextPage ?: (++pageNumber).toString()
                         view?.addItems(it.entries, shouldRefresh)
                     } else {
                         view?.disableLoading()

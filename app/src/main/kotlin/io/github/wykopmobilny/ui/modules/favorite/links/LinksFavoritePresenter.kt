@@ -16,9 +16,13 @@ class LinksFavoritePresenter(
 ) : BasePresenter<LinksFavoriteView>(),
     LinkActionListener {
     var page: String? = null
+    private var pageNumber = 1
 
     fun loadData(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = null
+        if (shouldRefresh) {
+            page = null
+            pageNumber = 1
+        }
         linksApi
             .getObserved(page)
             .subscribeOn(schedulers.backgroundThread())
@@ -26,7 +30,7 @@ class LinksFavoritePresenter(
             .subscribe(
                 {
                     if (it.totalCount > 0) {
-                        page = it.nextPage
+                        page = it.nextPage ?: (++pageNumber).toString()
                         view?.addItems(it.filtered, shouldRefresh)
                     } else {
                         view?.disableLoading()

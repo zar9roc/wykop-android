@@ -23,10 +23,14 @@ class UpcomingPresenter(
     }
 
     var page: String? = null
+    private var pageNumber = 1
     var sortBy = "commented"
 
     fun getUpcomingLinks(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = null
+        if (shouldRefresh) {
+            page = null
+            pageNumber = 1
+        }
         linksApi
             .getUpcoming(page, sortBy)
             .subscribeOn(schedulers.backgroundThread())
@@ -34,7 +38,7 @@ class UpcomingPresenter(
             .subscribe(
                 {
                     if (it.totalCount > 0) {
-                        page = it.nextPage
+                        page = it.nextPage ?: (++pageNumber).toString()
                         view?.addItems(it.filtered, shouldRefresh)
                     } else {
                         view?.disableLoading()

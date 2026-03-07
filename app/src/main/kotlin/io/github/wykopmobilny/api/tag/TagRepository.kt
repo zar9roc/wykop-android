@@ -69,8 +69,9 @@ class TagRepository
                 }
 
         override fun getObservedTags(): Single<List<ObservedTagResponse>> {
-            val username = userManager.getUserCredentials()?.login
-                ?: return Single.just(emptyList())
+            val username =
+                userManager.getUserCredentials()?.login
+                    ?: return Single.just(emptyList())
             return rxSingle { profileApiV3.getObservedTagsMenu(username) }
                 .retryWhen(userTokenRefresher)
                 .map { response ->

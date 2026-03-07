@@ -18,10 +18,14 @@ class TagEntriesPresenter(
 ) : BasePresenter<TagEntriesView>(),
     EntryActionListener {
     var page: String? = null
+    private var pageNumber = 1
     var tag = ""
 
     fun loadData(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = null
+        if (shouldRefresh) {
+            page = null
+            pageNumber = 1
+        }
         tagApi
             .getTagEntries(tag, page)
             .subscribeOn(schedulers.backgroundThread())
@@ -29,7 +33,7 @@ class TagEntriesPresenter(
             .subscribe(
                 {
                     if (it.entries.isNotEmpty()) {
-                        page = it.nextPage
+                        page = it.nextPage ?: (++pageNumber).toString()
                         view?.addItems(it.entries, shouldRefresh)
                     } else {
                         view?.disableLoading()

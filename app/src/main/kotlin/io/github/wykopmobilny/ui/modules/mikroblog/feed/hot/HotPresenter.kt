@@ -12,13 +12,17 @@ class HotPresenter(
     val entriesApi: EntriesApi,
 ) : BasePresenter<HotView>() {
     var page: String? = null
+    private var pageNumber = 1
     var period = "24"
 
     fun loadData(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = null
+        if (shouldRefresh) {
+            page = null
+            pageNumber = 1
+        }
         val success: (FilteredData<Entry>) -> Unit = { data ->
             if (data.totalCount > 0) {
-                page = data.nextPage
+                page = data.nextPage ?: (++pageNumber).toString()
                 view?.showHotEntries(data.filtered, shouldRefresh)
             } else {
                 view?.disableLoading()

@@ -16,10 +16,14 @@ class ProfileLinksPresenter(
 ) : BasePresenter<ProfileLinksView>(),
     LinkActionListener {
     var page: String? = null
+    private var pageNumber = 1
     lateinit var username: String
 
     fun loadAdded(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = null
+        if (shouldRefresh) {
+            page = null
+            pageNumber = 1
+        }
         profileApi
             .getAdded(username, page)
             .subscribeOn(schedulers.backgroundThread())
@@ -27,7 +31,7 @@ class ProfileLinksPresenter(
             .subscribe(
                 {
                     if (it.totalCount > 0) {
-                        page = it.nextPage
+                        page = it.nextPage ?: (++pageNumber).toString()
                         view?.addItems(it.filtered, shouldRefresh)
                     } else {
                         view?.disableLoading()
@@ -38,7 +42,10 @@ class ProfileLinksPresenter(
     }
 
     fun loadBurried(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = null
+        if (shouldRefresh) {
+            page = null
+            pageNumber = 1
+        }
         profileApi
             .getBuried(username, page)
             .subscribeOn(schedulers.backgroundThread())
@@ -46,7 +53,7 @@ class ProfileLinksPresenter(
             .subscribe(
                 {
                     if (it.totalCount > 0) {
-                        page = it.nextPage
+                        page = it.nextPage ?: (++pageNumber).toString()
                         view?.addItems(it.filtered, shouldRefresh)
                     } else {
                         view?.disableLoading()
@@ -57,7 +64,10 @@ class ProfileLinksPresenter(
     }
 
     fun loadDigged(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = null
+        if (shouldRefresh) {
+            page = null
+            pageNumber = 1
+        }
         profileApi
             .getDigged(username, page)
             .subscribeOn(schedulers.backgroundThread())
@@ -65,7 +75,7 @@ class ProfileLinksPresenter(
             .subscribe(
                 {
                     if (it.totalCount > 0) {
-                        page = it.nextPage
+                        page = it.nextPage ?: (++pageNumber).toString()
                         view?.addItems(it.filtered, shouldRefresh)
                     } else {
                         view?.disableLoading()
@@ -76,7 +86,10 @@ class ProfileLinksPresenter(
     }
 
     fun loadPublished(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = null
+        if (shouldRefresh) {
+            page = null
+            pageNumber = 1
+        }
         profileApi
             .getPublished(username, page)
             .subscribeOn(schedulers.backgroundThread())
@@ -84,7 +97,7 @@ class ProfileLinksPresenter(
             .subscribe(
                 {
                     if (it.totalCount > 0) {
-                        page = it.nextPage
+                        page = it.nextPage ?: (++pageNumber).toString()
                         view?.addItems(it.filtered, shouldRefresh)
                     } else {
                         view?.disableLoading()
