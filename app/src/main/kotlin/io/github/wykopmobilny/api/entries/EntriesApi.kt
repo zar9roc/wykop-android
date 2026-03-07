@@ -20,9 +20,15 @@ interface EntriesApi {
 
     fun unvoteEntry(entryId: Long): Single<VoteResponse>
 
-    fun voteComment(commentId: Long): Single<VoteResponse>
+    fun voteComment(
+        entryId: Long,
+        commentId: Long,
+    ): Single<VoteResponse>
 
-    fun unvoteComment(commentId: Long): Single<VoteResponse>
+    fun unvoteComment(
+        entryId: Long,
+        commentId: Long,
+    ): Single<VoteResponse>
 
     fun addEntry(
         body: String,
@@ -70,6 +76,7 @@ interface EntriesApi {
 
     fun editEntryComment(
         body: String,
+        entryId: Long,
         commentId: Long,
         embed: String?,
         plus18: Boolean,
@@ -77,12 +84,16 @@ interface EntriesApi {
 
     fun editEntryComment(
         body: String,
+        entryId: Long,
         commentId: Long,
         wykopImageFile: WykopImageFile,
         plus18: Boolean,
     ): Single<EntryCommentResponse>
 
-    fun deleteEntryComment(commentId: Long): Single<EntryCommentResponse>
+    fun deleteEntryComment(
+        entryId: Long,
+        commentId: Long,
+    ): Single<EntryCommentResponse>
 
     fun voteSurvey(
         entryId: Long,

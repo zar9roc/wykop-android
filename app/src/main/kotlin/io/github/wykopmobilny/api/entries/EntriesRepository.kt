@@ -6,6 +6,12 @@ import io.github.wykopmobilny.api.endpoints.EntriesRetrofitApi
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformer
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
 import io.github.wykopmobilny.api.filters.OWMContentFilter
+import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
+import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateCommentRequestV3
+import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateEntryRequestV3
+import io.github.wykopmobilny.api.requests.v3.entries.VoteSurveyRequestV3
+import io.github.wykopmobilny.api.responses.EntryCommentResponse
+import io.github.wykopmobilny.api.responses.EntryResponse
 import io.github.wykopmobilny.api.toRequestBody
 import io.github.wykopmobilny.models.dataclass.EntryVotePublishModel
 import io.github.wykopmobilny.models.mapper.apiv2.SurveyMapper
@@ -14,6 +20,7 @@ import io.github.wykopmobilny.models.mapper.apiv3.filterEntriesV3
 import io.github.wykopmobilny.models.mapper.apiv3.filterEntryV3
 import io.reactivex.subjects.PublishSubject
 import kotlinx.coroutines.rx2.rxSingle
+import kotlinx.datetime.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,95 +37,192 @@ class EntriesRepository
         override val entryUnVoteSubject = PublishSubject.create<EntryVotePublishModel>()
 
         override fun voteEntry(entryId: Long) =
-            rxSingle { entriesApi.voteEntry(entryId) }
+            rxSingle { entriesApiV3.voteEntry(entryId) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
+                .compose(ErrorHandlerTransformerV3<Unit>())
+                .map { io.github.wykopmobilny.api.responses.VoteResponse(0) }
                 .doOnSuccess { entryVoteSubject.onNext(EntryVotePublishModel(entryId, it)) }
 
         override fun unvoteEntry(entryId: Long) =
-            rxSingle { entriesApi.unvoteEntry(entryId) }
+            rxSingle { entriesApiV3.unvoteEntry(entryId) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
+                .compose(ErrorHandlerTransformerV3<Unit>())
+                .map { io.github.wykopmobilny.api.responses.VoteResponse(0) }
                 .doOnSuccess { entryUnVoteSubject.onNext(EntryVotePublishModel(entryId, it)) }
 
-        override fun voteComment(commentId: Long) =
-            rxSingle { entriesApi.voteComment(commentId) }
-                .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
+        override fun voteComment(
+            entryId: Long,
+            commentId: Long,
+        ) = rxSingle { entriesApiV3.voteComment(entryId, commentId) }
+            .retryWhen(userTokenRefresher)
+            .compose(ErrorHandlerTransformerV3<Unit>())
+            .map { io.github.wykopmobilny.api.responses.VoteResponse(0) }
 
-        override fun unvoteComment(commentId: Long) =
-            rxSingle { entriesApi.unvoteComment(commentId) }
-                .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
+        override fun unvoteComment(
+            entryId: Long,
+            commentId: Long,
+        ) = rxSingle { entriesApiV3.unvoteComment(entryId, commentId) }
+            .retryWhen(userTokenRefresher)
+            .compose(ErrorHandlerTransformerV3<Unit>())
+            .map { io.github.wykopmobilny.api.responses.VoteResponse(0) }
 
         override fun addEntry(
             body: String,
             wykopImageFile: WykopImageFile,
             plus18: Boolean,
-        ) = rxSingle {
-            entriesApi.addEntry(
-                body = body.allowImageOnly().toRequestBody(),
-                plus18 = plus18.toRequestBody(),
-                file = wykopImageFile.getFileMultipart(),
-            )
-        }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
+        ) =// TODO: Implement file upload via /v3/media/photos/upload, then use photo key in entry
+            rxSingle {
+                entriesApi.addEntry(
+                    body = body.allowImageOnly().toRequestBody(),
+                    plus18 = plus18.toRequestBody(),
+                    file = wykopImageFile.getFileMultipart(),
+                )
+            }.retryWhen(userTokenRefresher)
+                .compose(ErrorHandlerTransformer())
 
         override fun addEntry(
             body: String,
             embed: String?,
             plus18: Boolean,
-        ) = rxSingle { entriesApi.addEntry(body, embed, plus18) }
-            .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
+        ) = rxSingle {
+            entriesApiV3.addEntry(
+                WykopApiRequestV3(
+                    CreateUpdateEntryRequestV3(
+                        content = body,
+                        embed = embed,
+                        adult = plus18,
+                    ),
+                ),
+            )
+        }.retryWhen(userTokenRefresher)
+            .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3>())
+            .map { entryV3 ->
+                // Minimal mapping for API compatibility - only ID is used by callers
+                EntryResponse(
+                    id = entryV3.id,
+                    date = Instant.DISTANT_PAST,
+                    body = entryV3.content,
+                    author = io.github.wykopmobilny.api.responses.AuthorResponse("", 0, null, ""),
+                    blocked = false,
+                    favorite = false,
+                    voteCount = 0,
+                    commentsCount = 0,
+                    comments = null,
+                    status = "",
+                    embed = null,
+                    survey = null,
+                    userVote = 0,
+                    violationUrl = null,
+                    app = null,
+                    isCommentingPossible = null,
+                )
+            }
 
         override fun addEntryComment(
             body: String,
             entryId: Long,
             wykopImageFile: WykopImageFile,
             plus18: Boolean,
-        ) = rxSingle {
-            entriesApi.addEntryComment(
-                body = body.allowImageOnly().toRequestBody(),
-                plus18 = plus18.toRequestBody(),
-                entryId = entryId,
-                file = wykopImageFile.getFileMultipart(),
-            )
-        }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
+        ) =// TODO: Implement file upload via /v3/media/photos/upload, then use photo key in comment
+            rxSingle {
+                entriesApi.addEntryComment(
+                    body = body.allowImageOnly().toRequestBody(),
+                    plus18 = plus18.toRequestBody(),
+                    entryId = entryId,
+                    file = wykopImageFile.getFileMultipart(),
+                )
+            }.retryWhen(userTokenRefresher)
+                .compose(ErrorHandlerTransformer())
 
         override fun addEntryComment(
             body: String,
             entryId: Long,
             embed: String?,
             plus18: Boolean,
-        ) = rxSingle { entriesApi.addEntryComment(body, embed, plus18, entryId) }
-            .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
+        ) = rxSingle {
+            entriesApiV3.addEntryComment(
+                entryId,
+                WykopApiRequestV3(
+                    CreateUpdateCommentRequestV3(
+                        content = body,
+                        embed = embed,
+                        adult = plus18,
+                    ),
+                ),
+            )
+        }.retryWhen(userTokenRefresher)
+            .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.EntryCommentResponseV3>())
+            .map { commentV3 ->
+                // Minimal mapping for API compatibility
+                EntryCommentResponse(
+                    id = commentV3.id,
+                    entryId = entryId,
+                    author = io.github.wykopmobilny.api.responses.AuthorResponse("", 0, null, ""),
+                    date = "",
+                    body = commentV3.content,
+                    blocked = false,
+                    favorite = false,
+                    voteCount = 0,
+                    status = "",
+                    userVote = 0,
+                    embed = null,
+                    app = null,
+                    violationUrl = null,
+                )
+            }
 
         override fun editEntry(
             body: String,
             entryId: Long,
             embed: String?,
             plus18: Boolean,
-        ) = rxSingle { entriesApi.editEntry(body = body, embed = embed, plus18 = plus18, entryId = entryId) }
-            .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
+        ) = rxSingle {
+            entriesApiV3.editEntry(
+                entryId,
+                WykopApiRequestV3(
+                    CreateUpdateEntryRequestV3(
+                        content = body,
+                        embed = embed,
+                        adult = plus18,
+                    ),
+                ),
+            )
+        }.retryWhen(userTokenRefresher)
+            .compose(ErrorHandlerTransformerV3<Unit>())
+            .map {
+                // API v3 returns 200 with no body, return minimal EntryCommentResponse for compatibility
+                EntryCommentResponse(
+                    id = entryId,
+                    entryId = null,
+                    author = io.github.wykopmobilny.api.responses.AuthorResponse("", 0, null, ""),
+                    date = "",
+                    body = body,
+                    blocked = false,
+                    favorite = false,
+                    voteCount = 0,
+                    status = "",
+                    userVote = 0,
+                    embed = null,
+                    app = null,
+                    violationUrl = null,
+                )
+            }
 
         override fun editEntry(
             body: String,
             entryId: Long,
             wykopImageFile: WykopImageFile,
             plus18: Boolean,
-        ) = rxSingle {
-            entriesApi.editEntry(
-                body = body.toRequestBody(),
-                plus18 = plus18.toRequestBody(),
-                entryId = entryId,
-                file = wykopImageFile.getFileMultipart(),
-            )
-        }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
+        ) =// TODO: Implement file upload via /v3/media/photos/upload, then use photo key in entry
+            rxSingle {
+                entriesApi.editEntry(
+                    body = body.toRequestBody(),
+                    plus18 = plus18.toRequestBody(),
+                    entryId = entryId,
+                    file = wykopImageFile.getFileMultipart(),
+                )
+            }.retryWhen(userTokenRefresher)
+                .compose(ErrorHandlerTransformer())
 
         override fun markFavorite(entryId: Long) =
             rxSingle { entriesApi.markFavorite(entryId) }
@@ -126,46 +230,132 @@ class EntriesRepository
                 .compose(ErrorHandlerTransformer())
 
         override fun deleteEntry(entryId: Long) =
-            rxSingle { entriesApi.deleteEntry(entryId) }
+            rxSingle { entriesApiV3.deleteEntry(entryId) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
+                .compose(ErrorHandlerTransformerV3<Unit>())
+                .map {
+                    // API v3 returns 204 with no body, return minimal EntryResponse for compatibility
+                    EntryResponse(
+                        id = entryId,
+                        date = Instant.DISTANT_PAST,
+                        body = "",
+                        author = io.github.wykopmobilny.api.responses.AuthorResponse("", 0, null, ""),
+                        blocked = false,
+                        favorite = false,
+                        voteCount = 0,
+                        commentsCount = 0,
+                        comments = null,
+                        status = "",
+                        embed = null,
+                        survey = null,
+                        userVote = 0,
+                        violationUrl = null,
+                        app = null,
+                        isCommentingPossible = null,
+                    )
+                }
 
         override fun editEntryComment(
             body: String,
+            entryId: Long,
             commentId: Long,
             embed: String?,
             plus18: Boolean,
-        ) = rxSingle { entriesApi.editEntryComment(body, embed, plus18, commentId) }
-            .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
+        ) = rxSingle {
+            entriesApiV3.editEntryComment(
+                entryId,
+                commentId,
+                WykopApiRequestV3(
+                    CreateUpdateCommentRequestV3(
+                        content = body,
+                        embed = embed,
+                        adult = plus18,
+                    ),
+                ),
+            )
+        }.retryWhen(userTokenRefresher)
+            .compose(ErrorHandlerTransformerV3<Unit>())
+            .map {
+                // API v3 returns 200 with no body, return minimal EntryCommentResponse for compatibility
+                EntryCommentResponse(
+                    id = commentId,
+                    entryId = entryId,
+                    author = io.github.wykopmobilny.api.responses.AuthorResponse("", 0, null, ""),
+                    date = "",
+                    body = body,
+                    blocked = false,
+                    favorite = false,
+                    voteCount = 0,
+                    status = "",
+                    userVote = 0,
+                    embed = null,
+                    app = null,
+                    violationUrl = null,
+                )
+            }
 
         override fun editEntryComment(
             body: String,
+            entryId: Long,
             commentId: Long,
             wykopImageFile: WykopImageFile,
             plus18: Boolean,
-        ) = rxSingle {
-            entriesApi.editEntryComment(
-                body = body.toRequestBody(),
-                plus18 = plus18.toRequestBody(),
-                commentId = commentId,
-                file = wykopImageFile.getFileMultipart(),
-            )
-        }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
-
-        override fun deleteEntryComment(commentId: Long) =
-            rxSingle { entriesApi.deleteEntryComment(commentId) }
-                .retryWhen(userTokenRefresher)
+        ) =// TODO: Implement file upload via /v3/media/photos/upload, then use photo key in comment
+            rxSingle {
+                entriesApi.editEntryComment(
+                    body = body.toRequestBody(),
+                    plus18 = plus18.toRequestBody(),
+                    commentId = commentId,
+                    file = wykopImageFile.getFileMultipart(),
+                )
+            }.retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformer())
+
+        override fun deleteEntryComment(
+            entryId: Long,
+            commentId: Long,
+        ) = rxSingle { entriesApiV3.deleteEntryComment(entryId, commentId) }
+            .retryWhen(userTokenRefresher)
+            .compose(ErrorHandlerTransformerV3<Unit>())
+            .map {
+                // API v3 returns 204 with no body, return minimal EntryCommentResponse for compatibility
+                EntryCommentResponse(
+                    id = commentId,
+                    entryId = entryId,
+                    author = io.github.wykopmobilny.api.responses.AuthorResponse("", 0, null, ""),
+                    date = "",
+                    body = "",
+                    blocked = false,
+                    favorite = false,
+                    voteCount = 0,
+                    status = "",
+                    userVote = 0,
+                    embed = null,
+                    app = null,
+                    violationUrl = null,
+                )
+            }
 
         override fun voteSurvey(
             entryId: Long,
             answerId: Int,
-        ) = rxSingle { entriesApi.voteSurvey(entryId, answerId) }
-            .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
-            .map { SurveyMapper.map(it) }
+        ) = rxSingle {
+            entriesApiV3.voteSurvey(
+                entryId,
+                WykopApiRequestV3(
+                    VoteSurveyRequestV3(answerId),
+                ),
+            )
+        }.retryWhen(userTokenRefresher)
+            .compose(ErrorHandlerTransformerV3<Unit>())
+            .map {
+                // API v3 returns 201 with no body, return empty Survey for compatibility
+                io.github.wykopmobilny.models.dataclass.Survey(
+                    question = "",
+                    answers = emptyList(),
+                    userAnswer = answerId,
+                )
+            }
 
         override fun getHot(
             page: String?,

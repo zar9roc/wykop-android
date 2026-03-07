@@ -12,7 +12,7 @@ class EntryCommentInteractor
     ) {
         fun voteComment(comment: EntryComment): Single<EntryComment> =
             entriesApi
-                .voteComment(comment.id)
+                .voteComment(comment.entryId, comment.id)
                 .map {
                     it.voteCount?.let { comment.voteCount = it }
                     comment.isVoted = true
@@ -21,7 +21,7 @@ class EntryCommentInteractor
 
         fun unvoteComment(comment: EntryComment): Single<EntryComment> =
             entriesApi
-                .unvoteComment(comment.id)
+                .unvoteComment(comment.entryId, comment.id)
                 .map {
                     it.voteCount?.let { comment.voteCount = it }
                     comment.isVoted = false
@@ -30,7 +30,7 @@ class EntryCommentInteractor
 
         fun deleteComment(comment: EntryComment): Single<EntryComment> =
             entriesApi
-                .deleteEntryComment(comment.id)
+                .deleteEntryComment(comment.entryId, comment.id)
                 .map {
                     comment.embed = null
                     comment.body = "[Komentarz usunięty]"

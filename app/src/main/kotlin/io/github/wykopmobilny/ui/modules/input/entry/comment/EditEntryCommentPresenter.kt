@@ -16,10 +16,12 @@ class EditEntryCommentPresenter(
     ) {
         view?.showProgressBar = true
         val body = view?.textBody ?: return
+        val entryId = view?.entryId ?: return
         val commentId = view?.commentId ?: return
         entriesApi
             .editEntryComment(
                 body = body,
+                entryId = entryId,
                 commentId = commentId,
                 wykopImageFile = photo,
                 plus18 = containsAdultContent,
@@ -40,10 +42,12 @@ class EditEntryCommentPresenter(
     ) {
         view?.showProgressBar = true
         val body = view?.textBody ?: return
+        val entryId = view?.entryId ?: return
         val commentId = view?.commentId ?: return
         entriesApi
             .editEntryComment(
                 body = body,
+                entryId = entryId,
                 commentId = commentId,
                 embed = photo,
                 plus18 = containsAdultContent,
