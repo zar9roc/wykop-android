@@ -14,6 +14,17 @@ class TagActivityPresenter
     ) : BasePresenter<TagActivityView>() {
         lateinit var tag: String
 
+        fun loadTagDetails() {
+            tagApi
+                .getTagDetails(tag)
+                .subscribeOn(schedulers.backgroundThread())
+                .observeOn(schedulers.mainThread())
+                .subscribe(
+                    { view?.setMeta(it) },
+                    { view?.showErrorDialog(it) },
+                ).intoComposite(compositeObservable)
+        }
+
         fun blockTag() {
             tagApi
                 .block(tag)

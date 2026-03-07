@@ -15,20 +15,19 @@ class TagLinksPresenter(
     val linksInteractor: LinksInteractor,
 ) : BasePresenter<TagLinksView>(),
     LinkActionListener {
-    var page = 1
+    var page: String? = null
     var tag = ""
 
     fun loadData(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = 1
+        if (shouldRefresh) page = null
         tagApi
             .getTagLinks(tag, page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
                 {
-                    view?.setParentMeta(it.meta)
                     if (it.entries.isNotEmpty()) {
-                        page++
+                        page = it.nextPage
                         view?.addItems(it.entries, shouldRefresh)
                     } else {
                         view?.disableLoading()

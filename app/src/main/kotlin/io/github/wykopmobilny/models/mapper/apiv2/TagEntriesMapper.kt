@@ -10,6 +10,5 @@ object TagEntriesMapper {
         owmContentFilter: OWMContentFilter,
     ) = TagEntries(
         entries = value.data.orEmpty().map { it.filterEntry(owmContentFilter = owmContentFilter) },
-        meta = value.meta,
     )
 }

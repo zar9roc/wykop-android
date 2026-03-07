@@ -2,9 +2,7 @@ package io.github.wykopmobilny.ui.modules.tag.entries
 
 import android.os.Bundle
 import android.view.View
-import io.github.wykopmobilny.api.responses.TagMetaResponse
 import io.github.wykopmobilny.base.BaseEntriesFragment
-import io.github.wykopmobilny.ui.modules.tag.TagActivityView
 import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 import javax.inject.Inject
 
@@ -48,9 +46,5 @@ class TagEntriesFragment :
     override fun onDestroyView() {
         presenter.unsubscribe()
         super.onDestroyView()
-    }
-
-    override fun setParentMeta(tagMeta: TagMetaResponse) {
-        (activity as TagActivityView).setMeta(tagMeta)
     }
 }

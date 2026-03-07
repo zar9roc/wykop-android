@@ -17,20 +17,19 @@ class TagEntriesPresenter(
     val entriesInteractor: EntriesInteractor,
 ) : BasePresenter<TagEntriesView>(),
     EntryActionListener {
-    var page = 1
+    var page: String? = null
     var tag = ""
 
     fun loadData(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = 1
+        if (shouldRefresh) page = null
         tagApi
             .getTagEntries(tag, page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
                 {
-                    view?.setParentMeta(it.meta)
                     if (it.entries.isNotEmpty()) {
-                        page++
+                        page = it.nextPage
                         view?.addItems(it.entries, shouldRefresh)
                     } else {
                         view?.disableLoading()

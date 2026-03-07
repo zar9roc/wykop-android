@@ -22,6 +22,7 @@ import io.github.wykopmobilny.api.endpoints.v3.HitsV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.LinksV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.NotificationsV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.ProfileV3RetrofitApi
+import io.github.wykopmobilny.api.endpoints.v3.TagsV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.UsersV3RetrofitApi
 import retrofit2.Retrofit
 import retrofit2.create
@@ -107,4 +108,8 @@ internal class WykopModule {
     @Reusable
     @Provides
     fun profileV3RetrofitApi(retrofit: Retrofit) = retrofit.create<ProfileV3RetrofitApi>()
+
+    @Reusable
+    @Provides
+    fun tagsV3RetrofitApi(retrofit: Retrofit) = retrofit.create<TagsV3RetrofitApi>()
 }

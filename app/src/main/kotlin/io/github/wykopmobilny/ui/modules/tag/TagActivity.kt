@@ -76,6 +76,7 @@ class TagActivity :
             setMeta(tagMeta!!)
         }
         binding.tabLayout.setupWithViewPager(binding.pager)
+        presenter.loadTagDetails()
     }
 
     override fun onDestroy() {

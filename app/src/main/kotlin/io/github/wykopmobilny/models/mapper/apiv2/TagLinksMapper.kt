@@ -10,6 +10,5 @@ object TagLinksMapper {
         owmContentFilter: OWMContentFilter,
     ) = TagLinks(
         entries = value.data.orEmpty().map { it.filterLink(owmContentFilter = owmContentFilter) },
-        meta = value.meta,
     )
 }
