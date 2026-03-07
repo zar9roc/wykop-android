@@ -11,7 +11,6 @@ import io.github.wykopmobilny.api.endpoints.NotificationsRetrofitApi
 import io.github.wykopmobilny.api.endpoints.PMRetrofitApi
 import io.github.wykopmobilny.api.endpoints.SearchRetrofitApi
 import io.github.wykopmobilny.api.endpoints.SuggestRetrofitApi
-import io.github.wykopmobilny.api.endpoints.TagRetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.AuthV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.EntriesV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.HitsV3RetrofitApi
@@ -43,8 +42,6 @@ interface WykopApi {
     fun searchRetrofitApi(): SearchRetrofitApi
 
     fun suggestRetrofitApi(): SuggestRetrofitApi
-
-    fun tagRetrofitApi(): TagRetrofitApi
 
     fun entriesV3RetrofitApi(): EntriesV3RetrofitApi
 
