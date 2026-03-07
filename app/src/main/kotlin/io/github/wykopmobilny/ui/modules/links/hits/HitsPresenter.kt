@@ -46,9 +46,12 @@ class HitsPresenter(
             .observeOn(schedulers.mainThread())
             .subscribe(
                 {
-                    currentPage = it.nextPage
-                    view?.addItems(it.filtered, shouldRefresh)
-                    view?.disableLoading()
+                    if (it.totalCount > 0) {
+                        currentPage = it.nextPage
+                        view?.addItems(it.filtered, shouldRefresh)
+                    } else {
+                        view?.disableLoading()
+                    }
                 },
                 { view?.showErrorDialog(it) },
             ).intoComposite(compositeObservable)
