@@ -24,6 +24,8 @@ interface WykopComponent : WykopApi {
             @BindsInstance jwtTokenStorage: JwtTokenStorage,
             @BindsInstance bearerTokenStorage: BearerTokenStorage,
             @BindsInstance cacheDir: File,
+            @BindsInstance @IsDebug
+            isDebug: Boolean,
         ): WykopComponent
     }
 }

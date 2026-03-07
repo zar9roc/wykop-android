@@ -13,3 +13,6 @@ annotation class SigningInterceptor
 
 @Qualifier
 annotation class PathFixingInterceptor
+
+@Qualifier
+annotation class IsDebug

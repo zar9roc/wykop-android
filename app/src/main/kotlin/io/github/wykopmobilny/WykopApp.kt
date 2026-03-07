@@ -263,6 +263,7 @@ open class WykopApp :
             jwtTokenStorage = storages.jwtTokenStorage(),
             bearerTokenStorage = storages.bearerTokenStorage(),
             cacheDir = cacheDir.resolve("okhttp/wykop"),
+            isDebug = BuildConfig.DEBUG,
         )
     }
 

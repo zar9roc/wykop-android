@@ -42,6 +42,7 @@ internal class RetrofitModule {
         @BaseUrl apiUrl: String,
         cacheDir: File,
         moshi: Moshi,
+        @IsDebug isDebug: Boolean,
     ) = Retrofit
         .Builder()
         .client(
@@ -52,6 +53,15 @@ internal class RetrofitModule {
                 .addInterceptor(bearerAuthInterceptor)
                 .addInterceptor(jwtAuthInterceptor)
                 .addInterceptor(signing)
+                .apply {
+                    if (isDebug) {
+                        addInterceptor(
+                            HttpLoggingInterceptor().apply {
+                                level = HttpLoggingInterceptor.Level.BODY
+                            },
+                        )
+                    }
+                }
                 .authenticator(tokenRefreshAuthenticator)
                 .connectTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
                 .readTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
