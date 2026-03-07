@@ -3,17 +3,16 @@ package io.github.wykopmobilny.domain.linkdetails.datasource
 import com.dropbox.android.external.store4.SourceOfTruth
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
-import io.github.wykopmobilny.api.responses.LinkCommentResponse
-import io.github.wykopmobilny.api.responses.properUrl
+import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
 import io.github.wykopmobilny.data.cache.api.AppCache
 import io.github.wykopmobilny.data.cache.api.Embed
+import io.github.wykopmobilny.data.cache.api.EmbedType
 import io.github.wykopmobilny.data.cache.api.LinkCommentsEntity
 import io.github.wykopmobilny.data.cache.api.linkComments.SelectByLinkId
 import io.github.wykopmobilny.domain.linkdetails.LinkComment
 import io.github.wykopmobilny.domain.profile.UserInfo
 import io.github.wykopmobilny.domain.profile.datasource.asUserVote
-import io.github.wykopmobilny.domain.profile.datasource.toEntity
-import io.github.wykopmobilny.domain.profile.datasource.upsert
+import io.github.wykopmobilny.domain.profile.datasource.upsertV3
 import io.github.wykopmobilny.domain.profile.toColorDomain
 import io.github.wykopmobilny.domain.profile.toGenderDomain
 import io.github.wykopmobilny.kotlin.AppDispatchers
@@ -21,7 +20,7 @@ import kotlinx.coroutines.flow.map
 import kotlin.math.absoluteValue
 
 internal fun linkCommentsSourceOfTruth(cache: AppCache) =
-    SourceOfTruth.of<Long, List<LinkCommentResponse>, Map<LinkComment, List<LinkComment>>>(
+    SourceOfTruth.of<Long, List<LinkCommentResponseV3>, Map<LinkComment, List<LinkComment>>>(
         reader = { linkId ->
             cache.linkCommentsQueries
                 .selectByLinkId(linkId)
@@ -43,28 +42,61 @@ internal fun linkCommentsSourceOfTruth(cache: AppCache) =
                         }.toMap()
                 }
         },
-        writer = { _, comments ->
+        writer = { linkId, comments ->
             cache.transaction {
                 comments.forEach { comment ->
-                    cache.profileQueries.upsert(comment.author)
-                    comment.embed?.toEntity()?.let(cache.embedQueries::insertOrReplace)
+                    cache.profileQueries.upsertV3(comment.author)
+                    val embedId = comment.media?.photo?.url ?: comment.media?.embed?.url
+                    comment.media?.photo?.let { photo ->
+                        cache.embedQueries.insertOrReplace(
+                            Embed(
+                                id = photo.url,
+                                type = EmbedType.StaticImage,
+                                fileName = photo.source,
+                                preview = photo.url,
+                                size = null,
+                                hasAdultContent = photo.plus18 ?: false,
+                                ratio = run {
+                                    val pw = photo.width
+                                    val ph = photo.height
+                                    if (pw != null && ph != null && ph > 0) pw.toFloat() / ph.toFloat() else 1f
+                                },
+                            ),
+                        )
+                    }
+                    comment.media?.embed?.let { embed ->
+                        cache.embedQueries.insertOrReplace(
+                            Embed(
+                                id = embed.url,
+                                type = when (embed.type) {
+                                    "video" -> EmbedType.Video
+                                    else -> EmbedType.Unknown
+                                },
+                                fileName = null,
+                                preview = embed.thumbnail ?: embed.url,
+                                size = null,
+                                hasAdultContent = false,
+                                ratio = 1f,
+                            ),
+                        )
+                    }
                     cache.linkCommentsQueries.insertOrReplace(
                         LinkCommentsEntity(
                             id = comment.id,
-                            postedAt = comment.date,
-                            profileId = comment.author.login,
-                            voteCount = comment.voteCount,
-                            voteCountPlus = comment.voteCountPlus,
-                            body = comment.body.orEmpty(),
-                            parentId = comment.parentId,
-                            canVote = comment.canVote,
-                            userVote = comment.userVote.asUserVote(),
-                            isBlocked = comment.blocked,
-                            isFavorite = comment.favorite,
-                            linkId = comment.linkId,
-                            embedId = comment.embed?.properUrl,
-                            app = comment.app,
-                            violationUrl = comment.violationUrl,
+                            postedAt = comment.createdAt,
+                            profileId = comment.author.username,
+                            voteCount = comment.votes.up + comment.votes.down,
+                            voteCountPlus = comment.votes.up,
+                            body = comment.content.orEmpty(),
+                            parentId = comment.parentId ?: comment.id,
+                            canVote = true,
+                            userVote = comment.voted.asUserVote(),
+                            isBlocked = comment.deleted ?: false,
+                            isFavorite = false,
+                            linkId = linkId,
+                            embedId = embedId,
+                            app = comment.device,
+                            violationUrl = null,
                         ),
                     )
                 }

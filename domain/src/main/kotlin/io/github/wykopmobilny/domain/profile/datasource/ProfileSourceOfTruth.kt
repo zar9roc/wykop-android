@@ -180,7 +180,7 @@ internal fun profileSourceOfTruth(
     deleteAll = { cache.profileActionsQueries.deleteByProfile(profileId) },
 )
 
-private fun ProfileQueries.upsertV3(author: UserShortResponseV3) {
+internal fun ProfileQueries.upsertV3(author: UserShortResponseV3) {
     upsert(
         id = author.username,
         avatar = author.avatar.orEmpty(),

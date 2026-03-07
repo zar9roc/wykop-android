@@ -5,7 +5,7 @@ import com.dropbox.android.external.store4.StoreBuilder
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
-import io.github.wykopmobilny.api.endpoints.LinksRetrofitApi
+import io.github.wykopmobilny.api.endpoints.v3.LinksV3RetrofitApi
 import io.github.wykopmobilny.data.cache.api.AppCache
 import io.github.wykopmobilny.domain.api.ApiClient
 import io.github.wykopmobilny.domain.di.ScopeInitializer
@@ -26,7 +26,7 @@ internal abstract class LinkDetailsModule {
         @LinkDetailsScope
         @Provides
         fun linkDetailsStore(
-            retrofitApi: LinksRetrofitApi,
+            retrofitApi: LinksV3RetrofitApi,
             appScopes: AppScopes,
             cache: AppCache,
             apiClient: ApiClient,
@@ -41,7 +41,7 @@ internal abstract class LinkDetailsModule {
         @LinkDetailsScope
         @Provides
         fun linkComments(
-            retrofitApi: LinksRetrofitApi,
+            retrofitApi: LinksV3RetrofitApi,
             appScopes: AppScopes,
             cache: AppCache,
             apiClient: ApiClient,
@@ -52,7 +52,7 @@ internal abstract class LinkDetailsModule {
                         apiClient.fetcher { linkId ->
                             retrofitApi.getLinkComments(
                                 linkId = linkId,
-                                sortBy = "old", // we'll sort it on the app side 😬
+                                sortBy = "oldest",
                             )
                         },
                     sourceOfTruth = linkCommentsSourceOfTruth(cache),
@@ -62,7 +62,7 @@ internal abstract class LinkDetailsModule {
         @LinkDetailsScope
         @Provides
         fun relatedLinksStore(
-            retrofitApi: LinksRetrofitApi,
+            retrofitApi: LinksV3RetrofitApi,
             appScopes: AppScopes,
             cache: AppCache,
             apiClient: ApiClient,
