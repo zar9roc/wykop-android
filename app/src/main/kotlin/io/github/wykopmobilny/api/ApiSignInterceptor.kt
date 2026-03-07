@@ -29,7 +29,8 @@ class ApiSignInterceptor(
 
         val customHeaders = request.headers("@")
         val credentials = userManagerApi.getUserCredentials()
-        if (credentials != null && !customHeaders.contains(REMOVE_USERKEY_HEADER)) {
+        val isV3Endpoint = request.url.encodedPath.startsWith("/api/v3/")
+        if (credentials != null && !customHeaders.contains(REMOVE_USERKEY_HEADER) && !isV3Endpoint) {
             url += "/userkey/${credentials.userKey}"
         }
         val appSecret = FirebaseRemoteConfig.getInstance().getString(RemoteConfigKeys.API_APP_SECRET)

@@ -6,13 +6,9 @@ import io.github.wykopmobilny.api.endpoints.EntriesRetrofitApi
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformer
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
 import io.github.wykopmobilny.api.filters.OWMContentFilter
-import io.github.wykopmobilny.api.patrons.PatronsApi
 import io.github.wykopmobilny.api.toRequestBody
 import io.github.wykopmobilny.models.dataclass.EntryVotePublishModel
 import io.github.wykopmobilny.models.mapper.apiv2.SurveyMapper
-import io.github.wykopmobilny.models.mapper.apiv2.VoterMapper
-import io.github.wykopmobilny.models.mapper.apiv2.filterEntries
-import io.github.wykopmobilny.models.mapper.apiv2.filterEntry
 import io.github.wykopmobilny.models.mapper.apiv3.EntryCommentMapperV3
 import io.github.wykopmobilny.models.mapper.apiv3.filterEntriesV3
 import io.github.wykopmobilny.models.mapper.apiv3.filterEntryV3
@@ -172,7 +168,7 @@ class EntriesRepository
             .map { SurveyMapper.map(it) }
 
         override fun getHot(
-            page: Int,
+            page: String?,
             period: String,
         ) = rxSingle {
             val lastUpdate =
@@ -191,12 +187,11 @@ class EntriesRepository
                 lastUpdate = lastUpdate,
             )
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<List<io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3>>())
-            .map { entries ->
-                entries.filterEntriesV3(owmContentFilter = owmContentFilter)
+            .map { response ->
+                response.data.orEmpty().filterEntriesV3(owmContentFilter, response.pagination)
             }
 
-        override fun getStream(page: Int) =
+        override fun getStream(page: String?) =
             rxSingle {
                 entriesApiV3.getEntries(
                     page = page,
@@ -204,12 +199,11 @@ class EntriesRepository
                     lastUpdate = null,
                 )
             }.retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3>>())
-                .map { entries ->
-                    entries.filterEntriesV3(owmContentFilter = owmContentFilter)
+                .map { response ->
+                    response.data.orEmpty().filterEntriesV3(owmContentFilter, response.pagination)
                 }
 
-        override fun getActive(page: Int) =
+        override fun getActive(page: String?) =
             rxSingle {
                 entriesApiV3.getEntries(
                     page = page,
@@ -217,17 +211,15 @@ class EntriesRepository
                     lastUpdate = null,
                 )
             }.retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3>>())
-                .map { entries ->
-                    entries.filterEntriesV3(owmContentFilter = owmContentFilter)
+                .map { response ->
+                    response.data.orEmpty().filterEntriesV3(owmContentFilter, response.pagination)
                 }
 
-        override fun getObserved(page: Int) =
+        override fun getObserved(page: String?) =
             rxSingle { entriesApiV3.getObservedTagsStream(page) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3>>())
-                .map { entries ->
-                    entries.filterEntriesV3(owmContentFilter = owmContentFilter)
+                .map { response ->
+                    response.data.orEmpty().filterEntriesV3(owmContentFilter, response.pagination)
                 }
 
         override fun getEntry(id: Long) =

@@ -90,15 +90,15 @@ interface EntriesApi {
     ): Single<Survey>
 
     fun getHot(
-        page: Int,
+        page: String?,
         period: String,
     ): Single<FilteredData<Entry>>
 
-    fun getStream(page: Int): Single<FilteredData<Entry>>
+    fun getStream(page: String?): Single<FilteredData<Entry>>
 
-    fun getActive(page: Int): Single<FilteredData<Entry>>
+    fun getActive(page: String?): Single<FilteredData<Entry>>
 
-    fun getObserved(page: Int): Single<FilteredData<Entry>>
+    fun getObserved(page: String?): Single<FilteredData<Entry>>
 
     fun getEntry(id: Long): Single<Entry>
 

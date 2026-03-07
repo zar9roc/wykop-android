@@ -15,10 +15,10 @@ class EntryFavoritePresenter(
     private val entryApi: EntriesApi,
 ) : BasePresenter<EntryFavoriteView>(),
     EntryActionListener {
-    var page = 1
+    var page: String? = null
 
     fun loadData(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = 1
+        if (shouldRefresh) page = null
         entryApi
             .getObserved(page)
             .subscribeOn(schedulers.backgroundThread())
@@ -26,7 +26,7 @@ class EntryFavoritePresenter(
             .subscribe(
                 { data ->
                     if (data.totalCount > 0) {
-                        page++
+                        page = data.nextPage
                         view?.addItems(
                             items = data.filtered,
                             shouldRefresh = shouldRefresh,

@@ -39,14 +39,14 @@ enum class EntriesLastUpdate(
 interface EntriesV3RetrofitApi {
     @GET("v3/entries")
     suspend fun getEntries(
-        @Query("page") page: Int,
+        @Query("page") page: String? = null,
         @Query("sort") sort: EntriesSort = EntriesSort.HOT,
         @Query("last_update") lastUpdate: EntriesLastUpdate? = null,
     ): WykopApiResponseV3<List<EntryResponseV3>>
 
     @GET("v3/observed/tags/stream")
     suspend fun getObservedTagsStream(
-        @Query("page") page: Int,
+        @Query("page") page: String? = null,
     ): WykopApiResponseV3<List<EntryResponseV3>>
 
     @GET("v3/entries/{entryId}")
