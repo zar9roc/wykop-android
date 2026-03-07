@@ -9,7 +9,6 @@ import io.github.wykopmobilny.api.endpoints.LoginRetrofitApi
 import io.github.wykopmobilny.api.endpoints.MyWykopRetrofitApi
 import io.github.wykopmobilny.api.endpoints.NotificationsRetrofitApi
 import io.github.wykopmobilny.api.endpoints.PMRetrofitApi
-import io.github.wykopmobilny.api.endpoints.ProfileRetrofitApi
 import io.github.wykopmobilny.api.endpoints.SearchRetrofitApi
 import io.github.wykopmobilny.api.endpoints.SuggestRetrofitApi
 import io.github.wykopmobilny.api.endpoints.TagRetrofitApi
@@ -40,8 +39,6 @@ interface WykopApi {
     fun notificationsRetrofitApi(): NotificationsRetrofitApi
 
     fun pMRetrofitApi(): PMRetrofitApi
-
-    fun profileRetrofitApi(): ProfileRetrofitApi
 
     fun searchRetrofitApi(): SearchRetrofitApi
 

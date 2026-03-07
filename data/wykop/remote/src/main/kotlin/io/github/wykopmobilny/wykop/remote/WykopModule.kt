@@ -12,7 +12,6 @@ import io.github.wykopmobilny.api.endpoints.LoginRetrofitApi
 import io.github.wykopmobilny.api.endpoints.MyWykopRetrofitApi
 import io.github.wykopmobilny.api.endpoints.NotificationsRetrofitApi
 import io.github.wykopmobilny.api.endpoints.PMRetrofitApi
-import io.github.wykopmobilny.api.endpoints.ProfileRetrofitApi
 import io.github.wykopmobilny.api.endpoints.SearchRetrofitApi
 import io.github.wykopmobilny.api.endpoints.SuggestRetrofitApi
 import io.github.wykopmobilny.api.endpoints.TagRetrofitApi
@@ -64,10 +63,6 @@ internal class WykopModule {
     @Reusable
     @Provides
     fun pMRetrofitApi(retrofit: Retrofit) = retrofit.create<PMRetrofitApi>()
-
-    @Reusable
-    @Provides
-    fun profileRetrofitApi(retrofit: Retrofit) = retrofit.create<ProfileRetrofitApi>()
 
     @Reusable
     @Provides

@@ -61,8 +61,7 @@ internal class RetrofitModule {
                             },
                         )
                     }
-                }
-                .authenticator(tokenRefreshAuthenticator)
+                }.authenticator(tokenRefreshAuthenticator)
                 .connectTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
                 .readTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
                 .writeTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)

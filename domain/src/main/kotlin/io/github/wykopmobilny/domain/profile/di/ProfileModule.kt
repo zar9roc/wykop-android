@@ -2,6 +2,7 @@ package io.github.wykopmobilny.domain.profile.di
 
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
+import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.SourceOfTruth
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.StoreBuilder
@@ -10,15 +11,13 @@ import app.cash.sqldelight.coroutines.mapToOneOrNull
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
-import io.github.wykopmobilny.api.endpoints.ProfileRetrofitApi
-import io.github.wykopmobilny.api.responses.ProfileResponse
-import io.github.wykopmobilny.api.responses.WykopApiResponse
+import io.github.wykopmobilny.api.endpoints.v3.ProfileV3RetrofitApi
+import io.github.wykopmobilny.api.responses.v3.user.UserFullResponseV3
 import io.github.wykopmobilny.data.cache.api.AppCache
 import io.github.wykopmobilny.data.cache.api.GenderEntity
 import io.github.wykopmobilny.data.cache.api.ProfileDetailsView
 import io.github.wykopmobilny.data.cache.api.ProfileEntity
 import io.github.wykopmobilny.data.cache.api.UserColorEntity
-import io.github.wykopmobilny.domain.api.ApiClient
 import io.github.wykopmobilny.domain.api.PagingSource
 import io.github.wykopmobilny.domain.api.StoreMediator
 import io.github.wykopmobilny.domain.di.ScopeInitializer
@@ -33,6 +32,7 @@ import io.github.wykopmobilny.kotlin.AppScopes
 import io.github.wykopmobilny.ui.base.SimpleViewStateStorage
 import io.github.wykopmobilny.ui.profile.GetProfileActions
 import io.github.wykopmobilny.ui.profile.GetProfileDetails
+import kotlinx.datetime.Instant
 import javax.inject.Provider
 
 @Module
@@ -46,21 +46,15 @@ internal abstract class ProfileModule {
         @Provides
         fun actionsStore(
             @ProfileId profileId: String,
-            retrofitApi: ProfileRetrofitApi,
+            profileApiV3: ProfileV3RetrofitApi,
             appScopes: AppScopes,
             cache: AppCache,
-            apiClient: ApiClient,
         ): Store<Int, List<ProfileAction>> =
             StoreBuilder
                 .from(
                     fetcher =
-                        apiClient.fetcher { page ->
-                            // pagination is broken on the  api side
-                            if (page == 1) {
-                                retrofitApi.getActions(profileId)
-                            } else {
-                                WykopApiResponse(data = emptyList(), error = null)
-                            }
+                        Fetcher.of { page: Int ->
+                            profileApiV3.getUserActions(profileId, page).data.orEmpty()
                         },
                     sourceOfTruth = profileSourceOfTruth(profileId, cache),
                 ).scope(appScopes.applicationScope)
@@ -81,16 +75,19 @@ internal abstract class ProfileModule {
         @Provides
         fun profileStore(
             @ProfileId profileId: String,
-            retrofitApi: ProfileRetrofitApi,
+            profileApiV3: ProfileV3RetrofitApi,
             appScopes: AppScopes,
             cache: AppCache,
-            apiClient: ApiClient,
         ): Store<Unit, ProfileDetailsView> =
             StoreBuilder
                 .from(
-                    fetcher = apiClient.fetcher { retrofitApi.getIndex(profileId) },
+                    fetcher =
+                        Fetcher.of {
+                            val response = profileApiV3.getUserProfile(profileId)
+                            response.data ?: error("No profile data for $profileId")
+                        },
                     sourceOfTruth =
-                        SourceOfTruth.of<Unit, ProfileResponse, ProfileDetailsView>(
+                        SourceOfTruth.of<Unit, UserFullResponseV3, ProfileDetailsView>(
                             reader = {
                                 cache.profileQueries
                                     .selectById(profileId)
@@ -99,15 +96,10 @@ internal abstract class ProfileModule {
                             },
                             writer = { _, input ->
                                 cache.transaction {
-                                    if (input.isBlocked == true) {
-                                        cache.profileStateQueries.blockProfile(input.id)
+                                    if (input.follow == true) {
+                                        cache.profileStateQueries.observeProfile(input.username)
                                     } else {
-                                        cache.profileStateQueries.unblockProfile(input.id)
-                                    }
-                                    if (input.isObserved == true) {
-                                        cache.profileStateQueries.observeProfile(input.id)
-                                    } else {
-                                        cache.profileStateQueries.unobserveProfile(input.id)
+                                        cache.profileStateQueries.unobserveProfile(input.username)
                                     }
                                     cache.profileQueries.insertOrReplace(input.toProfileEntity())
                                 }
@@ -129,38 +121,38 @@ internal abstract class ProfileModule {
     abstract fun scopeInitializer(impl: InitializeProfile): ScopeInitializer
 }
 
-private fun ProfileResponse.toProfileEntity() =
+private fun UserFullResponseV3.toProfileEntity() =
     ProfileEntity(
-        id = id,
-        signupAt = signupAt,
+        id = username,
+        signupAt = runCatching { Instant.parse(memberSince.orEmpty()) }.getOrElse { Instant.DISTANT_PAST },
         background = background,
-        isVerified = isVerified == true,
-        email = email,
-        description = description,
+        isVerified = verified == true,
+        email = publicEmail,
+        description = about,
         name = name,
-        wwwUrl = wwwUrl,
-        jabberUrl = jabberUrl,
-        ggUrl = ggUrl,
+        wwwUrl = website,
+        jabberUrl = null,
+        ggUrl = null,
         city = city,
-        facebookUrl = facebookUrl,
-        twitterUrl = twitterUrl,
-        instagramUrl = instagramUrl,
-        linksAddedCount = linksAddedCount,
-        linksPublishedCount = linksPublishedCount,
-        commentsCount = commentsCount,
-        rank = rank,
-        followers = followers,
-        following = following,
-        entriesCount = entriesCount,
-        entriesCommentsCount = entriesCommentsCount,
-        diggsCount = diggsCount,
-        buriesCount = buriesCount,
-        violationUrl = violationUrl,
-        banReason = ban?.reason,
-        banDate = ban?.date,
-        color = color.toColorEntity(),
-        gender = sex.toGenderEntity(),
-        avatar = avatar,
+        facebookUrl = socialMedia?.facebook,
+        twitterUrl = socialMedia?.twitter,
+        instagramUrl = socialMedia?.instagram,
+        linksAddedCount = summary?.linksDetails?.added,
+        linksPublishedCount = summary?.linksDetails?.published,
+        commentsCount = summary?.linksDetails?.commented,
+        rank = rank?.position,
+        followers = summary?.followers,
+        following = summary?.followingUsers,
+        entriesCount = summary?.entries,
+        entriesCommentsCount = summary?.entriesDetails?.commented,
+        diggsCount = summary?.linksDetails?.up,
+        buriesCount = summary?.linksDetails?.down,
+        violationUrl = null,
+        banReason = banned?.reason,
+        banDate = banned?.expired,
+        color = color.toColorEntityFromName(),
+        gender = gender.toGenderEntity(),
+        avatar = avatar.orEmpty(),
     )
 
 @Suppress("MagicNumber")
@@ -181,4 +173,13 @@ internal fun String?.toGenderEntity() =
         "male" -> GenderEntity.Male
         "female" -> GenderEntity.Female
         else -> null
+    }
+
+internal fun String?.toColorEntityFromName() =
+    when (this) {
+        "green" -> UserColorEntity.Green
+        "orange" -> UserColorEntity.Orange
+        "burgundy" -> UserColorEntity.Claret
+        "black" -> UserColorEntity.Admin
+        else -> UserColorEntity.Unknown
     }

@@ -4,20 +4,21 @@ import com.dropbox.android.external.store4.SourceOfTruth
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import io.github.wykopmobilny.api.responses.AuthorResponse
-import io.github.wykopmobilny.api.responses.EntryLinkResponse
-import io.github.wykopmobilny.api.responses.properUrl
+import io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3
+import io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3
 import io.github.wykopmobilny.data.cache.api.AppCache
+import io.github.wykopmobilny.data.cache.api.Embed
+import io.github.wykopmobilny.data.cache.api.EmbedType
 import io.github.wykopmobilny.data.cache.api.EntryEntity
-import io.github.wykopmobilny.data.cache.api.LinkEntity
 import io.github.wykopmobilny.data.cache.api.ProfileActionsEntity
 import io.github.wykopmobilny.data.cache.api.ProfileQueries
 import io.github.wykopmobilny.data.cache.api.UserVote
-import io.github.wykopmobilny.domain.linkdetails.datasource.stripImageCompression
 import io.github.wykopmobilny.domain.profile.EntryInfo
 import io.github.wykopmobilny.domain.profile.LinkInfo
 import io.github.wykopmobilny.domain.profile.ProfileAction
 import io.github.wykopmobilny.domain.profile.UserInfo
 import io.github.wykopmobilny.domain.profile.di.toColorEntity
+import io.github.wykopmobilny.domain.profile.di.toColorEntityFromName
 import io.github.wykopmobilny.domain.profile.di.toGenderEntity
 import io.github.wykopmobilny.domain.profile.toColorDomain
 import io.github.wykopmobilny.domain.profile.toGenderDomain
@@ -28,7 +29,7 @@ import kotlinx.coroutines.flow.map
 internal fun profileSourceOfTruth(
     profileId: String,
     cache: AppCache,
-) = SourceOfTruth.of<Int, List<EntryLinkResponse>, List<ProfileAction>>(
+) = SourceOfTruth.of<Int, List<EntryResponseV3>, List<ProfileAction>>(
     reader = { page ->
         val linksStream =
             cache.profileActionsQueries
@@ -109,66 +110,65 @@ internal fun profileSourceOfTruth(
     writer = { page, pageData ->
         cache.profileActionsQueries.transaction {
             cache.profileActionsQueries.deletePage(profileId, page)
-            pageData.forEachIndexed { index, action ->
-                action.link?.run {
-                    cache.profileQueries.upsert(
-                        id = author.login,
-                        avatar = author.avatar,
-                        color = author.color.toColorEntity(),
-                        gender = author.sex.toGenderEntity(),
-                    )
-                    cache.linksQueries.insertOrReplace(
-                        LinkEntity(
-                            id = id,
-                            title = title.orEmpty(),
-                            description = description.orEmpty(),
-                            tags = tags,
-                            sourceUrl = sourceUrl,
-                            previewImageUrl = preview,
-                            fullImageUrl = preview?.stripImageCompression(),
-                            voteCount = voteCount,
-                            buryCount = buryCount,
-                            commentsCount = commentsCount,
-                            relatedCount = relatedCount,
-                            postedAt = date,
-                            plus18 = plus18,
-                            canVote = canVote,
-                            isHot = isHot,
-                            userVote = userVote.asUserVote(),
-                            userFavorite = userFavorite == true,
-                            userObserve = userObserve == true,
-                            app = app,
-                            profileId = author.login,
+            pageData.forEachIndexed { index, entry ->
+                cache.profileQueries.upsertV3(entry.author)
+                entry.media?.photo?.let { photo ->
+                    cache.embedQueries.insertOrReplace(
+                        Embed(
+                            id = photo.url,
+                            type = EmbedType.StaticImage,
+                            fileName = photo.source,
+                            preview = photo.url,
+                            size = null,
+                            hasAdultContent = photo.plus18 ?: false,
+                            ratio =
+                                run {
+                                    val pw = photo.width
+                                    val ph = photo.height
+                                    if (pw != null && ph != null && ph > 0) pw.toFloat() / ph.toFloat() else 1f
+                                },
                         ),
                     )
                 }
-                action.entry?.run {
-                    cache.profileQueries.upsert(author)
-                    embed?.toEntity()?.let(cache.embedQueries::insertOrReplace)
-
-                    cache.entriesQueries.insertOrReplace(
-                        EntryEntity(
-                            id = id,
-                            postedAt = date,
-                            body = body.orEmpty(),
-                            voteCount = voteCount,
-                            embedId = embed?.properUrl,
-                            commentsCount = commentsCount,
-                            isBlocked = blocked,
-                            isFavorite = favorite,
-                            app = app,
-                            canComment = isCommentingPossible == true,
-                            violationUrl = violationUrl,
-                            userVote = userVote.asUserVote(),
-                            profileId = author.login,
+                entry.media?.embed?.let { embed ->
+                    cache.embedQueries.insertOrReplace(
+                        Embed(
+                            id = embed.url,
+                            type =
+                                when (embed.type) {
+                                    "video" -> EmbedType.Video
+                                    else -> EmbedType.Unknown
+                                },
+                            fileName = null,
+                            preview = embed.thumbnail ?: embed.url,
+                            size = null,
+                            hasAdultContent = false,
+                            ratio = 1f,
                         ),
                     )
                 }
+                cache.entriesQueries.insertOrReplace(
+                    EntryEntity(
+                        id = entry.id,
+                        postedAt = entry.createdAt,
+                        body = entry.content.orEmpty(),
+                        voteCount = entry.votes.up,
+                        embedId = entry.media?.photo?.url ?: entry.media?.embed?.url,
+                        commentsCount = entry.comments.count,
+                        isBlocked = entry.deleted ?: false,
+                        isFavorite = entry.favourite ?: false,
+                        app = entry.device,
+                        canComment = entry.actions?.comment ?: true,
+                        violationUrl = null,
+                        userVote = entry.voted.asUserVote(),
+                        profileId = entry.author.username,
+                    ),
+                )
                 cache.profileActionsQueries.insertPage(
                     ProfileActionsEntity(
                         profileId = profileId,
-                        linkId = action.link?.id,
-                        entryId = action.entry?.id,
+                        linkId = null,
+                        entryId = entry.id,
                         page = page,
                         orderOnPage = index,
                     ),
@@ -179,6 +179,15 @@ internal fun profileSourceOfTruth(
     delete = { page -> cache.profileActionsQueries.deletePage(profileId, page = page) },
     deleteAll = { cache.profileActionsQueries.deleteByProfile(profileId) },
 )
+
+private fun ProfileQueries.upsertV3(author: UserShortResponseV3) {
+    upsert(
+        id = author.username,
+        avatar = author.avatar.orEmpty(),
+        color = author.color.toColorEntityFromName(),
+        gender = author.gender.toGenderEntity(),
+    )
+}
 
 internal fun ProfileQueries.upsert(author: AuthorResponse) {
     upsert(
@@ -196,9 +205,9 @@ internal fun String?.asUserVote() =
         else -> null
     }
 
-internal fun Int.asUserVote() =
+internal fun Int?.asUserVote() =
     when {
-        this > 0 -> UserVote.Up
-        this < 0 -> UserVote.Down
+        this != null && this > 0 -> UserVote.Up
+        this != null && this < 0 -> UserVote.Down
         else -> null
     }
