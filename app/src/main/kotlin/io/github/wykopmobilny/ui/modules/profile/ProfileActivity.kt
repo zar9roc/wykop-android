@@ -12,9 +12,9 @@ import io.github.wykopmobilny.BuildConfig
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.api.patrons.PatronsApi
 import io.github.wykopmobilny.api.patrons.getBadgeFor
-import io.github.wykopmobilny.api.responses.BadgeResponse
 import io.github.wykopmobilny.api.responses.ObserveStateResponse
-import io.github.wykopmobilny.api.responses.ProfileResponse
+import io.github.wykopmobilny.api.responses.v3.profile.BadgeResponseV3
+import io.github.wykopmobilny.api.responses.v3.user.UserFullResponseV3
 import io.github.wykopmobilny.base.BaseActivity
 import io.github.wykopmobilny.databinding.ActivityProfileBinding
 import io.github.wykopmobilny.databinding.BadgeListItemBinding
@@ -24,6 +24,7 @@ import io.github.wykopmobilny.models.dataclass.drawBadge
 import io.github.wykopmobilny.models.fragments.DataFragment
 import io.github.wykopmobilny.models.fragments.getDataFragmentInstance
 import io.github.wykopmobilny.ui.modules.NewNavigator
+import io.github.wykopmobilny.utils.api.colorNameToGroupId
 import io.github.wykopmobilny.utils.api.getGenderStripResource
 import io.github.wykopmobilny.utils.api.getGroupColor
 import io.github.wykopmobilny.utils.loadImage
@@ -32,6 +33,7 @@ import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 import io.github.wykopmobilny.utils.usermanager.isUserAuthorized
 import io.github.wykopmobilny.utils.viewBinding
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.periodUntil
 import javax.inject.Inject
@@ -57,10 +59,10 @@ class ProfileActivity :
     val username by lazy { intent.getStringExtra(EXTRA_USERNAME)!! }
     override val enableSwipeBackLayout: Boolean = true
     private var observeStateResponse: ObserveStateResponse? = null
-    private lateinit var badgesDialogListener: (List<BadgeResponse>) -> Unit
+    private lateinit var badgesDialogListener: (List<BadgeResponseV3>) -> Unit
     private val pagerAdapter by lazy { ProfilePagerAdapter(resources, supportFragmentManager) }
 
-    lateinit var dataFragment: DataFragment<ProfileResponse>
+    lateinit var dataFragment: DataFragment<UserFullResponseV3>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,44 +91,47 @@ class ProfileActivity :
         }
     }
 
-    override fun showProfile(profileResponse: ProfileResponse) {
+    override fun showProfile(profileResponse: UserFullResponseV3) {
         dataFragment.data = profileResponse
         binding.pager.offscreenPageLimit = 2
         binding.pager.adapter = pagerAdapter
-        patronsApi.getBadgeFor(profileResponse.id)?.drawBadge(binding.patronBadgeTextView)
+        patronsApi.getBadgeFor(profileResponse.username)?.drawBadge(binding.patronBadgeTextView)
         binding.tabLayout.setupWithViewPager(binding.pager)
-        binding.profilePicture.loadImage(profileResponse.avatar)
-        binding.signup.text = profileResponse.signupAt.periodUntil(Clock.System.now(), TimeZone.currentSystemDefault()).toPrettyString()
-        binding.nickname.text = profileResponse.id
-        binding.nickname.setTextColor(getGroupColor(profileResponse.color))
+        binding.profilePicture.loadImage(profileResponse.avatar.orEmpty())
+        val signupAt = runCatching { Instant.parse(profileResponse.memberSince.orEmpty()) }.getOrElse { Instant.DISTANT_PAST }
+        binding.signup.text = signupAt.periodUntil(Clock.System.now(), TimeZone.currentSystemDefault()).toPrettyString()
+        binding.nickname.text = profileResponse.username
+        binding.nickname.setTextColor(getGroupColor(colorNameToGroupId(profileResponse.color)))
         binding.loadingView.isVisible = false
-        binding.description.isVisible = profileResponse.description != null
-        profileResponse.description?.let {
+        binding.description.isVisible = profileResponse.about != null
+        profileResponse.about?.let {
             binding.description.isVisible = true
-            binding.description.text = profileResponse.description
+            binding.description.text = profileResponse.about
         }
-        profileResponse.isObserved?.let {
-            observeStateResponse = ObserveStateResponse(it, profileResponse.isBlocked!!)
+        profileResponse.follow?.let {
+            observeStateResponse = ObserveStateResponse(it, false)
             invalidateOptionsMenu()
         }
-        if (profileResponse.followers != 0) {
+        val followers = profileResponse.summary?.followers ?: 0
+        if (followers != 0) {
             binding.followers.isVisible = true
-            binding.followers.text = getString(R.string.followers, dataFragment.data!!.followers)
+            binding.followers.text = getString(R.string.followers, followers)
         }
-        if (profileResponse.rank != 0) {
+        val rankPosition = profileResponse.rank?.position ?: 0
+        if (rankPosition != 0) {
             binding.rank.isVisible = true
-            binding.rank.text = "#${profileResponse.rank}"
-            binding.rank.setBackgroundColor(getGroupColor(profileResponse.color))
+            binding.rank.text = "#${rankPosition}"
+            binding.rank.setBackgroundColor(getGroupColor(colorNameToGroupId(profileResponse.color)))
         }
-        profileResponse.sex?.let { sex ->
+        profileResponse.gender?.let { sex ->
             binding.genderStripImageView.isVisible = true
             binding.genderStripImageView.setBackgroundResource(getGenderStripResource(sex))
         }
 
-        profileResponse.ban?.apply {
-            if (reason != null && date != null) {
+        profileResponse.banned?.apply {
+            if (reason != null && expired != null) {
                 binding.banTextView.isVisible = true
-                binding.banTextView.text = "Użytkownik zbanowany do $date za $reason"
+                binding.banTextView.text = "Użytkownik zbanowany do $expired za $reason"
             }
         }
         binding.backgroundImg.isVisible = true
@@ -160,13 +165,13 @@ class ProfileActivity :
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.pw -> dataFragment.data?.let { navigator.openConversationListActivity(it.id) }
+            R.id.pw -> dataFragment.data?.let { navigator.openConversationListActivity(it.username) }
             R.id.unblock -> presenter.markUnblocked()
             R.id.block -> presenter.markBlocked()
             R.id.observe_profile -> presenter.markObserved()
             R.id.unobserve_profile -> presenter.markUnobserved()
             R.id.badges -> showBadgesDialog()
-            R.id.report -> dataFragment.data?.violationUrl?.let(navigator::openReportScreen) ?: Napier.e("Invalid report button state")
+            R.id.report -> Napier.w("Report functionality not available in API v3")
             android.R.id.home -> finish()
             else -> return super.onOptionsItemSelected(item)
         }
@@ -182,10 +187,10 @@ class ProfileActivity :
                 badgesDialogView.loadingView.isVisible = false
                 for (badge in it) {
                     val item = BadgeListItemBinding.inflate(layoutInflater)
-                    item.description.text = badge.description
-                    item.date.text = badge.date.toPrettyDate()
-                    item.badgeTitle.text = badge.name
-                    item.badgeImg.loadImage(badge.icon)
+                    item.description.text = badge.description.orEmpty()
+                    item.date.text = badge.achievedAt.orEmpty().toPrettyDate()
+                    item.badgeTitle.text = badge.label.orEmpty()
+                    item.badgeImg.loadImage(badge.media?.icon?.url.orEmpty())
                     badgesDialogView.badgesList.addView(item.root)
                 }
             }
@@ -194,7 +199,7 @@ class ProfileActivity :
         presenter.getBadges()
     }
 
-    override fun showBadges(badges: List<BadgeResponse>) = badgesDialogListener(badges)
+    override fun showBadges(badges: List<BadgeResponseV3>) = badgesDialogListener(badges)
 
     override fun onDestroy() {
         presenter.unsubscribe()

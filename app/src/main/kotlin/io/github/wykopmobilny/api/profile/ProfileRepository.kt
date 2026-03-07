@@ -4,9 +4,7 @@ import io.github.wykopmobilny.api.UserTokenRefresher
 import io.github.wykopmobilny.api.endpoints.v3.ProfileV3RetrofitApi
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
 import io.github.wykopmobilny.api.filters.OWMContentFilter
-import io.github.wykopmobilny.api.responses.BadgeResponse
 import io.github.wykopmobilny.api.responses.ObserveStateResponse
-import io.github.wykopmobilny.api.responses.ProfileResponse
 import io.github.wykopmobilny.api.responses.v3.entries.EntryCommentResponseV3
 import io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
@@ -19,11 +17,9 @@ import io.github.wykopmobilny.models.dataclass.EntryComment
 import io.github.wykopmobilny.models.dataclass.EntryLink
 import io.github.wykopmobilny.models.dataclass.LinkComment
 import io.github.wykopmobilny.models.dataclass.Related
-import io.github.wykopmobilny.models.mapper.apiv3.BadgeMapperV3
 import io.github.wykopmobilny.models.mapper.apiv3.EntryCommentMapperV3
 import io.github.wykopmobilny.models.mapper.apiv3.LinkCommentMapperV3
 import io.github.wykopmobilny.models.mapper.apiv3.RelatedMapperV3
-import io.github.wykopmobilny.models.mapper.apiv3.UserFullMapperV3
 import io.github.wykopmobilny.models.mapper.apiv3.filterEntriesV3
 import io.github.wykopmobilny.models.mapper.apiv3.filterLinksV3
 import io.reactivex.Single
@@ -38,11 +34,10 @@ class ProfileRepository
         private val owmContentFilter: OWMContentFilter,
         private val appStorage: AppStorage,
     ) : ProfileApi {
-        override fun getIndex(username: String): Single<ProfileResponse> =
+        override fun getIndex(username: String): Single<UserFullResponseV3> =
             rxSingle { profileApiV3.getUserProfile(username) }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<UserFullResponseV3>())
-                .map { UserFullMapperV3.map(it) }
 
         override fun getAdded(
             username: String,
@@ -129,11 +124,10 @@ class ProfileRepository
         override fun getBadges(
             username: String,
             page: Int,
-        ): Single<List<BadgeResponse>> =
+        ): Single<List<BadgeResponseV3>> =
             rxSingle { profileApiV3.getUserBadges(username) }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<List<BadgeResponseV3>>())
-                .map { it.map { response -> BadgeMapperV3.map(response) } }
 
         override fun getRelated(
             username: String,

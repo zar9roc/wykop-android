@@ -1,9 +1,9 @@
 package io.github.wykopmobilny.api.profile
 
 import io.github.wykopmobilny.api.entries.FilteredData
-import io.github.wykopmobilny.api.responses.BadgeResponse
 import io.github.wykopmobilny.api.responses.ObserveStateResponse
-import io.github.wykopmobilny.api.responses.ProfileResponse
+import io.github.wykopmobilny.api.responses.v3.profile.BadgeResponseV3
+import io.github.wykopmobilny.api.responses.v3.user.UserFullResponseV3
 import io.github.wykopmobilny.models.dataclass.Entry
 import io.github.wykopmobilny.models.dataclass.EntryComment
 import io.github.wykopmobilny.models.dataclass.EntryLink
@@ -13,7 +13,7 @@ import io.github.wykopmobilny.models.dataclass.Related
 import io.reactivex.Single
 
 interface ProfileApi {
-    fun getIndex(username: String): Single<ProfileResponse>
+    fun getIndex(username: String): Single<UserFullResponseV3>
 
     fun getActions(username: String): Single<List<EntryLink>>
 
@@ -60,7 +60,7 @@ interface ProfileApi {
     fun getBadges(
         username: String,
         page: Int,
-    ): Single<List<BadgeResponse>>
+    ): Single<List<BadgeResponseV3>>
 
     fun observe(tag: String): Single<ObserveStateResponse>
 
