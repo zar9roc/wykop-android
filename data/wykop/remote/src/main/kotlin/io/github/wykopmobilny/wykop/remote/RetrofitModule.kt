@@ -38,6 +38,7 @@ internal class RetrofitModule {
         @SigningInterceptor signing: Interceptor,
         bearerAuthInterceptor: BearerAuthInterceptor,
         jwtAuthInterceptor: JwtAuthInterceptor,
+        forbidden403RetryInterceptor: Forbidden403RetryInterceptor,
         tokenRefreshAuthenticator: TokenRefreshAuthenticator,
         @BaseUrl apiUrl: String,
         cacheDir: File,
@@ -52,6 +53,7 @@ internal class RetrofitModule {
                 .addInterceptor(pathFixing)
                 .addInterceptor(bearerAuthInterceptor)
                 .addInterceptor(jwtAuthInterceptor)
+                .addInterceptor(forbidden403RetryInterceptor)
                 .addInterceptor(signing)
                 .apply {
                     if (isDebug) {
