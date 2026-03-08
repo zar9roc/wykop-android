@@ -208,7 +208,7 @@ internal class GetLinkDetailsQuery
                             favoriteButton =
                                 ToggleButtonUi(
                                     isToggled = link.userFavorite,
-                                    clickAction = safeCallback { linksRepository.toggleFavorite(link.id) },
+                                    clickAction = safeCallback { linksRepository.toggleFavorite(link.id, link.userFavorite) },
                                     isVisible = loggedUser != null,
                                 ),
                             moreAction =

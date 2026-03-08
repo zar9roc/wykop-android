@@ -4,7 +4,6 @@ import io.github.wykopmobilny.api.UserTokenRefresher
 import io.github.wykopmobilny.api.WykopImageFile
 import io.github.wykopmobilny.api.endpoints.LinksRetrofitApi
 import io.github.wykopmobilny.api.entries.allowImageOnly
-import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformer
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
 import io.github.wykopmobilny.api.exceptions.handleMediaUpload
 import io.github.wykopmobilny.api.filters.OWMContentFilter
@@ -30,6 +29,7 @@ class LinksRepository
         private val linksApi: LinksRetrofitApi,
         private val linksApiV3: io.github.wykopmobilny.api.endpoints.v3.LinksV3RetrofitApi,
         private val mediaApiV3: io.github.wykopmobilny.api.endpoints.v3.MediaV3RetrofitApi,
+        private val favouritesApiV3: io.github.wykopmobilny.api.endpoints.v3.FavouritesV3RetrofitApi,
         private val userTokenRefresher: UserTokenRefresher,
         private val owmContentFilter: OWMContentFilter,
     ) : LinksApi {
@@ -358,12 +358,25 @@ class LinksRepository
                     }
                 }
 
-        @Suppress("DEPRECATION")
-        override fun markFavorite(linkId: Long) =
-            rxSingle { linksApi.toggleFavorite(linkId) }
-                .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
-                .map { }
+        override fun markFavorite(
+            linkId: Long,
+            currentlyFavorite: Boolean,
+        ) = rxSingle {
+            val request =
+                WykopApiRequestV3(
+                    io.github.wykopmobilny.api.requests.v3.favourites.FavouriteRequestV3(
+                        type = "link",
+                        sourceId = linkId,
+                    ),
+                )
+            if (currentlyFavorite) {
+                favouritesApiV3.removeFavourite(request)
+            } else {
+                favouritesApiV3.addFavourite(request)
+            }
+        }.retryWhen(userTokenRefresher)
+            .compose(ErrorHandlerTransformerV3<Unit>())
+            .map { }
 
         /**
          * Helper function to upload a photo and extract its key.

@@ -51,7 +51,7 @@ class LinkInteractor
 
         fun markFavorite(link: Link): Single<Link> =
             linksApi
-                .markFavorite(link.id)
+                .markFavorite(link.id, link.userFavorite)
                 .map {
                     link.userFavorite = !link.userFavorite
                     link

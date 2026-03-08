@@ -125,7 +125,10 @@ interface LinksApi {
 
     fun getDownvoters(linkId: Long): Single<List<Downvoter>>
 
-    fun markFavorite(linkId: Long): Single<Unit>
+    fun markFavorite(
+        linkId: Long,
+        currentlyFavorite: Boolean,
+    ): Single<Unit>
 
     fun getRelated(linkId: Long): Single<List<Related>>
 }
