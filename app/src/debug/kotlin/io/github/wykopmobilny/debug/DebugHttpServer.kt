@@ -14,6 +14,8 @@ import io.github.wykopmobilny.base.adapter.EndlessProgressAdapter
 import io.github.wykopmobilny.models.dataclass.Entry
 import io.github.wykopmobilny.models.dataclass.EntryLink
 import io.github.wykopmobilny.models.dataclass.Link
+import io.github.wykopmobilny.ui.adapters.LinkDetailsAdapter
+import io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsActivity
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.CountDownLatch
@@ -37,6 +39,7 @@ class DebugHttpServer(
         const val PORT = 8899
         private const val MAIN_THREAD_TIMEOUT_SECONDS = 5L
         private val VOTE_ENTRY_REGEX = Regex("/action/vote/entry/\\d+")
+        private val OPEN_LINK_REGEX = Regex("/action/open/link/\\d+")
         private val AVAILABLE_TABS = listOf(
             "promoted", "upcoming", "hits", "hot",
             "mywykop", "favorite", "search", "messages", "notifications",
@@ -63,14 +66,19 @@ class DebugHttpServer(
                 method == Method.GET && uri == "/screen" -> handleScreen()
                 method == Method.GET && uri == "/screen/entries" -> handleScreenEntries()
                 method == Method.GET && uri == "/screen/links" -> handleScreenLinks()
+                method == Method.GET && uri == "/screen/link-detail" -> handleScreenLinkDetail()
                 method == Method.POST && uri.startsWith("/navigate/") -> handleNavigate(uri)
                 method == Method.POST && uri.matches(VOTE_ENTRY_REGEX) ->
                     handleVoteEntry(uri, vote = true)
                 method == Method.DELETE && uri.matches(VOTE_ENTRY_REGEX) ->
                     handleVoteEntry(uri, vote = false)
+                method == Method.POST && uri.matches(OPEN_LINK_REGEX) ->
+                    handleOpenLink(uri)
                 method == Method.POST && uri == "/action/clear-cache" -> handleClearCache()
                 method == Method.POST && uri == "/action/logout" -> handleLogout()
                 // GET convenience for browser
+                method == Method.GET && uri.matches(OPEN_LINK_REGEX) ->
+                    handleOpenLink(uri)
                 method == Method.GET && uri == "/action/clear-cache" -> handleClearCache()
                 method == Method.GET && uri.startsWith("/navigate/") -> handleNavigate(uri)
                 else -> jsonResponse(
@@ -102,9 +110,11 @@ class DebugHttpServer(
                 put(endpoint("GET", "/screen", "Current screen summary"))
                 put(endpoint("GET", "/screen/entries", "Entry list from current adapter"))
                 put(endpoint("GET", "/screen/links", "Link list from current adapter"))
+                put(endpoint("GET", "/screen/link-detail", "Link detail from current screen"))
                 put(endpoint("POST", "/navigate/{tab}", "Switch to tab"))
                 put(endpoint("POST", "/action/vote/entry/{id}", "Vote on entry"))
                 put(endpoint("DELETE", "/action/vote/entry/{id}", "Unvote entry"))
+                put(endpoint("POST", "/action/open/link/{id}", "Open link detail by ID"))
                 put(endpoint("POST", "/action/clear-cache", "Clear app cache"))
                 put(endpoint("POST", "/action/logout", "Force logout"))
             })
@@ -241,6 +251,60 @@ class DebugHttpServer(
                     put("error", e.message ?: e.javaClass.simpleName)
                 }
             }
+        }
+        return jsonResponse(Response.Status.OK, json)
+    }
+
+    private fun handleScreenLinkDetail(): Response {
+        val json = runOnMainThread {
+            val activity = DebugActivityTracker.currentActivity
+            val result = JSONObject()
+
+            if (activity is LinkDetailsActivity) {
+                val recyclerView = activity.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recyclerView)
+                val adapter = recyclerView?.adapter
+                if (adapter is LinkDetailsAdapter) {
+                    val link = adapter.link
+                    if (link != null) {
+                        result.put("link", JSONObject().apply {
+                            put("id", link.id)
+                            put("title", link.title)
+                            put("description", link.description)
+                            put("source_url", link.sourceUrl)
+                            put("vote_count", link.voteCount)
+                            put("bury_count", link.buryCount)
+                            put("comments_count", link.commentsCount)
+                            put("author", link.author?.nick ?: JSONObject.NULL)
+                            put("tags", link.tags)
+                            put("is_hot", link.isHot)
+                            put("user_vote", link.userVote ?: JSONObject.NULL)
+                        })
+                        result.put("comments_loaded", link.comments.size)
+                    } else {
+                        result.put("link", JSONObject.NULL)
+                        result.put("error", "Link not loaded yet")
+                    }
+                } else {
+                    result.put("error", "Adapter not found or wrong type")
+                }
+            } else {
+                result.put("error", "Not on LinkDetailsActivity (current: ${activity?.javaClass?.simpleName})")
+            }
+            result
+        }
+        return jsonResponse(Response.Status.OK, json)
+    }
+
+    private fun handleOpenLink(uri: String): Response {
+        val idStr = uri.substringAfterLast("/")
+        val linkId = idStr.toLongOrNull()
+            ?: return jsonResponse(
+                Response.Status.BAD_REQUEST,
+                JSONObject().put("error", "Invalid link id: $idStr"),
+            )
+
+        val json = runOnMainThread {
+            DebugStateHelper.openLink(appContext, linkId)
         }
         return jsonResponse(Response.Status.OK, json)
     }

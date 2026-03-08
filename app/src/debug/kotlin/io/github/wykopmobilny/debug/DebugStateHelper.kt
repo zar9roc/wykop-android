@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Build
 import androidx.fragment.app.FragmentActivity
 import io.github.wykopmobilny.WykopApp
+import io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsActivity
 import io.github.wykopmobilny.ui.modules.mainnavigation.MainNavigationActivity
 import io.github.wykopmobilny.utils.usermanager.isUserAuthorized
 import org.json.JSONArray
@@ -175,6 +176,30 @@ object DebugStateHelper {
                 put("action", "switch_tab")
                 put("success", false)
                 put("tab", tab)
+                put("error", e.message)
+            }
+        }
+    }
+
+    /**
+     * Open link detail screen by ID. Must be called on main thread.
+     */
+    fun openLink(context: Context, linkId: Long): JSONObject {
+        return try {
+            val intent = LinkDetailsActivity.createIntent(context, linkId).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(intent)
+            JSONObject().apply {
+                put("action", "open_link")
+                put("success", true)
+                put("link_id", linkId)
+            }
+        } catch (e: Exception) {
+            JSONObject().apply {
+                put("action", "open_link")
+                put("success", false)
+                put("link_id", linkId)
                 put("error", e.message)
             }
         }
