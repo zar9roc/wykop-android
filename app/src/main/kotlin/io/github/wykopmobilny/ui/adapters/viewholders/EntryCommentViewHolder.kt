@@ -152,19 +152,22 @@ class EntryCommentViewHolder(
 
     private fun setupButtons(comment: EntryComment) {
         val isDeleted = comment.deletedReason != null
-        binding.moreOptionsTextView.isVisible = !isDeleted
+
+        // More options menu - always visible
+        binding.moreOptionsTextView.isVisible = true
         binding.moreOptionsTextView.setOnClickListener {
             openOptionsMenu(comment)
         }
 
         // Only show reply view in entry details
-        binding.replyTextView.isVisible = !isDeleted && isUserAuthorized && commentViewListener != null
+        binding.replyTextView.isVisible = isUserAuthorized && commentViewListener != null
+        binding.replyTextView.isEnabled = !isDeleted
         binding.replyTextView.setOnClickListener { commentViewListener?.addReply(comment.author) }
 
-        // Setup vote button
-        binding.voteButton.isVisible = !isDeleted
+        // Setup vote button - always visible but disabled if deleted
+        binding.voteButton.isVisible = true
         with(binding.voteButton) {
-            isEnabled = true
+            isEnabled = !isDeleted
             isButtonSelected = comment.isVoted
             voteCount = comment.voteCount
             voteListener = {
@@ -176,8 +179,9 @@ class EntryCommentViewHolder(
             setup(userManagerApi)
         }
 
-        // Setup share button
-        binding.shareTextView.isVisible = !isDeleted
+        // Setup share button - always visible but disabled if deleted
+        binding.shareTextView.isVisible = true
+        binding.shareTextView.isEnabled = !isDeleted
         binding.shareTextView.setOnClickListener {
             navigator.shareUrl(comment.url)
         }
@@ -193,10 +197,9 @@ class EntryCommentViewHolder(
     ) {
         val isDeleted = comment.deletedReason != null
 
-        // Hide quote button for deleted comments
-        binding.replyTextView.isVisible = !isDeleted && isUserAuthorized
-        binding.replyTextView.setOnClickListener { commentViewListener?.addReply(comment.author) }
-        binding.quoteTextView.isVisible = !isDeleted && isUserAuthorized
+        // Show quote button for deleted comments but disabled
+        binding.quoteTextView.isVisible = isUserAuthorized
+        binding.quoteTextView.isEnabled = !isDeleted
         binding.quoteTextView.setOnClickListener { commentViewListener?.quoteComment(comment) }
 
         if (isDeleted) {
@@ -285,6 +288,7 @@ class EntryCommentViewHolder(
         val bottomSheetView = EntryCommentMenuBottomsheetBinding.inflate(activityContext.layoutInflater)
         dialog.setContentView(bottomSheetView.root)
         (bottomSheetView.root.parent as View).setBackgroundColor(Color.TRANSPARENT)
+        val isDeleted = comment.deletedReason != null
         bottomSheetView.apply {
             author.text = comment.author.nick
             val dateAsString =
@@ -307,8 +311,15 @@ class EntryCommentViewHolder(
                     )
             }
 
+            // Copy - visible for all, copies slug if deleted and available
             entryCommentMenuCopy.setOnClickListener {
-                it.context.copyText(comment.body.stripWykopFormatting(), "entry-comment-body")
+                val textToCopy =
+                    if (isDeleted && !comment.slug.isNullOrEmpty()) {
+                        comment.slug
+                    } else {
+                        comment.body.stripWykopFormatting()
+                    }
+                it.context.copyText(textToCopy, "entry-comment-body")
                 dialog.dismiss()
             }
 
@@ -324,12 +335,13 @@ class EntryCommentViewHolder(
                 dialog.dismiss()
             }
 
+            // Voters - always visible, even for deleted comments
             entryCommentMenuVoters.setOnClickListener {
                 commentActionListener.getVoters(comment)
                 dialog.dismiss()
             }
 
-            entryCommentMenuReport.isVisible = isUserAuthorized && comment.violationUrl != null
+            entryCommentMenuReport.isVisible = !isDeleted && isUserAuthorized && comment.violationUrl != null
             entryCommentMenuReport.setOnClickListener {
                 navigator.openReportScreen(comment.violationUrl.let(::checkNotNull))
                 dialog.dismiss()
@@ -338,8 +350,8 @@ class EntryCommentViewHolder(
             val canUserEdit =
                 isUserAuthorized &&
                     comment.author.nick == userCredentials?.login
-            entryCommentMenuDelete.isVisible = canUserEdit || isOwnEntry
-            entryCommentMenuEdit.isVisible = canUserEdit
+            entryCommentMenuDelete.isVisible = !isDeleted && (canUserEdit || isOwnEntry)
+            entryCommentMenuEdit.isVisible = !isDeleted && canUserEdit
         }
 
         val mBehavior = BottomSheetBehavior.from(bottomSheetView.root.parent as View)
