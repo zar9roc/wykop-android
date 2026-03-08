@@ -77,6 +77,7 @@ interface EntriesRetrofitApi {
         @Path("answerId") answerId: Int,
     ): WykopApiResponse<SurveyResponse>
 
+    @Deprecated("Use API v3 entries endpoints with separate upload. File operations no longer supported in v2.")
     @Multipart
     @POST("/entries/add/appkey/$APP_KEY")
     suspend fun addEntry(
@@ -95,6 +96,7 @@ interface EntriesRetrofitApi {
         @Path("commentId") commentId: Long,
     ): WykopApiResponse<List<VoterResponse>>
 
+    @Deprecated("Use API v3 entries endpoints with separate upload. File operations no longer supported in v2.")
     @FormUrlEncoded
     @POST("/entries/add/appkey/$APP_KEY")
     suspend fun addEntry(
@@ -121,6 +123,7 @@ interface EntriesRetrofitApi {
         @Path("entryId") entryId: Long,
     ): WykopApiResponse<EntryCommentResponse>
 
+    @Deprecated("Use API v3 entries endpoints with separate upload. File operations no longer supported in v2.")
     @Multipart
     @POST("/entries/edit/{entryId}/appkey/$APP_KEY")
     suspend fun editEntry(
@@ -130,8 +133,9 @@ interface EntriesRetrofitApi {
         @Part file: MultipartBody.Part,
     ): WykopApiResponse<EntryCommentResponse>
 
+    @Deprecated("Use API v3 entries endpoints with separate upload. File operations no longer supported in v2.")
     @FormUrlEncoded
-    @POST("/entries/edit/{entryId}/appkey/$APP_KEY")
+    @POST("/entries/edit/{entryId}/appkey=$APP_KEY")
     suspend fun editEntry(
         @Field("body") body: String,
         @Field("embed") embed: String?,
