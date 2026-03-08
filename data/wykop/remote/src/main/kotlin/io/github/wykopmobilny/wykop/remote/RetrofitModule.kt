@@ -8,6 +8,7 @@ import io.github.wykopmobilny.api.ErrorBodyParser
 import io.github.wykopmobilny.api.ErrorBodyParserV3
 import io.github.wykopmobilny.api.responses.v3.adapters.ObservedItemV3Adapter
 import io.github.wykopmobilny.api.responses.v3.adapters.PhpArrayAdapterFactory
+import io.github.wykopmobilny.api.responses.v3.adapters.UnitJsonAdapter
 import okhttp3.Cache
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -29,6 +30,7 @@ internal class RetrofitModule {
         Moshi
             .Builder()
             .apply {
+                add(UnitJsonAdapter.FACTORY)
                 add(PhpArrayAdapterFactory())
                 add(InstantAdapter())
                 add(ObservedItemV3Adapter.FACTORY)
