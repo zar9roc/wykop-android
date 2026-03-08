@@ -53,6 +53,7 @@ import io.github.wykopmobilny.utils.shortcuts.ShortcutsDispatcher
 import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 import io.github.wykopmobilny.utils.usermanager.isUserAuthorized
 import io.github.wykopmobilny.utils.viewBinding
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -75,6 +76,20 @@ class MainNavigationActivity :
     companion object {
         const val TARGET_FRAGMENT_KEY = "TARGET_FRAGMENT"
         const val TARGET_NOTIFICATIONS = "TARGET_NOTIFICATIONS"
+        private const val EXTRA_DEBUG_TARGET_TAB = "debug_target_tab"
+        private const val TAG = "MainNavigationActivity"
+
+        private val TAB_TO_MENU_ID = mapOf(
+            "promoted" to R.id.nav_home,
+            "upcoming" to R.id.nav_wykopalisko,
+            "hits" to R.id.hits,
+            "hot" to R.id.nav_mikroblog,
+            "mywykop" to R.id.nav_mojwykop,
+            "favourite" to R.id.favourite,
+            "favorite" to R.id.favourite,
+            "search" to R.id.search,
+            "messages" to R.id.messages,
+        )
 
         fun getIntent(
             context: Context,
@@ -245,6 +260,41 @@ class MainNavigationActivity :
             startActivity = navigator::openLoginScreen,
             isUserAuthorized = userManagerApi.isUserAuthorized(),
         )
+        handleDebugTargetTab(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleDebugTargetTab(intent)
+    }
+
+    private fun handleDebugTargetTab(intent: Intent) {
+        val tab = intent.getStringExtra(EXTRA_DEBUG_TARGET_TAB) ?: return
+        intent.removeExtra(EXTRA_DEBUG_TARGET_TAB)
+
+        if (tab == "notifications") {
+            openFragment(NotificationsListFragment.newInstance())
+            Napier.i("debug_target_tab: switched to notifications", tag = TAG)
+            return
+        }
+
+        val menuItemId = TAB_TO_MENU_ID[tab]
+        if (menuItemId != null) {
+            val menuItem = binding.navigationView.menu.findItem(menuItemId)
+            if (menuItem != null) {
+                onNavigationItemSelected(menuItem)
+                Napier.i("debug_target_tab: switched to $tab", tag = TAG)
+            } else {
+                Napier.w("debug_target_tab: menu item not found for tab '$tab'", tag = TAG)
+            }
+        } else {
+            Napier.w(
+                "debug_target_tab: unknown tab '$tab'. " +
+                    "Valid: ${TAB_TO_MENU_ID.keys.joinToString()}, notifications",
+                tag = TAG,
+            )
+        }
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
