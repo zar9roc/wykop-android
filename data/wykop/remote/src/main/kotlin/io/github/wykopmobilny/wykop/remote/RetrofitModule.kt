@@ -36,6 +36,28 @@ internal class RetrofitModule {
                 add(ObservedItemV3Adapter.FACTORY)
             }.build()
 
+    @Provides
+    @MoshiLoggingInterceptor
+    fun moshiLoggingInterceptor(
+        moshi: Moshi,
+        @IsDebug isDebug: Boolean,
+    ): Interceptor? = if (isDebug) {
+        // In debug builds, create interceptor
+        // In release builds, this code is compiled but returns null due to isDebug check
+        try {
+            // Use reflection to avoid compile-time dependency on debug-only class
+            val className = "io.github.wykopmobilny.debug.MoshiResponseLoggingInterceptor"
+            val clazz = Class.forName(className)
+            val constructor = clazz.getConstructor(Moshi::class.java)
+            constructor.newInstance(moshi) as Interceptor
+        } catch (e: Exception) {
+            // If class not found (shouldn't happen in debug), return null
+            null
+        }
+    } else {
+        null
+    }
+
     @Reusable
     @Provides
     fun retrofit(
@@ -51,6 +73,7 @@ internal class RetrofitModule {
         moshi: Moshi,
         @IsDebug isDebug: Boolean,
         @DebugNetworkInterceptor debugNetworkInterceptor: Interceptor?,
+        @MoshiLoggingInterceptor moshiLoggingInterceptor: Interceptor?,
     ) = Retrofit
         .Builder()
         .client(
@@ -65,6 +88,8 @@ internal class RetrofitModule {
                 .apply {
                     if (isDebug) {
                         debugNetworkInterceptor?.let { addInterceptor(it) }
+                        // Moshi response logging - logs parsed WykopApiResponseV3 objects
+                        moshiLoggingInterceptor?.let { addInterceptor(it) }
                         addInterceptor(
                             HttpLoggingInterceptor().apply {
                                 level = HttpLoggingInterceptor.Level.BODY

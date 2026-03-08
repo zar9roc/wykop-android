@@ -46,6 +46,17 @@ Flipper is a platform for debugging Android and iOS apps, developed by Meta (Fac
   - Better visualization of memory leaks
   - Heap dump analysis
 
+### 6. Moshi Response Logging (Logcat)
+- **Location**: `MoshiResponseLoggingInterceptor.kt`
+- **Purpose**: Log parsed WykopApiResponseV3 objects to Logcat
+- **Features**:
+  - View deserialized Kotlin models alongside raw JSON
+  - Inspect data types (List, single object, etc.)
+  - Debug pagination structure
+  - Catch parsing errors early
+- **Documentation**: See `MOSHI_RESPONSE_LOGGING.md` for details
+- **Note**: Logs to Logcat (not Flipper Desktop UI)
+
 ## Architecture
 
 ### Debug Build Only
@@ -187,8 +198,14 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 ## Future Enhancements
 
 Potential plugins to add:
+- **Moshi Response Viewer Plugin** (High Priority)
+  - Custom Flipper Desktop plugin for viewing parsed WykopApiResponseV3 objects
+  - Visual tree view of deserialized models
+  - Side-by-side comparison: raw JSON vs parsed Kotlin objects
+  - Filter by endpoint, data type, or pagination status
+  - See `MOSHI_RESPONSE_LOGGING.md` for detailed proposal
 - Crash Reporter plugin
-- Images plugin (for image loading debugging)
+- Images plugin (for image loading debugging with Glide)
 - Redux/State Management plugin (if applicable)
 - Custom plugins for Wykop-specific debugging
 

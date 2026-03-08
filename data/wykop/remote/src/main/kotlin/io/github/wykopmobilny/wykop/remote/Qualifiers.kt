@@ -19,3 +19,6 @@ annotation class IsDebug
 
 @Qualifier
 annotation class DebugNetworkInterceptor
+
+@Qualifier
+annotation class MoshiLoggingInterceptor
