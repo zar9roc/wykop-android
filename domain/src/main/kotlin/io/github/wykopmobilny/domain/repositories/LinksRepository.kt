@@ -2,14 +2,12 @@ package io.github.wykopmobilny.domain.repositories
 
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.fresh
-import io.github.wykopmobilny.api.endpoints.LinksRetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.FavouritesV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.LinksV3RetrofitApi
 import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
 import io.github.wykopmobilny.api.requests.v3.favourites.FavouriteRequestV3
 import io.github.wykopmobilny.data.cache.api.AppCache
 import io.github.wykopmobilny.data.cache.api.UserVote
-import io.github.wykopmobilny.domain.api.ApiClient
 import io.github.wykopmobilny.domain.linkdetails.VoteDownReason
 import io.github.wykopmobilny.domain.profile.LinkInfo
 import io.github.wykopmobilny.kotlin.AppDispatchers
@@ -19,9 +17,7 @@ import javax.inject.Inject
 internal class LinksRepository
     @Inject
     constructor(
-        private val api: ApiClient,
         private val linkStore: Store<Long, LinkInfo>,
-        private val linksApi: LinksRetrofitApi,
         private val linksV3Api: LinksV3RetrofitApi,
         private val favouritesV3Api: FavouritesV3RetrofitApi,
         private val appCache: AppCache,
@@ -41,17 +37,24 @@ internal class LinksRepository
             linkStore.fresh(linkId)
         }
 
-        // TODO: No v3 favourite endpoint exists — keep on v2 until API v3 adds it
         suspend fun toggleCommentFavorite(
             linkId: Long,
             commentId: Long,
+            currentlyFavorite: Boolean,
         ) {
-            val response = api.mutation { linksApi.toggleCommentFavorite(commentId) }
+            val request = WykopApiRequestV3(
+                FavouriteRequestV3(type = "link_comment", sourceId = commentId),
+            )
+            if (currentlyFavorite) {
+                favouritesV3Api.removeFavourite(request)
+            } else {
+                favouritesV3Api.addFavourite(request)
+            }
             withContext(AppDispatchers.IO) {
                 appCache.linkCommentsQueries.favorite(
                     linkId = linkId,
                     id = commentId,
-                    isFavorite = response.isFavorited,
+                    isFavorite = !currentlyFavorite,
                 )
             }
         }

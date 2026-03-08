@@ -695,7 +695,7 @@ internal class GetLinkDetailsQuery
                     favoriteButton =
                         ToggleButtonUi(
                             isToggled = userFavorite,
-                            clickAction = safeCallback { linksRepository.toggleCommentFavorite(linkId = link.id, commentId = id) },
+                            clickAction = safeCallback { linksRepository.toggleCommentFavorite(linkId = link.id, commentId = id, currentlyFavorite = userFavorite) },
                         ),
                     shareAction = safeCallback { interopRequests.request(InteropRequest.Share(url = wykopUrl(linkId = link.id))) },
                     clickAction =
