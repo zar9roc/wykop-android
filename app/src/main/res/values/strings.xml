@@ -154,7 +154,8 @@
     <string name="hits_day">Hity dnia</string>
     <string name="hits_week">Hity tygodnia</string>
     <string name="hits_month">Hity miesiąca</string>
-    <string name="hits_year">Archiwum</string>
+    <string name="hits_year">Hity roku</string>
+    <string name="hits_archive">Archiwum</string>
     <string name="hits_month_toolbar">Hity miesiąca (%1$d/%2$d)</string>
     <string name="hits_year_toolbar">Hity roku (%1$d)</string>
     <string name="hits_archive_toolbar">Archiwum (%1$d)</string>

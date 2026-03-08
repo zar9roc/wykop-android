@@ -35,4 +35,10 @@
         app:showAsAction="never"
         />
 
+    <item
+        android:id="@+id/archive"
+        android:title="@string/hits_archive"
+        app:showAsAction="never"
+        />
+
 </menu>

@@ -12,7 +12,7 @@ import io.github.wykopmobilny.R
 import io.github.wykopmobilny.base.BaseActivity
 import io.github.wykopmobilny.base.BaseLinksFragment
 import io.github.wykopmobilny.ui.dialogs.MonthYearPickerDialog
-import io.github.wykopmobilny.ui.dialogs.YearPickerDialog
+import java.util.Calendar
 import javax.inject.Inject
 import io.github.wykopmobilny.ui.settings.android.R as SettingsR
 
@@ -77,17 +77,27 @@ class HitsFragment :
             }
 
             R.id.byMonth -> {
-                val pickerFragment = MonthYearPickerDialog.newInstance(presenter.monthSelection, presenter.yearSelection)
-                pickerFragment.setTargetFragment(this, PICKER_REQUEST_CODE)
-                pickerFragment.show(supportFragmentManager, "pickerDialogFragment")
+                binding.swipeRefresh.isRefreshing = true
+                val calendar = Calendar.getInstance()
+                presenter.yearSelection = calendar.get(Calendar.YEAR)
+                presenter.monthSelection = calendar.get(Calendar.MONTH) + 1
+                presenter.currentScreen = HitsPresenter.HITS_MONTH
+                presenter.loadData()
                 setTitle()
             }
 
             R.id.byYear -> {
+                binding.swipeRefresh.isRefreshing = true
+                presenter.yearSelection = Calendar.getInstance().get(Calendar.YEAR)
+                presenter.currentScreen = HitsPresenter.HITS_YEAR
+                presenter.loadData()
+                setTitle()
+            }
+
+            R.id.archive -> {
                 val pickerFragment = MonthYearPickerDialog.newInstance(presenter.monthSelection, presenter.yearSelection)
                 pickerFragment.setTargetFragment(this, PICKER_REQUEST_CODE)
                 pickerFragment.show(supportFragmentManager, "pickerDialogFragment")
-                setTitle()
             }
         }
         return super.onOptionsItemSelected(item)
@@ -115,7 +125,7 @@ class HitsFragment :
         (activity as BaseActivity).supportActionBar?.title =
             when (presenter.currentScreen) {
                 HitsPresenter.HITS_MONTH -> getString(R.string.hits_month_toolbar, presenter.monthSelection, presenter.yearSelection)
-                HitsPresenter.HITS_YEAR -> getString(R.string.hits_archive_toolbar, presenter.yearSelection)
+                HitsPresenter.HITS_YEAR -> getString(R.string.hits_year_toolbar, presenter.yearSelection)
                 HitsPresenter.HITS_WEEK -> getString(R.string.hits_week)
                 else -> getString(R.string.hits_day)
             }
