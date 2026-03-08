@@ -6,7 +6,7 @@ import android.content.Intent
 import io.github.wykopmobilny.ui.modules.NewNavigator
 import io.github.wykopmobilny.ui.modules.embedview.EmbedViewActivity
 import io.github.wykopmobilny.ui.modules.embedview.YouTubeUrlParser
-import io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsActivity
+import io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsActivityV2
 import io.github.wykopmobilny.ui.modules.mikroblog.entry.EntryActivity
 import io.github.wykopmobilny.ui.modules.pm.conversation.ConversationActivity
 import io.github.wykopmobilny.ui.modules.profile.ProfileActivity
@@ -76,7 +76,7 @@ class WykopLinkHandler
                             LINK_MATCHER -> {
                                 val linkId = LinkParser.getLinkId(url)
                                 if (linkId != null) {
-                                    LinkDetailsActivity.createIntent(context, linkId, LinkParser.getLinkCommentId(url))
+                                    LinkDetailsActivityV2.createIntent(context, linkId, LinkParser.getLinkCommentId(url))
                                 } else {
                                     null
                                 }

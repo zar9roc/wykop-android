@@ -14,8 +14,6 @@ import io.github.wykopmobilny.base.adapter.EndlessProgressAdapter
 import io.github.wykopmobilny.models.dataclass.Entry
 import io.github.wykopmobilny.models.dataclass.EntryLink
 import io.github.wykopmobilny.models.dataclass.Link
-import io.github.wykopmobilny.ui.adapters.LinkDetailsAdapter
-import io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsActivity
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.CountDownLatch
@@ -67,7 +65,6 @@ class DebugHttpServer(
                 method == Method.GET && uri == "/screen" -> handleScreen()
                 method == Method.GET && uri == "/screen/entries" -> handleScreenEntries()
                 method == Method.GET && uri == "/screen/links" -> handleScreenLinks()
-                method == Method.GET && uri == "/screen/link-detail" -> handleScreenLinkDetail()
                 method == Method.POST && uri.startsWith("/navigate/") -> handleNavigate(uri)
                 method == Method.POST && uri.matches(VOTE_ENTRY_REGEX) ->
                     handleVoteEntry(uri, vote = true)
@@ -115,7 +112,6 @@ class DebugHttpServer(
                 put(endpoint("GET", "/screen", "Current screen summary"))
                 put(endpoint("GET", "/screen/entries", "Entry list from current adapter"))
                 put(endpoint("GET", "/screen/links", "Link list from current adapter"))
-                put(endpoint("GET", "/screen/link-detail", "Link detail from current screen"))
                 put(endpoint("POST", "/navigate/{tab}", "Switch to tab"))
                 put(endpoint("POST", "/action/vote/entry/{id}", "Vote on entry"))
                 put(endpoint("DELETE", "/action/vote/entry/{id}", "Unvote entry"))
@@ -257,46 +253,6 @@ class DebugHttpServer(
                     put("error", e.message ?: e.javaClass.simpleName)
                 }
             }
-        }
-        return jsonResponse(Response.Status.OK, json)
-    }
-
-    private fun handleScreenLinkDetail(): Response {
-        val json = runOnMainThread {
-            val activity = DebugActivityTracker.currentActivity
-            val result = JSONObject()
-
-            if (activity is LinkDetailsActivity) {
-                val recyclerView = activity.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recyclerView)
-                val adapter = recyclerView?.adapter
-                if (adapter is LinkDetailsAdapter) {
-                    val link = adapter.link
-                    if (link != null) {
-                        result.put("link", JSONObject().apply {
-                            put("id", link.id)
-                            put("title", link.title)
-                            put("description", link.description)
-                            put("source_url", link.sourceUrl)
-                            put("vote_count", link.voteCount)
-                            put("bury_count", link.buryCount)
-                            put("comments_count", link.commentsCount)
-                            put("author", link.author?.nick ?: JSONObject.NULL)
-                            put("tags", link.tags)
-                            put("is_hot", link.isHot)
-                            put("user_vote", link.userVote ?: JSONObject.NULL)
-                        })
-                        result.put("comments_loaded", link.comments.size)
-                    } else {
-                        result.put("link", JSONObject.NULL)
-                        result.put("error", "Link not loaded yet")
-                    }
-                } else {
-                    result.put("error", "Adapter not found or wrong type")
-                }
-            } else {
-                result.put("error", "Not on LinkDetailsActivity (current: ${activity?.javaClass?.simpleName})")
-            }
-            result
         }
         return jsonResponse(Response.Status.OK, json)
     }

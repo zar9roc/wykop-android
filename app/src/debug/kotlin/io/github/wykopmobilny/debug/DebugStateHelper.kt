@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Build
 import androidx.fragment.app.FragmentActivity
 import io.github.wykopmobilny.WykopApp
-import io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsActivity
+import io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsActivityV2
 import io.github.wykopmobilny.ui.modules.mainnavigation.MainNavigationActivity
 import io.github.wykopmobilny.ui.modules.mikroblog.entry.EntryActivity
 import io.github.wykopmobilny.utils.usermanager.isUserAuthorized
@@ -187,7 +187,7 @@ object DebugStateHelper {
      */
     fun openLink(context: Context, linkId: Long): JSONObject {
         return try {
-            val intent = LinkDetailsActivity.createIntent(context, linkId).apply {
+            val intent = LinkDetailsActivityV2.createIntent(context, linkId).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
             context.startActivity(intent)

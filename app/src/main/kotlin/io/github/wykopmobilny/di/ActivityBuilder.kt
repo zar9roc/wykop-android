@@ -18,8 +18,6 @@ import io.github.wykopmobilny.ui.modules.input.link.edit.LinkCommentEditActivity
 import io.github.wykopmobilny.ui.modules.input.link.edit.LinkCommentEditModule
 import io.github.wykopmobilny.ui.modules.links.downvoters.DownvotersActivity
 import io.github.wykopmobilny.ui.modules.links.downvoters.DownvotersModule
-import io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsActivity
-import io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsModule
 import io.github.wykopmobilny.ui.modules.links.related.RelatedActivity
 import io.github.wykopmobilny.ui.modules.links.related.RelatedModule
 import io.github.wykopmobilny.ui.modules.links.upvoters.UpvotersActivity
@@ -67,9 +65,6 @@ internal abstract class ActivityBuilder {
 
     @ContributesAndroidInjector(modules = [EditEntryCommentActivityModule::class])
     abstract fun bindEditEntryCommentActivity(): EditEntryCommentActivity
-
-    @ContributesAndroidInjector(modules = [LinkDetailsModule::class])
-    abstract fun bindLinkDetailsActivity(): LinkDetailsActivity
 
     @ContributesAndroidInjector(modules = [TagActivityFragmentProvider::class, TagActivityModule::class])
     abstract fun bindTagActivity(): TagActivity

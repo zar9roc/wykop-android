@@ -3,7 +3,7 @@ package io.github.wykopmobilny.ui.modules
 import android.app.Activity
 import io.github.wykopmobilny.models.dataclass.Link
 import io.github.wykopmobilny.ui.modules.input.entry.add.AddEntryActivity
-import io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsActivity
+import io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsActivityV2
 
 interface NavigatorApi {
     fun openAddEntryActivity(
@@ -28,5 +28,5 @@ class Navigator : NavigatorApi {
     override fun openLinkDetailsActivity(
         context: Activity,
         link: Link,
-    ) = context.startActivity(LinkDetailsActivity.createIntent(context, link))
+    ) = context.startActivity(LinkDetailsActivityV2.createIntent(context, link.id))
 }

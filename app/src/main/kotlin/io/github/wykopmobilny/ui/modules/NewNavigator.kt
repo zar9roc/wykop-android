@@ -19,7 +19,7 @@ import io.github.wykopmobilny.ui.modules.input.entry.comment.EditEntryCommentAct
 import io.github.wykopmobilny.ui.modules.input.entry.edit.EditEntryActivity
 import io.github.wykopmobilny.ui.modules.input.link.edit.LinkCommentEditActivity
 import io.github.wykopmobilny.ui.modules.links.downvoters.DownvotersActivity
-import io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsActivity
+import io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsActivityV2
 import io.github.wykopmobilny.ui.modules.links.related.RelatedActivity
 import io.github.wykopmobilny.ui.modules.links.upvoters.UpvotersActivity
 import io.github.wykopmobilny.ui.modules.loginscreen.LoginScreenActivity
@@ -119,14 +119,14 @@ class NewNavigator
 
         fun openReportScreen(violationUrl: String) = context.openBrowser(violationUrl)
 
-        fun openLinkDetailsActivity(link: Link) = context.startActivity(LinkDetailsActivity.createIntent(context, link))
+        fun openLinkDetailsActivity(link: Link) = context.startActivity(LinkDetailsActivityV2.createIntent(context, link.id))
 
         fun openLinkUpvotersActivity(linkId: Long) = context.startActivity(UpvotersActivity.createIntent(linkId, context))
 
         fun openLinkDetailsActivity(
             linkId: Long,
             commentId: Long = -1L,
-        ) = context.startActivity(LinkDetailsActivity.createIntent(context, linkId, commentId))
+        ) = context.startActivity(LinkDetailsActivityV2.createIntent(context, linkId, if (commentId != -1L) commentId else null))
 
         fun openLinkDownvotersActivity(linkId: Long) = context.startActivity(DownvotersActivity.createIntent(linkId, context))
 
