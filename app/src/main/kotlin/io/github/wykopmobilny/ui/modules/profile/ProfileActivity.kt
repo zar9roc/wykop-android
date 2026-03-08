@@ -98,13 +98,14 @@ class ProfileActivity :
         patronsApi.getBadgeFor(profileResponse.username)?.drawBadge(binding.patronBadgeTextView)
         binding.tabLayout.setupWithViewPager(binding.pager)
         binding.profilePicture.loadImage(profileResponse.avatar.orEmpty())
-        val signupAt = runCatching {
-            // member_since format: "2011-10-15 15:15:12" (with space)
-            // Instant.parse() expects ISO-8601: "2011-10-15T15:15:12Z"
-            // Replace space with 'T' and append 'Z' for UTC
-            val isoFormat = profileResponse.memberSince.orEmpty().replace(" ", "T") + "Z"
-            Instant.parse(isoFormat)
-        }.getOrElse { Instant.DISTANT_PAST }
+        val signupAt =
+            runCatching {
+                // member_since format: "2011-10-15 15:15:12" (with space)
+                // Instant.parse() expects ISO-8601: "2011-10-15T15:15:12Z"
+                // Replace space with 'T' and append 'Z' for UTC
+                val isoFormat = profileResponse.memberSince.orEmpty().replace(" ", "T") + "Z"
+                Instant.parse(isoFormat)
+            }.getOrElse { Instant.DISTANT_PAST }
         binding.signup.text = signupAt.periodUntil(Clock.System.now(), TimeZone.currentSystemDefault()).toPrettyString()
         binding.nickname.text = profileResponse.username
         binding.nickname.setTextColor(getGroupColor(colorNameToGroupId(profileResponse.color)))
