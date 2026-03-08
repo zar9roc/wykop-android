@@ -2,8 +2,6 @@ package io.github.wykopmobilny.links.details
 
 import android.os.Bundle
 import android.view.View
-import androidx.core.view.isInvisible
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -12,9 +10,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView.Adapter.StateRestorationPolicy
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
-import com.github.wykopmobilny.ui.components.toColorInt
 import com.github.wykopmobilny.ui.components.utils.dpToPx
 import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.kotlin.AppDispatchers
@@ -28,7 +23,6 @@ import io.github.wykopmobilny.utils.bindings.collectMenuOptions
 import io.github.wykopmobilny.utils.bindings.collectOptionPicker
 import io.github.wykopmobilny.utils.bindings.collectSnackbar
 import io.github.wykopmobilny.utils.bindings.collectSwipeRefresh
-import io.github.wykopmobilny.utils.bindings.setOnClick
 import io.github.wykopmobilny.utils.longArgument
 import io.github.wykopmobilny.utils.longArgumentNullable
 import io.github.wykopmobilny.utils.viewModelWrapperFactoryKeyed
@@ -129,32 +123,6 @@ internal class LinkDetailsMainFragment : Fragment(R.layout.fragment_link_details
                 launch { shared.map { it.contextMenuOptions }.collectMenuOptions(binding.toolbar) }
                 launch { shared.map { it.picker }.collectOptionPicker(view.context) }
                 launch { shared.map { it.snackbar }.collectSnackbar(view) }
-                launch {
-                    shared
-                        .map { it.header }
-                        .collect { header ->
-                            when (header) {
-                                LinkDetailsHeaderUi.Loading -> {
-                                    binding.parallaxContainer.isInvisible = true
-                                }
-
-                                is LinkDetailsHeaderUi.WithData -> {
-                                    binding.parallaxContainer.isVisible = header.previewImageUrl != null
-                                    if (header.previewImageUrl != null) {
-                                        Glide
-                                            .with(this@LinkDetailsMainFragment)
-                                            .load(header.previewImageUrl)
-                                            .transition(withCrossFade())
-                                            .into(binding.imgPreview)
-                                    }
-                                    binding.imgPreview.setOnClick(header.viewLinkAction)
-                                    binding.txtDomain.text = header.domain
-                                    binding.hotBadgeStrip.isVisible = header.badge != null
-                                    binding.hotBadgeStrip.setBackgroundColor(header.badge.toColorInt(view.context).defaultColor)
-                                }
-                            }
-                        }
-                }
             }
         }
     }

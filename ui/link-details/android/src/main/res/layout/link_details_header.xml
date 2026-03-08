@@ -1,151 +1,180 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<LinearLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingBottom="8dp"
     >
 
-    <LinearLayout
+    <ImageView
+        android:id="@+id/imgPreview"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:foreground="?selectableItemBackground"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:visibility="visible"
+        tools:background="#ff00ff"
+        />
+
+    <TextView
+        android:id="@+id/txtTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:textAppearance="@style/TextAppearance.MaterialScale.Body1"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/imgPreview"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:text="Tytuł znaleziska"
+        />
+
+    <TextView
+        android:id="@+id/txtDescription"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingBottom="8dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:textAppearance="@style/TextAppearance.MaterialScale.Body2"
+        app:layout_constraintTop_toBottomOf="@id/txtTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:text="Opis znaleziska"
+        />
+
+    <View
+        android:id="@+id/separator1"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?colorDivider"
+        app:layout_constraintTop_toBottomOf="@id/txtDescription"
+        />
+
+    <HorizontalScrollView
+        android:id="@+id/detailsScrollView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/separator1"
         >
 
-        <View
-            android:id="@+id/hotBadgeStrip"
-            android:layout_width="2dp"
-            android:layout_height="match_parent"
-            android:visibility="gone"
-            tools:background="#ff00ff"
-            tools:visibility="visible"
-            />
-
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:gravity="center_vertical"
             >
 
-            <TextView
-                android:id="@+id/txtTitle"
-                android:layout_width="match_parent"
+            <com.github.wykopmobilny.ui.components.AvatarView
+                android:id="@+id/imgAvatar"
+                android:layout_width="36dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:gravity="bottom"
-                android:paddingHorizontal="12dp"
-                android:textAppearance="@style/TextAppearance.MaterialScale.Headline5"
-                tools:text="Tytuł znaleziska"
+                android:layout_marginStart="12dp"
+                />
+
+            <TextView
+                android:id="@+id/txtUser"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:textAppearance="@style/TextAppearance.MaterialScale.Caption"
+                tools:text="Powodzenia"
+                />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="?colorDivider"
+                />
+
+            <TextView
+                android:id="@+id/txtTimestamp"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:textAppearance="@style/TextAppearance.MaterialScale.Caption"
+                tools:text="2 godz. temu"
+                />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="?colorDivider"
+                />
+
+            <TextView
+                android:id="@+id/txtDomain"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:textAppearance="@style/TextAppearance.MaterialScale.Caption"
+                tools:text="wykop.pl"
+                />
+
+            <View
+                android:id="@+id/tagsSeparator"
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="?colorDivider"
                 />
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/tagsContainer"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:paddingHorizontal="10dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
                 />
-
-            <TextView
-                android:id="@+id/txtDescription"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:paddingHorizontal="12dp"
-                android:textAppearance="@style/TextAppearance.MaterialScale.Subtitle1"
-                app:layout_constraintTop_toBottomOf="@id/txtTitle"
-                tools:text="Opis znaleziska"
-                />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="2dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="8dp"
-                app:layout_constraintTop_toBottomOf="@id/txtDescription"
-                >
-
-                <TextView
-                    android:id="@+id/txtUser"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="?selectableItemBackground"
-                    android:padding="4dp"
-                    android:textAppearance="@style/TextAppearance.MaterialScale.Body2"
-                    tools:text="Powodzenia"
-                    tools:textColor="#ff55ff"
-                    />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/separator"
-                    android:textAppearance="@style/TextAppearance.MaterialScale.Body2"
-                    />
-
-                <TextView
-                    android:id="@+id/txtTimestamp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="4dp"
-                    android:textAppearance="@style/TextAppearance.MaterialScale.Body2"
-                    tools:text="2 godz. temu"
-                    />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/separator"
-                    android:textAppearance="@style/TextAppearance.MaterialScale.Body2"
-                    />
-
-                <TextView
-                    android:id="@+id/txtPercentage"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="4dp"
-                    android:textAppearance="@style/TextAppearance.MaterialScale.Body2"
-                    tools:text="56% wykopało"
-                    />
-            </LinearLayout>
 
         </LinearLayout>
 
-    </LinearLayout>
+    </HorizontalScrollView>
+
+    <View
+        android:id="@+id/separator2"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="?colorDivider"
+        app:layout_constraintTop_toBottomOf="@id/detailsScrollView"
+        />
 
     <LinearLayout
+        android:id="@+id/actionButtonsRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginVertical="8dp"
-        android:layout_marginStart="8dp"
-        android:gravity="center_vertical"
         android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingVertical="4dp"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        app:layout_constraintTop_toBottomOf="@id/separator2"
         >
 
-        <com.github.wykopmobilny.ui.components.LinkVoteButton
-            android:id="@+id/voteButton"
+        <ImageView
+            android:id="@+id/shareButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="2dp"
-            />
-
-        <com.github.wykopmobilny.ui.components.FlatButton
-            android:id="@+id/commentButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="4dp"
-            />
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1"
+            android:background="?selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:src="@drawable/ic_share"
+            app:tint="?colorControlNormal"
             />
 
         <ImageView
@@ -158,6 +187,26 @@
             tools:tint="?colorControlNormal"
             />
 
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            />
+
+        <com.github.wykopmobilny.ui.components.FlatButton
+            android:id="@+id/commentButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="2dp"
+            />
+
+        <com.github.wykopmobilny.ui.components.LinkVoteButton
+            android:id="@+id/voteButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="2dp"
+            />
+
         <ImageView
             android:id="@+id/moreButton"
             android:layout_width="wrap_content"
@@ -166,22 +215,32 @@
             android:padding="8dp"
             android:src="@drawable/ic_more"
             app:tint="?colorControlNormal"
-            tools:tint="?colorControlNormal"
             />
     </LinearLayout>
 
+    <View
+        android:id="@+id/separator3"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="?colorDivider"
+        app:layout_constraintTop_toBottomOf="@id/actionButtonsRow"
+        />
+
     <LinearLayout
+        android:id="@+id/addCommentRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="16dp"
-        android:gravity="center_vertical"
         android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingVertical="8dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="8dp"
+        app:layout_constraintTop_toBottomOf="@id/separator3"
         >
 
         <com.github.wykopmobilny.ui.components.AvatarView
-            android:id="@+id/imgAvatar"
-            android:layout_width="36dp"
+            android:id="@+id/commentAvatar"
+            android:layout_width="28dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
             />
@@ -190,8 +249,8 @@
             android:id="@+id/addCommentButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
             android:layout_weight="1"
+            android:layout_marginEnd="8dp"
             android:background="@drawable/ripple_outline"
             android:paddingHorizontal="12dp"
             android:paddingVertical="8dp"
@@ -205,4 +264,17 @@
             android:layout_height="wrap_content"
             />
     </LinearLayout>
-</LinearLayout>
+
+    <View
+        android:id="@+id/hotBadgeStrip"
+        android:layout_width="2dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:background="#ff00ff"
+        tools:visibility="visible"
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

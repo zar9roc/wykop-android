@@ -7,6 +7,8 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
 import com.github.wykopmobilny.ui.components.StandaloneTagView
 import com.github.wykopmobilny.ui.components.bind
 import com.github.wykopmobilny.ui.components.setUserNick
@@ -27,16 +29,36 @@ internal fun LinkDetailsHeaderBinding.bindHeader(header: LinkDetailsHeaderUi) =
 
         is LinkDetailsHeaderUi.WithData -> {
             root.isVisible = true
+
+            imgPreview.isVisible = header.previewImageUrl != null
+            if (header.previewImageUrl != null) {
+                Glide
+                    .with(imgPreview)
+                    .load(header.previewImageUrl)
+                    .transition(withCrossFade())
+                    .into(imgPreview)
+            }
+            imgPreview.setOnClick(header.viewLinkAction)
+
             txtTitle.text = header.title
             txtTitle.setOnClick(header.viewLinkAction)
             txtDescription.text = header.body
             txtDescription.setOnClick(header.viewLinkAction)
+
+            imgAvatar.bind(header.author.avatar)
             txtUser.setUserNick(header.author)
             txtTimestamp.text = header.postedAgo
+            txtDomain.text = header.domain
+
             tagsContainer.updateTags(header.tags)
+            val hasTags = header.tags.isNotEmpty()
+            tagsSeparator.isVisible = hasTags
+            tagsContainer.isVisible = hasTags
+
             hotBadgeStrip.isVisible = header.badge != null
             hotBadgeStrip.setBackgroundColor(header.badge.toColorInt(hotBadgeStrip.context).defaultColor)
-            txtPercentage.text = header.upvotePercentage
+
+            shareButton.setOnClick(header.viewLinkAction)
 
             favoriteButton.isVisible = header.favoriteButton.isVisible
             favoriteButton.setOnClick(header.favoriteButton.clickAction)
@@ -53,12 +75,13 @@ internal fun LinkDetailsHeaderBinding.bindHeader(header: LinkDetailsHeaderUi) =
                 } else {
                     favoriteButton.context.readColorAttr(AppcompatR.attr.colorControlNormal)
                 }
+
             commentButton.bind(header.commentsCount)
             voteButton.bind(header.voteCount)
             moreButton.setOnClick(header.moreAction)
             commentSortButton.bind(header.commentsSort)
             addCommentButton.setOnClick(header.addCommentAction)
-            imgAvatar.bind(header.currentUser?.avatar)
+            commentAvatar.bind(header.currentUser?.avatar)
         }
     }
 
