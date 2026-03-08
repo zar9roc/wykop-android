@@ -23,4 +23,5 @@ data class EntryCommentResponseV3(
     @field:Json(name = "resource") val resource: String,
     @field:Json(name = "actions") val actions: ActionsResponseV3?,
     @field:Json(name = "deleted") val deleted: String?,
+    @field:Json(name = "slug") val slug: String?,
 )

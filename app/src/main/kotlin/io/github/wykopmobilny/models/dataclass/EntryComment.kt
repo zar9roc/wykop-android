@@ -16,6 +16,8 @@ class EntryComment(
     val violationUrl: String?,
     var isNsfw: Boolean = false,
     var isBlocked: Boolean = false,
+    val deletedReason: String? = null,
+    val slug: String? = null,
 ) {
     override fun equals(other: Any?): Boolean =
         if (other !is EntryComment) {

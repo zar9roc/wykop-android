@@ -21,7 +21,9 @@ object EntryCommentMapperV3 {
             app = value.device,
             violationUrl = null,
             isNsfw = value.content?.lowercase()?.contains("#nsfw") ?: false,
-            isBlocked = value.deleted == "true",
+            isBlocked = !value.deleted.isNullOrEmpty(),
+            deletedReason = value.deleted,
+            slug = value.slug,
         ),
     )
 }

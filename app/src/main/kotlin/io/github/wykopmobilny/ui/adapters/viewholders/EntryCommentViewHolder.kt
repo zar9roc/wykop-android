@@ -1,8 +1,10 @@
 package io.github.wykopmobilny.ui.adapters.viewholders
 
 import android.graphics.Color
+import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -76,6 +78,7 @@ class EntryCommentViewHolder(
 
         fun getViewTypeForEntryComment(comment: EntryComment): Int =
             when {
+                comment.deletedReason != null -> TYPE_NORMAL
                 comment.isBlocked -> TYPE_BLOCKED
                 comment.embed == null -> TYPE_NORMAL
                 else -> TYPE_EMBED
@@ -148,15 +151,18 @@ class EntryCommentViewHolder(
     }
 
     private fun setupButtons(comment: EntryComment) {
+        val isDeleted = comment.deletedReason != null
+        binding.moreOptionsTextView.isVisible = !isDeleted
         binding.moreOptionsTextView.setOnClickListener {
             openOptionsMenu(comment)
         }
 
         // Only show reply view in entry details
-        binding.replyTextView.isVisible = isUserAuthorized && commentViewListener != null
+        binding.replyTextView.isVisible = !isDeleted && isUserAuthorized && commentViewListener != null
         binding.replyTextView.setOnClickListener { commentViewListener?.addReply(comment.author) }
 
         // Setup vote button
+        binding.voteButton.isVisible = !isDeleted
         with(binding.voteButton) {
             isEnabled = true
             isButtonSelected = comment.isVoted
@@ -171,6 +177,7 @@ class EntryCommentViewHolder(
         }
 
         // Setup share button
+        binding.shareTextView.isVisible = !isDeleted
         binding.shareTextView.setOnClickListener {
             navigator.shareUrl(comment.url)
         }
@@ -184,13 +191,19 @@ class EntryCommentViewHolder(
         showAdultContent: Boolean,
         hideNsfw: Boolean,
     ) {
-        // Add URL and click handler if body is not empty
-        binding.replyTextView.isVisible = isUserAuthorized
+        val isDeleted = comment.deletedReason != null
+
+        // Hide quote button for deleted comments
+        binding.replyTextView.isVisible = !isDeleted && isUserAuthorized
         binding.replyTextView.setOnClickListener { commentViewListener?.addReply(comment.author) }
-        binding.quoteTextView.isVisible = isUserAuthorized
+        binding.quoteTextView.isVisible = !isDeleted && isUserAuthorized
         binding.quoteTextView.setOnClickListener { commentViewListener?.quoteComment(comment) }
-        if (comment.body.isNotEmpty()) {
+
+        if (isDeleted) {
+            setupDeletedBody(comment)
+        } else if (comment.body.isNotEmpty()) {
             binding.entryContentTextView.isVisible = true
+            resetContentTextViewStyle()
             binding.entryContentTextView.prepareBody(
                 comment.body,
                 { linkHandler.handleUrl(it) },
@@ -201,7 +214,7 @@ class EntryCommentViewHolder(
             binding.entryContentTextView.isVisible = false
         }
 
-        if (comment.embed != null && type == TYPE_EMBED) {
+        if (!isDeleted && comment.embed != null && type == TYPE_EMBED) {
             embedView.setEmbed(
                 embed = comment.embed,
                 enableYoutubePlayer = enableYoutubePlayer,
@@ -216,6 +229,54 @@ class EntryCommentViewHolder(
         if (enableClickListener) {
             itemView.setOnClickListener { handleClick(comment) }
         }
+    }
+
+    private fun resetContentTextViewStyle() {
+        val textColor = TypedValue()
+        itemView.context.theme.resolveAttribute(android.R.attr.textColorPrimary, textColor, true)
+        binding.entryContentTextView.setTextColor(textColor.data)
+        binding.entryContentTextView.setTypeface(null, android.graphics.Typeface.NORMAL)
+        binding.entryContentTextView.setOnClickListener(null)
+    }
+
+    private fun setupDeletedBody(comment: EntryComment) {
+        val context = itemView.context
+        val deletedText =
+            when (comment.deletedReason) {
+                "host" -> context.getString(R.string.comment_deleted_by_host)
+                "moderator" -> context.getString(R.string.comment_deleted_by_moderator)
+                "author" -> context.getString(R.string.comment_deleted_by_author)
+                else -> context.getString(R.string.comment_deleted_generic)
+            }
+
+        val greyColor = TypedValue()
+        context.theme.resolveAttribute(R.attr.textColorGrey, greyColor, true)
+
+        binding.entryContentTextView.isVisible = true
+        binding.entryContentTextView.setTextColor(greyColor.data)
+        binding.entryContentTextView.text = deletedText
+        binding.entryContentTextView.setTypeface(
+            binding.entryContentTextView.typeface,
+            android.graphics.Typeface.ITALIC,
+        )
+
+        if (!comment.slug.isNullOrEmpty()) {
+            binding.entryContentTextView.setOnClickListener {
+                showSlugDialog(comment.slug)
+            }
+        } else {
+            binding.entryContentTextView.setOnClickListener(null)
+        }
+    }
+
+    private fun showSlugDialog(slug: String) {
+        val context = itemView.getActivityContext() ?: return
+        AlertDialog
+            .Builder(context)
+            .setTitle(R.string.deleted_comment_content)
+            .setMessage(slug)
+            .setPositiveButton(R.string.close, null)
+            .show()
     }
 
     private fun openOptionsMenu(comment: EntryComment) {

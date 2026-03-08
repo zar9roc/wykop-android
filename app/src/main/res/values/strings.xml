@@ -95,6 +95,12 @@
     <string name="users">Użytkownicy</string>
     <string name="entryRemoved">[Wpis usunięty]</string>
     <string name="commentRemoved">[Komentarz usunięty]</string>
+    <string name="comment_deleted_by_host">Komentarz usunięty przez autora wpisu</string>
+    <string name="comment_deleted_by_moderator">Komentarz usunięty przez moderację</string>
+    <string name="comment_deleted_by_author">Komentarz usunięty przez autora</string>
+    <string name="comment_deleted_generic">Komentarz usunięty</string>
+    <string name="deleted_comment_content">Treść usuniętego komentarza</string>
+    <string name="click_to_see_content">Kliknij aby zobaczyć treść</string>
 
     <string name="observe_tag">Obserwuj tag</string>
     <string name="unobserve_tag">Przestań obserwować tag</string>

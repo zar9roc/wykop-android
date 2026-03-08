@@ -59,7 +59,7 @@ class EntryAdapter
                 }
 
                 is EntryCommentViewHolder -> {
-                    val comment = entry!!.comments.filterNot { hideBlacklistedViews && it.isBlocked }[position - 1]
+                    val comment = filteredComments()[position - 1]
                     holder.bindView(
                         comment = comment,
                         entryAuthor = entry?.author,
@@ -76,7 +76,7 @@ class EntryAdapter
                     if (position == 0) {
                         holder.bindView(entry!!)
                     } else {
-                        holder.bindView(entry!!.comments[position - 1])
+                        holder.bindView(filteredComments()[position - 1])
                     }
                 }
             }
@@ -86,15 +86,22 @@ class EntryAdapter
             if (position == 0) {
                 EntryViewHolder.getViewTypeForEntry(entry!!)
             } else {
-                EntryCommentViewHolder.getViewTypeForEntryComment(entry!!.comments[position - 1])
+                EntryCommentViewHolder.getViewTypeForEntryComment(filteredComments()[position - 1])
             }
 
         override fun getItemCount(): Int {
-            entry?.comments?.filterNot { hideBlacklistedViews && it.isBlocked }?.let {
-                return it.size + 1
+            entry?.let {
+                return filteredComments().size + 1
             }
             return 0
         }
+
+        private fun filteredComments(): List<EntryComment> =
+            entry
+                ?.comments
+                ?.filterNot {
+                    hideBlacklistedViews && it.isBlocked && it.deletedReason == null
+                }.orEmpty()
 
         override fun onCreateViewHolder(
             parent: ViewGroup,

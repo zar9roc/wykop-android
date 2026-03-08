@@ -36,7 +36,12 @@ class EntryCommentAdapter
             items: List<EntryComment>,
             shouldClearAdapter: Boolean,
         ) {
-            super.addData(items.filterNot { settingsPreferencesApi.hideBlacklistedViews && it.isBlocked }, shouldClearAdapter)
+            super.addData(
+                items.filterNot {
+                    settingsPreferencesApi.hideBlacklistedViews && it.isBlocked && it.deletedReason == null
+                },
+                shouldClearAdapter,
+            )
         }
 
         override fun constructViewHolder(
