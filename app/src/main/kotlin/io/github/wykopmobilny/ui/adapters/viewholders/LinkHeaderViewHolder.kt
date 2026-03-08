@@ -84,7 +84,14 @@ class LinkHeaderViewHolder(
             binding.userTextView.isVisible = false
         }
 
-        binding.urlTextView.text = URL(link.sourceUrl).host.removePrefix("www.")
+        binding.urlTextView.text = when {
+            link.sourceUrl.isBlank() -> ""
+            else -> try {
+                URL(link.sourceUrl).host.removePrefix("www.")
+            } catch (e: java.net.MalformedURLException) {
+                link.sourceUrl
+            }
+        }
         binding.blockedTextView.prepareBody(link.tags.convertToTagsHtml()) {
             linkHandler.handleUrl(
                 it,
