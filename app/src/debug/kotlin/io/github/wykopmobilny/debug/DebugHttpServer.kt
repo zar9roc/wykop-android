@@ -48,11 +48,23 @@ class DebugHttpServer(
     override fun start() {
         try {
             super.start()
-            Napier.i("Debug HTTP server started on port $PORT", tag = TAG)
+            Napier.i("Debug HTTP server started on port $PORT (thread=${Thread.currentThread().name})", tag = TAG)
         } catch (e: java.io.IOException) {
-            Napier.w("Failed to start debug HTTP server on port $PORT", e, tag = TAG)
+            Napier.e("CRITICAL: Failed to start debug HTTP server on port $PORT", e, tag = TAG)
+            throw e
         }
     }
+
+    override fun stop() {
+        super.stop()
+        Napier.w("Debug HTTP server stopped on port $PORT", tag = TAG)
+    }
+
+    /**
+     * Check if the server is alive and running.
+     * Exposes NanoHTTPD's protected `isAlive()` method.
+     */
+    fun isRunning(): Boolean = isAlive
 
     override fun serve(session: IHTTPSession): Response {
         val uri = session.uri
