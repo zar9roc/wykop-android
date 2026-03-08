@@ -35,6 +35,9 @@ class ProfileLinksPresenter(
                         view?.addItems(it.filtered, shouldRefresh)
                     } else {
                         view?.disableLoading()
+                        if (shouldRefresh) {
+                            view?.showSearchEmptyView = true
+                        }
                     }
                 },
                 { view?.showErrorDialog(it) },
@@ -57,6 +60,9 @@ class ProfileLinksPresenter(
                         view?.addItems(it.filtered, shouldRefresh)
                     } else {
                         view?.disableLoading()
+                        if (shouldRefresh) {
+                            view?.showSearchEmptyView = true
+                        }
                     }
                 },
                 { view?.showErrorDialog(it) },
@@ -79,6 +85,9 @@ class ProfileLinksPresenter(
                         view?.addItems(it.filtered, shouldRefresh)
                     } else {
                         view?.disableLoading()
+                        if (shouldRefresh) {
+                            view?.showSearchEmptyView = true
+                        }
                     }
                 },
                 { view?.showErrorDialog(it) },
@@ -101,6 +110,9 @@ class ProfileLinksPresenter(
                         view?.addItems(it.filtered, shouldRefresh)
                     } else {
                         view?.disableLoading()
+                        if (shouldRefresh) {
+                            view?.showSearchEmptyView = true
+                        }
                     }
                 },
                 { view?.showErrorDialog(it) },

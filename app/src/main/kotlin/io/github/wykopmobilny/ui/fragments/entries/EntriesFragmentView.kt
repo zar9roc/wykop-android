@@ -5,6 +5,8 @@ import io.github.wykopmobilny.models.dataclass.Entry
 import io.github.wykopmobilny.models.dataclass.Voter
 
 interface EntriesFragmentView : BaseView {
+    var showSearchEmptyView: Boolean
+
     fun updateEntry(entry: Entry)
 
     fun showVoters(voters: List<Voter>)

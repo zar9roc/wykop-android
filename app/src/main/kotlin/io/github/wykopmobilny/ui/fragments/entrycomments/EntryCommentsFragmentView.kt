@@ -5,6 +5,8 @@ import io.github.wykopmobilny.models.dataclass.EntryComment
 import io.github.wykopmobilny.models.dataclass.Voter
 
 interface EntryCommentsFragmentView : BaseView {
+    var showSearchEmptyView: Boolean
+
     fun updateComment(comment: EntryComment)
 
     fun disableLoading()

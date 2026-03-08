@@ -33,6 +33,9 @@ class MicroblogCommentsPresenter(
                         view?.addItems(it, shouldRefresh)
                     } else {
                         view?.disableLoading()
+                        if (shouldRefresh) {
+                            view?.showSearchEmptyView = true
+                        }
                     }
                 },
                 { view?.showErrorDialog(it) },

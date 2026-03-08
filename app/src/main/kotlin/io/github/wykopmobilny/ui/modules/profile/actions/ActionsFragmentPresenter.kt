@@ -33,6 +33,9 @@ class ActionsFragmentPresenter(
                 {
                     view?.addItems(it, true)
                     view?.disableLoading()
+                    if (it.isEmpty()) {
+                        view?.showSearchEmptyView = true
+                    }
                 },
                 { view?.showErrorDialog(it) },
             ).intoComposite(compositeObservable)

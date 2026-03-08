@@ -25,6 +25,9 @@ class ProfileRelatedPresenter(
                         view?.addDataToAdapter(it, shouldRefresh)
                     } else {
                         view?.disableLoading()
+                        if (shouldRefresh) {
+                            view?.showSearchEmptyView = true
+                        }
                     }
                 },
                 { view?.showErrorDialog(it) },

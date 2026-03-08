@@ -7,6 +7,8 @@ import io.github.wykopmobilny.models.dataclass.Link
 import io.github.wykopmobilny.models.dataclass.Voter
 
 interface EntryLinkFragmentView : BaseView {
+    var showSearchEmptyView: Boolean
+
     fun updateEntry(entry: Entry)
 
     fun updateLink(link: Link)

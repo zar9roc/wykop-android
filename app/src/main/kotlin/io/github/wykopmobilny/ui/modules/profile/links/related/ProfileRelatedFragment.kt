@@ -2,6 +2,7 @@ package io.github.wykopmobilny.ui.modules.profile.links.related
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.isVisible
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.base.BaseFragment
 import io.github.wykopmobilny.databinding.FeedFragmentBinding
@@ -28,6 +29,12 @@ class ProfileRelatedFragment :
     lateinit var presenter: ProfileRelatedPresenter
 
     private val binding by viewBinding(FeedFragmentBinding::bind)
+
+    override var showSearchEmptyView: Boolean
+        get() = binding.empty.searchEmptyView.isVisible
+        set(value) {
+            binding.empty.searchEmptyView.isVisible = value
+        }
 
     override fun onViewCreated(
         view: View,
