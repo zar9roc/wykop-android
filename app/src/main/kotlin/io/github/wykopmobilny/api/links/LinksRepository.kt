@@ -14,6 +14,7 @@ import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.RelatedResponseV3
+import io.github.wykopmobilny.api.responses.v3.observed.ObservedItemV3
 import io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3
 import io.github.wykopmobilny.models.dataclass.LinkVoteResponsePublishModel
 import io.github.wykopmobilny.models.mapper.apiv3.filterLinkV3
@@ -55,10 +56,15 @@ class LinksRepository
             }
 
         override fun getObserved(page: String?) =
-            rxSingle { linksApiV3.getObserved(page) }
+            rxSingle { favouritesApiV3.getFavourites(page) }
                 .retryWhen(userTokenRefresher)
                 .map { response ->
-                    response.data.orEmpty().filterLinksV3(owmContentFilter, response.pagination)
+                    val links =
+                        response.data
+                            .orEmpty()
+                            .filterIsInstance<ObservedItemV3.LinkItem>()
+                            .map { it.link }
+                    links.filterLinksV3(owmContentFilter, response.pagination)
                 }
 
         override fun getLinkComments(

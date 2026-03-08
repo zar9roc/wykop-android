@@ -31,6 +31,10 @@ interface LinksV3RetrofitApi {
         @Query("sort") sortBy: String,
     ): WykopApiResponseV3<List<LinkResponseV3>>
 
+    @Deprecated(
+        "Endpoint /v3/links/observed does not exist in API v3. Use FavouritesV3RetrofitApi.getFavourites() instead, which returns both links and entries.",
+        ReplaceWith("favouritesApiV3.getFavourites(page)"),
+    )
     @GET("v3/links/observed")
     suspend fun getObserved(
         @Query("page") page: String? = null,
