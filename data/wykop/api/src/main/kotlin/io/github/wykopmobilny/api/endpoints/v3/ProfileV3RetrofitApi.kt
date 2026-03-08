@@ -110,7 +110,7 @@ interface ProfileV3RetrofitApi {
     @DELETE("v3/observed/users/{username}")
     suspend fun unobserveUser(
         @Path("username") username: String,
-    ): WykopApiResponseV3<Unit>
+    ): WykopApiResponseV3<Unit>?
 
     @POST("v3/settings/blacklists/users/{username}")
     suspend fun blockUser(
@@ -120,5 +120,5 @@ interface ProfileV3RetrofitApi {
     @DELETE("v3/settings/blacklists/users/{username}")
     suspend fun unblockUser(
         @Path("username") username: String,
-    ): WykopApiResponseV3<Unit>
+    ): WykopApiResponseV3<Unit>?
 }

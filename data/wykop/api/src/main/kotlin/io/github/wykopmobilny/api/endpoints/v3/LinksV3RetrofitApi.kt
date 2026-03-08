@@ -79,7 +79,7 @@ interface LinksV3RetrofitApi {
     suspend fun deleteLinkComment(
         @Path("linkId") linkId: Long,
         @Path("commentId") commentId: Long,
-    ): WykopApiResponseV3<Unit>
+    ): WykopApiResponseV3<Unit>?
 
     // region Link votes
 
@@ -97,7 +97,7 @@ interface LinksV3RetrofitApi {
     @DELETE("v3/links/{linkId}/votes")
     suspend fun removeVote(
         @Path("linkId") linkId: Long,
-    ): WykopApiResponseV3<Unit>
+    ): WykopApiResponseV3<Unit>?
 
     // endregion
 
@@ -114,7 +114,7 @@ interface LinksV3RetrofitApi {
     suspend fun removeCommentVote(
         @Path("linkId") linkId: Long,
         @Path("commentId") commentId: Long,
-    ): WykopApiResponseV3<Unit>
+    ): WykopApiResponseV3<Unit>?
 
     // endregion
 
@@ -130,7 +130,7 @@ interface LinksV3RetrofitApi {
     suspend fun deleteRelated(
         @Path("linkId") linkId: Long,
         @Path("relatedId") relatedId: Long,
-    ): WykopApiResponseV3<Unit>
+    ): WykopApiResponseV3<Unit>?
 
     @POST("v3/links/{linkId}/related/{relatedId}/votes/{type}")
     suspend fun voteRelated(
@@ -143,7 +143,7 @@ interface LinksV3RetrofitApi {
     suspend fun removeRelatedVote(
         @Path("linkId") linkId: Long,
         @Path("relatedId") relatedId: Long,
-    ): WykopApiResponseV3<Unit>
+    ): WykopApiResponseV3<Unit>?
 
     // endregion
 
@@ -157,7 +157,7 @@ interface LinksV3RetrofitApi {
     @DELETE("v3/links/{linkId}/observed-discussions")
     suspend fun unobserveDiscussions(
         @Path("linkId") linkId: Long,
-    ): WykopApiResponseV3<Unit>
+    ): WykopApiResponseV3<Unit>?
 
     // endregion
 }

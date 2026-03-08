@@ -40,7 +40,7 @@ interface TagsV3RetrofitApi {
     @DELETE("v3/observed/tags/{tagName}")
     suspend fun unobserveTag(
         @Path("tagName") tagName: String,
-    ): WykopApiResponseV3<Unit>
+    ): WykopApiResponseV3<Unit>?
 
     @POST("v3/settings/blacklists/tags/{tag}")
     suspend fun blockTag(
@@ -50,5 +50,5 @@ interface TagsV3RetrofitApi {
     @DELETE("v3/settings/blacklists/tags/{tag}")
     suspend fun unblockTag(
         @Path("tag") tag: String,
-    ): WykopApiResponseV3<Unit>
+    ): WykopApiResponseV3<Unit>?
 }

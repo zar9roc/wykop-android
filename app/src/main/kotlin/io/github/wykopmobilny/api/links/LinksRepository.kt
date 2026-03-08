@@ -10,6 +10,7 @@ import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateCommentRequestV3
 import io.github.wykopmobilny.api.requests.v3.links.AddRelatedRequestV3
+import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.RelatedResponseV3
@@ -124,7 +125,7 @@ class LinksRepository
         override fun commentVoteCancel(
             linkId: Long,
             commentId: Long,
-        ) = rxSingle { linksApiV3.removeCommentVote(linkId, commentId) }
+        ) = rxSingle { linksApiV3.removeCommentVote(linkId, commentId) ?: WykopApiResponseV3(data = Unit, pagination = null) }
             .retryWhen(userTokenRefresher)
             .map { }
 
@@ -156,7 +157,7 @@ class LinksRepository
         override fun voteRemove(
             linkId: Long,
             notifyPublisher: Boolean,
-        ) = rxSingle { linksApiV3.removeVote(linkId) }
+        ) = rxSingle { linksApiV3.removeVote(linkId) ?: WykopApiResponseV3(data = Unit, pagination = null) }
             .retryWhen(userTokenRefresher)
             .map { }
             .doOnSuccess {
@@ -312,7 +313,7 @@ class LinksRepository
         override fun commentDelete(
             linkId: Long,
             commentId: Long,
-        ) = rxSingle { linksApiV3.deleteLinkComment(linkId, commentId) }
+        ) = rxSingle { linksApiV3.deleteLinkComment(linkId, commentId) ?: WykopApiResponseV3(data = Unit, pagination = null) }
             .retryWhen(userTokenRefresher)
             .map { }
 

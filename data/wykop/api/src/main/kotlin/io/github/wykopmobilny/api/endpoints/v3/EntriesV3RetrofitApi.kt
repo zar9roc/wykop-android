@@ -93,7 +93,7 @@ interface EntriesV3RetrofitApi {
     @DELETE("v3/entries/{entryId}")
     suspend fun deleteEntry(
         @Path("entryId") entryId: Long,
-    ): WykopApiResponseV3<Unit>
+    ): WykopApiResponseV3<Unit>?
 
     @POST("v3/entries/{entryId}/votes")
     suspend fun voteEntry(
@@ -103,7 +103,7 @@ interface EntriesV3RetrofitApi {
     @DELETE("v3/entries/{entryId}/votes")
     suspend fun unvoteEntry(
         @Path("entryId") entryId: Long,
-    ): WykopApiResponseV3<Unit>
+    ): WykopApiResponseV3<Unit>?
 
     @POST("v3/entries/{entryId}/comments")
     suspend fun addEntryComment(
@@ -122,7 +122,7 @@ interface EntriesV3RetrofitApi {
     suspend fun deleteEntryComment(
         @Path("entryId") entryId: Long,
         @Path("commentId") commentId: Long,
-    ): WykopApiResponseV3<Unit>
+    ): WykopApiResponseV3<Unit>?
 
     @POST("v3/entries/{entryId}/comments/{commentId}/votes")
     suspend fun voteComment(
@@ -134,7 +134,7 @@ interface EntriesV3RetrofitApi {
     suspend fun unvoteComment(
         @Path("entryId") entryId: Long,
         @Path("commentId") commentId: Long,
-    ): WykopApiResponseV3<Unit>
+    ): WykopApiResponseV3<Unit>?
 
     @POST("v3/entries/{entryId}/survey/votes")
     suspend fun voteSurvey(

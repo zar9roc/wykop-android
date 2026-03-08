@@ -25,7 +25,7 @@ interface NotificationsV3RetrofitApi {
     suspend fun markAllEntryNotificationsAsRead(): WykopApiResponseV3<Unit>
 
     @DELETE("/v3/notifications/entries/all")
-    suspend fun deleteAllEntryNotifications(): WykopApiResponseV3<Unit>
+    suspend fun deleteAllEntryNotifications(): WykopApiResponseV3<Unit>?
 
     @GET("/v3/notifications/entries/{id}")
     suspend fun getEntryNotification(
@@ -40,7 +40,7 @@ interface NotificationsV3RetrofitApi {
     @DELETE("/v3/notifications/entries/{id}")
     suspend fun deleteEntryNotification(
         @Path("id") id: String,
-    ): WykopApiResponseV3<Unit>
+    ): WykopApiResponseV3<Unit>?
 
     @GET("/v3/notifications/pm")
     suspend fun getPmNotifications(
@@ -51,7 +51,7 @@ interface NotificationsV3RetrofitApi {
     suspend fun markAllPmNotificationsAsRead(): WykopApiResponseV3<Unit>
 
     @DELETE("/v3/notifications/pm/all")
-    suspend fun deleteAllPmNotifications(): WykopApiResponseV3<Unit>
+    suspend fun deleteAllPmNotifications(): WykopApiResponseV3<Unit>?
 
     @GET("/v3/notifications/pm/{id}")
     suspend fun getPmNotification(
@@ -66,7 +66,7 @@ interface NotificationsV3RetrofitApi {
     @DELETE("/v3/notifications/pm/{id}")
     suspend fun deletePmNotification(
         @Path("id") id: String,
-    ): WykopApiResponseV3<Unit>
+    ): WykopApiResponseV3<Unit>?
 
     @GET("/v3/notifications/tags")
     suspend fun getTagNotifications(
@@ -77,7 +77,7 @@ interface NotificationsV3RetrofitApi {
     suspend fun markAllTagNotificationsAsRead(): WykopApiResponseV3<Unit>
 
     @DELETE("/v3/notifications/tags/all")
-    suspend fun deleteAllTagNotifications(): WykopApiResponseV3<Unit>
+    suspend fun deleteAllTagNotifications(): WykopApiResponseV3<Unit>?
 
     @GET("/v3/notifications/tags/{id}")
     suspend fun getTagNotification(
@@ -92,7 +92,7 @@ interface NotificationsV3RetrofitApi {
     @DELETE("/v3/notifications/tags/{id}")
     suspend fun deleteTagNotification(
         @Path("id") id: String,
-    ): WykopApiResponseV3<Unit>
+    ): WykopApiResponseV3<Unit>?
 
     @GET("/v3/notifications/observed-discussions")
     suspend fun getObservedDiscussionNotifications(
@@ -103,7 +103,7 @@ interface NotificationsV3RetrofitApi {
     suspend fun markAllObservedDiscussionNotificationsAsRead(): WykopApiResponseV3<Unit>
 
     @DELETE("/v3/notifications/observed-discussions/all")
-    suspend fun deleteAllObservedDiscussionNotifications(): WykopApiResponseV3<Unit>
+    suspend fun deleteAllObservedDiscussionNotifications(): WykopApiResponseV3<Unit>?
 
     @GET("/v3/notifications/observed-discussions/{id}")
     suspend fun getObservedDiscussionNotification(
@@ -118,5 +118,5 @@ interface NotificationsV3RetrofitApi {
     @DELETE("/v3/notifications/observed-discussions/{id}")
     suspend fun deleteObservedDiscussionNotification(
         @Path("id") id: String,
-    ): WykopApiResponseV3<Unit>
+    ): WykopApiResponseV3<Unit>?
 }

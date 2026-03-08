@@ -26,9 +26,10 @@ internal class LinksRepository
             linkId: Long,
             currentlyFavorite: Boolean,
         ) {
-            val request = WykopApiRequestV3(
-                FavouriteRequestV3(type = "link", sourceId = linkId),
-            )
+            val request =
+                WykopApiRequestV3(
+                    FavouriteRequestV3(type = "link", sourceId = linkId),
+                )
             if (currentlyFavorite) {
                 favouritesV3Api.removeFavourite(request)
             } else {
@@ -42,9 +43,10 @@ internal class LinksRepository
             commentId: Long,
             currentlyFavorite: Boolean,
         ) {
-            val request = WykopApiRequestV3(
-                FavouriteRequestV3(type = "link_comment", sourceId = commentId),
-            )
+            val request =
+                WykopApiRequestV3(
+                    FavouriteRequestV3(type = "link_comment", sourceId = commentId),
+                )
             if (currentlyFavorite) {
                 favouritesV3Api.removeFavourite(request)
             } else {

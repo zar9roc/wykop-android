@@ -5,6 +5,7 @@ import io.github.wykopmobilny.api.endpoints.v3.ProfileV3RetrofitApi
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
 import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.responses.ObserveStateResponse
+import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
 import io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
@@ -149,7 +150,7 @@ class ProfileRepository
                 .map { ObserveStateResponse(isObserved = true, isBlocked = false) }
 
         override fun unobserve(tag: String) =
-            rxSingle { profileApiV3.unobserveUser(tag) }
+            rxSingle { profileApiV3.unobserveUser(tag) ?: WykopApiResponseV3(data = Unit, pagination = null) }
                 .retryWhen(userTokenRefresher)
                 .map { ObserveStateResponse(isObserved = false, isBlocked = false) }
 
@@ -162,7 +163,7 @@ class ProfileRepository
                 }
 
         override fun unblock(tag: String) =
-            rxSingle { profileApiV3.unblockUser(tag) }
+            rxSingle { profileApiV3.unblockUser(tag) ?: WykopApiResponseV3(data = Unit, pagination = null) }
                 .retryWhen(userTokenRefresher)
                 .map {
                     appStorage.blacklistQueries.deleteProfile(tag.removePrefix("@"))

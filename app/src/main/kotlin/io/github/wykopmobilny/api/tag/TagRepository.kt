@@ -8,6 +8,7 @@ import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.responses.ObserveStateResponse
 import io.github.wykopmobilny.api.responses.ObservedTagResponse
 import io.github.wykopmobilny.api.responses.TagMetaResponse
+import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
 import io.github.wykopmobilny.api.responses.v3.tags.TagDetailsResponseV3
 import io.github.wykopmobilny.data.storage.api.AppStorage
 import io.github.wykopmobilny.models.dataclass.TagEntries
@@ -87,7 +88,7 @@ class TagRepository
                 .map { ObserveStateResponse(isObserved = true, isBlocked = false) }
 
         override fun unobserve(tag: String) =
-            rxSingle { tagsApiV3.unobserveTag(tag) }
+            rxSingle { tagsApiV3.unobserveTag(tag) ?: WykopApiResponseV3(data = Unit, pagination = null) }
                 .retryWhen(userTokenRefresher)
                 .map { ObserveStateResponse(isObserved = false, isBlocked = false) }
 
@@ -100,7 +101,7 @@ class TagRepository
                 }
 
         override fun unblock(tag: String) =
-            rxSingle { tagsApiV3.unblockTag(tag) }
+            rxSingle { tagsApiV3.unblockTag(tag) ?: WykopApiResponseV3(data = Unit, pagination = null) }
                 .retryWhen(userTokenRefresher)
                 .map {
                     appStorage.blacklistQueries.deleteTag(tag.removePrefix("#"))

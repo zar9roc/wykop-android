@@ -9,6 +9,7 @@ import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateCommentRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateEntryRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.VoteSurveyRequestV3
+import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
 import io.github.wykopmobilny.api.responses.EntryCommentResponse
 import io.github.wykopmobilny.api.responses.EntryResponse
 import io.github.wykopmobilny.api.toRequestBody
@@ -46,7 +47,7 @@ class EntriesRepository
                 }.doOnSuccess { entryVoteSubject.onNext(EntryVotePublishModel(entryId, it)) }
 
         override fun unvoteEntry(entryId: Long) =
-            rxSingle { entriesApiV3.unvoteEntry(entryId) }
+            rxSingle { entriesApiV3.unvoteEntry(entryId) ?: WykopApiResponseV3(data = Unit, pagination = null) }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<Unit>())
                 .map {
@@ -68,7 +69,7 @@ class EntriesRepository
         override fun unvoteComment(
             entryId: Long,
             commentId: Long,
-        ) = rxSingle { entriesApiV3.unvoteComment(entryId, commentId) }
+        ) = rxSingle { entriesApiV3.unvoteComment(entryId, commentId) ?: WykopApiResponseV3(data = Unit, pagination = null) }
             .retryWhen(userTokenRefresher)
             .compose(ErrorHandlerTransformerV3<Unit>())
             .map {
@@ -339,7 +340,7 @@ class EntriesRepository
             .map { !currentlyFavorite }
 
         override fun deleteEntry(entryId: Long) =
-            rxSingle { entriesApiV3.deleteEntry(entryId) }
+            rxSingle { entriesApiV3.deleteEntry(entryId) ?: WykopApiResponseV3(data = Unit, pagination = null) }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<Unit>())
                 .map {
@@ -453,7 +454,7 @@ class EntriesRepository
         override fun deleteEntryComment(
             entryId: Long,
             commentId: Long,
-        ) = rxSingle { entriesApiV3.deleteEntryComment(entryId, commentId) }
+        ) = rxSingle { entriesApiV3.deleteEntryComment(entryId, commentId) ?: WykopApiResponseV3(data = Unit, pagination = null) }
             .retryWhen(userTokenRefresher)
             .compose(ErrorHandlerTransformerV3<Unit>())
             .map {
