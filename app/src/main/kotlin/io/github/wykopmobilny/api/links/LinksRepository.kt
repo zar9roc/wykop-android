@@ -6,7 +6,10 @@ import io.github.wykopmobilny.api.endpoints.LinksRetrofitApi
 import io.github.wykopmobilny.api.entries.allowImageOnly
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformer
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
+import io.github.wykopmobilny.api.exceptions.handleMediaUpload
 import io.github.wykopmobilny.api.filters.OWMContentFilter
+import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
+import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateCommentRequestV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.RelatedResponseV3
@@ -30,6 +33,7 @@ class LinksRepository
     constructor(
         private val linksApi: LinksRetrofitApi,
         private val linksApiV3: io.github.wykopmobilny.api.endpoints.v3.LinksV3RetrofitApi,
+        private val mediaApiV3: io.github.wykopmobilny.api.endpoints.v3.MediaV3RetrofitApi,
         private val userTokenRefresher: UserTokenRefresher,
         private val owmContentFilter: OWMContentFilter,
     ) : LinksApi {
@@ -191,15 +195,31 @@ class LinksRepository
             inputStream: WykopImageFile,
             linkId: Long,
         ) = rxSingle {
-            linksApi.addComment(
-                body = body.allowImageOnly().toRequestBody(),
-                plus18 = plus18.toRequestBody(),
-                linkId = linkId,
-                file = inputStream.getFileMultipart(),
+            // Upload file first to get photo key
+            val uploadedPhoto = handleMediaUpload {
+                mediaApiV3.uploadPhoto(inputStream.getFileMultipartForV3())
+            }
+
+            // Create comment with photo key
+            linksApiV3.addLinkComment(
+                linkId,
+                WykopApiRequestV3(
+                    CreateUpdateCommentRequestV3(
+                        content = body.allowImageOnly(),
+                        photo = uploadedPhoto.key,
+                        adult = plus18,
+                    ),
+                ),
             )
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
-            .map { LinkCommentMapper.map(it, owmContentFilter) }
+            .compose(ErrorHandlerTransformerV3<LinkCommentResponseV3>())
+            .map { commentV3 ->
+                io.github.wykopmobilny.models.mapper.apiv3.LinkCommentMapperV3.map(
+                    commentV3,
+                    owmContentFilter,
+                    linkId,
+                )
+            }
 
         override fun commentAdd(
             body: String,
@@ -219,16 +239,31 @@ class LinksRepository
             linkId: Long,
             linkComment: Long,
         ) = rxSingle {
-            linksApi.addComment(
-                body = body.allowImageOnly().toRequestBody(),
-                plus18 = plus18.toRequestBody(),
-                linkId = linkId,
-                commentId = linkComment,
-                file = inputStream.getFileMultipart(),
+            // Upload file first to get photo key
+            val uploadedPhoto = handleMediaUpload {
+                mediaApiV3.uploadPhoto(inputStream.getFileMultipartForV3())
+            }
+
+            // Create comment with photo key (reply to linkComment)
+            linksApiV3.addLinkComment(
+                linkId,
+                WykopApiRequestV3(
+                    CreateUpdateCommentRequestV3(
+                        content = body.allowImageOnly(),
+                        photo = uploadedPhoto.key,
+                        adult = plus18,
+                    ),
+                ),
             )
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
-            .map { LinkCommentMapper.map(it, owmContentFilter) }
+            .compose(ErrorHandlerTransformerV3<LinkCommentResponseV3>())
+            .map { commentV3 ->
+                io.github.wykopmobilny.models.mapper.apiv3.LinkCommentMapperV3.map(
+                    commentV3,
+                    owmContentFilter,
+                    linkId,
+                )
+            }
 
         override fun commentEdit(
             body: String,

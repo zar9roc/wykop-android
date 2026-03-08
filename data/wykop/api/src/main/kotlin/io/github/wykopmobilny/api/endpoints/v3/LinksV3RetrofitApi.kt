@@ -1,11 +1,16 @@
 package io.github.wykopmobilny.api.endpoints.v3
 
+import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
+import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateCommentRequestV3
 import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.RelatedResponseV3
 import io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -54,4 +59,17 @@ interface LinksV3RetrofitApi {
     suspend fun getRelated(
         @Path("id") linkId: Long,
     ): WykopApiResponseV3<List<RelatedResponseV3>>
+
+    @POST("v3/links/{linkId}/comments")
+    suspend fun addLinkComment(
+        @Path("linkId") linkId: Long,
+        @Body request: WykopApiRequestV3<CreateUpdateCommentRequestV3>,
+    ): WykopApiResponseV3<LinkCommentResponseV3>
+
+    @PUT("v3/links/{linkId}/comments/{commentId}")
+    suspend fun editLinkComment(
+        @Path("linkId") linkId: Long,
+        @Path("commentId") commentId: Long,
+        @Body request: WykopApiRequestV3<CreateUpdateCommentRequestV3>,
+    ): WykopApiResponseV3<Unit>
 }
