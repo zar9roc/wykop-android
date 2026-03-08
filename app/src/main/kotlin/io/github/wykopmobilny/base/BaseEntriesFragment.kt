@@ -37,7 +37,7 @@ open class BaseEntriesFragment :
     lateinit var votersDialogListener: VotersDialogListener
     private val subjectDisposable by lazy { CompositeDisposable() }
 
-    var showSearchEmptyView: Boolean
+    override var showSearchEmptyView: Boolean
         get() = binding.empty.searchEmptyView.isVisible
         set(value) {
             binding.empty.searchEmptyView.isVisible = value

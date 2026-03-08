@@ -23,7 +23,7 @@ open class BaseLinkCommentFragment :
 
     protected val binding by viewBinding(EntriesFragmentBinding::bind)
 
-    var showSearchEmptyView: Boolean
+    override var showSearchEmptyView: Boolean
         get() = binding.empty.searchEmptyView.isVisible
         set(value) {
             binding.empty.searchEmptyView.isVisible = value

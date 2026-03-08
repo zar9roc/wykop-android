@@ -30,7 +30,7 @@ open class BaseEntryCommentFragment :
     protected val binding by viewBinding(EntriesFragmentBinding::bind)
 
     open var loadDataListener: (Boolean) -> Unit = {}
-    var showSearchEmptyView: Boolean
+    override var showSearchEmptyView: Boolean
         get() = binding.empty.searchEmptyView.isVisible
         set(value) {
             binding.empty.searchEmptyView.isVisible = value
