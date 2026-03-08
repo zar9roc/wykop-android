@@ -5,13 +5,14 @@ import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.responses.v3.common.PaginationResponseV3
 import io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3
 import io.github.wykopmobilny.models.dataclass.Entry
+import io.github.wykopmobilny.utils.textview.convertWykopContentToHtml
 
 fun EntryResponseV3.filterEntryV3(owmContentFilter: OWMContentFilter) =
     owmContentFilter.filterEntry(
         Entry(
             id = id,
             author = AuthorMapperV3.map(author),
-            body = content.orEmpty(),
+            body = content.orEmpty().convertWykopContentToHtml(),
             fullDate = createdAt,
             isVoted = (voted ?: 0) > 0,
             isFavorite = favourite ?: false,

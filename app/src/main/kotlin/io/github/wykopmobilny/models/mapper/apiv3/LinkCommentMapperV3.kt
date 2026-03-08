@@ -3,6 +3,7 @@ package io.github.wykopmobilny.models.mapper.apiv3
 import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
 import io.github.wykopmobilny.models.dataclass.LinkComment
+import io.github.wykopmobilny.utils.textview.convertWykopContentToHtml
 
 object LinkCommentMapperV3 {
     fun map(
@@ -14,7 +15,7 @@ object LinkCommentMapperV3 {
             id = value.id,
             author = AuthorMapperV3.map(value.author),
             fullDate = value.createdAt,
-            body = value.content,
+            body = value.content?.convertWykopContentToHtml(),
             favorite = false,
             voteCount = value.votes.up - value.votes.down,
             voteCountPlus = value.votes.up,
