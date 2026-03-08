@@ -32,7 +32,7 @@ fun String.convertWykopContentToHtml(): String {
             when {
                 trimmed.startsWith("!") && trimmed.length > 1 -> {
                     val spoilerContent = trimmed.removePrefix("!").trim()
-                    "<code>$spoilerContent</code>"
+                    "<spoiler>$spoilerContent</spoiler>"
                 }
 
                 trimmed.startsWith(">") -> {
