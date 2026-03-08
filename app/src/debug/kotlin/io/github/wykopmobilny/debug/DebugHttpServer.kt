@@ -18,6 +18,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import io.github.wykopmobilny.api.endpoints.v3.EntriesV3RetrofitApi
 
 /**
  * Debug HTTP server exposing app state and actions via REST API.
@@ -28,6 +29,7 @@ import java.util.concurrent.TimeUnit
  */
 class DebugHttpServer(
     private val appContext: Context,
+    private val entriesApi: EntriesV3RetrofitApi,
 ) : NanoHTTPD(PORT) {
 
     companion object {
@@ -213,11 +215,32 @@ class DebugHttpServer(
             )
 
         val action = if (vote) "vote_entry" else "unvote_entry"
-        val json = JSONObject().apply {
-            put("action", action)
-            put("entry_id", entryId)
-            put("success", false)
-            put("note", "Vote via HTTP server not yet implemented — use app UI")
+        val json = runOnMainThreadSuspend {
+            try {
+                val response = if (vote) {
+                    entriesApi.voteEntry(entryId)
+                } else {
+                    entriesApi.unvoteEntry(entryId)
+                }
+
+                JSONObject().apply {
+                    put("action", action)
+                    put("entry_id", entryId)
+                    put("success", response.isSuccessful)
+                    put("status_code", response.code())
+                    if (!response.isSuccessful) {
+                        put("error", response.message())
+                    }
+                }
+            } catch (e: Exception) {
+                Napier.w("Failed to $action for entry $entryId", e, tag = TAG)
+                JSONObject().apply {
+                    put("action", action)
+                    put("entry_id", entryId)
+                    put("success", false)
+                    put("error", e.message ?: e.javaClass.simpleName)
+                }
+            }
         }
         return jsonResponse(Response.Status.OK, json)
     }

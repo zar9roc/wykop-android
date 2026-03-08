@@ -241,7 +241,7 @@ open class WykopApp :
         )
     }
 
-    protected open val wykopApi by lazy {
+    internal open val wykopApi by lazy {
         daggerWykop().create(
             okHttpClient = okHttpClient,
             baseUrl = WYKOP_API_URL,

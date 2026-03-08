@@ -6,6 +6,7 @@ import androidx.startup.Initializer
 import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.debug.DebugActivityTracker
 import io.github.wykopmobilny.debug.DebugHttpServer
+import io.github.wykopmobilny.WykopApp
 
 /**
  * Registers debug-only tools like [DebugActivityTracker] and [DebugHttpServer].
@@ -17,7 +18,9 @@ internal class DebugToolsInitializer : Initializer<Unit> {
         app.registerActivityLifecycleCallbacks(DebugActivityTracker)
         Napier.d("DebugActivityTracker registered", tag = "DebugToolsInitializer")
 
-        val server = DebugHttpServer(context.applicationContext)
+        val wykopApp = context.applicationContext as WykopApp
+        val entriesApi = wykopApp.wykopApi.entriesV3RetrofitApi()
+        val server = DebugHttpServer(context.applicationContext, entriesApi)
         server.start()
         Napier.d("DebugHttpServer started", tag = "DebugToolsInitializer")
     }
