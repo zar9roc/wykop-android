@@ -23,6 +23,20 @@
                 android:name="io.github.wykopmobilny.initializers.FlipperInitializer"
                 android:value="androidx.startup"
                 />
+            <meta-data
+                android:name="io.github.wykopmobilny.initializers.DebugToolsInitializer"
+                android:value="androidx.startup"
+                />
         </provider>
+
+        <!-- Debug state receiver - query app state via ADB -->
+        <receiver
+            android:name="io.github.wykopmobilny.debug.DebugStateReceiver"
+            android:exported="true"
+            >
+            <intent-filter>
+                <action android:name="io.github.wykopmobilny.debug.DEBUG_STATE" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>
