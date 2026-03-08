@@ -5,8 +5,8 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class PaginationResponseV3(
-    @field:Json(name = "per_page") val perPage: Int,
-    @field:Json(name = "total") val total: Int,
+    @field:Json(name = "per_page") val perPage: Int? = null,
+    @field:Json(name = "total") val total: Int? = null,
     @field:Json(name = "next") val next: String?,
     @field:Json(name = "prev") val prev: String?,
 )
