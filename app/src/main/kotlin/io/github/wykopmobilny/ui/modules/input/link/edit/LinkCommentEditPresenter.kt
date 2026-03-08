@@ -12,11 +12,12 @@ class LinkCommentEditPresenter(
     val linksApi: LinksApi,
 ) : InputPresenter<BaseInputView>() {
     var linkCommentId: Long = -1
+    var linkId: Long = -1
 
     private fun editLinkComment() {
         view?.showProgressBar = true
         linksApi
-            .commentEdit(view?.textBody!!, linkCommentId)
+            .commentEdit(view?.textBody!!, linkId, linkCommentId)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(

@@ -42,6 +42,7 @@ class LinkCommentEditActivity :
         super.onCreate(savedInstanceState)
         presenter.subscribe(this)
         presenter.linkCommentId = intent.getLongExtra(EXTRA_LINKID, 0)
+        presenter.linkId = intent.getLongExtra(EXTRA_COMMENTID, 0)
         setupSuggestions()
         supportActionBar?.setTitle(R.string.edit_comment)
     }

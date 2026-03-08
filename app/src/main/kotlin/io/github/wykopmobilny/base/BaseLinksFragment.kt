@@ -59,15 +59,15 @@ open class BaseLinksFragment :
             linksApi.digSubject
                 .subscribeOn(schedulers.backgroundThread())
                 .observeOn(schedulers.mainThread())
-                .subscribe { updateLinkVoteState(it.linkId, it.voteResponse.buries, it.voteResponse.diggs, "dig") },
+                .subscribe { updateLinkVoteState(it.linkId, it.userVote) },
             linksApi.burySubject
                 .subscribeOn(schedulers.backgroundThread())
                 .observeOn(schedulers.mainThread())
-                .subscribe { updateLinkVoteState(it.linkId, it.voteResponse.buries, it.voteResponse.diggs, "bury") },
+                .subscribe { updateLinkVoteState(it.linkId, it.userVote) },
             linksApi.voteRemoveSubject
                 .subscribeOn(schedulers.backgroundThread())
                 .observeOn(schedulers.mainThread())
-                .subscribe { updateLinkVoteState(it.linkId, it.voteResponse.buries, it.voteResponse.diggs, null) },
+                .subscribe { updateLinkVoteState(it.linkId, it.userVote) },
         )
     }
 
@@ -78,13 +78,28 @@ open class BaseLinksFragment :
 
     private fun updateLinkVoteState(
         linkId: Long,
-        buryCount: Int,
-        voteCount: Int,
         userVote: String?,
     ) {
         linksAdapter.data.firstOrNull { it.id == linkId }?.apply {
-            this.buryCount = buryCount
-            this.voteCount = voteCount
+            when {
+                userVote == "dig" && this.userVote != "dig" -> {
+                    this.voteCount += 1
+                    if (this.userVote == "bury") this.buryCount -= 1
+                }
+
+                userVote == "bury" && this.userVote != "bury" -> {
+                    this.buryCount += 1
+                    if (this.userVote == "dig") this.voteCount -= 1
+                }
+
+                userVote == null -> {
+                    if (this.userVote == "dig") {
+                        this.voteCount -= 1
+                    } else if (this.userVote == "bury") {
+                        this.buryCount -= 1
+                    }
+                }
+            }
             this.userVote = userVote
             linksAdapter.updateLink(this)
         }

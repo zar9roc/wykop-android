@@ -10,16 +10,12 @@ import io.github.wykopmobilny.api.exceptions.handleMediaUpload
 import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateCommentRequestV3
+import io.github.wykopmobilny.api.requests.v3.links.AddRelatedRequestV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.RelatedResponseV3
 import io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3
-import io.github.wykopmobilny.api.toRequestBody
 import io.github.wykopmobilny.models.dataclass.LinkVoteResponsePublishModel
-import io.github.wykopmobilny.models.mapper.apiv2.LinkCommentMapper
-import io.github.wykopmobilny.models.mapper.apiv2.RelatedMapper
-import io.github.wykopmobilny.models.mapper.apiv2.filterLink
-import io.github.wykopmobilny.models.mapper.apiv2.filterLinks
 import io.github.wykopmobilny.models.mapper.apiv3.filterLinkV3
 import io.github.wykopmobilny.models.mapper.apiv3.filterLinksV3
 import io.reactivex.subjects.PublishSubject
@@ -100,47 +96,47 @@ class LinksRepository
         override fun commentVoteUp(
             linkId: Long,
             commentId: Long,
-        ) = rxSingle { linksApi.commentVoteUp(linkId = linkId, commentId = commentId) }
+        ) = rxSingle { linksApiV3.voteComment(linkId, commentId, "up") }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
+            .map { }
 
         override fun commentVoteDown(
             linkId: Long,
             commentId: Long,
-        ) = rxSingle { linksApi.commentVoteDown(linkId = linkId, commentId = commentId) }
+        ) = rxSingle { linksApiV3.voteComment(linkId, commentId, "down") }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
+            .map { }
 
         override fun relatedVoteUp(
             linkId: Long,
             relatedId: Int,
-        ) = rxSingle { linksApi.relatedVoteUp(linkId, relatedId.toLong()) }
+        ) = rxSingle { linksApiV3.voteRelated(linkId, relatedId.toLong(), "up") }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
+            .map { }
 
         override fun relatedVoteDown(
             linkId: Long,
             relatedId: Int,
-        ) = rxSingle { linksApi.relatedVoteDown(linkId, relatedId.toLong()) }
+        ) = rxSingle { linksApiV3.voteRelated(linkId, relatedId.toLong(), "down") }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
+            .map { }
 
         override fun commentVoteCancel(
             linkId: Long,
             commentId: Long,
-        ) = rxSingle { linksApi.commentVoteCancel(linkId = linkId, commentId = commentId) }
+        ) = rxSingle { linksApiV3.removeCommentVote(linkId, commentId) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
+            .map { }
 
         override fun voteUp(
             linkId: Long,
             notifyPublisher: Boolean,
-        ) = rxSingle { linksApi.voteUp(linkId) }
+        ) = rxSingle { linksApiV3.voteUp(linkId) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
+            .map { }
             .doOnSuccess {
                 if (notifyPublisher) {
-                    digSubject.onNext(LinkVoteResponsePublishModel(linkId, it))
+                    digSubject.onNext(LinkVoteResponsePublishModel(linkId, "dig"))
                 }
             }
 
@@ -148,24 +144,24 @@ class LinksRepository
             linkId: Long,
             reason: Int,
             notifyPublisher: Boolean,
-        ) = rxSingle { linksApi.voteDown(linkId, reason) }
+        ) = rxSingle { linksApiV3.voteDown(linkId, reason) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
+            .map { }
             .doOnSuccess {
                 if (notifyPublisher) {
-                    burySubject.onNext(LinkVoteResponsePublishModel(linkId, it))
+                    burySubject.onNext(LinkVoteResponsePublishModel(linkId, "bury"))
                 }
             }
 
         override fun voteRemove(
             linkId: Long,
             notifyPublisher: Boolean,
-        ) = rxSingle { linksApi.voteRemove(linkId) }
+        ) = rxSingle { linksApiV3.removeVote(linkId) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
+            .map { }
             .doOnSuccess {
                 if (notifyPublisher) {
-                    voteRemoveSubject.onNext(LinkVoteResponsePublishModel(linkId, it))
+                    voteRemoveSubject.onNext(LinkVoteResponsePublishModel(linkId, null))
                 }
             }
 
@@ -174,20 +170,45 @@ class LinksRepository
             embed: String?,
             plus18: Boolean,
             linkId: Long,
-        ) = rxSingle { linksApi.addComment(body, linkId, embed, plus18) }
-            .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
-            .map { LinkCommentMapper.map(it, owmContentFilter) }
+        ) = rxSingle {
+            linksApiV3.addLinkComment(
+                linkId,
+                WykopApiRequestV3(
+                    CreateUpdateCommentRequestV3(
+                        content = body,
+                        embed = embed,
+                        adult = plus18,
+                    ),
+                ),
+            )
+        }.retryWhen(userTokenRefresher)
+            .compose(ErrorHandlerTransformerV3<LinkCommentResponseV3>())
+            .map { commentV3 ->
+                io.github.wykopmobilny.models.mapper.apiv3.LinkCommentMapperV3.map(
+                    commentV3,
+                    owmContentFilter,
+                    linkId,
+                )
+            }
 
         override fun relatedAdd(
             title: String,
             url: String,
             plus18: Boolean,
             linkId: Long,
-        ) = rxSingle { linksApi.addRelated(title, linkId, url, plus18) }
-            .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
-            .map { RelatedMapper.map(it) }
+        ) = rxSingle {
+            linksApiV3.addRelated(
+                linkId,
+                WykopApiRequestV3(
+                    AddRelatedRequestV3(
+                        title = title,
+                        url = url,
+                        adult = plus18,
+                    ),
+                ),
+            )
+        }.retryWhen(userTokenRefresher)
+            .map { }
 
         override fun commentAdd(
             body: String,
@@ -223,10 +244,26 @@ class LinksRepository
             plus18: Boolean,
             linkId: Long,
             linkComment: Long,
-        ) = rxSingle { linksApi.addComment(body, linkId, linkComment, embed, plus18) }
-            .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
-            .map { LinkCommentMapper.map(it, owmContentFilter) }
+        ) = rxSingle {
+            linksApiV3.addLinkComment(
+                linkId,
+                WykopApiRequestV3(
+                    CreateUpdateCommentRequestV3(
+                        content = body,
+                        embed = embed,
+                        adult = plus18,
+                    ),
+                ),
+            )
+        }.retryWhen(userTokenRefresher)
+            .compose(ErrorHandlerTransformerV3<LinkCommentResponseV3>())
+            .map { commentV3 ->
+                io.github.wykopmobilny.models.mapper.apiv3.LinkCommentMapperV3.map(
+                    commentV3,
+                    owmContentFilter,
+                    linkId,
+                )
+            }
 
         override fun commentAdd(
             body: String,
@@ -260,16 +297,24 @@ class LinksRepository
         override fun commentEdit(
             body: String,
             linkId: Long,
-        ) = rxSingle { linksApi.editComment(body, linkId) }
-            .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformer())
-            .map { LinkCommentMapper.map(it, owmContentFilter) }
+            commentId: Long,
+        ) = rxSingle {
+            linksApiV3.editLinkComment(
+                linkId,
+                commentId,
+                WykopApiRequestV3(
+                    CreateUpdateCommentRequestV3(content = body),
+                ),
+            )
+        }.retryWhen(userTokenRefresher)
+            .map { }
 
-        override fun commentDelete(commentId: Long) =
-            rxSingle { linksApi.deleteComment(commentId) }
-                .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
-                .map { LinkCommentMapper.map(it, owmContentFilter) }
+        override fun commentDelete(
+            linkId: Long,
+            commentId: Long,
+        ) = rxSingle { linksApiV3.deleteLinkComment(linkId, commentId) }
+            .retryWhen(userTokenRefresher)
+            .map { }
 
         override fun getDownvoters(linkId: Long) =
             rxSingle { linksApiV3.getDownvoters(linkId) }
@@ -313,6 +358,7 @@ class LinksRepository
                     }
                 }
 
+        @Suppress("DEPRECATION")
         override fun markFavorite(linkId: Long) =
             rxSingle { linksApi.toggleFavorite(linkId) }
                 .retryWhen(userTokenRefresher)

@@ -14,7 +14,7 @@ class LinksInteractor
             linksApi
                 .voteUp(link.id, true)
                 .map {
-                    link.voteCount = it.diggs
+                    link.voteCount += 1
                     link.userVote = "dig"
                     link
                 }
@@ -23,7 +23,8 @@ class LinksInteractor
             linksApi
                 .voteRemove(link.id, true)
                 .map {
-                    link.voteCount = it.diggs
+                    if (link.userVote == "dig") link.voteCount -= 1
+                    if (link.userVote == "bury") link.buryCount -= 1
                     link.userVote = ""
                     link
                 }

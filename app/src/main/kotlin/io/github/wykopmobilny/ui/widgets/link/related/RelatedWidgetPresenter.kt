@@ -25,7 +25,6 @@ class RelatedWidgetPresenter(
             .observeOn(schedulers.mainThread())
             .subscribe(
                 {
-                    it.voteCount?.let { view?.setVoteCount(it) }
                     view?.markVoted()
                 },
                 { view?.showErrorDialog(it) },
@@ -40,7 +39,6 @@ class RelatedWidgetPresenter(
             .observeOn(schedulers.mainThread())
             .subscribe(
                 {
-                    it.voteCount?.let { view?.setVoteCount(it) }
                     view?.markUnvoted()
                 },
                 { view?.showErrorDialog(it) },

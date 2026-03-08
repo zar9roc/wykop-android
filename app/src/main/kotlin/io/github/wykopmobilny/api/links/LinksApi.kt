@@ -2,9 +2,6 @@ package io.github.wykopmobilny.api.links
 
 import io.github.wykopmobilny.api.WykopImageFile
 import io.github.wykopmobilny.api.entries.FilteredData
-import io.github.wykopmobilny.api.responses.DigResponse
-import io.github.wykopmobilny.api.responses.LinkVoteResponse
-import io.github.wykopmobilny.api.responses.VoteResponse
 import io.github.wykopmobilny.models.dataclass.Downvoter
 import io.github.wykopmobilny.models.dataclass.Link
 import io.github.wykopmobilny.models.dataclass.LinkComment
@@ -38,29 +35,32 @@ interface LinksApi {
     fun commentVoteUp(
         linkId: Long,
         commentId: Long,
-    ): Single<LinkVoteResponse>
+    ): Single<Unit>
 
     fun commentVoteDown(
         linkId: Long,
         commentId: Long,
-    ): Single<LinkVoteResponse>
+    ): Single<Unit>
 
     fun relatedVoteUp(
         linkId: Long,
         relatedId: Int,
-    ): Single<VoteResponse>
+    ): Single<Unit>
 
     fun relatedVoteDown(
         linkId: Long,
         relatedId: Int,
-    ): Single<VoteResponse>
+    ): Single<Unit>
 
     fun commentVoteCancel(
         linkId: Long,
         commentId: Long,
-    ): Single<LinkVoteResponse>
+    ): Single<Unit>
 
-    fun commentDelete(commentId: Long): Single<LinkComment>
+    fun commentDelete(
+        linkId: Long,
+        commentId: Long,
+    ): Single<Unit>
 
     fun commentAdd(
         body: String,
@@ -75,7 +75,7 @@ interface LinksApi {
         url: String,
         plus18: Boolean,
         linkId: Long,
-    ): Single<Related>
+    ): Single<Unit>
 
     fun commentAdd(
         body: String,
@@ -102,23 +102,24 @@ interface LinksApi {
     fun commentEdit(
         body: String,
         linkId: Long,
-    ): Single<LinkComment>
+        commentId: Long,
+    ): Single<Unit>
 
     fun voteUp(
         linkId: Long,
         notifyPublisher: Boolean = true,
-    ): Single<DigResponse>
+    ): Single<Unit>
 
     fun voteDown(
         linkId: Long,
         reason: Int,
         notifyPublisher: Boolean = true,
-    ): Single<DigResponse>
+    ): Single<Unit>
 
     fun voteRemove(
         linkId: Long,
         notifyPublisher: Boolean = true,
-    ): Single<DigResponse>
+    ): Single<Unit>
 
     fun getUpvoters(linkId: Long): Single<List<Upvoter>>
 
