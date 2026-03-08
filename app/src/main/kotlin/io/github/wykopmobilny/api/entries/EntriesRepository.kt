@@ -30,6 +30,7 @@ class EntriesRepository
     constructor(
         private val entriesApi: EntriesRetrofitApi,
         private val entriesApiV3: io.github.wykopmobilny.api.endpoints.v3.EntriesV3RetrofitApi,
+        private val mediaApiV3: io.github.wykopmobilny.api.endpoints.v3.MediaV3RetrofitApi,
         private val userTokenRefresher: UserTokenRefresher,
         private val owmContentFilter: OWMContentFilter,
     ) : EntriesApi {
@@ -70,15 +71,45 @@ class EntriesRepository
             body: String,
             wykopImageFile: WykopImageFile,
             plus18: Boolean,
-        ) =// TODO: Implement file upload via /v3/media/photos/upload, then use photo key in entry
-            rxSingle {
-                entriesApi.addEntry(
-                    body = body.allowImageOnly().toRequestBody(),
-                    plus18 = plus18.toRequestBody(),
-                    file = wykopImageFile.getFileMultipart(),
+        ) = rxSingle {
+            // Upload file first to get photo key
+            val uploadResponse = mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
+            val photoKey = uploadResponse.data?.key
+                ?: throw IllegalStateException("Photo upload failed: no key returned")
+
+            // Create entry with photo key
+            entriesApiV3.addEntry(
+                WykopApiRequestV3(
+                    CreateUpdateEntryRequestV3(
+                        content = body,
+                        photo = photoKey,
+                        adult = plus18,
+                    ),
+                ),
+            )
+        }.retryWhen(userTokenRefresher)
+            .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3>())
+            .map { entryV3 ->
+                // Minimal mapping for API compatibility - only ID is used by callers
+                EntryResponse(
+                    id = entryV3.id,
+                    date = Instant.DISTANT_PAST,
+                    body = entryV3.content,
+                    author = io.github.wykopmobilny.api.responses.AuthorResponse("", 0, null, ""),
+                    blocked = false,
+                    favorite = false,
+                    voteCount = 0,
+                    commentsCount = 0,
+                    comments = null,
+                    status = "",
+                    embed = null,
+                    survey = null,
+                    userVote = 0,
+                    violationUrl = null,
+                    app = null,
+                    isCommentingPossible = null,
                 )
-            }.retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
+            }
 
         override fun addEntry(
             body: String,
@@ -123,16 +154,43 @@ class EntriesRepository
             entryId: Long,
             wykopImageFile: WykopImageFile,
             plus18: Boolean,
-        ) =// TODO: Implement file upload via /v3/media/photos/upload, then use photo key in comment
-            rxSingle {
-                entriesApi.addEntryComment(
-                    body = body.allowImageOnly().toRequestBody(),
-                    plus18 = plus18.toRequestBody(),
+        ) = rxSingle {
+            // Upload file first to get photo key
+            val uploadResponse = mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
+            val photoKey = uploadResponse.data?.key
+                ?: throw IllegalStateException("Photo upload failed: no key returned")
+
+            // Create comment with photo key
+            entriesApiV3.addEntryComment(
+                entryId,
+                WykopApiRequestV3(
+                    CreateUpdateCommentRequestV3(
+                        content = body,
+                        photo = photoKey,
+                        adult = plus18,
+                    ),
+                ),
+            )
+        }.retryWhen(userTokenRefresher)
+            .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.EntryCommentResponseV3>())
+            .map { commentV3 ->
+                // Minimal mapping for API compatibility
+                EntryCommentResponse(
+                    id = commentV3.id,
                     entryId = entryId,
-                    file = wykopImageFile.getFileMultipart(),
+                    author = io.github.wykopmobilny.api.responses.AuthorResponse("", 0, null, ""),
+                    date = "",
+                    body = commentV3.content,
+                    blocked = false,
+                    favorite = false,
+                    voteCount = 0,
+                    status = "",
+                    userVote = 0,
+                    embed = null,
+                    app = null,
+                    violationUrl = null,
                 )
-            }.retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
+            }
 
         override fun addEntryComment(
             body: String,
@@ -213,16 +271,43 @@ class EntriesRepository
             entryId: Long,
             wykopImageFile: WykopImageFile,
             plus18: Boolean,
-        ) =// TODO: Implement file upload via /v3/media/photos/upload, then use photo key in entry
-            rxSingle {
-                entriesApi.editEntry(
-                    body = body.toRequestBody(),
-                    plus18 = plus18.toRequestBody(),
-                    entryId = entryId,
-                    file = wykopImageFile.getFileMultipart(),
+        ) = rxSingle {
+            // Upload file first to get photo key
+            val uploadResponse = mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
+            val photoKey = uploadResponse.data?.key
+                ?: throw IllegalStateException("Photo upload failed: no key returned")
+
+            // Edit entry with photo key
+            entriesApiV3.editEntry(
+                entryId,
+                WykopApiRequestV3(
+                    CreateUpdateEntryRequestV3(
+                        content = body,
+                        photo = photoKey,
+                        adult = plus18,
+                    ),
+                ),
+            )
+        }.retryWhen(userTokenRefresher)
+            .compose(ErrorHandlerTransformerV3<Unit>())
+            .map {
+                // API v3 returns 200 with no body, return minimal EntryCommentResponse for compatibility
+                EntryCommentResponse(
+                    id = entryId,
+                    entryId = null,
+                    author = io.github.wykopmobilny.api.responses.AuthorResponse("", 0, null, ""),
+                    date = "",
+                    body = body,
+                    blocked = false,
+                    favorite = false,
+                    voteCount = 0,
+                    status = "",
+                    userVote = 0,
+                    embed = null,
+                    app = null,
+                    violationUrl = null,
                 )
-            }.retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
+            }
 
         override fun markFavorite(entryId: Long) =
             rxSingle { entriesApi.markFavorite(entryId) }
@@ -300,16 +385,44 @@ class EntriesRepository
             commentId: Long,
             wykopImageFile: WykopImageFile,
             plus18: Boolean,
-        ) =// TODO: Implement file upload via /v3/media/photos/upload, then use photo key in comment
-            rxSingle {
-                entriesApi.editEntryComment(
-                    body = body.toRequestBody(),
-                    plus18 = plus18.toRequestBody(),
-                    commentId = commentId,
-                    file = wykopImageFile.getFileMultipart(),
+        ) = rxSingle {
+            // Upload file first to get photo key
+            val uploadResponse = mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
+            val photoKey = uploadResponse.data?.key
+                ?: throw IllegalStateException("Photo upload failed: no key returned")
+
+            // Edit comment with photo key
+            entriesApiV3.editEntryComment(
+                entryId,
+                commentId,
+                WykopApiRequestV3(
+                    CreateUpdateCommentRequestV3(
+                        content = body,
+                        photo = photoKey,
+                        adult = plus18,
+                    ),
+                ),
+            )
+        }.retryWhen(userTokenRefresher)
+            .compose(ErrorHandlerTransformerV3<Unit>())
+            .map {
+                // API v3 returns 200 with no body, return minimal EntryCommentResponse for compatibility
+                EntryCommentResponse(
+                    id = commentId,
+                    entryId = entryId,
+                    author = io.github.wykopmobilny.api.responses.AuthorResponse("", 0, null, ""),
+                    date = "",
+                    body = body,
+                    blocked = false,
+                    favorite = false,
+                    voteCount = 0,
+                    status = "",
+                    userVote = 0,
+                    embed = null,
+                    app = null,
+                    violationUrl = null,
                 )
-            }.retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
+            }
 
         override fun deleteEntryComment(
             entryId: Long,

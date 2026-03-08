@@ -48,6 +48,33 @@ class WykopImageFile(
         return MultipartBody.Part.createFormData("embed", rotatedFile.name, rotatedFile.asRequestBody(mimetype?.toMediaTypeOrNull()))
     }
 
+    fun getFileMultipartForV3(): MultipartBody.Part {
+        val contentResolver = context.contentResolver
+        val filename = uri.queryFileName(contentResolver)
+        var file: File?
+        try {
+            file = FileUtils.getFile(context, uri)
+            if (file == null) {
+                file = saveUri(uri, filename)
+            }
+        } catch (_: Throwable) {
+            file = saveUri(uri, filename)
+        }
+
+        var mimetype = contentResolver.getType(uri)
+
+        file?.let {
+            val opt = BitmapFactory.Options()
+            opt.inJustDecodeBounds = true
+            BitmapFactory.decodeFile(it.absolutePath, opt)
+            mimetype = opt.outMimeType
+        }
+
+        val rotatedFile = file?.let(::ensureRotation)
+        Napier.d("Rotated ${rotatedFile!!.name} for v3 upload")
+        return MultipartBody.Part.createFormData("file", rotatedFile.name, rotatedFile.asRequestBody(mimetype?.toMediaTypeOrNull()))
+    }
+
     private fun saveUri(
         uri: Uri,
         filename: String,
