@@ -124,7 +124,7 @@ class LinkCommentViewHolder(
                 }
             }
             binding.dateTextView.text = linkComment.date.replace(" temu", "")
-            linkComment.app?.let {
+            linkComment.app?.takeIf { it.isNotEmpty() }?.let {
                 binding.dateTextView.text =
                     itemView.context.getString(R.string.date_with_user_app, linkComment.date.replace(" temu", ""), linkComment.app)
             }

@@ -43,7 +43,7 @@ class AuthorHeaderView(
                 }
             }
             binding.userNameTextView.setOnClickListener { openProfile(author.nick) }
-            binding.entryDateTextView.text = app?.let { context.getString(R.string.date_with_user_app, date, it) } ?: date
+            binding.entryDateTextView.text = app?.takeIf { it.isNotEmpty() }?.let { context.getString(R.string.date_with_user_app, date, it) } ?: date
         }
     }
 

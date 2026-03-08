@@ -267,7 +267,7 @@ class EntryViewHolder(
             val localDateTime = Instant.ofEpochMilli(entry.fullDate.toEpochMilliseconds()).atZone(ZoneId.systemDefault())
             val dateAsString = localDateTime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM))
             date.text = dateAsString
-            entry.app?.let {
+            entry.app?.takeIf { it.isNotEmpty() }?.let {
                 date.text =
                     activityContext.getString(
                         R.string.date_with_user_app,

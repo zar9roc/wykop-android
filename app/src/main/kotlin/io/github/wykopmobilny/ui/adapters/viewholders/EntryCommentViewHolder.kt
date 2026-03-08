@@ -139,7 +139,7 @@ class EntryCommentViewHolder(
                 }
             }
             binding.dateTextView.text = comment.date.replace(" temu", "")
-            comment.app?.let {
+            comment.app?.takeIf { it.isNotEmpty() }?.let {
                 binding.dateTextView.text =
                     itemView.context.getString(
                         R.string.date_with_user_app,
@@ -302,7 +302,7 @@ class EntryCommentViewHolder(
                             .ofLocalizedDateTime(org.threeten.bp.format.FormatStyle.MEDIUM),
                     )
             date.text = dateAsString
-            comment.app?.let {
+            comment.app?.takeIf { it.isNotEmpty() }?.let {
                 date.text =
                     root.context.getString(
                         R.string.date_with_user_app,

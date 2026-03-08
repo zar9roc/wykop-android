@@ -339,7 +339,7 @@ abstract class BaseLinkCommentViewHolder(
                     .run {
                         LocalDateTime.of(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond)
                     }.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM))
-            date.text = comment.app?.let { root.context.getString(R.string.date_with_user_app, dateAsString, comment.app) }
+            date.text = comment.app?.takeIf { it.isNotEmpty() }?.let { root.context.getString(R.string.date_with_user_app, dateAsString, comment.app) }
                 ?: dateAsString
 
             // Copy - copies slug if deleted and available, otherwise body
