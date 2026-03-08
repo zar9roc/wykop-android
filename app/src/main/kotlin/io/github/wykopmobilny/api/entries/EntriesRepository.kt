@@ -46,8 +46,7 @@ class EntriesRepository
                 val response = entriesApiV3.voteEntry(entryId)
                 if (!response.isSuccessful) throw HttpException(response)
                 WykopApiResponseV3(data = Unit, pagination = null)
-            }
-                .retryWhen(userTokenRefresher)
+            }.retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
                 .map {
                     io.github.wykopmobilny.api.responses
@@ -59,8 +58,7 @@ class EntriesRepository
                 val response = entriesApiV3.unvoteEntry(entryId)
                 if (!response.isSuccessful) throw HttpException(response)
                 WykopApiResponseV3(data = Unit, pagination = null)
-            }
-                .retryWhen(userTokenRefresher)
+            }.retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
                 .map {
                     io.github.wykopmobilny.api.responses
@@ -74,8 +72,7 @@ class EntriesRepository
             val response = entriesApiV3.voteComment(entryId, commentId)
             if (!response.isSuccessful) throw HttpException(response)
             WykopApiResponseV3(data = Unit, pagination = null)
-        }
-            .retryWhen(userTokenRefresher)
+        }.retryWhen(userTokenRefresher)
             .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
             .map {
                 io.github.wykopmobilny.api.responses
@@ -89,8 +86,7 @@ class EntriesRepository
             val response = entriesApiV3.unvoteComment(entryId, commentId)
             if (!response.isSuccessful) throw HttpException(response)
             WykopApiResponseV3(data = Unit, pagination = null)
-        }
-            .retryWhen(userTokenRefresher)
+        }.retryWhen(userTokenRefresher)
             .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
             .map {
                 io.github.wykopmobilny.api.responses
@@ -502,12 +498,13 @@ class EntriesRepository
             entryId: Long,
             answerId: Int,
         ) = rxSingle {
-            val response = entriesApiV3.voteSurvey(
-                entryId,
-                WykopApiRequestV3(
-                    VoteSurveyRequestV3(answerId),
-                ),
-            )
+            val response =
+                entriesApiV3.voteSurvey(
+                    entryId,
+                    WykopApiRequestV3(
+                        VoteSurveyRequestV3(answerId),
+                    ),
+                )
             if (!response.isSuccessful) throw HttpException(response)
             WykopApiResponseV3(data = Unit, pagination = null)
         }.retryWhen(userTokenRefresher)

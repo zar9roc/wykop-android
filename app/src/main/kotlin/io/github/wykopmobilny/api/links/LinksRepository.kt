@@ -109,8 +109,7 @@ class LinksRepository
         ) = rxSingle {
             val response = linksApiV3.voteComment(linkId, commentId, "up")
             if (!response.isSuccessful) throw HttpException(response)
-        }
-            .retryWhen(userTokenRefresher)
+        }.retryWhen(userTokenRefresher)
             .map { }
 
         override fun commentVoteDown(
@@ -119,8 +118,7 @@ class LinksRepository
         ) = rxSingle {
             val response = linksApiV3.voteComment(linkId, commentId, "down")
             if (!response.isSuccessful) throw HttpException(response)
-        }
-            .retryWhen(userTokenRefresher)
+        }.retryWhen(userTokenRefresher)
             .map { }
 
         override fun relatedVoteUp(
@@ -129,8 +127,7 @@ class LinksRepository
         ) = rxSingle {
             val response = linksApiV3.voteRelated(linkId, relatedId.toLong(), "up")
             if (!response.isSuccessful) throw HttpException(response)
-        }
-            .retryWhen(userTokenRefresher)
+        }.retryWhen(userTokenRefresher)
             .map { }
 
         override fun relatedVoteDown(
@@ -139,8 +136,7 @@ class LinksRepository
         ) = rxSingle {
             val response = linksApiV3.voteRelated(linkId, relatedId.toLong(), "down")
             if (!response.isSuccessful) throw HttpException(response)
-        }
-            .retryWhen(userTokenRefresher)
+        }.retryWhen(userTokenRefresher)
             .map { }
 
         override fun commentVoteCancel(
@@ -149,8 +145,7 @@ class LinksRepository
         ) = rxSingle {
             val response = linksApiV3.removeCommentVote(linkId, commentId)
             if (!response.isSuccessful) throw HttpException(response)
-        }
-            .retryWhen(userTokenRefresher)
+        }.retryWhen(userTokenRefresher)
             .map { }
 
         override fun voteUp(
@@ -159,8 +154,7 @@ class LinksRepository
         ) = rxSingle {
             val response = linksApiV3.voteUp(linkId)
             if (!response.isSuccessful) throw HttpException(response)
-        }
-            .retryWhen(userTokenRefresher)
+        }.retryWhen(userTokenRefresher)
             .map { }
             .doOnSuccess {
                 if (notifyPublisher) {
@@ -175,8 +169,7 @@ class LinksRepository
         ) = rxSingle {
             val response = linksApiV3.voteDown(linkId, reason)
             if (!response.isSuccessful) throw HttpException(response)
-        }
-            .retryWhen(userTokenRefresher)
+        }.retryWhen(userTokenRefresher)
             .map { }
             .doOnSuccess {
                 if (notifyPublisher) {
@@ -190,8 +183,7 @@ class LinksRepository
         ) = rxSingle {
             val response = linksApiV3.removeVote(linkId)
             if (!response.isSuccessful) throw HttpException(response)
-        }
-            .retryWhen(userTokenRefresher)
+        }.retryWhen(userTokenRefresher)
             .map { }
             .doOnSuccess {
                 if (notifyPublisher) {

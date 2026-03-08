@@ -55,6 +55,7 @@ mavencentral-junit = "5.9.3"
 mavencentral-napier = "2.6.1"
 mavencentral-checker = "3.21.2"
 mavencentral-kotlin = "2.2.20"
+mavencentral-nanohttpd = "2.3.1"
 mavencentral-flipper = "0.264.0"
 mavencentral-soloader = "0.12.1"
 jitpack-photoview = "2.3.0"
@@ -92,6 +93,8 @@ davemorrissey-subsamplingimageview = { module = "com.davemorrissey.labs:subsampl
 leakcanary-core = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "mavencentral.leakcanary" }
 jetbrains-markdown = { module = "org.jetbrains:markdown", version.ref = "mavencentral.markdown" }
 napier-core = { module = "io.github.aakira:napier", version.ref = "mavencentral.napier" }
+
+nanohttpd-core = { module = "org.nanohttpd:nanohttpd", version.ref = "mavencentral-nanohttpd" }
 
 flipper-core = { module = "com.facebook.flipper:flipper", version.ref = "mavencentral-flipper" }
 flipper-network = { module = "com.facebook.flipper:flipper-network-plugin", version.ref = "mavencentral-flipper" }
