@@ -2,10 +2,9 @@ package io.github.wykopmobilny.domain.profile.di
 
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
-import com.dropbox.android.external.store4.Fetcher
-import com.dropbox.android.external.store4.SourceOfTruth
-import com.dropbox.android.external.store4.Store
-import com.dropbox.android.external.store4.StoreBuilder
+import org.mobilenativefoundation.store.store5.Fetcher
+import org.mobilenativefoundation.store.store5.Store
+import org.mobilenativefoundation.store.store5.StoreBuilder
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToOneOrNull
 import dagger.Binds
@@ -21,6 +20,7 @@ import io.github.wykopmobilny.data.cache.api.UserColorEntity
 import io.github.wykopmobilny.domain.api.PagingSource
 import io.github.wykopmobilny.domain.api.StoreMediator
 import io.github.wykopmobilny.domain.di.ScopeInitializer
+import io.github.wykopmobilny.domain.di.flowSourceOfTruth
 import io.github.wykopmobilny.domain.profile.GetProfileActionsQuery
 import io.github.wykopmobilny.domain.profile.GetProfileDetailsQuery
 import io.github.wykopmobilny.domain.profile.InitializeProfile
@@ -32,6 +32,7 @@ import io.github.wykopmobilny.kotlin.AppScopes
 import io.github.wykopmobilny.ui.base.SimpleViewStateStorage
 import io.github.wykopmobilny.ui.profile.GetProfileActions
 import io.github.wykopmobilny.ui.profile.GetProfileDetails
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.datetime.Instant
 import javax.inject.Provider
 
@@ -87,12 +88,13 @@ internal abstract class ProfileModule {
                             response.data ?: error("No profile data for $profileId")
                         },
                     sourceOfTruth =
-                        SourceOfTruth.of<Unit, UserFullResponseV3, ProfileDetailsView>(
+                        flowSourceOfTruth<Unit, UserFullResponseV3, ProfileDetailsView>(
                             reader = {
                                 cache.profileQueries
                                     .selectById(profileId)
                                     .asFlow()
                                     .mapToOneOrNull(AppDispatchers.IO)
+                                    .filterNotNull()
                             },
                             writer = { _, input ->
                                 cache.transaction {

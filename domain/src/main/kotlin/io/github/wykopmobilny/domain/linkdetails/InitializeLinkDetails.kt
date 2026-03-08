@@ -1,7 +1,7 @@
 package io.github.wykopmobilny.domain.linkdetails
 
-import com.dropbox.android.external.store4.Store
-import com.dropbox.android.external.store4.fresh
+import org.mobilenativefoundation.store.store5.Store
+import org.mobilenativefoundation.store.store5.impl.extensions.fresh
 import io.github.wykopmobilny.domain.di.ScopeInitializer
 import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsScope
 import io.github.wykopmobilny.domain.profile.LinkInfo

@@ -1,8 +1,8 @@
 package io.github.wykopmobilny.domain.di
 
-import com.dropbox.android.external.store4.Fetcher
-import com.dropbox.android.external.store4.SourceOfTruth
-import com.dropbox.android.external.store4.StoreBuilder
+import org.mobilenativefoundation.store.store5.Fetcher
+import org.mobilenativefoundation.store.store5.Store
+import org.mobilenativefoundation.store.store5.StoreBuilder
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import dagger.Module
@@ -21,6 +21,7 @@ import io.github.wykopmobilny.storage.api.UserSession
 import io.github.wykopmobilny.kotlin.AppDispatchers
 import io.github.wykopmobilny.kotlin.AppScopes
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import javax.inject.Singleton
 
 @Module
@@ -52,7 +53,7 @@ internal class StoresModule {
                     )
                 },
             sourceOfTruth =
-                SourceOfTruth.of(
+                flowSourceOfTruth(
                     reader = {
                         combine(
                             storage.blacklistQueries
@@ -94,7 +95,7 @@ internal class StoresModule {
         storage: UserInfoStorage,
         appScopes: AppScopes,
         errorBodyParser: ErrorBodyParser,
-    ) = StoreBuilder
+    ): Store<UserSession, LoggedUserInfo> = StoreBuilder
         .from(
             fetcher =
                 Fetcher.ofResult { request: UserSession ->
@@ -106,8 +107,8 @@ internal class StoresModule {
                     )
                 },
             sourceOfTruth =
-                SourceOfTruth.of(
-                    reader = { storage.loggedUser },
+                flowSourceOfTruth(
+                    reader = { storage.loggedUser.filterNotNull() },
                     writer = { _, newValue -> storage.updateLoggedUser(newValue.toLoggedUserInfo()) },
                     delete = { storage.updateLoggedUser(null) },
                     deleteAll = { storage.updateLoggedUser(null) },

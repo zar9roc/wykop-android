@@ -35,7 +35,6 @@ dependencies {
 tasks.withType(KotlinCompile).configureEach {
     kotlinOptions {
         freeCompilerArgs = freeCompilerArgs +
-            "-opt-in=com.dropbox.android.external.store4.ExperimentalStoreApi" +
             "-opt-in=androidx.paging.ExperimentalPagingApi"
     }
 }

@@ -1,6 +1,6 @@
 package io.github.wykopmobilny.domain.notifications.di
 
-import com.dropbox.android.external.store4.StoreBuilder
+import org.mobilenativefoundation.store.store5.StoreBuilder
 import dagger.Module
 import dagger.Provides
 import io.github.wykopmobilny.api.endpoints.NotificationsRetrofitApi

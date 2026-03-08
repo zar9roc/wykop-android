@@ -4,9 +4,9 @@ import androidx.paging.LoadType
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
-import com.dropbox.android.external.store4.Store
-import com.dropbox.android.external.store4.StoreRequest
-import com.dropbox.android.external.store4.StoreResponse
+import org.mobilenativefoundation.store.store5.Store
+import org.mobilenativefoundation.store.store5.StoreReadRequest
+import org.mobilenativefoundation.store.store5.StoreReadResponse
 import io.github.wykopmobilny.kotlin.AppDispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -34,24 +34,29 @@ internal class StoreMediator<T : Any>
                 } ?: return MediatorResult.Success(endOfPaginationReached = true)
             val response =
                 store
-                    .stream(StoreRequest.fresh(loadKey))
+                    .stream(StoreReadRequest.fresh(loadKey))
                     .first {
                         when (it) {
-                            is StoreResponse.Loading -> false
+                            is StoreReadResponse.Loading,
+                            is StoreReadResponse.Initial,
+                            -> false
 
-                            is StoreResponse.Data,
-                            is StoreResponse.NoNewData,
-                            is StoreResponse.Error,
+                            is StoreReadResponse.Data,
+                            is StoreReadResponse.NoNewData,
+                            is StoreReadResponse.Error,
                             -> true
+
+                            else -> true
                         }
                     }
 
             return when (response) {
-                is StoreResponse.Loading -> error("excluded")
-                is StoreResponse.Data -> MediatorResult.Success(endOfPaginationReached = response.value.isEmpty())
-                is StoreResponse.NoNewData -> MediatorResult.Success(endOfPaginationReached = true)
-                is StoreResponse.Error.Exception -> MediatorResult.Error(response.error)
-                is StoreResponse.Error.Message -> MediatorResult.Error(Exception(response.message))
+                is StoreReadResponse.Loading -> error("excluded")
+                is StoreReadResponse.Data -> MediatorResult.Success(endOfPaginationReached = response.value.isEmpty())
+                is StoreReadResponse.NoNewData -> MediatorResult.Success(endOfPaginationReached = true)
+                is StoreReadResponse.Error.Exception -> MediatorResult.Error(response.error)
+                is StoreReadResponse.Error.Message -> MediatorResult.Error(Exception(response.message))
+                else -> MediatorResult.Error(Exception("Unexpected store response: $response"))
             }
         }
     }
@@ -74,7 +79,7 @@ internal class PagingSource<T : Any>
                 runCatching {
                     val response =
                         store
-                            .stream(StoreRequest.cached(nextPageNumber, refresh = false))
+                            .stream(StoreReadRequest.cached(nextPageNumber, refresh = false))
                             .mapNotNull { it.dataOrNull() }
                     val page = response.first()
 

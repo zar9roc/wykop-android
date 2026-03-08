@@ -1,7 +1,7 @@
 package io.github.wykopmobilny.domain.work
 
-import com.dropbox.android.external.store4.Store
-import com.dropbox.android.external.store4.fresh
+import org.mobilenativefoundation.store.store5.Store
+import org.mobilenativefoundation.store.store5.impl.extensions.fresh
 import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.api.responses.NotificationResponse
 import io.github.wykopmobilny.data.storage.api.AppStorage

@@ -1,7 +1,7 @@
 package io.github.wykopmobilny.domain.linkdetails.di
 
-import com.dropbox.android.external.store4.Store
-import com.dropbox.android.external.store4.StoreBuilder
+import org.mobilenativefoundation.store.store5.Store
+import org.mobilenativefoundation.store.store5.StoreBuilder
 import dagger.Binds
 import dagger.Module
 import dagger.Provides

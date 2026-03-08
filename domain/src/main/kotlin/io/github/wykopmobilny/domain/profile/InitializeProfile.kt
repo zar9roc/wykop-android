@@ -1,7 +1,7 @@
 package io.github.wykopmobilny.domain.profile
 
-import com.dropbox.android.external.store4.Store
-import com.dropbox.android.external.store4.fresh
+import org.mobilenativefoundation.store.store5.Store
+import org.mobilenativefoundation.store.store5.impl.extensions.fresh
 import io.github.wykopmobilny.data.cache.api.ProfileDetailsView
 import io.github.wykopmobilny.domain.di.ScopeInitializer
 import io.github.wykopmobilny.domain.utils.withResource

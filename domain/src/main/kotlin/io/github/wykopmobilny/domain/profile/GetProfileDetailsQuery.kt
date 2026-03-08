@@ -1,8 +1,8 @@
 package io.github.wykopmobilny.domain.profile
 
-import com.dropbox.android.external.store4.Store
-import com.dropbox.android.external.store4.StoreRequest
-import com.dropbox.android.external.store4.StoreResponse
+import org.mobilenativefoundation.store.store5.Store
+import org.mobilenativefoundation.store.store5.StoreReadRequest
+import org.mobilenativefoundation.store.store5.StoreReadResponse
 import io.github.wykopmobilny.data.cache.api.ProfileDetailsView
 import io.github.wykopmobilny.domain.navigation.InteropRequest
 import io.github.wykopmobilny.domain.navigation.InteropRequestsProvider
@@ -55,14 +55,14 @@ internal class GetProfileDetailsQuery
     ) : GetProfileDetails {
         override fun invoke() =
             combine(
-                profileStore.stream(StoreRequest.cached(Unit, refresh = false)),
+                profileStore.stream(StoreReadRequest.cached(Unit, refresh = false)),
                 userInfoStorage.loggedUser,
                 viewStateStorage.state,
             ) { storeResponse, loggedUser, viewState ->
                 val profile = storeResponse.dataOrNull()
                 val header =
                     ProfileHeaderUi(
-                        isLoading = viewState.isLoading || storeResponse is StoreResponse.Loading,
+                        isLoading = viewState.isLoading || storeResponse is StoreReadResponse.Loading,
                         description = profile?.description,
                         userInfo = profile?.userInfo?.toUi(onClicked = null),
                         backgroundUrl = profile?.let { it.background ?: DEFAULT_PROFILE_BACKGROUND },

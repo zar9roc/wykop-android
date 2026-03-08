@@ -1,7 +1,7 @@
 package io.github.wykopmobilny.domain.notifications.di
 
-import com.dropbox.android.external.store4.Store
-import com.dropbox.android.external.store4.StoreRequest
+import org.mobilenativefoundation.store.store5.Store
+import org.mobilenativefoundation.store.store5.StoreReadRequest
 import dagger.Binds
 import dagger.Module
 import dagger.Subcomponent
@@ -36,7 +36,7 @@ internal class HandleNotificationDismissedImpl
             withContext(AppDispatchers.IO) {
                 val currentNotifications =
                     store
-                        .stream(StoreRequest.cached(key = 0, refresh = false))
+                        .stream(StoreReadRequest.cached(key = 0, refresh = false))
                         .map { it.dataOrNull() }
                         .filterNotNull()
                         .first()

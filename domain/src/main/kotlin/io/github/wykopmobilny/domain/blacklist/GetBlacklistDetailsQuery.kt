@@ -1,8 +1,8 @@
 package io.github.wykopmobilny.domain.blacklist
 
-import com.dropbox.android.external.store4.Store
-import com.dropbox.android.external.store4.StoreRequest
-import com.dropbox.android.external.store4.fresh
+import org.mobilenativefoundation.store.store5.Store
+import org.mobilenativefoundation.store.store5.StoreReadRequest
+import org.mobilenativefoundation.store.store5.impl.extensions.fresh
 import io.github.wykopmobilny.domain.blacklist.di.BlacklistScope
 import io.github.wykopmobilny.domain.repositories.ProfilesRepository
 import io.github.wykopmobilny.domain.repositories.TagsRepository
@@ -32,7 +32,7 @@ internal class GetBlacklistDetailsQuery
         override fun invoke() =
             combine(
                 viewState.state,
-                store.stream(StoreRequest.cached(Unit, refresh = false)),
+                store.stream(StoreReadRequest.cached(Unit, refresh = false)),
             ) { viewStateUi, response ->
                 val blacklist = response.dataOrNull()
                 val content =

@@ -1,9 +1,9 @@
 package io.github.wykopmobilny.domain.linkdetails.datasource
 
-import com.dropbox.android.external.store4.SourceOfTruth
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToOneOrNull
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
+import io.github.wykopmobilny.domain.di.flowSourceOfTruth
 import io.github.wykopmobilny.data.cache.api.AppCache
 import io.github.wykopmobilny.data.cache.api.LinkEntity
 import io.github.wykopmobilny.domain.profile.LinkInfo
@@ -13,17 +13,18 @@ import io.github.wykopmobilny.domain.profile.datasource.upsertV3
 import io.github.wykopmobilny.domain.profile.toColorDomain
 import io.github.wykopmobilny.domain.profile.toGenderDomain
 import io.github.wykopmobilny.kotlin.AppDispatchers
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 
 internal fun linkDetailsSourceOfTruth(cache: AppCache) =
-    SourceOfTruth.of<Long, LinkResponseV3, LinkInfo>(
+    flowSourceOfTruth<Long, LinkResponseV3, LinkInfo>(
         reader = { linkId ->
             cache.linksQueries
                 .selectById(id = linkId)
                 .asFlow()
                 .mapToOneOrNull(AppDispatchers.IO)
+                .filterNotNull()
                 .map { link ->
-                    link ?: return@map null
                     LinkInfo(
                         id = link.id,
                         title = link.title,

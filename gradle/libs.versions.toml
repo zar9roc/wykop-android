@@ -42,7 +42,7 @@ mavencentral-dagger = "2.59.2"
 mavencentral-glide = "5.0.5"
 mavencentral-shimmer = "0.5.0"
 mavencentral-datetime = "0.6.1"
-mavencentral-store = "4.0.5"
+mavencentral-store = "5.1.0-alpha08"
 mavencentral-retrofit = "3.0.0"
 mavencentral-moshi = "1.15.0"
 mavencentral-sqldelight = "2.2.1"
@@ -84,7 +84,7 @@ cardview-core = { module = "androidx.cardview:cardview", version.ref = "google-c
 annotation-core = { module = "androidx.annotation:annotation", version.ref = "google-annotation" }
 exifinterface-core = { module = "androidx.exifinterface:exifinterface", version.ref = "google-exifinterface" }
 startup-runtime = { module = "androidx.startup:startup-runtime", version.ref = "google-startup" }
-store-core = { module = "com.dropbox.mobile.store:store4", version.ref = "mavencentral-store" }
+store-core = { module = "org.mobilenativefoundation.store:store5", version.ref = "mavencentral-store" }
 datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "google-datastore" }
 jsoup-core = { module = "org.jsoup:jsoup", version.ref = "mavencentral-jsoup" }
 usefulness-slidr = { module = "com.github.usefulness:slidr", version.ref = "mavencentral-slidr" }

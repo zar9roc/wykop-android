@@ -1,6 +1,6 @@
 package io.github.wykopmobilny.domain.profile.datasource
 
-import com.dropbox.android.external.store4.SourceOfTruth
+import io.github.wykopmobilny.domain.di.flowSourceOfTruth
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import io.github.wykopmobilny.api.responses.AuthorResponse
@@ -29,7 +29,7 @@ import kotlinx.coroutines.flow.map
 internal fun profileSourceOfTruth(
     profileId: String,
     cache: AppCache,
-) = SourceOfTruth.of<Int, List<EntryResponseV3>, List<ProfileAction>>(
+) = flowSourceOfTruth<Int, List<EntryResponseV3>, List<ProfileAction>>(
     reader = { page ->
         val linksStream =
             cache.profileActionsQueries

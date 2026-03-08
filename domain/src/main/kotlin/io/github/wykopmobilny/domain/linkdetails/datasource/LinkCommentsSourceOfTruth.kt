@@ -1,10 +1,10 @@
 package io.github.wykopmobilny.domain.linkdetails.datasource
 
-import com.dropbox.android.external.store4.SourceOfTruth
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
 import io.github.wykopmobilny.data.cache.api.AppCache
+import io.github.wykopmobilny.domain.di.flowSourceOfTruth
 import io.github.wykopmobilny.data.cache.api.Embed
 import io.github.wykopmobilny.data.cache.api.EmbedType
 import io.github.wykopmobilny.data.cache.api.LinkCommentsEntity
@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.map
 import kotlin.math.absoluteValue
 
 internal fun linkCommentsSourceOfTruth(cache: AppCache) =
-    SourceOfTruth.of<Long, List<LinkCommentResponseV3>, Map<LinkComment, List<LinkComment>>>(
+    flowSourceOfTruth<Long, List<LinkCommentResponseV3>, Map<LinkComment, List<LinkComment>>>(
         reader = { linkId ->
             cache.linkCommentsQueries
                 .selectByLinkId(linkId)

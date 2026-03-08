@@ -1,8 +1,8 @@
 package io.github.wykopmobilny.domain.linkdetails
 
-import com.dropbox.android.external.store4.Store
-import com.dropbox.android.external.store4.StoreRequest
-import com.dropbox.android.external.store4.fresh
+import org.mobilenativefoundation.store.store5.Store
+import org.mobilenativefoundation.store.store5.StoreReadRequest
+import org.mobilenativefoundation.store.store5.impl.extensions.fresh
 import io.github.wykopmobilny.data.cache.api.UserVote
 import io.github.wykopmobilny.data.storage.api.AppStorage
 import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsScope
@@ -471,14 +471,14 @@ internal class GetLinkDetailsQuery
         private fun commentsFlow() =
             combine(
                 commentsStore
-                    .stream(StoreRequest.cached(key = key.linkId, refresh = false))
+                    .stream(StoreReadRequest.cached(key = key.linkId, refresh = false))
                     .map { it.dataOrNull() }
                     .distinctUntilChanged(),
                 getCommentPreferences(),
                 userInfoStorage.loggedUser,
                 detailsFlow(),
                 blacklistStore
-                    .stream(StoreRequest.cached(key = Unit, refresh = false))
+                    .stream(StoreReadRequest.cached(key = Unit, refresh = false))
                     .map { it.dataOrNull() }
                     .filterNotNull()
                     .distinctUntilChanged(),
@@ -556,12 +556,12 @@ internal class GetLinkDetailsQuery
 
         private fun relatedLinksFlow() =
             relatedLinksStore
-                .stream(StoreRequest.cached(key = key.linkId, refresh = false))
+                .stream(StoreReadRequest.cached(key = key.linkId, refresh = false))
                 .map { it.dataOrNull() }
 
         private fun detailsFlow() =
             linkStore
-                .stream(StoreRequest.cached(key = key.linkId, refresh = false))
+                .stream(StoreReadRequest.cached(key = key.linkId, refresh = false))
                 .map { it.dataOrNull() }
                 .distinctUntilChanged()
 

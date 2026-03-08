@@ -1,7 +1,7 @@
 package io.github.wykopmobilny.domain.repositories
 
-import com.dropbox.android.external.store4.Store
-import com.dropbox.android.external.store4.fresh
+import org.mobilenativefoundation.store.store5.Store
+import org.mobilenativefoundation.store.store5.impl.extensions.fresh
 import io.github.wykopmobilny.api.endpoints.v3.FavouritesV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.LinksV3RetrofitApi
 import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3

@@ -1,7 +1,7 @@
 package io.github.wykopmobilny.domain.login
 
-import com.dropbox.android.external.store4.Store
-import com.dropbox.android.external.store4.fresh
+import org.mobilenativefoundation.store.store5.Store
+import org.mobilenativefoundation.store.store5.impl.extensions.fresh
 import io.github.wykopmobilny.domain.login.di.LoginScope
 import io.github.wykopmobilny.domain.navigation.AppRestarter
 import io.github.wykopmobilny.domain.utils.safe
@@ -72,8 +72,8 @@ class LoginQuery
                     appRestarter.restart()
                 }.onFailure { throwable ->
                     sessionStorage.updateSession(null)
-                    userInfoStore.clearAll()
-                    blacklistStore.clearAll()
+                    userInfoStore.clear()
+                    blacklistStore.clear()
                     viewStateStorage.update { it.copy(isLoading = false, failedAction = FailedAction(cause = throwable)) }
                 }.onSuccess { viewStateStorage.update { it.copy(isLoading = false, failedAction = null) } }
             }
