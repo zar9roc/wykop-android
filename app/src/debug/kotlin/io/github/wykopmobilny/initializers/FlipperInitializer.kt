@@ -40,9 +40,10 @@ internal class FlipperInitializer : Initializer<Unit> {
             // LeakCanary integration
             val leakCanaryPlugin = LeakCanary2FlipperPlugin()
             client.addPlugin(leakCanaryPlugin)
-            LeakCanary.config = LeakCanary.config.copy(
-                eventListeners = LeakCanary.config.eventListeners + FlipperLeakEventListener()
-            )
+            LeakCanary.config =
+                LeakCanary.config.copy(
+                    eventListeners = LeakCanary.config.eventListeners + FlipperLeakEventListener(),
+                )
 
             client.start()
 

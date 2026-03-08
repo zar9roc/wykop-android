@@ -29,13 +29,16 @@
                 />
         </provider>
 
-        <!-- Debug state receiver - query app state via ADB -->
+        <!-- Debug state receiver - query app state and control app via ADB -->
         <receiver
             android:name="io.github.wykopmobilny.debug.DebugStateReceiver"
             android:exported="true"
             >
             <intent-filter>
                 <action android:name="io.github.wykopmobilny.debug.DEBUG_STATE" />
+                <action android:name="io.github.wykopmobilny.debug.DEBUG_CLEAR_CACHE" />
+                <action android:name="io.github.wykopmobilny.debug.DEBUG_LOGOUT" />
+                <action android:name="io.github.wykopmobilny.debug.DEBUG_SWITCH_TAB" />
             </intent-filter>
         </receiver>
     </application>

@@ -9,7 +9,6 @@ import android.os.Bundle
  * Registered via DebugToolsInitializer in debug builds only.
  */
 object DebugActivityTracker : Application.ActivityLifecycleCallbacks {
-
     var currentActivity: Activity? = null
         private set
 
@@ -23,9 +22,19 @@ object DebugActivityTracker : Application.ActivityLifecycleCallbacks {
         }
     }
 
-    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
+    override fun onActivityCreated(
+        activity: Activity,
+        savedInstanceState: Bundle?,
+    ) = Unit
+
     override fun onActivityStarted(activity: Activity) = Unit
+
     override fun onActivityStopped(activity: Activity) = Unit
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
+
+    override fun onActivitySaveInstanceState(
+        activity: Activity,
+        outState: Bundle,
+    ) = Unit
+
     override fun onActivityDestroyed(activity: Activity) = Unit
 }

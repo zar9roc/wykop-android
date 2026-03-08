@@ -12,9 +12,8 @@ object FlipperInterceptorFactory {
      * Creates FlipperOkhttpInterceptor if NetworkFlipperPlugin is available.
      * Returns null if Flipper is not initialized yet.
      */
-    fun create(): Interceptor? {
-        return FlipperPluginHolder.networkPlugin?.let { plugin ->
+    fun create(): Interceptor? =
+        FlipperPluginHolder.networkPlugin?.let { plugin ->
             FlipperOkhttpInterceptor(plugin)
         }
-    }
 }

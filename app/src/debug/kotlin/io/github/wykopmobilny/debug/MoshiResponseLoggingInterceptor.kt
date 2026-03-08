@@ -55,7 +55,8 @@ class MoshiResponseLoggingInterceptor(
             }
 
             // Return response with preserved body
-            return response.newBuilder()
+            return response
+                .newBuilder()
                 .body(bodyString.toResponseBody(responseBody.contentType()))
                 .build()
         } catch (e: Exception) {
@@ -75,46 +76,52 @@ class MoshiResponseLoggingInterceptor(
         rawJson: String,
     ) {
         val dataType = response.data?.javaClass?.simpleName ?: "null"
-        val dataPreview = when (val data = response.data) {
-            is List<*> -> "List<${data.firstOrNull()?.javaClass?.simpleName}>(${data.size} items)"
-            is Map<*, *> -> "Map(${data.size} entries)"
-            else -> data?.toString()?.take(100) ?: "null"
-        }
+        val dataPreview =
+            when (val data = response.data) {
+                is List<*> -> "List<${data.firstOrNull()?.javaClass?.simpleName}>(${data.size} items)"
+                is Map<*, *> -> "Map(${data.size} entries)"
+                else -> data?.toString()?.take(100) ?: "null"
+            }
 
         val pagination = response.pagination
 
-        val logMessage = buildString {
-            appendLine("╔═══════════════════════════════════════════════════════════════")
-            appendLine("║ Moshi Parsed Response")
-            appendLine("╠═══════════════════════════════════════════════════════════════")
-            appendLine("║ Endpoint: $path")
-            appendLine("║ Data Type: $dataType")
-            appendLine("║ Data Preview: $dataPreview")
-            if (pagination != null) {
-                appendLine("║ Pagination:")
-                appendLine("║   - per_page: ${pagination.perPage}")
-                appendLine("║   - total: ${pagination.total}")
-                appendLine("║   - next: ${pagination.next ?: "null"}")
-            } else {
-                appendLine("║ Pagination: null")
+        val logMessage =
+            buildString {
+                appendLine("╔═══════════════════════════════════════════════════════════════")
+                appendLine("║ Moshi Parsed Response")
+                appendLine("╠═══════════════════════════════════════════════════════════════")
+                appendLine("║ Endpoint: $path")
+                appendLine("║ Data Type: $dataType")
+                appendLine("║ Data Preview: $dataPreview")
+                if (pagination != null) {
+                    appendLine("║ Pagination:")
+                    appendLine("║   - per_page: ${pagination.perPage}")
+                    appendLine("║   - total: ${pagination.total}")
+                    appendLine("║   - next: ${pagination.next ?: "null"}")
+                } else {
+                    appendLine("║ Pagination: null")
+                }
+                appendLine("╠═══════════════════════════════════════════════════════════════")
+                appendLine("║ Parsed Object:")
+                appendLine("║ $response")
+                appendLine("╠═══════════════════════════════════════════════════════════════")
+                appendLine("║ Raw JSON (first 500 chars):")
+                appendLine("║ ${rawJson.take(500)}")
+                appendLine("╚═══════════════════════════════════════════════════════════════")
             }
-            appendLine("╠═══════════════════════════════════════════════════════════════")
-            appendLine("║ Parsed Object:")
-            appendLine("║ $response")
-            appendLine("╠═══════════════════════════════════════════════════════════════")
-            appendLine("║ Raw JSON (first 500 chars):")
-            appendLine("║ ${rawJson.take(500)}")
-            appendLine("╚═══════════════════════════════════════════════════════════════")
-        }
 
         Napier.d(logMessage, tag = "MoshiResponse")
     }
 
-    private fun createParameterizedType(rawType: Type, vararg typeArguments: Type): ParameterizedType {
-        return object : ParameterizedType {
+    private fun createParameterizedType(
+        rawType: Type,
+        vararg typeArguments: Type,
+    ): ParameterizedType =
+        object : ParameterizedType {
             override fun getRawType() = rawType
+
             override fun getActualTypeArguments() = typeArguments
+
             override fun getOwnerType() = null
         }
-    }
 }
