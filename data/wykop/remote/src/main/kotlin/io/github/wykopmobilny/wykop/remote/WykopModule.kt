@@ -15,6 +15,7 @@ import io.github.wykopmobilny.api.endpoints.PMRetrofitApi
 import io.github.wykopmobilny.api.endpoints.SearchRetrofitApi
 import io.github.wykopmobilny.api.endpoints.SuggestRetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.AuthV3RetrofitApi
+import io.github.wykopmobilny.api.endpoints.v3.FavouritesV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.EntriesV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.HitsV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.LinksV3RetrofitApi
@@ -112,4 +113,8 @@ internal class WykopModule {
     @Reusable
     @Provides
     fun observedV3RetrofitApi(retrofit: Retrofit) = retrofit.create<ObservedV3RetrofitApi>()
+
+    @Reusable
+    @Provides
+    fun favouritesV3RetrofitApi(retrofit: Retrofit) = retrofit.create<FavouritesV3RetrofitApi>()
 }

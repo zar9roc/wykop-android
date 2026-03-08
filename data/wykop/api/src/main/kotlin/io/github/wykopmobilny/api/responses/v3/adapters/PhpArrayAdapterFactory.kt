@@ -13,7 +13,11 @@ import java.lang.reflect.Type
  * E.g. PHP: [5 => "a", 10 => "b"] → {"5":"a","10":"b"} instead of ["a","b"]
  */
 class PhpArrayAdapterFactory : JsonAdapter.Factory {
-    override fun create(type: Type, annotations: MutableSet<out Annotation>, moshi: Moshi): JsonAdapter<*>? {
+    override fun create(
+        type: Type,
+        annotations: MutableSet<out Annotation>,
+        moshi: Moshi,
+    ): JsonAdapter<*>? {
         if (Types.getRawType(type) != List::class.java) return null
         if (annotations.isNotEmpty()) return null
 
@@ -29,7 +33,6 @@ private class PhpArrayAdapter<T>(
     private val delegate: JsonAdapter<List<T>>,
     private val elementAdapter: JsonAdapter<T>,
 ) : JsonAdapter<List<T>>() {
-
     override fun fromJson(reader: JsonReader): List<T>? {
         if (reader.peek() == JsonReader.Token.BEGIN_OBJECT) {
             val result = mutableListOf<T>()
@@ -45,7 +48,10 @@ private class PhpArrayAdapter<T>(
         return delegate.fromJson(reader)
     }
 
-    override fun toJson(writer: JsonWriter, value: List<T>?) {
+    override fun toJson(
+        writer: JsonWriter,
+        value: List<T>?,
+    ) {
         delegate.toJson(writer, value)
     }
 }

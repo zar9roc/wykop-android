@@ -30,9 +30,9 @@ class EntriesInteractor
 
         fun markFavorite(entry: Entry): Single<Entry> =
             entriesApi
-                .markFavorite(entry.id)
+                .markFavorite(entry.id, entry.isFavorite)
                 .map {
-                    entry.isFavorite = it.userFavorite
+                    entry.isFavorite = it
                     entry
                 }
 

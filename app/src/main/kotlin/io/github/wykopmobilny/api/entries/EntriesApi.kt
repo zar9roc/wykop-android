@@ -3,7 +3,6 @@ package io.github.wykopmobilny.api.entries
 import io.github.wykopmobilny.api.WykopImageFile
 import io.github.wykopmobilny.api.responses.EntryCommentResponse
 import io.github.wykopmobilny.api.responses.EntryResponse
-import io.github.wykopmobilny.api.responses.FavoriteResponse
 import io.github.wykopmobilny.api.responses.VoteResponse
 import io.github.wykopmobilny.models.dataclass.Entry
 import io.github.wykopmobilny.models.dataclass.EntryVotePublishModel
@@ -56,7 +55,10 @@ interface EntriesApi {
         plus18: Boolean,
     ): Single<EntryCommentResponse>
 
-    fun markFavorite(entryId: Long): Single<FavoriteResponse>
+    fun markFavorite(
+        entryId: Long,
+        currentlyFavorite: Boolean,
+    ): Single<Boolean>
 
     fun deleteEntry(entryId: Long): Single<EntryResponse>
 

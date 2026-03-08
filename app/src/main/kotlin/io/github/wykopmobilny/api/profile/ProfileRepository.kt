@@ -84,7 +84,8 @@ class ProfileRepository
                 .compose(ErrorHandlerTransformerV3<List<EntryResponseV3>>())
                 .map { entries ->
                     entries.flatMap { entry ->
-                        entry.comments.items.orEmpty()
+                        entry.comments.items
+                            .orEmpty()
                             .map { comment -> EntryCommentMapperV3.map(comment, owmContentFilter) }
                     }
                 }

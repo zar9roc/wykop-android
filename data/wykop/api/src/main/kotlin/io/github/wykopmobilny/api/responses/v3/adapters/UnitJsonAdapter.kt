@@ -16,18 +16,26 @@ class UnitJsonAdapter : JsonAdapter<Unit>() {
         reader.skipValue()
     }
 
-    override fun toJson(writer: JsonWriter, value: Unit?) {
+    override fun toJson(
+        writer: JsonWriter,
+        value: Unit?,
+    ) {
         writer.nullValue()
     }
 
     companion object {
-        val FACTORY = object : Factory {
-            override fun create(type: Type, annotations: Set<Annotation>, moshi: Moshi): JsonAdapter<*>? {
-                if (type == Unit::class.java) {
-                    return UnitJsonAdapter()
+        val FACTORY =
+            object : Factory {
+                override fun create(
+                    type: Type,
+                    annotations: Set<Annotation>,
+                    moshi: Moshi,
+                ): JsonAdapter<*>? {
+                    if (type == Unit::class.java) {
+                        return UnitJsonAdapter()
+                    }
+                    return null
                 }
-                return null
             }
-        }
     }
 }

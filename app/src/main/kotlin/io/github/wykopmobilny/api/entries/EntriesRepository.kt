@@ -2,8 +2,6 @@ package io.github.wykopmobilny.api.entries
 
 import io.github.wykopmobilny.api.UserTokenRefresher
 import io.github.wykopmobilny.api.WykopImageFile
-import io.github.wykopmobilny.api.endpoints.EntriesRetrofitApi
-import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformer
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
 import io.github.wykopmobilny.api.exceptions.handleMediaUpload
 import io.github.wykopmobilny.api.filters.OWMContentFilter
@@ -29,9 +27,9 @@ import javax.inject.Singleton
 class EntriesRepository
     @Inject
     constructor(
-        private val entriesApi: EntriesRetrofitApi,
         private val entriesApiV3: io.github.wykopmobilny.api.endpoints.v3.EntriesV3RetrofitApi,
         private val mediaApiV3: io.github.wykopmobilny.api.endpoints.v3.MediaV3RetrofitApi,
+        private val favouritesApiV3: io.github.wykopmobilny.api.endpoints.v3.FavouritesV3RetrofitApi,
         private val userTokenRefresher: UserTokenRefresher,
         private val owmContentFilter: OWMContentFilter,
     ) : EntriesApi {
@@ -320,10 +318,25 @@ class EntriesRepository
                 )
             }
 
-        override fun markFavorite(entryId: Long) =
-            rxSingle { entriesApi.markFavorite(entryId) }
-                .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformer())
+        override fun markFavorite(
+            entryId: Long,
+            currentlyFavorite: Boolean,
+        ) = rxSingle {
+            val request =
+                WykopApiRequestV3(
+                    io.github.wykopmobilny.api.requests.v3.favourites.FavouriteRequestV3(
+                        type = "entry",
+                        sourceId = entryId,
+                    ),
+                )
+            if (currentlyFavorite) {
+                favouritesApiV3.removeFavourite(request)
+            } else {
+                favouritesApiV3.addFavourite(request)
+            }
+        }.retryWhen(userTokenRefresher)
+            .compose(ErrorHandlerTransformerV3<Unit>())
+            .map { !currentlyFavorite }
 
         override fun deleteEntry(entryId: Long) =
             rxSingle { entriesApiV3.deleteEntry(entryId) }
