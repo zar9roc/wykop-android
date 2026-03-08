@@ -41,6 +41,8 @@ internal class TestApp : WykopApp() {
             jwtTokenStorage = storages.jwtTokenStorage(),
             bearerTokenStorage = storages.bearerTokenStorage(),
             cacheDir = cacheDir.resolve("tests/okhttp-cache"),
+            isDebug = true,
+            debugNetworkInterceptor = null,
         )
     }
     override val patrons by lazy {
