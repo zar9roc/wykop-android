@@ -41,22 +41,23 @@ internal class RetrofitModule {
     fun moshiLoggingInterceptor(
         moshi: Moshi,
         @IsDebug isDebug: Boolean,
-    ): Interceptor? = if (isDebug) {
-        // In debug builds, create interceptor
-        // In release builds, this code is compiled but returns null due to isDebug check
-        try {
-            // Use reflection to avoid compile-time dependency on debug-only class
-            val className = "io.github.wykopmobilny.debug.MoshiResponseLoggingInterceptor"
-            val clazz = Class.forName(className)
-            val constructor = clazz.getConstructor(Moshi::class.java)
-            constructor.newInstance(moshi) as Interceptor
-        } catch (e: Exception) {
-            // If class not found (shouldn't happen in debug), return null
+    ): Interceptor? =
+        if (isDebug) {
+            // In debug builds, create interceptor
+            // In release builds, this code is compiled but returns null due to isDebug check
+            try {
+                // Use reflection to avoid compile-time dependency on debug-only class
+                val className = "io.github.wykopmobilny.debug.MoshiResponseLoggingInterceptor"
+                val clazz = Class.forName(className)
+                val constructor = clazz.getConstructor(Moshi::class.java)
+                constructor.newInstance(moshi) as Interceptor
+            } catch (e: Exception) {
+                // If class not found (shouldn't happen in debug), return null
+                null
+            }
+        } else {
             null
         }
-    } else {
-        null
-    }
 
     @Reusable
     @Provides

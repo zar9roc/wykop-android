@@ -9,6 +9,7 @@ import io.github.wykopmobilny.base.BaseActivity
 import io.github.wykopmobilny.domain.errorhandling.KnownError
 import io.github.wykopmobilny.ui.modules.twofactor.TwoFactorAuthorizationActivity
 import okio.IOException
+import retrofit2.HttpException
 import javax.net.ssl.SSLException
 
 fun Context.showExceptionDialog(throwable: Throwable) {
@@ -37,6 +38,7 @@ private fun Context.exceptionDialog(
     val message =
         when {
             throwable is WykopExceptionParser.WykopApiException -> "${throwable.message} (${throwable.code})"
+            throwable is HttpException -> parseHttpExceptionMessage(throwable)
             throwable.message.isNullOrEmpty() -> throwable.toString()
             else -> throwable.message
         }
@@ -48,4 +50,20 @@ private fun Context.exceptionDialog(
         }
 
     return builder.create()
+}
+
+private fun parseHttpExceptionMessage(e: HttpException): String {
+    val errorBody = e.response()?.errorBody()
+    if (errorBody != null) {
+        try {
+            val json = errorBody.string()
+            val messageMatch = Regex(""""message"\s*:\s*"([^"]+)"""").find(json)
+            if (messageMatch != null) {
+                return "${messageMatch.groupValues[1]} (${e.code()})"
+            }
+        } catch (ex: java.io.IOException) {
+            Napier.w("Failed to parse HttpException error body", ex)
+        }
+    }
+    return "HTTP ${e.code()} ${e.message()}"
 }
