@@ -115,7 +115,11 @@ internal class GetLinkDetailsQuery
                         LinkDetailsHeaderUi.WithData(
                             title = textUtils.parseHtml(link.title).toString(),
                             body = textUtils.parseHtml(link.description).toString(),
-                            domain = URL(link.sourceUrl).host.removePrefix("www."),
+                            domain =
+                                link.sourceUrl
+                                    .takeIf { it.isNotEmpty() }
+                                    ?.let { URL(it).host.removePrefix("www.") }
+                                    .orEmpty(),
                             badge = ColorConst.LinkBadgeHot.takeIf { link.isHot },
                             voteCount =
                                 TwoActionsCounterUi(
@@ -459,7 +463,7 @@ internal class GetLinkDetailsQuery
                             },
                     ),
                 title = title,
-                domain = URL(url).host.removePrefix("www."),
+                domain = url.takeIf { it.isNotEmpty() }?.let { URL(it).host.removePrefix("www.") }.orEmpty(),
                 clickAction = safeCallback { interopRequests.request(InteropRequest.WebBrowser(url)) },
                 shareAction = safeCallback { interopRequests.request(InteropRequest.Share(url)) },
             )

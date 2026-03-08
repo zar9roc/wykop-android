@@ -79,17 +79,18 @@ class MainNavigationActivity :
         private const val EXTRA_DEBUG_TARGET_TAB = "debug_target_tab"
         private const val TAG = "MainNavigationActivity"
 
-        private val TAB_TO_MENU_ID = mapOf(
-            "promoted" to R.id.nav_home,
-            "upcoming" to R.id.nav_wykopalisko,
-            "hits" to R.id.hits,
-            "hot" to R.id.nav_mikroblog,
-            "mywykop" to R.id.nav_mojwykop,
-            "favourite" to R.id.favourite,
-            "favorite" to R.id.favourite,
-            "search" to R.id.search,
-            "messages" to R.id.messages,
-        )
+        private val TAB_TO_MENU_ID =
+            mapOf(
+                "promoted" to R.id.nav_home,
+                "upcoming" to R.id.nav_wykopalisko,
+                "hits" to R.id.hits,
+                "hot" to R.id.nav_mikroblog,
+                "mywykop" to R.id.nav_mojwykop,
+                "favourite" to R.id.favourite,
+                "favorite" to R.id.favourite,
+                "search" to R.id.search,
+                "messages" to R.id.messages,
+            )
 
         fun getIntent(
             context: Context,

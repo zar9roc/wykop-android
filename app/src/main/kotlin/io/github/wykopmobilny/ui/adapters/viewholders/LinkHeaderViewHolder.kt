@@ -84,15 +84,24 @@ class LinkHeaderViewHolder(
             binding.userTextView.isVisible = false
         }
 
-        binding.urlTextView.text = when {
-            link.sourceLabel != null -> link.sourceLabel
-            link.sourceUrl.isBlank() -> ""
-            else -> try {
-                URL(link.sourceUrl).host.removePrefix("www.")
-            } catch (e: java.net.MalformedURLException) {
-                link.sourceUrl
+        binding.urlTextView.text =
+            when {
+                link.sourceLabel != null -> {
+                    link.sourceLabel
+                }
+
+                link.sourceUrl.isBlank() -> {
+                    ""
+                }
+
+                else -> {
+                    try {
+                        URL(link.sourceUrl).host.removePrefix("www.")
+                    } catch (e: java.net.MalformedURLException) {
+                        link.sourceUrl
+                    }
+                }
             }
-        }
         binding.blockedTextView.prepareBody(link.tags.convertToTagsHtml()) {
             linkHandler.handleUrl(
                 it,

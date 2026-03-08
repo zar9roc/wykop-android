@@ -10,7 +10,6 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
-import io.github.wykopmobilny.BuildConfig
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.api.WykopImageFile
 import io.github.wykopmobilny.api.suggest.SuggestApi
@@ -371,32 +370,12 @@ class LinkDetailsActivity :
         fun createIntent(
             context: Context,
             link: Link,
-        ) = if (BuildConfig.DEBUG) {
-            LinkDetailsActivityV2.createIntent(context, link.id)
-            Intent(context, LinkDetailsActivity::class.java).apply {
-                putExtra(EXTRA_LINK, link)
-            }
-        } else {
-            Intent(context, LinkDetailsActivity::class.java).apply {
-                putExtra(EXTRA_LINK, link)
-            }
-        }
+        ) = LinkDetailsActivityV2.createIntent(context, link.id)
 
         fun createIntent(
             context: Context,
             linkId: Long,
             commentId: Long? = null,
-        ) = if (BuildConfig.DEBUG) {
-            LinkDetailsActivityV2.createIntent(context, linkId = linkId, commentId = commentId)
-            Intent(context, LinkDetailsActivity::class.java).apply {
-                putExtra(EXTRA_LINK_ID, linkId)
-                putExtra(EXTRA_COMMENT_ID, commentId)
-            }
-        } else {
-            Intent(context, LinkDetailsActivity::class.java).apply {
-                putExtra(EXTRA_LINK_ID, linkId)
-                putExtra(EXTRA_COMMENT_ID, commentId)
-            }
-        }
+        ) = LinkDetailsActivityV2.createIntent(context, linkId = linkId, commentId = commentId)
     }
 }
