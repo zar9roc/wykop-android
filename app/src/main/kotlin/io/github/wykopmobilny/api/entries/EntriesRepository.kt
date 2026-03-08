@@ -5,6 +5,7 @@ import io.github.wykopmobilny.api.WykopImageFile
 import io.github.wykopmobilny.api.endpoints.EntriesRetrofitApi
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformer
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
+import io.github.wykopmobilny.api.exceptions.handleMediaUpload
 import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateCommentRequestV3
@@ -73,16 +74,16 @@ class EntriesRepository
             plus18: Boolean,
         ) = rxSingle {
             // Upload file first to get photo key
-            val uploadResponse = mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
-            val photoKey = uploadResponse.data?.key
-                ?: throw IllegalStateException("Photo upload failed: no key returned")
+            val uploadedPhoto = handleMediaUpload {
+                mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
+            }
 
             // Create entry with photo key
             entriesApiV3.addEntry(
                 WykopApiRequestV3(
                     CreateUpdateEntryRequestV3(
                         content = body,
-                        photo = photoKey,
+                        photo = uploadedPhoto.key,
                         adult = plus18,
                     ),
                 ),
@@ -156,9 +157,9 @@ class EntriesRepository
             plus18: Boolean,
         ) = rxSingle {
             // Upload file first to get photo key
-            val uploadResponse = mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
-            val photoKey = uploadResponse.data?.key
-                ?: throw IllegalStateException("Photo upload failed: no key returned")
+            val uploadedPhoto = handleMediaUpload {
+                mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
+            }
 
             // Create comment with photo key
             entriesApiV3.addEntryComment(
@@ -166,7 +167,7 @@ class EntriesRepository
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body,
-                        photo = photoKey,
+                        photo = uploadedPhoto.key,
                         adult = plus18,
                     ),
                 ),
@@ -273,9 +274,9 @@ class EntriesRepository
             plus18: Boolean,
         ) = rxSingle {
             // Upload file first to get photo key
-            val uploadResponse = mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
-            val photoKey = uploadResponse.data?.key
-                ?: throw IllegalStateException("Photo upload failed: no key returned")
+            val uploadedPhoto = handleMediaUpload {
+                mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
+            }
 
             // Edit entry with photo key
             entriesApiV3.editEntry(
@@ -283,7 +284,7 @@ class EntriesRepository
                 WykopApiRequestV3(
                     CreateUpdateEntryRequestV3(
                         content = body,
-                        photo = photoKey,
+                        photo = uploadedPhoto.key,
                         adult = plus18,
                     ),
                 ),
@@ -387,9 +388,9 @@ class EntriesRepository
             plus18: Boolean,
         ) = rxSingle {
             // Upload file first to get photo key
-            val uploadResponse = mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
-            val photoKey = uploadResponse.data?.key
-                ?: throw IllegalStateException("Photo upload failed: no key returned")
+            val uploadedPhoto = handleMediaUpload {
+                mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
+            }
 
             // Edit comment with photo key
             entriesApiV3.editEntryComment(
@@ -398,7 +399,7 @@ class EntriesRepository
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body,
-                        photo = photoKey,
+                        photo = uploadedPhoto.key,
                         adult = plus18,
                     ),
                 ),
