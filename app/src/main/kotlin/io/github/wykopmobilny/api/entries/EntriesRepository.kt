@@ -1,5 +1,6 @@
 package io.github.wykopmobilny.api.entries
 
+import io.github.wykopmobilny.api.ErrorBodyParserV3
 import io.github.wykopmobilny.api.UserTokenRefresher
 import io.github.wykopmobilny.api.WykopImageFile
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
@@ -34,6 +35,7 @@ class EntriesRepository
         private val favouritesApiV3: io.github.wykopmobilny.api.endpoints.v3.FavouritesV3RetrofitApi,
         private val userTokenRefresher: UserTokenRefresher,
         private val owmContentFilter: OWMContentFilter,
+        private val errorBodyParser: ErrorBodyParserV3,
     ) : EntriesApi {
         override val entryVoteSubject = PublishSubject.create<EntryVotePublishModel>()
         override val entryUnVoteSubject = PublishSubject.create<EntryVotePublishModel>()
@@ -41,7 +43,7 @@ class EntriesRepository
         override fun voteEntry(entryId: Long) =
             rxSingle { entriesApiV3.voteEntry(entryId) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<Unit>())
+                .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
                 .map {
                     io.github.wykopmobilny.api.responses
                         .VoteResponse(0)
@@ -50,7 +52,7 @@ class EntriesRepository
         override fun unvoteEntry(entryId: Long) =
             rxSingle { entriesApiV3.unvoteEntry(entryId) ?: WykopApiResponseV3(data = Unit, pagination = null) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<Unit>())
+                .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
                 .map {
                     io.github.wykopmobilny.api.responses
                         .VoteResponse(0)
@@ -61,7 +63,7 @@ class EntriesRepository
             commentId: Long,
         ) = rxSingle { entriesApiV3.voteComment(entryId, commentId) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<Unit>())
+            .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
             .map {
                 io.github.wykopmobilny.api.responses
                     .VoteResponse(0)
@@ -72,7 +74,7 @@ class EntriesRepository
             commentId: Long,
         ) = rxSingle { entriesApiV3.unvoteComment(entryId, commentId) ?: WykopApiResponseV3(data = Unit, pagination = null) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<Unit>())
+            .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
             .map {
                 io.github.wykopmobilny.api.responses
                     .VoteResponse(0)
@@ -95,7 +97,7 @@ class EntriesRepository
                 ),
             )
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3>())
+            .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3>(errorBodyParser))
             .map { entryV3 ->
                 // Minimal mapping for API compatibility - only ID is used by callers
                 EntryResponse(
@@ -135,7 +137,7 @@ class EntriesRepository
                 ),
             )
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3>())
+            .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3>(errorBodyParser))
             .map { entryV3 ->
                 // Minimal mapping for API compatibility - only ID is used by callers
                 EntryResponse(
@@ -179,7 +181,7 @@ class EntriesRepository
                 ),
             )
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.EntryCommentResponseV3>())
+            .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.EntryCommentResponseV3>(errorBodyParser))
             .map { commentV3 ->
                 // Minimal mapping for API compatibility
                 EntryCommentResponse(
@@ -218,7 +220,7 @@ class EntriesRepository
                 ),
             )
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.EntryCommentResponseV3>())
+            .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.EntryCommentResponseV3>(errorBodyParser))
             .map { commentV3 ->
                 // Minimal mapping for API compatibility
                 EntryCommentResponse(
@@ -257,7 +259,7 @@ class EntriesRepository
                 ),
             )
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<Unit>())
+            .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
             .map {
                 // API v3 returns 200 with no body, return minimal EntryCommentResponse for compatibility
                 EntryCommentResponse(
@@ -298,7 +300,7 @@ class EntriesRepository
                 ),
             )
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<Unit>())
+            .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
             .map {
                 // API v3 returns 200 with no body, return minimal EntryCommentResponse for compatibility
                 EntryCommentResponse(
@@ -337,13 +339,13 @@ class EntriesRepository
                 favouritesApiV3.addFavourite(request)
             }
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<Unit>())
+            .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
             .map { !currentlyFavorite }
 
         override fun deleteEntry(entryId: Long) =
             rxSingle { entriesApiV3.deleteEntry(entryId) ?: WykopApiResponseV3(data = Unit, pagination = null) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<Unit>())
+                .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
                 .map {
                     // API v3 returns 204 with no body, return minimal EntryResponse for compatibility
                     EntryResponse(
@@ -387,7 +389,7 @@ class EntriesRepository
                 ),
             )
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<Unit>())
+            .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
             .map {
                 // API v3 returns 200 with no body, return minimal EntryCommentResponse for compatibility
                 EntryCommentResponse(
@@ -430,7 +432,7 @@ class EntriesRepository
                 ),
             )
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<Unit>())
+            .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
             .map {
                 // API v3 returns 200 with no body, return minimal EntryCommentResponse for compatibility
                 EntryCommentResponse(
@@ -457,7 +459,7 @@ class EntriesRepository
             commentId: Long,
         ) = rxSingle { entriesApiV3.deleteEntryComment(entryId, commentId) ?: WykopApiResponseV3(data = Unit, pagination = null) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<Unit>())
+            .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
             .map {
                 // API v3 returns 204 with no body, return minimal EntryCommentResponse for compatibility
                 EntryCommentResponse(
@@ -490,7 +492,7 @@ class EntriesRepository
                 ),
             )
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<Unit>())
+            .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
             .map {
                 // API v3 returns 201 with no body, return empty Survey for compatibility
                 io.github.wykopmobilny.models.dataclass.Survey(
@@ -563,7 +565,7 @@ class EntriesRepository
         override fun getEntry(id: Long) =
             rxSingle { entriesApiV3.getEntry(id) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3>())
+                .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3>(errorBodyParser))
                 .map { entry ->
                     entry.filterEntryV3(owmContentFilter = owmContentFilter)
                 }
@@ -571,8 +573,11 @@ class EntriesRepository
         override fun getEntryComments(id: Long) =
             rxSingle { entriesApiV3.getEntryComments(id) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<io.github.wykopmobilny.api.responses.v3.entries.EntryCommentResponseV3>>())
-                .map { comments ->
+                .compose(
+                    ErrorHandlerTransformerV3<List<io.github.wykopmobilny.api.responses.v3.entries.EntryCommentResponseV3>>(
+                        errorBodyParser,
+                    ),
+                ).map { comments ->
                     comments.map { comment ->
                         EntryCommentMapperV3.map(comment, owmContentFilter)
                     }
@@ -581,7 +586,7 @@ class EntriesRepository
         override fun getEntryVoters(id: Long) =
             rxSingle { entriesApiV3.getEntryVoters(id) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3>>())
+                .compose(ErrorHandlerTransformerV3<List<io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3>>(errorBodyParser))
                 .map { users ->
                     users.map { userResponse ->
                         io.github.wykopmobilny.models.mapper.apiv3.VoterMapperV3
@@ -594,7 +599,7 @@ class EntriesRepository
             commentId: Long,
         ) = rxSingle { entriesApiV3.getCommentVoters(entryId, commentId) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<List<io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3>>())
+            .compose(ErrorHandlerTransformerV3<List<io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3>>(errorBodyParser))
             .map { users ->
                 users.map { userResponse ->
                     io.github.wykopmobilny.models.mapper.apiv3.VoterMapperV3

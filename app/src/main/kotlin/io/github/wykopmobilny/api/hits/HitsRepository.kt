@@ -2,7 +2,6 @@ package io.github.wykopmobilny.api.hits
 
 import io.github.wykopmobilny.api.UserTokenRefresher
 import io.github.wykopmobilny.api.endpoints.v3.HitsV3RetrofitApi
-import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
 import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
 import io.github.wykopmobilny.models.mapper.apiv3.filterLinksV3

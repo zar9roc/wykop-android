@@ -1,5 +1,6 @@
 package io.github.wykopmobilny.api.notifications
 
+import io.github.wykopmobilny.api.ErrorBodyParserV3
 import io.github.wykopmobilny.api.UserTokenRefresher
 import io.github.wykopmobilny.api.endpoints.v3.NotificationsV3RetrofitApi
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
@@ -36,6 +37,7 @@ class NotificationsRepository
     constructor(
         private val notificationsApiV3: NotificationsV3RetrofitApi,
         private val userTokenRefresher: UserTokenRefresher,
+        private val errorBodyParser: ErrorBodyParserV3,
     ) : NotificationsApi {
         override fun readNotifications() =
             rxSingle { notificationsApiV3.markAllEntryNotificationsAsRead() }
@@ -45,13 +47,13 @@ class NotificationsRepository
         override fun getNotifications(page: Int) =
             rxSingle { notificationsApiV3.getEntryNotifications(page) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<NotificationEntryResponseV3>>())
+                .compose(ErrorHandlerTransformerV3<List<NotificationEntryResponseV3>>(errorBodyParser))
                 .map { it.map { response -> response.toNotification() } }
 
         override fun getNotificationCount() =
             rxSingle { notificationsApiV3.getNotificationStatus() }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<NotificationStatusResponseV3>())
+                .compose(ErrorHandlerTransformerV3<NotificationStatusResponseV3>(errorBodyParser))
                 .map {
                     NotificationsCountResponse(
                         count = it.entryNotificationCount ?: 0,
@@ -67,13 +69,13 @@ class NotificationsRepository
         override fun getHashTagNotifications(page: Int) =
             rxSingle { notificationsApiV3.getTagNotifications(page) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<NotificationTagResponseV3>>())
+                .compose(ErrorHandlerTransformerV3<List<NotificationTagResponseV3>>(errorBodyParser))
                 .map { it.map { response -> response.toNotification() } }
 
         override fun getHashTagNotificationCount() =
             rxSingle { notificationsApiV3.getNotificationStatus() }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<NotificationStatusResponseV3>())
+                .compose(ErrorHandlerTransformerV3<NotificationStatusResponseV3>(errorBodyParser))
                 .map {
                     NotificationsCountResponse(
 //                        entries = it.entryNotificationCount ?: 0,

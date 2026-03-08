@@ -69,4 +69,6 @@ interface WykopApi {
     fun favouritesV3RetrofitApi(): FavouritesV3RetrofitApi
 
     fun errorBodyParser(): ErrorBodyParser
+
+    fun errorBodyParserV3(): ErrorBodyParserV3
 }

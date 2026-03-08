@@ -1,5 +1,6 @@
 package io.github.wykopmobilny.api.profile
 
+import io.github.wykopmobilny.api.ErrorBodyParserV3
 import io.github.wykopmobilny.api.UserTokenRefresher
 import io.github.wykopmobilny.api.endpoints.v3.ProfileV3RetrofitApi
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
@@ -33,11 +34,12 @@ class ProfileRepository
         private val userTokenRefresher: UserTokenRefresher,
         private val owmContentFilter: OWMContentFilter,
         private val appStorage: AppStorage,
+        private val errorBodyParser: ErrorBodyParserV3,
     ) : ProfileApi {
         override fun getIndex(username: String): Single<UserFullResponseV3> =
             rxSingle { profileApiV3.getUserProfile(username) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<UserFullResponseV3>())
+                .compose(ErrorHandlerTransformerV3<UserFullResponseV3>(errorBodyParser))
 
         override fun getAdded(
             username: String,
@@ -51,7 +53,7 @@ class ProfileRepository
         override fun getActions(username: String): Single<List<EntryLink>> =
             rxSingle { profileApiV3.getUserActions(username) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<EntryResponseV3>>())
+                .compose(ErrorHandlerTransformerV3<List<EntryResponseV3>>(errorBodyParser))
                 .map { entries ->
                     entries
                         .filterEntriesV3(owmContentFilter = owmContentFilter)
@@ -73,7 +75,7 @@ class ProfileRepository
             page: Int,
         ) = rxSingle { profileApiV3.getUserEntriesAdded(username, page) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<List<EntryResponseV3>>())
+            .compose(ErrorHandlerTransformerV3<List<EntryResponseV3>>(errorBodyParser))
             .map { it.filterEntriesV3(owmContentFilter = owmContentFilter) }
 
         override fun getEntriesComments(
@@ -82,7 +84,7 @@ class ProfileRepository
         ): Single<List<EntryComment>> =
             rxSingle { profileApiV3.getUserEntriesCommented(username, page) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<EntryResponseV3>>())
+                .compose(ErrorHandlerTransformerV3<List<EntryResponseV3>>(errorBodyParser))
                 .map { entries ->
                     entries.flatMap { entry ->
                         entry.comments.items
@@ -97,7 +99,7 @@ class ProfileRepository
         ): Single<List<LinkComment>> =
             rxSingle { profileApiV3.getUserLinksCommented(username, page) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<LinkCommentResponseV3>>())
+                .compose(ErrorHandlerTransformerV3<List<LinkCommentResponseV3>>(errorBodyParser))
                 .map {
                     it.map { response ->
                         val linkId =
@@ -133,7 +135,7 @@ class ProfileRepository
         ): Single<List<BadgeResponseV3>> =
             rxSingle { profileApiV3.getUserBadges(username) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<BadgeResponseV3>>())
+                .compose(ErrorHandlerTransformerV3<List<BadgeResponseV3>>(errorBodyParser))
 
         override fun getRelated(
             username: String,
@@ -141,7 +143,7 @@ class ProfileRepository
         ): Single<List<Related>> =
             rxSingle { profileApiV3.getUserLinksRelated(username, page) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<RelatedResponseV3>>())
+                .compose(ErrorHandlerTransformerV3<List<RelatedResponseV3>>(errorBodyParser))
                 .map { it.map { response -> RelatedMapperV3.map(response) } }
 
         override fun observe(tag: String) =

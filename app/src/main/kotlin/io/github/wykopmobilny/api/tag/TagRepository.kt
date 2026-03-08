@@ -1,5 +1,6 @@
 package io.github.wykopmobilny.api.tag
 
+import io.github.wykopmobilny.api.ErrorBodyParserV3
 import io.github.wykopmobilny.api.UserTokenRefresher
 import io.github.wykopmobilny.api.endpoints.v3.ProfileV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.TagsV3RetrofitApi
@@ -29,6 +30,7 @@ class TagRepository
         private val owmContentFilter: OWMContentFilter,
         private val appStorage: AppStorage,
         private val userManager: UserManagerApi,
+        private val errorBodyParser: ErrorBodyParserV3,
     ) : TagApi {
         override fun getTagEntries(
             tag: String,
@@ -57,7 +59,7 @@ class TagRepository
         override fun getTagDetails(tag: String): Single<TagMetaResponse> =
             rxSingle { tagsApiV3.getTagDetails(tag) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<TagDetailsResponseV3>())
+                .compose(ErrorHandlerTransformerV3<TagDetailsResponseV3>(errorBodyParser))
                 .map { details ->
                     TagMetaResponse(
                         tag = details.name,

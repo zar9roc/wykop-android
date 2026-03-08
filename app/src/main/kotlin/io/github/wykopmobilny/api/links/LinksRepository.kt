@@ -1,5 +1,6 @@
 package io.github.wykopmobilny.api.links
 
+import io.github.wykopmobilny.api.ErrorBodyParserV3
 import io.github.wykopmobilny.api.UserTokenRefresher
 import io.github.wykopmobilny.api.WykopImageFile
 import io.github.wykopmobilny.api.endpoints.LinksRetrofitApi
@@ -34,6 +35,7 @@ class LinksRepository
         private val favouritesApiV3: io.github.wykopmobilny.api.endpoints.v3.FavouritesV3RetrofitApi,
         private val userTokenRefresher: UserTokenRefresher,
         private val owmContentFilter: OWMContentFilter,
+        private val errorBodyParser: ErrorBodyParserV3,
     ) : LinksApi {
         override val voteRemoveSubject = PublishSubject.create<LinkVoteResponsePublishModel>()
         override val digSubject = PublishSubject.create<LinkVoteResponsePublishModel>()
@@ -72,7 +74,7 @@ class LinksRepository
             sortBy: String,
         ) = rxSingle { linksApiV3.getLinkComments(linkId, sortBy) }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<List<LinkCommentResponseV3>>())
+            .compose(ErrorHandlerTransformerV3<List<LinkCommentResponseV3>>(errorBodyParser))
             .map { comments ->
                 comments.map { commentResponse ->
                     io.github.wykopmobilny.models.mapper.apiv3.LinkCommentMapperV3.map(
@@ -95,7 +97,7 @@ class LinksRepository
         override fun getLink(linkId: Long) =
             rxSingle { linksApiV3.getLink(linkId) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<LinkResponseV3>())
+                .compose(ErrorHandlerTransformerV3<LinkResponseV3>(errorBodyParser))
                 .map { link ->
                     link.filterLinkV3(owmContentFilter)
                 }
@@ -189,7 +191,7 @@ class LinksRepository
                 ),
             )
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<LinkCommentResponseV3>())
+            .compose(ErrorHandlerTransformerV3<LinkCommentResponseV3>(errorBodyParser))
             .map { commentV3 ->
                 io.github.wykopmobilny.models.mapper.apiv3.LinkCommentMapperV3.map(
                     commentV3,
@@ -236,7 +238,7 @@ class LinksRepository
                 ),
             )
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<LinkCommentResponseV3>())
+            .compose(ErrorHandlerTransformerV3<LinkCommentResponseV3>(errorBodyParser))
             .map { commentV3 ->
                 io.github.wykopmobilny.models.mapper.apiv3.LinkCommentMapperV3.map(
                     commentV3,
@@ -263,7 +265,7 @@ class LinksRepository
                 ),
             )
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<LinkCommentResponseV3>())
+            .compose(ErrorHandlerTransformerV3<LinkCommentResponseV3>(errorBodyParser))
             .map { commentV3 ->
                 io.github.wykopmobilny.models.mapper.apiv3.LinkCommentMapperV3.map(
                     commentV3,
@@ -292,7 +294,7 @@ class LinksRepository
                 ),
             )
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<LinkCommentResponseV3>())
+            .compose(ErrorHandlerTransformerV3<LinkCommentResponseV3>(errorBodyParser))
             .map { commentV3 ->
                 io.github.wykopmobilny.models.mapper.apiv3.LinkCommentMapperV3.map(
                     commentV3,
@@ -326,7 +328,7 @@ class LinksRepository
         override fun getDownvoters(linkId: Long) =
             rxSingle { linksApiV3.getDownvoters(linkId) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<UserShortResponseV3>>())
+                .compose(ErrorHandlerTransformerV3<List<UserShortResponseV3>>(errorBodyParser))
                 .map { users ->
                     users.map { userResponse ->
                         io.github.wykopmobilny.models.dataclass.Downvoter(
@@ -342,7 +344,7 @@ class LinksRepository
         override fun getUpvoters(linkId: Long) =
             rxSingle { linksApiV3.getUpvoters(linkId) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<UserShortResponseV3>>())
+                .compose(ErrorHandlerTransformerV3<List<UserShortResponseV3>>(errorBodyParser))
                 .map { users ->
                     users.map { userResponse ->
                         io.github.wykopmobilny.models.dataclass.Upvoter(
@@ -357,7 +359,7 @@ class LinksRepository
         override fun getRelated(linkId: Long) =
             rxSingle { linksApiV3.getRelated(linkId) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<RelatedResponseV3>>())
+                .compose(ErrorHandlerTransformerV3<List<RelatedResponseV3>>(errorBodyParser))
                 .map { related ->
                     related.map { relatedResponse ->
                         io.github.wykopmobilny.models.mapper.apiv3.RelatedMapperV3
@@ -382,7 +384,7 @@ class LinksRepository
                 favouritesApiV3.addFavourite(request)
             }
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<Unit>())
+            .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
             .map { }
 
         /**
