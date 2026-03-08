@@ -46,7 +46,7 @@ class EntriesRepository
                 .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
                 .map {
                     io.github.wykopmobilny.api.responses
-                        .VoteResponse(0)
+                        .VoteResponse(null)
                 }.doOnSuccess { entryVoteSubject.onNext(EntryVotePublishModel(entryId, it)) }
 
         override fun unvoteEntry(entryId: Long) =
@@ -55,7 +55,7 @@ class EntriesRepository
                 .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
                 .map {
                     io.github.wykopmobilny.api.responses
-                        .VoteResponse(0)
+                        .VoteResponse(null)
                 }.doOnSuccess { entryUnVoteSubject.onNext(EntryVotePublishModel(entryId, it)) }
 
         override fun voteComment(
@@ -66,7 +66,7 @@ class EntriesRepository
             .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
             .map {
                 io.github.wykopmobilny.api.responses
-                    .VoteResponse(0)
+                    .VoteResponse(null)
             }
 
         override fun unvoteComment(
@@ -77,7 +77,7 @@ class EntriesRepository
             .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
             .map {
                 io.github.wykopmobilny.api.responses
-                    .VoteResponse(0)
+                    .VoteResponse(null)
             }
 
         override fun addEntry(

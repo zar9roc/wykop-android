@@ -14,7 +14,7 @@ class EntriesInteractor
             entriesApi
                 .voteEntry(entry.id)
                 .map {
-                    it.voteCount?.let { entry.voteCount = it }
+                    it.voteCount?.let { entry.voteCount = it } ?: entry.voteCount++
                     entry.isVoted = true
                     entry
                 }
@@ -23,7 +23,7 @@ class EntriesInteractor
             entriesApi
                 .unvoteEntry(entry.id)
                 .map {
-                    it.voteCount?.let { entry.voteCount = it }
+                    it.voteCount?.let { entry.voteCount = it } ?: entry.voteCount--
                     entry.isVoted = false
                     entry
                 }

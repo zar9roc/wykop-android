@@ -14,7 +14,7 @@ class EntryCommentInteractor
             entriesApi
                 .voteComment(comment.entryId, comment.id)
                 .map {
-                    it.voteCount?.let { comment.voteCount = it }
+                    it.voteCount?.let { comment.voteCount = it } ?: comment.voteCount++
                     comment.isVoted = true
                     comment
                 }
@@ -23,7 +23,7 @@ class EntryCommentInteractor
             entriesApi
                 .unvoteComment(comment.entryId, comment.id)
                 .map {
-                    it.voteCount?.let { comment.voteCount = it }
+                    it.voteCount?.let { comment.voteCount = it } ?: comment.voteCount--
                     comment.isVoted = false
                     comment
                 }
