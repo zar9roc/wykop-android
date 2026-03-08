@@ -73,17 +73,13 @@ class EntriesRepository
             wykopImageFile: WykopImageFile,
             plus18: Boolean,
         ) = rxSingle {
-            // Upload file first to get photo key
-            val uploadedPhoto = handleMediaUpload {
-                mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
-            }
+            val photoKey = uploadPhotoAndGetKey(wykopImageFile)
 
-            // Create entry with photo key
             entriesApiV3.addEntry(
                 WykopApiRequestV3(
                     CreateUpdateEntryRequestV3(
                         content = body,
-                        photo = uploadedPhoto.key,
+                        photo = photoKey,
                         adult = plus18,
                     ),
                 ),
@@ -156,18 +152,14 @@ class EntriesRepository
             wykopImageFile: WykopImageFile,
             plus18: Boolean,
         ) = rxSingle {
-            // Upload file first to get photo key
-            val uploadedPhoto = handleMediaUpload {
-                mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
-            }
+            val photoKey = uploadPhotoAndGetKey(wykopImageFile)
 
-            // Create comment with photo key
             entriesApiV3.addEntryComment(
                 entryId,
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body,
-                        photo = uploadedPhoto.key,
+                        photo = photoKey,
                         adult = plus18,
                     ),
                 ),
@@ -273,18 +265,14 @@ class EntriesRepository
             wykopImageFile: WykopImageFile,
             plus18: Boolean,
         ) = rxSingle {
-            // Upload file first to get photo key
-            val uploadedPhoto = handleMediaUpload {
-                mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
-            }
+            val photoKey = uploadPhotoAndGetKey(wykopImageFile)
 
-            // Edit entry with photo key
             entriesApiV3.editEntry(
                 entryId,
                 WykopApiRequestV3(
                     CreateUpdateEntryRequestV3(
                         content = body,
-                        photo = uploadedPhoto.key,
+                        photo = photoKey,
                         adult = plus18,
                     ),
                 ),
@@ -387,19 +375,15 @@ class EntriesRepository
             wykopImageFile: WykopImageFile,
             plus18: Boolean,
         ) = rxSingle {
-            // Upload file first to get photo key
-            val uploadedPhoto = handleMediaUpload {
-                mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
-            }
+            val photoKey = uploadPhotoAndGetKey(wykopImageFile)
 
-            // Edit comment with photo key
             entriesApiV3.editEntryComment(
                 entryId,
                 commentId,
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body,
-                        photo = uploadedPhoto.key,
+                        photo = photoKey,
                         adult = plus18,
                     ),
                 ),
@@ -567,6 +551,17 @@ class EntriesRepository
                         .map(userResponse)
                 }
             }
+
+        /**
+         * Helper function to upload a photo and extract its key.
+         * Reduces code duplication across add/edit operations.
+         */
+        private suspend fun uploadPhotoAndGetKey(wykopImageFile: WykopImageFile): String? {
+            val uploadedPhoto = handleMediaUpload {
+                mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
+            }
+            return uploadedPhoto.key
+        }
     }
 
 internal fun String.allowImageOnly() = ifEmpty { " " }

@@ -195,18 +195,14 @@ class LinksRepository
             inputStream: WykopImageFile,
             linkId: Long,
         ) = rxSingle {
-            // Upload file first to get photo key
-            val uploadedPhoto = handleMediaUpload {
-                mediaApiV3.uploadPhoto(inputStream.getFileMultipartForV3())
-            }
+            val photoKey = uploadPhotoAndGetKey(inputStream)
 
-            // Create comment with photo key
             linksApiV3.addLinkComment(
                 linkId,
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body.allowImageOnly(),
-                        photo = uploadedPhoto.key,
+                        photo = photoKey,
                         adult = plus18,
                     ),
                 ),
@@ -239,18 +235,14 @@ class LinksRepository
             linkId: Long,
             linkComment: Long,
         ) = rxSingle {
-            // Upload file first to get photo key
-            val uploadedPhoto = handleMediaUpload {
-                mediaApiV3.uploadPhoto(inputStream.getFileMultipartForV3())
-            }
+            val photoKey = uploadPhotoAndGetKey(inputStream)
 
-            // Create comment with photo key (reply to linkComment)
             linksApiV3.addLinkComment(
                 linkId,
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body.allowImageOnly(),
-                        photo = uploadedPhoto.key,
+                        photo = photoKey,
                         adult = plus18,
                     ),
                 ),
@@ -326,4 +318,15 @@ class LinksRepository
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformer())
                 .map { }
+
+        /**
+         * Helper function to upload a photo and extract its key.
+         * Reduces code duplication across add/edit operations.
+         */
+        private suspend fun uploadPhotoAndGetKey(wykopImageFile: WykopImageFile): String? {
+            val uploadedPhoto = handleMediaUpload {
+                mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
+            }
+            return uploadedPhoto.key
+        }
     }
