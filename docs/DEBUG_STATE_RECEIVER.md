@@ -2,13 +2,15 @@
 
 Debug-only `BroadcastReceiver` zwracający strukturalne dane o stanie aplikacji jako JSON w logcat oraz umożliwiający sterowanie aplikacją bez interakcji z UI.
 
+> **WAŻNE**: Na Androidzie 14+ (SDK 34+) implicit broadcasts nie docierają do manifest-registered receivers. Wszystkie komendy muszą zawierać jawny komponent `-n io.github.wykopmobilny.debug/.DebugStateReceiver`.
+
 ## Dostępne akcje
 
 ### 1. DEBUG_STATE — dump stanu aplikacji
 Zwraca strukturalne dane o aktualnym stanie aplikacji.
 
 ```bash
-adb shell am broadcast -a io.github.wykopmobilny.debug.DEBUG_STATE
+adb shell am broadcast -n io.github.wykopmobilny.debug/.DebugStateReceiver -a io.github.wykopmobilny.debug.DEBUG_STATE
 ```
 
 Odczyt wyniku:
@@ -18,14 +20,14 @@ adb logcat -s DebugState -d | tail -1
 
 Tryb verbose (back stack, info o urządzeniu):
 ```bash
-adb shell am broadcast -a io.github.wykopmobilny.debug.DEBUG_STATE --ez verbose true
+adb shell am broadcast -n io.github.wykopmobilny.debug/.DebugStateReceiver -a io.github.wykopmobilny.debug.DEBUG_STATE --ez verbose true
 ```
 
 ### 2. DEBUG_CLEAR_CACHE — czyszczenie cache
 Czyści katalog cache aplikacji (context.cacheDir) wraz ze wszystkimi podkatalogami.
 
 ```bash
-adb shell am broadcast -a io.github.wykopmobilny.debug.DEBUG_CLEAR_CACHE
+adb shell am broadcast -n io.github.wykopmobilny.debug/.DebugStateReceiver -a io.github.wykopmobilny.debug.DEBUG_CLEAR_CACHE
 ```
 
 Odpowiedź:
@@ -42,7 +44,7 @@ Odpowiedź:
 Wymusza wylogowanie aktualnie zalogowanego użytkownika (czyści JWT token i dane użytkownika).
 
 ```bash
-adb shell am broadcast -a io.github.wykopmobilny.debug.DEBUG_LOGOUT
+adb shell am broadcast -n io.github.wykopmobilny.debug/.DebugStateReceiver -a io.github.wykopmobilny.debug.DEBUG_LOGOUT
 ```
 
 Odpowiedź:
@@ -58,7 +60,7 @@ Odpowiedź:
 Otwiera MainNavigationActivity z wybraną zakładką (wymaga parametru `--es tab`).
 
 ```bash
-adb shell am broadcast -a io.github.wykopmobilny.debug.DEBUG_SWITCH_TAB --es tab "promoted"
+adb shell am broadcast -n io.github.wykopmobilny.debug/.DebugStateReceiver -a io.github.wykopmobilny.debug.DEBUG_SWITCH_TAB --es tab "promoted"
 ```
 
 Dostępne nazwy zakładek:
@@ -144,46 +146,47 @@ Wszystkie pliki w `app/src/debug/` — nie trafiają do release buildu.
 
 ### One-liner do sprawdzenia stanu
 ```bash
-adb shell am broadcast -a io.github.wykopmobilny.debug.DEBUG_STATE && adb logcat -s DebugState -d | tail -1
+adb shell am broadcast -n io.github.wykopmobilny.debug/.DebugStateReceiver -a io.github.wykopmobilny.debug.DEBUG_STATE && adb logcat -s DebugState -d | tail -1
 ```
 
 ### Scenariusz testowy: reset stanu aplikacji
 ```bash
 # Wyloguj użytkownika
-adb shell am broadcast -a io.github.wykopmobilny.debug.DEBUG_LOGOUT
+adb shell am broadcast -n io.github.wykopmobilny.debug/.DebugStateReceiver -a io.github.wykopmobilny.debug.DEBUG_LOGOUT
 
 # Wyczyść cache
-adb shell am broadcast -a io.github.wykopmobilny.debug.DEBUG_CLEAR_CACHE
+adb shell am broadcast -n io.github.wykopmobilny.debug/.DebugStateReceiver -a io.github.wykopmobilny.debug.DEBUG_CLEAR_CACHE
 
 # Zrestartuj aplikację
 adb shell am force-stop io.github.wykopmobilny.debug
-adb shell am start -n io.github.wykopmobilny.debug/.ui.modules.splash.SplashActivity
+adb shell am start -n io.github.wykopmobilny.debug/io.github.wykopmobilny.ui.modules.mainnavigation.MainNavigationActivity
 ```
 
 ### Scenariusz testowy: nawigacja między ekranami
 ```bash
 # Otwórz Mikroblog
-adb shell am broadcast -a io.github.wykopmobilny.debug.DEBUG_SWITCH_TAB --es tab "hot"
+adb shell am broadcast -n io.github.wykopmobilny.debug/.DebugStateReceiver -a io.github.wykopmobilny.debug.DEBUG_SWITCH_TAB --es tab "hot"
 sleep 2
 
 # Otwórz Wykopalisko
-adb shell am broadcast -a io.github.wykopmobilny.debug.DEBUG_SWITCH_TAB --es tab "upcoming"
+adb shell am broadcast -n io.github.wykopmobilny.debug/.DebugStateReceiver -a io.github.wykopmobilny.debug.DEBUG_SWITCH_TAB --es tab "upcoming"
 sleep 2
 
 # Sprawdź stan
-adb shell am broadcast -a io.github.wykopmobilny.debug.DEBUG_STATE && adb logcat -s DebugState -d | tail -1
+adb shell am broadcast -n io.github.wykopmobilny.debug/.DebugStateReceiver -a io.github.wykopmobilny.debug.DEBUG_STATE && adb logcat -s DebugState -d | tail -1
 ```
 
 ### Skrypt bash: automatyczne testy nawigacji
 ```bash
 #!/bin/bash
+DSR="-n io.github.wykopmobilny.debug/.DebugStateReceiver"
 TABS=("promoted" "upcoming" "hits" "hot" "mywykop" "favorite")
 
 for tab in "${TABS[@]}"; do
   echo "Testing tab: $tab"
-  adb shell am broadcast -a io.github.wykopmobilny.debug.DEBUG_SWITCH_TAB --es tab "$tab"
+  adb shell am broadcast $DSR -a io.github.wykopmobilny.debug.DEBUG_SWITCH_TAB --es tab "$tab"
   sleep 1
-  adb shell am broadcast -a io.github.wykopmobilny.debug.DEBUG_STATE
+  adb shell am broadcast $DSR -a io.github.wykopmobilny.debug.DEBUG_STATE
   adb logcat -s DebugState -d | tail -1 | grep "\"fragment\""
   sleep 1
 done
