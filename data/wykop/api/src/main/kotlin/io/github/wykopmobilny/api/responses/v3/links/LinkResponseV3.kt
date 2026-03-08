@@ -15,6 +15,7 @@ data class LinkResponseV3(
     @field:Json(name = "description") val description: String?,
     @field:Json(name = "source") val source: SourceResponseV3?,
     @field:Json(name = "created_at") val createdAt: Instant,
+    @field:Json(name = "published_at") val publishedAt: Instant?,
     @field:Json(name = "voted") val voted: Int?,
     @field:Json(name = "media") val media: MediaResponseV3?,
     @field:Json(name = "adult") val adult: Boolean?,
