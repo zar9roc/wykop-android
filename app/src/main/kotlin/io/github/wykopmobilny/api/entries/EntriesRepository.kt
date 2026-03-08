@@ -10,6 +10,7 @@ import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateCommentRequest
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateEntryRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.VoteSurveyRequestV3
 import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
+import io.github.wykopmobilny.api.responses.v3.observed.ObservedItemV3
 import io.github.wykopmobilny.api.responses.EntryCommentResponse
 import io.github.wykopmobilny.api.responses.EntryResponse
 import io.github.wykopmobilny.api.toRequestBody
@@ -548,10 +549,15 @@ class EntriesRepository
                 }
 
         override fun getObserved(page: String?) =
-            rxSingle { entriesApiV3.getObservedTagsStream(page) }
+            rxSingle { favouritesApiV3.getFavourites(page) }
                 .retryWhen(userTokenRefresher)
                 .map { response ->
-                    response.data.orEmpty().filterEntriesV3(owmContentFilter, response.pagination)
+                    val entries =
+                        response.data
+                            .orEmpty()
+                            .filterIsInstance<ObservedItemV3.EntryItem>()
+                            .map { it.entry }
+                    entries.filterEntriesV3(owmContentFilter, response.pagination)
                 }
 
         override fun getEntry(id: Long) =
