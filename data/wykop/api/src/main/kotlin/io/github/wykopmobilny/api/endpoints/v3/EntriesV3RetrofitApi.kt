@@ -8,6 +8,7 @@ import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
 import io.github.wykopmobilny.api.responses.v3.entries.EntryCommentResponseV3
 import io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3
 import io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -98,12 +99,12 @@ interface EntriesV3RetrofitApi {
     @POST("v3/entries/{entryId}/votes")
     suspend fun voteEntry(
         @Path("entryId") entryId: Long,
-    ): WykopApiResponseV3<Unit>
+    ): Response<Unit>
 
     @DELETE("v3/entries/{entryId}/votes")
     suspend fun unvoteEntry(
         @Path("entryId") entryId: Long,
-    ): WykopApiResponseV3<Unit>?
+    ): Response<Unit>
 
     @POST("v3/entries/{entryId}/comments")
     suspend fun addEntryComment(
@@ -128,17 +129,17 @@ interface EntriesV3RetrofitApi {
     suspend fun voteComment(
         @Path("entryId") entryId: Long,
         @Path("commentId") commentId: Long,
-    ): WykopApiResponseV3<Unit>
+    ): Response<Unit>
 
     @DELETE("v3/entries/{entryId}/comments/{commentId}/votes")
     suspend fun unvoteComment(
         @Path("entryId") entryId: Long,
         @Path("commentId") commentId: Long,
-    ): WykopApiResponseV3<Unit>?
+    ): Response<Unit>
 
     @POST("v3/entries/{entryId}/survey/votes")
     suspend fun voteSurvey(
         @Path("entryId") entryId: Long,
         @Body request: WykopApiRequestV3<VoteSurveyRequestV3>,
-    ): WykopApiResponseV3<Unit>
+    ): Response<Unit>
 }

@@ -12,6 +12,7 @@ import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateEntryRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.VoteSurveyRequestV3
 import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
 import io.github.wykopmobilny.api.responses.v3.observed.ObservedItemV3
+import retrofit2.HttpException
 import io.github.wykopmobilny.api.responses.EntryCommentResponse
 import io.github.wykopmobilny.api.responses.EntryResponse
 import io.github.wykopmobilny.api.toRequestBody
@@ -41,7 +42,11 @@ class EntriesRepository
         override val entryUnVoteSubject = PublishSubject.create<EntryVotePublishModel>()
 
         override fun voteEntry(entryId: Long) =
-            rxSingle { entriesApiV3.voteEntry(entryId) }
+            rxSingle {
+                val response = entriesApiV3.voteEntry(entryId)
+                if (!response.isSuccessful) throw HttpException(response)
+                WykopApiResponseV3(data = Unit, pagination = null)
+            }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
                 .map {
@@ -50,7 +55,11 @@ class EntriesRepository
                 }.doOnSuccess { entryVoteSubject.onNext(EntryVotePublishModel(entryId, it)) }
 
         override fun unvoteEntry(entryId: Long) =
-            rxSingle { entriesApiV3.unvoteEntry(entryId) ?: WykopApiResponseV3(data = Unit, pagination = null) }
+            rxSingle {
+                val response = entriesApiV3.unvoteEntry(entryId)
+                if (!response.isSuccessful) throw HttpException(response)
+                WykopApiResponseV3(data = Unit, pagination = null)
+            }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
                 .map {
@@ -61,7 +70,11 @@ class EntriesRepository
         override fun voteComment(
             entryId: Long,
             commentId: Long,
-        ) = rxSingle { entriesApiV3.voteComment(entryId, commentId) }
+        ) = rxSingle {
+            val response = entriesApiV3.voteComment(entryId, commentId)
+            if (!response.isSuccessful) throw HttpException(response)
+            WykopApiResponseV3(data = Unit, pagination = null)
+        }
             .retryWhen(userTokenRefresher)
             .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
             .map {
@@ -72,7 +85,11 @@ class EntriesRepository
         override fun unvoteComment(
             entryId: Long,
             commentId: Long,
-        ) = rxSingle { entriesApiV3.unvoteComment(entryId, commentId) ?: WykopApiResponseV3(data = Unit, pagination = null) }
+        ) = rxSingle {
+            val response = entriesApiV3.unvoteComment(entryId, commentId)
+            if (!response.isSuccessful) throw HttpException(response)
+            WykopApiResponseV3(data = Unit, pagination = null)
+        }
             .retryWhen(userTokenRefresher)
             .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
             .map {
@@ -485,12 +502,14 @@ class EntriesRepository
             entryId: Long,
             answerId: Int,
         ) = rxSingle {
-            entriesApiV3.voteSurvey(
+            val response = entriesApiV3.voteSurvey(
                 entryId,
                 WykopApiRequestV3(
                     VoteSurveyRequestV3(answerId),
                 ),
             )
+            if (!response.isSuccessful) throw HttpException(response)
+            WykopApiResponseV3(data = Unit, pagination = null)
         }.retryWhen(userTokenRefresher)
             .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
             .map {

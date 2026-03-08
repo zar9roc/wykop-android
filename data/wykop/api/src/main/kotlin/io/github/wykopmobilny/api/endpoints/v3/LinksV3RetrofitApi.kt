@@ -8,6 +8,7 @@ import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.RelatedResponseV3
 import io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -92,18 +93,18 @@ interface LinksV3RetrofitApi {
     @POST("v3/links/{linkId}/votes/up")
     suspend fun voteUp(
         @Path("linkId") linkId: Long,
-    ): WykopApiResponseV3<Unit>
+    ): Response<Unit>
 
     @POST("v3/links/{linkId}/votes/down/{reason}")
     suspend fun voteDown(
         @Path("linkId") linkId: Long,
         @Path("reason") reason: Int,
-    ): WykopApiResponseV3<Unit>
+    ): Response<Unit>
 
     @DELETE("v3/links/{linkId}/votes")
     suspend fun removeVote(
         @Path("linkId") linkId: Long,
-    ): WykopApiResponseV3<Unit>?
+    ): Response<Unit>
 
     // endregion
 
@@ -114,13 +115,13 @@ interface LinksV3RetrofitApi {
         @Path("linkId") linkId: Long,
         @Path("commentId") commentId: Long,
         @Path("type") type: String,
-    ): WykopApiResponseV3<Unit>
+    ): Response<Unit>
 
     @DELETE("v3/links/{linkId}/comments/{commentId}/votes")
     suspend fun removeCommentVote(
         @Path("linkId") linkId: Long,
         @Path("commentId") commentId: Long,
-    ): WykopApiResponseV3<Unit>?
+    ): Response<Unit>
 
     // endregion
 
@@ -143,13 +144,13 @@ interface LinksV3RetrofitApi {
         @Path("linkId") linkId: Long,
         @Path("relatedId") relatedId: Long,
         @Path("type") type: String,
-    ): WykopApiResponseV3<Unit>
+    ): Response<Unit>
 
     @DELETE("v3/links/{linkId}/related/{relatedId}/votes")
     suspend fun removeRelatedVote(
         @Path("linkId") linkId: Long,
         @Path("relatedId") relatedId: Long,
-    ): WykopApiResponseV3<Unit>?
+    ): Response<Unit>
 
     // endregion
 

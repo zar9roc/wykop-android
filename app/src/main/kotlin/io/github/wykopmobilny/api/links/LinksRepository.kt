@@ -13,6 +13,7 @@ import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateCommentRequest
 import io.github.wykopmobilny.api.requests.v3.links.AddRelatedRequestV3
 import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
+import retrofit2.HttpException
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.RelatedResponseV3
 import io.github.wykopmobilny.api.responses.v3.observed.ObservedItemV3
@@ -105,42 +106,60 @@ class LinksRepository
         override fun commentVoteUp(
             linkId: Long,
             commentId: Long,
-        ) = rxSingle { linksApiV3.voteComment(linkId, commentId, "up") }
+        ) = rxSingle {
+            val response = linksApiV3.voteComment(linkId, commentId, "up")
+            if (!response.isSuccessful) throw HttpException(response)
+        }
             .retryWhen(userTokenRefresher)
             .map { }
 
         override fun commentVoteDown(
             linkId: Long,
             commentId: Long,
-        ) = rxSingle { linksApiV3.voteComment(linkId, commentId, "down") }
+        ) = rxSingle {
+            val response = linksApiV3.voteComment(linkId, commentId, "down")
+            if (!response.isSuccessful) throw HttpException(response)
+        }
             .retryWhen(userTokenRefresher)
             .map { }
 
         override fun relatedVoteUp(
             linkId: Long,
             relatedId: Int,
-        ) = rxSingle { linksApiV3.voteRelated(linkId, relatedId.toLong(), "up") }
+        ) = rxSingle {
+            val response = linksApiV3.voteRelated(linkId, relatedId.toLong(), "up")
+            if (!response.isSuccessful) throw HttpException(response)
+        }
             .retryWhen(userTokenRefresher)
             .map { }
 
         override fun relatedVoteDown(
             linkId: Long,
             relatedId: Int,
-        ) = rxSingle { linksApiV3.voteRelated(linkId, relatedId.toLong(), "down") }
+        ) = rxSingle {
+            val response = linksApiV3.voteRelated(linkId, relatedId.toLong(), "down")
+            if (!response.isSuccessful) throw HttpException(response)
+        }
             .retryWhen(userTokenRefresher)
             .map { }
 
         override fun commentVoteCancel(
             linkId: Long,
             commentId: Long,
-        ) = rxSingle { linksApiV3.removeCommentVote(linkId, commentId) ?: WykopApiResponseV3(data = Unit, pagination = null) }
+        ) = rxSingle {
+            val response = linksApiV3.removeCommentVote(linkId, commentId)
+            if (!response.isSuccessful) throw HttpException(response)
+        }
             .retryWhen(userTokenRefresher)
             .map { }
 
         override fun voteUp(
             linkId: Long,
             notifyPublisher: Boolean,
-        ) = rxSingle { linksApiV3.voteUp(linkId) }
+        ) = rxSingle {
+            val response = linksApiV3.voteUp(linkId)
+            if (!response.isSuccessful) throw HttpException(response)
+        }
             .retryWhen(userTokenRefresher)
             .map { }
             .doOnSuccess {
@@ -153,7 +172,10 @@ class LinksRepository
             linkId: Long,
             reason: Int,
             notifyPublisher: Boolean,
-        ) = rxSingle { linksApiV3.voteDown(linkId, reason) }
+        ) = rxSingle {
+            val response = linksApiV3.voteDown(linkId, reason)
+            if (!response.isSuccessful) throw HttpException(response)
+        }
             .retryWhen(userTokenRefresher)
             .map { }
             .doOnSuccess {
@@ -165,7 +187,10 @@ class LinksRepository
         override fun voteRemove(
             linkId: Long,
             notifyPublisher: Boolean,
-        ) = rxSingle { linksApiV3.removeVote(linkId) ?: WykopApiResponseV3(data = Unit, pagination = null) }
+        ) = rxSingle {
+            val response = linksApiV3.removeVote(linkId)
+            if (!response.isSuccessful) throw HttpException(response)
+        }
             .retryWhen(userTokenRefresher)
             .map { }
             .doOnSuccess {
