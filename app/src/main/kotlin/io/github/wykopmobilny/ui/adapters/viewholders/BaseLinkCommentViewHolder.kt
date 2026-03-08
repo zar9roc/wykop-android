@@ -125,7 +125,9 @@ abstract class BaseLinkCommentViewHolder(
     ) {
         val isDeleted = comment.deletedReason != null
 
-        replyButton.isVisible = !isDeleted && userAuthorized && commentViewListener != null
+        // Reply button - visible if authorized, disabled if deleted
+        replyButton.isVisible = userAuthorized && commentViewListener != null
+        replyButton.isEnabled = !isDeleted
 
         if (isDeleted) {
             setupDeletedBody(comment)
@@ -247,18 +249,22 @@ abstract class BaseLinkCommentViewHolder(
         minusButton.setup(userManagerApi)
         minusButton.text = comment.voteCountMinus.absoluteValue.toString()
 
-        moreOptionsButton.isVisible = !isDeleted
+        // More options - always visible (menu has useful options even for deleted comments)
+        moreOptionsButton.isVisible = true
         moreOptionsButton.setOnClickListener { openLinkCommentMenu(comment) }
 
-        shareButton.isVisible = !isDeleted
+        // Share button - always visible but disabled if deleted
+        shareButton.isVisible = true
+        shareButton.isEnabled = !isDeleted
         shareButton.setOnClickListener {
             navigator.shareUrl(comment.url)
         }
 
-        plusButton.isVisible = !isDeleted
-        plusButton.isEnabled = true
-        minusButton.isVisible = !isDeleted
-        minusButton.isEnabled = true
+        // Vote buttons - always visible but disabled if deleted
+        plusButton.isVisible = true
+        plusButton.isEnabled = !isDeleted
+        minusButton.isVisible = true
+        minusButton.isEnabled = !isDeleted
 
         if (comment.isCollapsed) {
             collapseButton.setImageDrawable(expandDrawable)
@@ -323,6 +329,7 @@ abstract class BaseLinkCommentViewHolder(
         val bottomSheetView = LinkCommentMenuBottomsheetBinding.inflate(activityContext.layoutInflater)
         dialog.setContentView(bottomSheetView.root)
         (bottomSheetView.root.parent as View).setBackgroundColor(Color.TRANSPARENT)
+        val isDeleted = comment.deletedReason != null
 
         bottomSheetView.apply {
             author.text = comment.author.nick
@@ -335,8 +342,15 @@ abstract class BaseLinkCommentViewHolder(
             date.text = comment.app?.let { root.context.getString(R.string.date_with_user_app, dateAsString, comment.app) }
                 ?: dateAsString
 
+            // Copy - copies slug if deleted and available, otherwise body
             commentMenuCopy.setOnClickListener {
-                it.context.copyText(comment.body?.stripWykopFormatting() ?: "", "entry-body")
+                val textToCopy =
+                    if (isDeleted && !comment.slug.isNullOrEmpty()) {
+                        comment.slug
+                    } else {
+                        comment.body?.stripWykopFormatting() ?: ""
+                    }
+                it.context.copyText(textToCopy, "link-comment-body")
 
                 dialog.dismiss()
             }
@@ -348,7 +362,7 @@ abstract class BaseLinkCommentViewHolder(
                 dialog.dismiss()
             }
 
-            commentMenuReport.isVisible = userManagerApi.isUserAuthorized() && comment.violationUrl != null
+            commentMenuReport.isVisible = !isDeleted && userManagerApi.isUserAuthorized() && comment.violationUrl != null
             commentMenuReport.setOnClickListener {
                 navigator.openReportScreen(comment.violationUrl.let(::checkNotNull))
                 dialog.dismiss()
@@ -360,8 +374,8 @@ abstract class BaseLinkCommentViewHolder(
             }
 
             val canUserEdit = comment.author.nick == userManagerApi.getUserCredentials()?.login
-            commentMenuDelete.isVisible = canUserEdit
-            commentMenuEdit.isVisible = canUserEdit
+            commentMenuDelete.isVisible = !isDeleted && canUserEdit
+            commentMenuEdit.isVisible = !isDeleted && canUserEdit
         }
 
         val mBehavior = BottomSheetBehavior.from(bottomSheetView.root.parent as View)
