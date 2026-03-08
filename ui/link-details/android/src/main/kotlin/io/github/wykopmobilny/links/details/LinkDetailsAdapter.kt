@@ -72,7 +72,7 @@ internal class LinkDetailsAdapter : ListAdapter<ListItem, LinkDetailsAdapter.Bin
     ) {
         when (val item = getItem(position)) {
             is ListItem.Header -> {
-                (holder.binding as LinkDetailsHeaderBinding).bindHeader(item.header)
+                (holder.binding as LinkDetailsHeaderBinding).bindHeader(item.header, item.relatedCount)
             }
 
             is ListItem.ParentComment -> {
@@ -112,6 +112,7 @@ internal class LinkDetailsAdapter : ListAdapter<ListItem, LinkDetailsAdapter.Bin
 internal sealed class ListItem {
     data class Header(
         val header: LinkDetailsHeaderUi,
+        val relatedCount: Int = 0,
     ) : ListItem()
 
     data class RelatedSection(
@@ -171,7 +172,12 @@ private val LinkCommentUi.id
 @OptIn(ExperimentalStdlibApi::class)
 internal fun LinkDetailsUi.toAdapterList(): List<ListItem> =
     buildList {
-        add(ListItem.Header(header))
+        val relatedCount = (relatedSection as? RelatedLinksSectionUi.WithData)?.links?.size ?: 0
+        add(ListItem.Header(header, relatedCount))
+        val related = relatedSection
+        if (related != null) {
+            add(ListItem.RelatedSection(related))
+        }
         commentsSection.comments.forEach { (parent, replies) ->
             add(ListItem.ParentComment(parent, hasReplies = replies.isNotEmpty()))
             addAll(replies.map { linkCommentUi -> ListItem.ReplyComment(linkCommentUi, linkCommentUi.id == replies.last().id) })

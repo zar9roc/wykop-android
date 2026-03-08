@@ -1,6 +1,7 @@
 package io.github.wykopmobilny.links.details
 
 import android.os.Bundle
+import android.view.Menu
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -10,6 +11,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView.Adapter.StateRestorationPolicy
+import com.github.wykopmobilny.ui.components.bind
 import com.github.wykopmobilny.ui.components.utils.dpToPx
 import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.kotlin.AppDispatchers
@@ -23,6 +25,7 @@ import io.github.wykopmobilny.utils.bindings.collectMenuOptions
 import io.github.wykopmobilny.utils.bindings.collectOptionPicker
 import io.github.wykopmobilny.utils.bindings.collectSnackbar
 import io.github.wykopmobilny.utils.bindings.collectSwipeRefresh
+import io.github.wykopmobilny.utils.bindings.setOnClick
 import io.github.wykopmobilny.utils.longArgument
 import io.github.wykopmobilny.utils.longArgumentNullable
 import io.github.wykopmobilny.utils.viewModelWrapperFactoryKeyed
@@ -45,6 +48,8 @@ fun linkDetailsFragment(
         }
 
 internal class LinkDetailsMainFragment : Fragment(R.layout.fragment_link_details) {
+    private var sortClickAction: (() -> Unit)? = null
+
     var linkId by longArgument("userId")
     var commentId by longArgumentNullable("commentId")
     private val key
@@ -65,6 +70,7 @@ internal class LinkDetailsMainFragment : Fragment(R.layout.fragment_link_details
         val getLinkDetails = viewModel.dependency.getLinkDetails()
         val binding = FragmentLinkDetailsBinding.bind(view)
         binding.toolbar.bindBackButton(activity = activity)
+        setupSortMenu(binding)
 
         val adapter = LinkDetailsAdapter()
         adapter.stateRestorationPolicy = StateRestorationPolicy.PREVENT_WHEN_EMPTY
@@ -123,7 +129,37 @@ internal class LinkDetailsMainFragment : Fragment(R.layout.fragment_link_details
                 launch { shared.map { it.contextMenuOptions }.collectMenuOptions(binding.toolbar) }
                 launch { shared.map { it.picker }.collectOptionPicker(view.context) }
                 launch { shared.map { it.snackbar }.collectSnackbar(view) }
+                launch {
+                    shared.collect { ui ->
+                        val header = ui.header
+                        if (header is LinkDetailsHeaderUi.WithData) {
+                            binding.commentAvatar.bind(header.currentUser?.avatar)
+                            binding.addCommentButton.setOnClick(header.addCommentAction)
+                            bindSortMenu(header)
+                        }
+                    }
+                }
             }
         }
+    }
+
+    private fun setupSortMenu(binding: FragmentLinkDetailsBinding) {
+        val sortMenuItem =
+            binding.toolbar.menu
+                .add(Menu.NONE, SORT_MENU_ID, Menu.NONE, "Sortuj")
+                .setIcon(io.github.wykopmobilny.ui.base.android.R.drawable.ic_sort)
+                .setShowAsActionFlags(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS)
+        sortMenuItem.setOnMenuItemClickListener {
+            sortClickAction?.invoke()
+            true
+        }
+    }
+
+    private fun bindSortMenu(header: LinkDetailsHeaderUi.WithData) {
+        sortClickAction = header.commentsSort.clickAction
+    }
+
+    companion object {
+        private const val SORT_MENU_ID = 9999
     }
 }

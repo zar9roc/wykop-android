@@ -1,7 +1,5 @@
 package io.github.wykopmobilny.links.details.items
 
-import android.content.res.ColorStateList
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import com.github.wykopmobilny.ui.components.bind
 import com.github.wykopmobilny.ui.components.setUserNick
@@ -49,25 +47,6 @@ internal fun LinkDetailsReplyCommentBinding.bindReplyComment(
     lineHorizontal.setBackgroundColor(badgeColor)
     plusButton.bind(comment.plusCount)
     minusButton.bind(comment.minusCount)
-    btnMore.setOnClick(comment.moreAction)
     lineCommentMiddle.isVisible = !isLast
     lineCommentLast.isVisible = isLast
-    optionsContainer.isVisible = comment.showsOption
-    btnProfile.setOnClick(comment.profileAction)
-    btnShare.setOnClick(comment.shareAction)
-    btnFavorite.setOnClick(comment.favoriteButton.clickAction)
-    btnFavorite.setImageResource(
-        if (comment.favoriteButton.isToggled) {
-            BaseR.drawable.ic_favorite
-        } else {
-            BaseR.drawable.ic_favorite_outlined
-        },
-    )
-    btnFavorite.imageTintList =
-        if (comment.favoriteButton.isToggled) {
-            ColorStateList.valueOf(ContextCompat.getColor(btnFavorite.context, BaseR.color.favorite_enabled))
-        } else {
-            btnFavorite.context.readColorAttr(AppcompatR.attr.colorControlNormal)
-        }
-    btnReply.setOnClick(comment.profileAction)
 }

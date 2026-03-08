@@ -3,4 +3,5 @@
     <string name="add_comment">Dodaj komentarz</string>
     <string name="separator">•</string>
     <string name="hidden_entry">Pokaż ukryty wpis od:\u00A0</string>
+    <string name="related_links">Powiązane linki</string>
 </resources>

@@ -1,7 +1,5 @@
 package io.github.wykopmobilny.links.details.items
 
-import android.content.res.ColorStateList
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import com.github.wykopmobilny.ui.components.bind
 import com.github.wykopmobilny.ui.components.setUserNick
@@ -15,7 +13,6 @@ import io.github.wykopmobilny.ui.link_details.android.databinding.LinkDetailsPar
 import io.github.wykopmobilny.utils.bindings.setOnClick
 import io.github.wykopmobilny.utils.bindings.setOnLongClick
 import androidx.appcompat.R as AppcompatR
-import io.github.wykopmobilny.ui.base.android.R as BaseR
 
 internal fun LinkDetailsParentCommentBinding.bindParentComment(
     parent: ParentCommentUi,
@@ -30,9 +27,8 @@ internal fun LinkDetailsParentCommentBinding.bindParentComment(
         clickableContainer.background = null
     }
 
-    txtCollapsed.isVisible = parent.collapsedCount != null
-    txtCollapsed.text = parent.collapsedCount
-    txtCollapsed.setOnClick(parent.toggleExpansionStateAction)
+    btnCollapse.isVisible = parent.toggleExpansionStateAction != null
+    btnCollapse.setOnClick(parent.toggleExpansionStateAction)
 
     imgAvatar.bind(data.author.avatar)
     txtUser.setUserNick(data.author)
@@ -43,20 +39,7 @@ internal fun LinkDetailsParentCommentBinding.bindParentComment(
     imgBadge.setBackgroundColor(data.badge.toColorInt(context = root.context).defaultColor)
     plusButton.bind(data.plusCount)
     minusButton.bind(data.minusCount)
-    btnMore.setOnClick(data.moreAction)
     lineComment.isVisible = hasReplies
-    optionsContainer.isVisible = data.showsOption
-    btnProfile.setOnClick(data.profileAction)
-    btnShare.setOnClick(data.shareAction)
-    btnFavorite.setOnClick(data.favoriteButton.clickAction)
-    btnFavorite.setImageResource(if (data.favoriteButton.isToggled) BaseR.drawable.ic_favorite else BaseR.drawable.ic_favorite_outlined)
-    btnFavorite.imageTintList =
-        if (data.favoriteButton.isToggled) {
-            ColorStateList.valueOf(ContextCompat.getColor(btnFavorite.context, BaseR.color.favorite_enabled))
-        } else {
-            btnFavorite.context.readColorAttr(AppcompatR.attr.colorControlNormal)
-        }
-    btnReply.setOnClick(data.profileAction)
 }
 
 internal fun LinkDetailsParentCommentHiddenBinding.bindHiddenParent(

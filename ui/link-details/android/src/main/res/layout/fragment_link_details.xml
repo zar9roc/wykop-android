@@ -25,20 +25,66 @@
             />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/swipeRefresh"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         >
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/list"
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/swipeRefresh"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbars="vertical"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/link_details_parent_comment"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            >
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scrollbars="vertical"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/link_details_parent_comment"
+                />
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="?colorDivider"
             />
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <LinearLayout
+            android:id="@+id/addCommentBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingVertical="8dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="8dp"
+            android:background="?colorSurface"
+            >
+
+            <com.github.wykopmobilny.ui.components.AvatarView
+                android:id="@+id/commentAvatar"
+                android:layout_width="28dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                />
+
+            <TextView
+                android:id="@+id/addCommentButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="?selectableItemBackground"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="8dp"
+                android:text="@string/add_comment"
+                android:textAppearance="@style/TextAppearance.MaterialScale.Body2"
+                />
+        </LinearLayout>
+    </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
