@@ -16,6 +16,7 @@ fun LinkResponseV3.filterLinkV3(owmContentFilter: OWMContentFilter) =
             description = description?.removeHtml().orEmpty(),
             tags = tags?.joinToString(" ") { "#$it" }.orEmpty(),
             sourceUrl = source?.url.orEmpty(),
+            sourceLabel = source?.label,
             voteCount = votes.up - votes.down,
             buryCount = votes.down,
             comments = mutableListOf(),

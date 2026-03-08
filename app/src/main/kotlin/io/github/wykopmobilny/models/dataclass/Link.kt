@@ -11,6 +11,7 @@ class Link(
     val description: String,
     val tags: String,
     val sourceUrl: String,
+    val sourceLabel: String?,
     var voteCount: Int,
     var buryCount: Int,
     var comments: MutableList<LinkComment>,
@@ -38,6 +39,7 @@ class Link(
         parcel.readString()!!,
         parcel.readString()!!,
         parcel.readString()!!,
+        parcel.readString(),
         parcel.readInt(),
         parcel.readInt(),
         parcel.createTypedArrayList(LinkComment.CREATOR)!!,
@@ -67,6 +69,7 @@ class Link(
         parcel.writeString(description)
         parcel.writeString(tags)
         parcel.writeString(sourceUrl)
+        parcel.writeString(sourceLabel)
         parcel.writeInt(voteCount)
         parcel.writeInt(buryCount)
         parcel.writeTypedList(comments)

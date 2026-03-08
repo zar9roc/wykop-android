@@ -15,6 +15,7 @@ fun LinkResponse.filterLink(owmContentFilter: OWMContentFilter) =
             description = description?.removeHtml().orEmpty(),
             tags = tags,
             sourceUrl = sourceUrl,
+            sourceLabel = null,
             voteCount = voteCount,
             buryCount = buryCount,
             comments = mutableListOf(),
