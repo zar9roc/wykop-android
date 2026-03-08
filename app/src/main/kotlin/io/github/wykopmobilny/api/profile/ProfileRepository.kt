@@ -5,7 +5,6 @@ import io.github.wykopmobilny.api.endpoints.v3.ProfileV3RetrofitApi
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
 import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.responses.ObserveStateResponse
-import io.github.wykopmobilny.api.responses.v3.entries.EntryCommentResponseV3
 import io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
@@ -82,8 +81,13 @@ class ProfileRepository
         ): Single<List<EntryComment>> =
             rxSingle { profileApiV3.getUserEntriesCommented(username, page) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<EntryCommentResponseV3>>())
-                .map { it.map { response -> EntryCommentMapperV3.map(response, owmContentFilter) } }
+                .compose(ErrorHandlerTransformerV3<List<EntryResponseV3>>())
+                .map { entries ->
+                    entries.flatMap { entry ->
+                        entry.comments.items.orEmpty()
+                            .map { comment -> EntryCommentMapperV3.map(comment, owmContentFilter) }
+                    }
+                }
 
         override fun getLinkComments(
             username: String,
