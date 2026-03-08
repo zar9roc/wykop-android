@@ -3,9 +3,7 @@ package io.github.wykopmobilny.domain.repositories
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.fresh
 import io.github.wykopmobilny.api.endpoints.LinksRetrofitApi
-import io.github.wykopmobilny.api.responses.DigResponse
-import io.github.wykopmobilny.api.responses.LinkVoteResponse
-import io.github.wykopmobilny.api.responses.VoteResponse
+import io.github.wykopmobilny.api.endpoints.v3.LinksV3RetrofitApi
 import io.github.wykopmobilny.data.cache.api.AppCache
 import io.github.wykopmobilny.data.cache.api.UserVote
 import io.github.wykopmobilny.domain.api.ApiClient
@@ -21,13 +19,16 @@ internal class LinksRepository
         private val api: ApiClient,
         private val linkStore: Store<Long, LinkInfo>,
         private val linksApi: LinksRetrofitApi,
+        private val linksV3Api: LinksV3RetrofitApi,
         private val appCache: AppCache,
     ) {
+        // TODO: No v3 favourite endpoint exists — keep on v2 until API v3 adds it
         suspend fun toggleFavorite(linkId: Long) {
             api.mutation { linksApi.toggleFavorite(linkId) }
             linkStore.fresh(linkId)
         }
 
+        // TODO: No v3 favourite endpoint exists — keep on v2 until API v3 adds it
         suspend fun toggleCommentFavorite(
             linkId: Long,
             commentId: Long,
@@ -43,129 +44,106 @@ internal class LinksRepository
         }
 
         suspend fun voteUp(linkId: Long) {
-            val response = api.mutation { linksApi.voteUp(linkId) }
-            updateLinkVotes(linkId, response, userVote = UserVote.Up)
+            linksV3Api.voteUp(linkId)
+            withContext(AppDispatchers.IO) {
+                appCache.linksQueries.voteUpOptimistic(
+                    id = linkId,
+                    userVote = UserVote.Up,
+                )
+            }
         }
 
         suspend fun removeVote(linkId: Long) {
-            val response = api.mutation { linksApi.voteRemove(linkId) }
-            updateLinkVotes(linkId, response, userVote = null)
+            linksV3Api.removeVote(linkId)
+            withContext(AppDispatchers.IO) {
+                appCache.linksQueries.removeVoteOptimistic(
+                    id = linkId,
+                    wasUp = UserVote.Up,
+                    wasDown = UserVote.Down,
+                )
+            }
         }
 
         suspend fun voteDown(
             linkId: Long,
             reason: VoteDownReason,
         ) {
-            val response = api.mutation { linksApi.voteDown(linkId, reason.apiValue) }
-            updateLinkVotes(linkId, response, userVote = UserVote.Down)
+            linksV3Api.voteDown(linkId, reason.apiValue)
+            withContext(AppDispatchers.IO) {
+                appCache.linksQueries.voteDownOptimistic(
+                    id = linkId,
+                    userVote = UserVote.Down,
+                )
+            }
         }
 
         suspend fun commentVoteUp(
             linkId: Long,
             commentId: Long,
         ) {
-            val response = api.mutation { linksApi.commentVoteUp(linkId = linkId, commentId = commentId) }
-            updateCommentVotes(
-                linkId = linkId,
-                commentId = commentId,
-                response = response,
-                userVote = UserVote.Up,
-            )
+            linksV3Api.voteComment(linkId = linkId, commentId = commentId, type = "up")
+            withContext(AppDispatchers.IO) {
+                appCache.linkCommentsQueries.voteUpOptimistic(
+                    id = commentId,
+                    linkId = linkId,
+                    userVote = UserVote.Up,
+                )
+            }
         }
 
         suspend fun commentVoteDown(
             linkId: Long,
             commentId: Long,
         ) {
-            val response = api.mutation { linksApi.commentVoteDown(linkId = linkId, commentId = commentId) }
-            updateCommentVotes(
-                linkId = linkId,
-                commentId = commentId,
-                response = response,
-                userVote = UserVote.Down,
-            )
+            linksV3Api.voteComment(linkId = linkId, commentId = commentId, type = "down")
+            withContext(AppDispatchers.IO) {
+                appCache.linkCommentsQueries.voteDownOptimistic(
+                    id = commentId,
+                    linkId = linkId,
+                    userVote = UserVote.Down,
+                )
+            }
         }
 
         suspend fun removeCommentVote(
             linkId: Long,
             commentId: Long,
         ) {
-            val response = api.mutation { linksApi.commentVoteCancel(linkId = linkId, commentId = commentId) }
-            updateCommentVotes(
-                linkId = linkId,
-                commentId = commentId,
-                response = response,
-                userVote = null,
-            )
+            linksV3Api.removeCommentVote(linkId = linkId, commentId = commentId)
+            withContext(AppDispatchers.IO) {
+                appCache.linkCommentsQueries.removeVoteOptimistic(
+                    id = commentId,
+                    linkId = linkId,
+                    wasUp = UserVote.Up,
+                    wasDown = UserVote.Down,
+                )
+            }
         }
 
         suspend fun relatedVoteUp(
             linkId: Long,
             relatedId: Long,
         ) {
-            val response = api.mutation { linksApi.relatedVoteDown(linkId = linkId, relatedId = relatedId) }
-            updateRelatedLinks(
-                linkId = linkId,
-                relatedId = relatedId,
-                response = response,
-                userVote = UserVote.Up,
-            )
+            linksV3Api.voteRelated(linkId = linkId, relatedId = relatedId, type = "up")
+            withContext(AppDispatchers.IO) {
+                appCache.linksRelatedQueries.voteUpOptimistic(
+                    id = relatedId,
+                    linkId = linkId,
+                    userVote = UserVote.Up,
+                )
+            }
         }
 
         suspend fun relatedVoteDown(
             linkId: Long,
             relatedId: Long,
         ) {
-            val response = api.mutation { linksApi.relatedVoteDown(linkId = linkId, relatedId = relatedId) }
-            updateRelatedLinks(
-                linkId = linkId,
-                relatedId = relatedId,
-                response = response,
-                userVote = UserVote.Down,
-            )
-        }
-
-        private suspend fun updateLinkVotes(
-            linkId: Long,
-            response: DigResponse,
-            userVote: UserVote?,
-        ) = withContext(AppDispatchers.IO) {
-            appCache.linksQueries.vote(
-                id = linkId,
-                voteCount = response.diggs,
-                buryCount = response.buries,
-                userVote = userVote,
-            )
-        }
-
-        private suspend fun updateCommentVotes(
-            linkId: Long,
-            commentId: Long,
-            response: LinkVoteResponse,
-            userVote: UserVote?,
-        ) = withContext(AppDispatchers.IO) {
-            appCache.linkCommentsQueries.vote(
-                id = commentId,
-                linkId = linkId,
-                userVote = userVote,
-                voteCount = response.voteCount,
-                voteCountPlus = response.voteCountPlus,
-            )
-        }
-
-        private suspend fun updateRelatedLinks(
-            linkId: Long,
-            relatedId: Long,
-            response: VoteResponse,
-            userVote: UserVote,
-        ) = withContext(AppDispatchers.IO) {
-            val voteCount = response.voteCount
-            if (voteCount != null) {
-                appCache.linksRelatedQueries.vote(
+            linksV3Api.voteRelated(linkId = linkId, relatedId = relatedId, type = "down")
+            withContext(AppDispatchers.IO) {
+                appCache.linksRelatedQueries.voteDownOptimistic(
                     id = relatedId,
                     linkId = linkId,
-                    userVote = userVote,
-                    voteCount = voteCount,
+                    userVote = UserVote.Down,
                 )
             }
         }

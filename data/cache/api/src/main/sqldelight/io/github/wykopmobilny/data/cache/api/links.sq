@@ -40,6 +40,24 @@ SET
   userVote = :userVote
 WHERE id = :id;
 
+voteUpOptimistic:
+UPDATE linkEntity
+SET voteCount = voteCount + 1, userVote = :userVote
+WHERE id = :id;
+
+voteDownOptimistic:
+UPDATE linkEntity
+SET buryCount = buryCount + 1, userVote = :userVote
+WHERE id = :id;
+
+removeVoteOptimistic:
+UPDATE linkEntity
+SET
+  voteCount = CASE WHEN userVote = :wasUp THEN MAX(voteCount - 1, 0) ELSE voteCount END,
+  buryCount = CASE WHEN userVote = :wasDown THEN MAX(buryCount - 1, 0) ELSE buryCount END,
+  userVote = NULL
+WHERE id = :id;
+
 selectById:
 SELECT
   linkEntity.*,

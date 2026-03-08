@@ -37,6 +37,24 @@ SET
   userVote = :userVote
 WHERE id = :id AND linkId = :linkId;
 
+voteUpOptimistic:
+UPDATE linkCommentsEntity
+SET voteCount = voteCount + 1, voteCountPlus = voteCountPlus + 1, userVote = :userVote
+WHERE id = :id AND linkId = :linkId;
+
+voteDownOptimistic:
+UPDATE linkCommentsEntity
+SET voteCount = voteCount - 1, userVote = :userVote
+WHERE id = :id AND linkId = :linkId;
+
+removeVoteOptimistic:
+UPDATE linkCommentsEntity
+SET
+  voteCount = CASE WHEN userVote = :wasUp THEN voteCount - 1 WHEN userVote = :wasDown THEN voteCount + 1 ELSE voteCount END,
+  voteCountPlus = CASE WHEN userVote = :wasUp THEN MAX(voteCountPlus - 1, 0) ELSE voteCountPlus END,
+  userVote = NULL
+WHERE id = :id AND linkId = :linkId;
+
 favorite:
 UPDATE linkCommentsEntity
 SET

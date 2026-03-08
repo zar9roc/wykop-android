@@ -28,6 +28,16 @@ SET
   userVote = :userVote
 WHERE id = :id AND linkId = :linkId;
 
+voteUpOptimistic:
+UPDATE relatedLinkEntity
+SET voteCount = voteCount + 1, userVote = :userVote
+WHERE id = :id AND linkId = :linkId;
+
+voteDownOptimistic:
+UPDATE relatedLinkEntity
+SET voteCount = voteCount - 1, userVote = :userVote
+WHERE id = :id AND linkId = :linkId;
+
 selectByLinkId:
 SELECT
   relatedLinkEntity.*,
