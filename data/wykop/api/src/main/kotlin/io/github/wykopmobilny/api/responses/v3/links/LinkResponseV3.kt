@@ -24,6 +24,7 @@ data class LinkResponseV3(
     @field:Json(name = "slug") val slug: String?,
     @field:Json(name = "votes") val votes: LinkVotesResponseV3,
     @field:Json(name = "comments") val comments: LinkCommentsResponseV3,
+    @field:Json(name = "related") val related: LinkRelatedWrapperResponseV3?,
     @field:Json(name = "actions") val actions: ActionsResponseV3?,
     @field:Json(name = "deleted") val deleted: Boolean?,
     @field:Json(name = "archive") val archive: Boolean?,
