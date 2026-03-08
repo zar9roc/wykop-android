@@ -35,6 +35,11 @@ class MoshiResponseLoggingInterceptor(
             return response
         }
 
+        // Skip 204 No Content responses (empty body, common for DELETE endpoints)
+        if (response.code == 204) {
+            return response
+        }
+
         val responseBody = response.body ?: return response
 
         try {
