@@ -82,7 +82,6 @@ import kotlinx.datetime.Clock
 import okhttp3.Cache
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.reflect.KClass
@@ -116,15 +115,7 @@ open class WykopApp :
                     keepAliveDuration = 1,
                     timeUnit = TimeUnit.NANOSECONDS,
                 ),
-            ).apply {
-                if (BuildConfig.DEBUG) {
-                    addInterceptor(
-                        HttpLoggingInterceptor().apply {
-                            level = HttpLoggingInterceptor.Level.BODY
-                        },
-                    )
-                }
-            }.build()
+            ).build()
 
     override fun onCreate() {
         super.onCreate()
