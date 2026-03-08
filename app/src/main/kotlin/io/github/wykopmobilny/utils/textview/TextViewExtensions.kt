@@ -16,7 +16,7 @@ fun TextView.prepareBody(
     html: String,
     listener: (String) -> Unit,
 ) {
-    text = SpannableStringBuilder(html.toSpannable())
+    text = SpannableStringBuilder(html.linkifyTagsAndMentions().toSpannable())
     val method = BetterLinkMovementMethod.linkifyHtml(this)
     method.setOnLinkClickListener { _, url ->
         if (!url.text().startsWith("spoiler:")) listener.invoke(url.text())
@@ -30,7 +30,7 @@ fun TextView.prepareBody(
     clickListener: (() -> Unit)? = null,
     openSpoilersDialog: Boolean,
 ) {
-    text = SpannableStringBuilder(html.toSpannable())
+    text = SpannableStringBuilder(html.linkifyTagsAndMentions().toSpannable())
     val method = BetterLinkMovementMethod.linkifyHtml(this)
     clickListener?.let {
         method.setOnTextClickListener {

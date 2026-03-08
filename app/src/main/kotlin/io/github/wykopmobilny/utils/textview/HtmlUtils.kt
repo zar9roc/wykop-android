@@ -41,3 +41,31 @@ fun String.stripWykopFormatting(): String =
     } else {
         removeHtml()
     }
+
+/**
+ * Wraps #tags and @mentions in <a> tags so they become clickable links.
+ * Skips text that is already inside existing <a>...</a> tags to avoid double-linkification.
+ */
+fun String.linkifyTagsAndMentions(): String {
+    val linkPattern = Regex("<a\\s[^>]*>.*?</a>", RegexOption.DOT_MATCHES_ALL)
+    val result = StringBuilder()
+    var lastEnd = 0
+
+    for (match in linkPattern.findAll(this)) {
+        result.append(linkifyPlainText(substring(lastEnd, match.range.first)))
+        result.append(match.value)
+        lastEnd = match.range.last + 1
+    }
+    result.append(linkifyPlainText(substring(lastEnd)))
+
+    return result.toString()
+}
+
+private fun linkifyPlainText(text: String): String {
+    val tagMentionRegex = Regex("(?<!&)([#@])(\\w+)")
+    return tagMentionRegex.replace(text) { match ->
+        val prefix = match.groupValues[1]
+        val name = match.groupValues[2]
+        "$prefix<a href=\"${match.value}\">$name</a>"
+    }
+}
