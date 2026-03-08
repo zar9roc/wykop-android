@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentActivity
 import io.github.wykopmobilny.WykopApp
 import io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsActivity
 import io.github.wykopmobilny.ui.modules.mainnavigation.MainNavigationActivity
+import io.github.wykopmobilny.ui.modules.mikroblog.entry.EntryActivity
 import io.github.wykopmobilny.utils.usermanager.isUserAuthorized
 import org.json.JSONArray
 import org.json.JSONObject
@@ -200,6 +201,35 @@ object DebugStateHelper {
                 put("action", "open_link")
                 put("success", false)
                 put("link_id", linkId)
+                put("error", e.message)
+            }
+        }
+    }
+
+    /**
+     * Open entry detail screen by ID. Must be called on main thread.
+     */
+    fun openEntry(context: Context, entryId: Long): JSONObject {
+        return try {
+            val intent = EntryActivity.createIntent(
+                context = context,
+                entryId = entryId,
+                commentId = null,
+                isRevealed = false,
+            ).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(intent)
+            JSONObject().apply {
+                put("action", "open_entry")
+                put("success", true)
+                put("entry_id", entryId)
+            }
+        } catch (e: Exception) {
+            JSONObject().apply {
+                put("action", "open_entry")
+                put("success", false)
+                put("entry_id", entryId)
                 put("error", e.message)
             }
         }

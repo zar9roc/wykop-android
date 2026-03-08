@@ -206,9 +206,12 @@ curl localhost:8899/
     {"method": "GET",    "path": "/screen",                   "description": "Current screen summary"},
     {"method": "GET",    "path": "/screen/entries",           "description": "Entry list from current adapter"},
     {"method": "GET",    "path": "/screen/links",             "description": "Link list from current adapter"},
+    {"method": "GET",    "path": "/screen/link-detail",       "description": "Link detail from current screen"},
     {"method": "POST",   "path": "/navigate/{tab}",           "description": "Switch to tab"},
     {"method": "POST",   "path": "/action/vote/entry/{id}",   "description": "Vote on entry"},
     {"method": "DELETE", "path": "/action/vote/entry/{id}",   "description": "Unvote entry"},
+    {"method": "POST",   "path": "/action/open/link/{id}",    "description": "Open link detail by ID"},
+    {"method": "POST",   "path": "/action/open/entry/{id}",   "description": "Open entry detail by ID"},
     {"method": "POST",   "path": "/action/clear-cache",       "description": "Clear app cache"},
     {"method": "POST",   "path": "/action/logout",            "description": "Force logout"}
   ]
@@ -390,6 +393,38 @@ curl -s -X POST localhost:8899/action/logout | jq .
 }
 ```
 
+### `POST /action/open/link/{id}` — otwórz szczegóły linka
+
+Otwiera ekran szczegółów znaleziska (LinkDetailsActivity) dla podanego ID.
+
+```bash
+curl -s -X POST localhost:8899/action/open/link/67890 | jq .
+```
+
+```json
+{
+  "action": "open_link",
+  "success": true,
+  "link_id": 67890
+}
+```
+
+### `POST /action/open/entry/{id}` — otwórz szczegóły wpisu
+
+Otwiera ekran szczegółów wpisu mikroblogowego (EntryActivity) dla podanego ID.
+
+```bash
+curl -s -X POST localhost:8899/action/open/entry/12345 | jq .
+```
+
+```json
+{
+  "action": "open_entry",
+  "success": true,
+  "entry_id": 12345
+}
+```
+
 ## Jak dodawać nowe endpointy
 
 ### Krok po kroku
@@ -464,6 +499,12 @@ curl -s localhost:8899/screen/entries | jq '.entries[:3]'
 
 # Plusuj wpis
 curl -s -X POST localhost:8899/action/vote/entry/12345 | jq .
+
+# Otwórz szczegóły linku
+curl -s -X POST localhost:8899/action/open/link/67890 | jq .
+
+# Otwórz szczegóły wpisu
+curl -s -X POST localhost:8899/action/open/entry/12345 | jq .
 ```
 
 ### Skrypt: test nawigacji po zakładkach

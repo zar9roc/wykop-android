@@ -40,6 +40,7 @@ class DebugHttpServer(
         private const val MAIN_THREAD_TIMEOUT_SECONDS = 5L
         private val VOTE_ENTRY_REGEX = Regex("/action/vote/entry/\\d+")
         private val OPEN_LINK_REGEX = Regex("/action/open/link/\\d+")
+        private val OPEN_ENTRY_REGEX = Regex("/action/open/entry/\\d+")
         private val AVAILABLE_TABS = listOf(
             "promoted", "upcoming", "hits", "hot",
             "mywykop", "favorite", "search", "messages", "notifications",
@@ -74,11 +75,15 @@ class DebugHttpServer(
                     handleVoteEntry(uri, vote = false)
                 method == Method.POST && uri.matches(OPEN_LINK_REGEX) ->
                     handleOpenLink(uri)
+                method == Method.POST && uri.matches(OPEN_ENTRY_REGEX) ->
+                    handleOpenEntry(uri)
                 method == Method.POST && uri == "/action/clear-cache" -> handleClearCache()
                 method == Method.POST && uri == "/action/logout" -> handleLogout()
                 // GET convenience for browser
                 method == Method.GET && uri.matches(OPEN_LINK_REGEX) ->
                     handleOpenLink(uri)
+                method == Method.GET && uri.matches(OPEN_ENTRY_REGEX) ->
+                    handleOpenEntry(uri)
                 method == Method.GET && uri == "/action/clear-cache" -> handleClearCache()
                 method == Method.GET && uri.startsWith("/navigate/") -> handleNavigate(uri)
                 else -> jsonResponse(
@@ -115,6 +120,7 @@ class DebugHttpServer(
                 put(endpoint("POST", "/action/vote/entry/{id}", "Vote on entry"))
                 put(endpoint("DELETE", "/action/vote/entry/{id}", "Unvote entry"))
                 put(endpoint("POST", "/action/open/link/{id}", "Open link detail by ID"))
+                put(endpoint("POST", "/action/open/entry/{id}", "Open entry detail by ID"))
                 put(endpoint("POST", "/action/clear-cache", "Clear app cache"))
                 put(endpoint("POST", "/action/logout", "Force logout"))
             })
@@ -305,6 +311,20 @@ class DebugHttpServer(
 
         val json = runOnMainThread {
             DebugStateHelper.openLink(appContext, linkId)
+        }
+        return jsonResponse(Response.Status.OK, json)
+    }
+
+    private fun handleOpenEntry(uri: String): Response {
+        val idStr = uri.substringAfterLast("/")
+        val entryId = idStr.toLongOrNull()
+            ?: return jsonResponse(
+                Response.Status.BAD_REQUEST,
+                JSONObject().put("error", "Invalid entry id: $idStr"),
+            )
+
+        val json = runOnMainThread {
+            DebugStateHelper.openEntry(appContext, entryId)
         }
         return jsonResponse(Response.Status.OK, json)
     }

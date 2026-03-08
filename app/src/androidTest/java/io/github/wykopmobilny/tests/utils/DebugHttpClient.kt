@@ -65,6 +65,16 @@ class DebugHttpClient(
     fun unvoteEntry(entryId: Long): JSONObject = delete("$baseUrl/action/vote/entry/$entryId")
 
     /**
+     * POST /action/open/link/{id} - Open link detail by ID
+     */
+    fun openLink(linkId: Long): JSONObject = post("$baseUrl/action/open/link/$linkId")
+
+    /**
+     * POST /action/open/entry/{id} - Open entry detail by ID
+     */
+    fun openEntry(entryId: Long): JSONObject = post("$baseUrl/action/open/entry/$entryId")
+
+    /**
      * POST /action/clear-cache - Clear app cache
      */
     fun clearCache(): JSONObject = post("$baseUrl/action/clear-cache")
