@@ -16,3 +16,6 @@ annotation class PathFixingInterceptor
 
 @Qualifier
 annotation class IsDebug
+
+@Qualifier
+annotation class DebugNetworkInterceptor

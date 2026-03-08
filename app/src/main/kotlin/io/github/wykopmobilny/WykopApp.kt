@@ -14,6 +14,7 @@ import dagger.android.AndroidInjector
 import dagger.android.support.DaggerApplication
 import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.api.ApiSignInterceptor
+import io.github.wykopmobilny.debug.FlipperInterceptorFactory
 import io.github.wykopmobilny.data.cache.sqldelight.DaggerApplicationCacheComponent
 import io.github.wykopmobilny.di.DaggerAppComponent
 import io.github.wykopmobilny.domain.blacklist.di.BlacklistScope
@@ -255,6 +256,7 @@ open class WykopApp :
             bearerTokenStorage = storages.bearerTokenStorage(),
             cacheDir = cacheDir.resolve("okhttp/wykop"),
             isDebug = BuildConfig.DEBUG,
+            debugNetworkInterceptor = FlipperInterceptorFactory.create(),
         )
     }
 

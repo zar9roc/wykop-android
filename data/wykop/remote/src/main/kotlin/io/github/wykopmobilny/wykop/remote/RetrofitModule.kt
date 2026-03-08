@@ -50,6 +50,7 @@ internal class RetrofitModule {
         cacheDir: File,
         moshi: Moshi,
         @IsDebug isDebug: Boolean,
+        @DebugNetworkInterceptor debugNetworkInterceptor: Interceptor?,
     ) = Retrofit
         .Builder()
         .client(
@@ -63,6 +64,7 @@ internal class RetrofitModule {
                 .addInterceptor(signing)
                 .apply {
                     if (isDebug) {
+                        debugNetworkInterceptor?.let { addInterceptor(it) }
                         addInterceptor(
                             HttpLoggingInterceptor().apply {
                                 level = HttpLoggingInterceptor.Level.BODY

@@ -10,5 +10,19 @@
     <application
         android:networkSecurityConfig="@xml/network_security_config"
         tools:ignore="GoogleAppIndexingWarning,UnusedAttribute"
-        />
+        >
+
+        <!-- Flipper initialization in debug builds only -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge"
+            >
+            <meta-data
+                android:name="io.github.wykopmobilny.initializers.FlipperInitializer"
+                android:value="androidx.startup"
+                />
+        </provider>
+    </application>
 </manifest>

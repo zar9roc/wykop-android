@@ -26,6 +26,8 @@ interface WykopComponent : WykopApi {
             @BindsInstance cacheDir: File,
             @BindsInstance @IsDebug
             isDebug: Boolean,
+            @BindsInstance @DebugNetworkInterceptor
+            debugNetworkInterceptor: Interceptor?,
         ): WykopComponent
     }
 }

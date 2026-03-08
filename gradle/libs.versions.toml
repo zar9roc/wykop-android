@@ -55,6 +55,8 @@ mavencentral-junit = "5.9.3"
 mavencentral-napier = "2.6.1"
 mavencentral-checker = "3.21.2"
 mavencentral-kotlin = "2.2.20"
+mavencentral-flipper = "0.264.0"
+mavencentral-soloader = "0.12.1"
 jitpack-photoview = "2.3.0"
 jitpack-subsampling-scale-image-view = "3.10.0"
 
@@ -90,6 +92,11 @@ davemorrissey-subsamplingimageview = { module = "com.davemorrissey.labs:subsampl
 leakcanary-core = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "mavencentral.leakcanary" }
 jetbrains-markdown = { module = "org.jetbrains:markdown", version.ref = "mavencentral.markdown" }
 napier-core = { module = "io.github.aakira:napier", version.ref = "mavencentral.napier" }
+
+flipper-core = { module = "com.facebook.flipper:flipper", version.ref = "mavencentral-flipper" }
+flipper-network = { module = "com.facebook.flipper:flipper-network-plugin", version.ref = "mavencentral-flipper" }
+flipper-leakcanary = { module = "com.facebook.flipper:flipper-leakcanary2-plugin", version.ref = "mavencentral-flipper" }
+soloader-core = { module = "com.facebook.soloader:soloader", version.ref = "mavencentral-soloader" }
 
 media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "google-media3" }
 media3-datasource-okhttp = { module = "androidx.media3:media3-datasource-okhttp", version.ref = "google-media3" }
