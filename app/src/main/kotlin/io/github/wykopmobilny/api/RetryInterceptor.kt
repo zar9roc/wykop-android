@@ -22,12 +22,11 @@ class RetryInterceptor : Interceptor {
 
         var response = chain.proceed(newRequest)
         var tryCount = 0
-        while (!response.isSuccessful && response.code != 401 && tryCount < MAX_RETRY_COUNT) {
+        while (response.code >= 500 && tryCount < MAX_RETRY_COUNT) {
             tryCount++
             response.close()
             response = chain.proceed(newRequest)
         }
-        response.close()
         return response
     }
 }
