@@ -30,7 +30,9 @@ object LinkCommentMapperV3 {
             childCommentCount = 0,
             violationUrl = null,
             isNsfw = value.content?.lowercase()?.contains("#nsfw") ?: false,
-            isBlocked = value.deleted ?: false,
+            isBlocked = !value.deleted.isNullOrEmpty(),
+            deletedReason = value.deleted,
+            slug = value.slug,
         ),
     )
 }

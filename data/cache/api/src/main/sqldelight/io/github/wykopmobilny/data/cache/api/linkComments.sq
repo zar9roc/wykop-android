@@ -20,6 +20,8 @@ CREATE TABLE linkCommentsEntity (
     embedId TEXT,
     app TEXT,
     violationUrl TEXT,
+    deletedReason TEXT,
+    slug TEXT,
     FOREIGN KEY (profileId) REFERENCES profileEntity(id),
     FOREIGN KEY (parentId) REFERENCES linkCommentsEntity(id),
     FOREIGN KEY (embedId) REFERENCES embed(id)

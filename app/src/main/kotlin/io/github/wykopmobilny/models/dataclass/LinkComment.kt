@@ -26,6 +26,8 @@ class LinkComment(
     val violationUrl: String?,
     var isNsfw: Boolean = false,
     var isBlocked: Boolean = false,
+    val deletedReason: String? = null,
+    val slug: String? = null,
 ) : Parcelable {
     val url = "https://www.wykop.pl/link/$linkId/#comment-$id"
 
@@ -50,6 +52,8 @@ class LinkComment(
         parcel.readString()!!,
         parcel.readByte() != 0.toByte(),
         parcel.readByte() != 0.toByte(),
+        parcel.readString(),
+        parcel.readString(),
     )
 
     override fun writeToParcel(
@@ -76,6 +80,8 @@ class LinkComment(
         parcel.writeString(violationUrl)
         parcel.writeByte(if (isNsfw) 1 else 0)
         parcel.writeByte(if (isBlocked) 1 else 0)
+        parcel.writeString(deletedReason)
+        parcel.writeString(slug)
     }
 
     override fun describeContents(): Int = 0

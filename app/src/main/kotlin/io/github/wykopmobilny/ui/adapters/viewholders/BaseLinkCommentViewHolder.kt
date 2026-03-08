@@ -2,9 +2,11 @@ package io.github.wykopmobilny.ui.adapters.viewholders
 
 import android.graphics.Color
 import android.graphics.drawable.Drawable
+import android.util.TypedValue
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.use
 import androidx.core.view.isVisible
@@ -49,12 +51,14 @@ abstract class BaseLinkCommentViewHolder(
         ): Int =
             if (comment.parentId != comment.id && !forceTop) {
                 when {
+                    comment.deletedReason != null -> LinkCommentViewHolder.TYPE_NORMAL
                     comment.isBlocked -> LinkCommentViewHolder.TYPE_BLOCKED
                     comment.embed == null -> LinkCommentViewHolder.TYPE_NORMAL
                     else -> LinkCommentViewHolder.TYPE_EMBED
                 }
             } else {
                 when {
+                    comment.deletedReason != null -> TopLinkCommentViewHolder.TYPE_TOP_NORMAL
                     comment.isBlocked -> TopLinkCommentViewHolder.TYPE_TOP_BLOCKED
                     comment.embed == null -> TopLinkCommentViewHolder.TYPE_TOP_NORMAL
                     else -> TopLinkCommentViewHolder.TYPE_TOP_EMBED
@@ -119,33 +123,92 @@ abstract class BaseLinkCommentViewHolder(
         showAdultContent: Boolean,
         hideNsfw: Boolean,
     ) {
-        replyButton.isVisible = userAuthorized && commentViewListener != null
-        if (type == LinkCommentViewHolder.TYPE_EMBED || type == TopLinkCommentViewHolder.TYPE_TOP_EMBED) {
-            embedView.setEmbed(
-                embed = comment.embed,
-                enableYoutubePlayer = enableYoutubePlayer,
-                enableEmbedPlayer = enableEmbedPlayer,
-                showAdultContent = showAdultContent,
-                hideNsfw = hideNsfw,
-                navigator = navigator,
-                isNsfw = comment.isNsfw,
-            )
-        }
+        val isDeleted = comment.deletedReason != null
 
-        comment.body?.let { body ->
-            commentContent.prepareBody(
-                html = body,
-                urlClickListener = linkHandler::handleUrl,
-                clickListener = { handleClick(comment) },
-                openSpoilersDialog = openSpoilersDialog,
-            )
+        replyButton.isVisible = !isDeleted && userAuthorized && commentViewListener != null
+
+        if (isDeleted) {
+            setupDeletedBody(comment)
+        } else {
+            if (type == LinkCommentViewHolder.TYPE_EMBED || type == TopLinkCommentViewHolder.TYPE_TOP_EMBED) {
+                embedView.setEmbed(
+                    embed = comment.embed,
+                    enableYoutubePlayer = enableYoutubePlayer,
+                    enableEmbedPlayer = enableEmbedPlayer,
+                    showAdultContent = showAdultContent,
+                    hideNsfw = hideNsfw,
+                    navigator = navigator,
+                    isNsfw = comment.isNsfw,
+                )
+            }
+
+            val body = comment.body
+            if (!body.isNullOrEmpty()) {
+                commentContent.isVisible = true
+                resetContentTextViewStyle()
+                commentContent.prepareBody(
+                    html = body,
+                    urlClickListener = linkHandler::handleUrl,
+                    clickListener = { handleClick(comment) },
+                    openSpoilersDialog = openSpoilersDialog,
+                )
+            } else {
+                commentContent.isVisible = false
+            }
         }
 
         itemView.setOnClickListener { handleClick(comment) }
 
-        commentContent.isVisible = !comment.body.isNullOrEmpty()
         collapseButton.isVisible =
             !((comment.id != comment.parentId) || comment.childCommentCount == 0) && commentViewListener != null
+    }
+
+    private fun resetContentTextViewStyle() {
+        val textColor = TypedValue()
+        itemView.context.theme.resolveAttribute(android.R.attr.textColorPrimary, textColor, true)
+        commentContent.setTextColor(textColor.data)
+        commentContent.setTypeface(null, android.graphics.Typeface.NORMAL)
+        commentContent.setOnClickListener(null)
+    }
+
+    private fun setupDeletedBody(comment: LinkComment) {
+        val context = itemView.context
+        val deletedText =
+            when (comment.deletedReason) {
+                "host" -> context.getString(R.string.comment_deleted_by_host)
+                "moderator" -> context.getString(R.string.comment_deleted_by_moderator)
+                "author" -> context.getString(R.string.comment_deleted_by_author)
+                else -> context.getString(R.string.comment_deleted_generic)
+            }
+
+        val greyColor = TypedValue()
+        context.theme.resolveAttribute(R.attr.textColorGrey, greyColor, true)
+
+        commentContent.isVisible = true
+        commentContent.setTextColor(greyColor.data)
+        commentContent.text = deletedText
+        commentContent.setTypeface(
+            commentContent.typeface,
+            android.graphics.Typeface.ITALIC,
+        )
+
+        if (!comment.slug.isNullOrEmpty()) {
+            commentContent.setOnClickListener {
+                showSlugDialog(comment.slug)
+            }
+        } else {
+            commentContent.setOnClickListener(null)
+        }
+    }
+
+    private fun showSlugDialog(slug: String) {
+        val context = itemView.getActivityContext() ?: return
+        AlertDialog
+            .Builder(context)
+            .setTitle(R.string.deleted_comment_content)
+            .setMessage(slug)
+            .setPositiveButton(R.string.close, null)
+            .show()
     }
 
     private fun handleClick(comment: LinkComment) {
@@ -177,15 +240,24 @@ abstract class BaseLinkCommentViewHolder(
     }
 
     private fun setupButtons(comment: LinkComment) {
+        val isDeleted = comment.deletedReason != null
+
         plusButton.setup(userManagerApi)
         plusButton.text = comment.voteCountPlus.toString()
         minusButton.setup(userManagerApi)
         minusButton.text = comment.voteCountMinus.absoluteValue.toString()
+
+        moreOptionsButton.isVisible = !isDeleted
         moreOptionsButton.setOnClickListener { openLinkCommentMenu(comment) }
+
+        shareButton.isVisible = !isDeleted
         shareButton.setOnClickListener {
             navigator.shareUrl(comment.url)
         }
+
+        plusButton.isVisible = !isDeleted
         plusButton.isEnabled = true
+        minusButton.isVisible = !isDeleted
         minusButton.isEnabled = true
 
         if (comment.isCollapsed) {

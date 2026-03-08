@@ -22,5 +22,6 @@ data class LinkCommentResponseV3(
     @field:Json(name = "parent_id") val parentId: Long?,
     @field:Json(name = "resource") val resource: String,
     @field:Json(name = "actions") val actions: ActionsResponseV3?,
-    @field:Json(name = "deleted") val deleted: Boolean?,
+    @field:Json(name = "deleted") val deleted: String?,
+    @field:Json(name = "slug") val slug: String?,
 )

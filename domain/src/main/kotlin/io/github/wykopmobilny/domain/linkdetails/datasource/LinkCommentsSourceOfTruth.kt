@@ -93,12 +93,14 @@ internal fun linkCommentsSourceOfTruth(cache: AppCache) =
                             parentId = comment.parentId ?: comment.id,
                             canVote = true,
                             userVote = comment.voted.asUserVote(),
-                            isBlocked = comment.deleted ?: false,
+                            isBlocked = !comment.deleted.isNullOrEmpty(),
                             isFavorite = false,
                             linkId = linkId,
                             embedId = embedId,
                             app = comment.device,
                             violationUrl = null,
+                            deletedReason = comment.deleted,
+                            slug = comment.slug,
                         ),
                     )
                 }
