@@ -42,15 +42,19 @@ class EntriesRepository
             rxSingle { entriesApiV3.voteEntry(entryId) }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<Unit>())
-                .map { io.github.wykopmobilny.api.responses.VoteResponse(0) }
-                .doOnSuccess { entryVoteSubject.onNext(EntryVotePublishModel(entryId, it)) }
+                .map {
+                    io.github.wykopmobilny.api.responses
+                        .VoteResponse(0)
+                }.doOnSuccess { entryVoteSubject.onNext(EntryVotePublishModel(entryId, it)) }
 
         override fun unvoteEntry(entryId: Long) =
             rxSingle { entriesApiV3.unvoteEntry(entryId) }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<Unit>())
-                .map { io.github.wykopmobilny.api.responses.VoteResponse(0) }
-                .doOnSuccess { entryUnVoteSubject.onNext(EntryVotePublishModel(entryId, it)) }
+                .map {
+                    io.github.wykopmobilny.api.responses
+                        .VoteResponse(0)
+                }.doOnSuccess { entryUnVoteSubject.onNext(EntryVotePublishModel(entryId, it)) }
 
         override fun voteComment(
             entryId: Long,
@@ -58,7 +62,10 @@ class EntriesRepository
         ) = rxSingle { entriesApiV3.voteComment(entryId, commentId) }
             .retryWhen(userTokenRefresher)
             .compose(ErrorHandlerTransformerV3<Unit>())
-            .map { io.github.wykopmobilny.api.responses.VoteResponse(0) }
+            .map {
+                io.github.wykopmobilny.api.responses
+                    .VoteResponse(0)
+            }
 
         override fun unvoteComment(
             entryId: Long,
@@ -66,7 +73,10 @@ class EntriesRepository
         ) = rxSingle { entriesApiV3.unvoteComment(entryId, commentId) }
             .retryWhen(userTokenRefresher)
             .compose(ErrorHandlerTransformerV3<Unit>())
-            .map { io.github.wykopmobilny.api.responses.VoteResponse(0) }
+            .map {
+                io.github.wykopmobilny.api.responses
+                    .VoteResponse(0)
+            }
 
         override fun addEntry(
             body: String,
@@ -92,7 +102,9 @@ class EntriesRepository
                     id = entryV3.id,
                     date = Instant.DISTANT_PAST,
                     body = entryV3.content,
-                    author = io.github.wykopmobilny.api.responses.AuthorResponse("", 0, null, ""),
+                    author =
+                        io.github.wykopmobilny.api.responses
+                            .AuthorResponse("", 0, null, ""),
                     blocked = false,
                     favorite = false,
                     voteCount = 0,
@@ -130,7 +142,9 @@ class EntriesRepository
                     id = entryV3.id,
                     date = Instant.DISTANT_PAST,
                     body = entryV3.content,
-                    author = io.github.wykopmobilny.api.responses.AuthorResponse("", 0, null, ""),
+                    author =
+                        io.github.wykopmobilny.api.responses
+                            .AuthorResponse("", 0, null, ""),
                     blocked = false,
                     favorite = false,
                     voteCount = 0,
@@ -171,7 +185,9 @@ class EntriesRepository
                 EntryCommentResponse(
                     id = commentV3.id,
                     entryId = entryId,
-                    author = io.github.wykopmobilny.api.responses.AuthorResponse("", 0, null, ""),
+                    author =
+                        io.github.wykopmobilny.api.responses
+                            .AuthorResponse("", 0, null, ""),
                     date = "",
                     body = commentV3.content,
                     blocked = false,
@@ -208,7 +224,9 @@ class EntriesRepository
                 EntryCommentResponse(
                     id = commentV3.id,
                     entryId = entryId,
-                    author = io.github.wykopmobilny.api.responses.AuthorResponse("", 0, null, ""),
+                    author =
+                        io.github.wykopmobilny.api.responses
+                            .AuthorResponse("", 0, null, ""),
                     date = "",
                     body = commentV3.content,
                     blocked = false,
@@ -245,7 +263,9 @@ class EntriesRepository
                 EntryCommentResponse(
                     id = entryId,
                     entryId = null,
-                    author = io.github.wykopmobilny.api.responses.AuthorResponse("", 0, null, ""),
+                    author =
+                        io.github.wykopmobilny.api.responses
+                            .AuthorResponse("", 0, null, ""),
                     date = "",
                     body = body,
                     blocked = false,
@@ -284,7 +304,9 @@ class EntriesRepository
                 EntryCommentResponse(
                     id = entryId,
                     entryId = null,
-                    author = io.github.wykopmobilny.api.responses.AuthorResponse("", 0, null, ""),
+                    author =
+                        io.github.wykopmobilny.api.responses
+                            .AuthorResponse("", 0, null, ""),
                     date = "",
                     body = body,
                     blocked = false,
@@ -313,7 +335,9 @@ class EntriesRepository
                         id = entryId,
                         date = Instant.DISTANT_PAST,
                         body = "",
-                        author = io.github.wykopmobilny.api.responses.AuthorResponse("", 0, null, ""),
+                        author =
+                            io.github.wykopmobilny.api.responses
+                                .AuthorResponse("", 0, null, ""),
                         blocked = false,
                         favorite = false,
                         voteCount = 0,
@@ -354,7 +378,9 @@ class EntriesRepository
                 EntryCommentResponse(
                     id = commentId,
                     entryId = entryId,
-                    author = io.github.wykopmobilny.api.responses.AuthorResponse("", 0, null, ""),
+                    author =
+                        io.github.wykopmobilny.api.responses
+                            .AuthorResponse("", 0, null, ""),
                     date = "",
                     body = body,
                     blocked = false,
@@ -395,7 +421,9 @@ class EntriesRepository
                 EntryCommentResponse(
                     id = commentId,
                     entryId = entryId,
-                    author = io.github.wykopmobilny.api.responses.AuthorResponse("", 0, null, ""),
+                    author =
+                        io.github.wykopmobilny.api.responses
+                            .AuthorResponse("", 0, null, ""),
                     date = "",
                     body = body,
                     blocked = false,
@@ -420,7 +448,9 @@ class EntriesRepository
                 EntryCommentResponse(
                     id = commentId,
                     entryId = entryId,
-                    author = io.github.wykopmobilny.api.responses.AuthorResponse("", 0, null, ""),
+                    author =
+                        io.github.wykopmobilny.api.responses
+                            .AuthorResponse("", 0, null, ""),
                     date = "",
                     body = "",
                     blocked = false,
@@ -557,9 +587,10 @@ class EntriesRepository
          * Reduces code duplication across add/edit operations.
          */
         private suspend fun uploadPhotoAndGetKey(wykopImageFile: WykopImageFile): String? {
-            val uploadedPhoto = handleMediaUpload {
-                mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
-            }
+            val uploadedPhoto =
+                handleMediaUpload {
+                    mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
+                }
             return uploadedPhoto.key
         }
     }

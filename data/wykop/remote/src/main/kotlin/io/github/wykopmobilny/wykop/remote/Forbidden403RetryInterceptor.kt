@@ -41,7 +41,10 @@ internal class Forbidden403RetryInterceptor
 
             // Only handle 403 for v3 API endpoints (except auth and connect endpoints)
             if (!path.startsWith("/api/v3/") || path.startsWith("/api/v3/auth") || path == "/api/v3/connect") {
-                Napier.d("Forbidden403RetryInterceptor - Skipping: not v3 API or auth/connect endpoint", tag = "Forbidden403RetryInterceptor")
+                Napier.d(
+                    "Forbidden403RetryInterceptor - Skipping: not v3 API or auth/connect endpoint",
+                    tag = "Forbidden403RetryInterceptor",
+                )
                 return response
             }
 
@@ -64,7 +67,10 @@ internal class Forbidden403RetryInterceptor
 
                     if (latestToken != null && latestToken.accessToken != currentToken.accessToken) {
                         // Token was refreshed by another thread, retry with new token
-                        Napier.d("Forbidden403RetryInterceptor - Token already refreshed by another thread, retrying", tag = "Forbidden403RetryInterceptor")
+                        Napier.d(
+                            "Forbidden403RetryInterceptor - Token already refreshed by another thread, retrying",
+                            tag = "Forbidden403RetryInterceptor",
+                        )
                         response.close()
                         val newRequest =
                             request
@@ -81,7 +87,10 @@ internal class Forbidden403RetryInterceptor
             // Attempt to refresh the token using helper
             val newToken = tokenRefreshHelper.refreshToken(currentToken)
             if (newToken == null) {
-                Napier.w("Forbidden403RetryInterceptor - Token refresh failed, returning original 403 response", tag = "Forbidden403RetryInterceptor")
+                Napier.w(
+                    "Forbidden403RetryInterceptor - Token refresh failed, returning original 403 response",
+                    tag = "Forbidden403RetryInterceptor",
+                )
                 return response
             }
 

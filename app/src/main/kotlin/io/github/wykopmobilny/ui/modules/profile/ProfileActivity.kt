@@ -120,7 +120,7 @@ class ProfileActivity :
         val rankPosition = profileResponse.rank?.position ?: 0
         if (rankPosition != 0) {
             binding.rank.isVisible = true
-            binding.rank.text = "#${rankPosition}"
+            binding.rank.text = "#$rankPosition"
             binding.rank.setBackgroundColor(getGroupColor(colorNameToGroupId(profileResponse.color)))
         }
         profileResponse.gender?.let { sex ->
@@ -190,7 +190,12 @@ class ProfileActivity :
                     item.description.text = badge.description.orEmpty()
                     item.date.text = badge.achievedAt.orEmpty().toPrettyDate()
                     item.badgeTitle.text = badge.label.orEmpty()
-                    item.badgeImg.loadImage(badge.media?.icon?.url.orEmpty())
+                    item.badgeImg.loadImage(
+                        badge.media
+                            ?.icon
+                            ?.url
+                            .orEmpty(),
+                    )
                     badgesDialogView.badgesList.addView(item.root)
                 }
             }

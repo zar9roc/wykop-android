@@ -22,19 +22,21 @@ sealed interface NotificationResponseV3 {
  * Implementation varies by notification type.
  */
 val NotificationResponseV3.body: String
-    get() = when (this) {
-        is NotificationEntryResponseV3 -> message.orEmpty()
-        is NotificationTagResponseV3 -> tag?.name.orEmpty()
-        is NotificationPmResponseV3 -> content.orEmpty()
-        else -> ""
-    }
+    get() =
+        when (this) {
+            is NotificationEntryResponseV3 -> message.orEmpty()
+            is NotificationTagResponseV3 -> tag?.name.orEmpty()
+            is NotificationPmResponseV3 -> content.orEmpty()
+            else -> ""
+        }
 
 /**
  * Extension property to get notification URL if available.
  * Implementation varies by notification type.
  */
 val NotificationResponseV3.notificationUrl: String?
-    get() = when (this) {
-        is NotificationEntryResponseV3 -> url
-        else -> null
-    }
+    get() =
+        when (this) {
+            is NotificationEntryResponseV3 -> url
+            else -> null
+        }

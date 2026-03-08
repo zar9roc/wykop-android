@@ -41,7 +41,11 @@ internal class TokenRefreshHelper
                             ),
                         )
                     } catch (e: HttpException) {
-                        Napier.w("TokenRefreshHelper - JWT refresh failed with HTTP ${e.code()}: ${e.message()}", e, tag = "TokenRefreshHelper")
+                        Napier.w(
+                            "TokenRefreshHelper - JWT refresh failed with HTTP ${e.code()}: ${e.message()}",
+                            e,
+                            tag = "TokenRefreshHelper",
+                        )
                         // Refresh failed, clear tokens (user needs to re-login)
                         jwtTokenStorage.updateJwtToken(null)
                         return@runBlocking null

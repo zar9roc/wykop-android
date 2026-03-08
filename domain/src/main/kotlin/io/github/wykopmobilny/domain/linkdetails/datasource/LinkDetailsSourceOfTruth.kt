@@ -55,7 +55,11 @@ internal fun linkDetailsSourceOfTruth(cache: AppCache) =
         writer = { _, link ->
             cache.transaction {
                 cache.profileQueries.upsertV3(link.author)
-                val photoUrl = link.media?.photo?.url?.stripImageCompression()
+                val photoUrl =
+                    link.media
+                        ?.photo
+                        ?.url
+                        ?.stripImageCompression()
                 cache.linksQueries.insertOrReplace(
                     LinkEntity(
                         id = link.id,

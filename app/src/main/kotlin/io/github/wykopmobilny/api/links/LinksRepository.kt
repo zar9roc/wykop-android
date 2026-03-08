@@ -324,9 +324,10 @@ class LinksRepository
          * Reduces code duplication across add/edit operations.
          */
         private suspend fun uploadPhotoAndGetKey(wykopImageFile: WykopImageFile): String? {
-            val uploadedPhoto = handleMediaUpload {
-                mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
-            }
+            val uploadedPhoto =
+                handleMediaUpload {
+                    mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
+                }
             return uploadedPhoto.key
         }
     }

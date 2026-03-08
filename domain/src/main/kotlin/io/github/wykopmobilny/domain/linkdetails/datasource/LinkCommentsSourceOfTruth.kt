@@ -56,11 +56,12 @@ internal fun linkCommentsSourceOfTruth(cache: AppCache) =
                                 preview = photo.url,
                                 size = null,
                                 hasAdultContent = photo.plus18 ?: false,
-                                ratio = run {
-                                    val pw = photo.width
-                                    val ph = photo.height
-                                    if (pw != null && ph != null && ph > 0) pw.toFloat() / ph.toFloat() else 1f
-                                },
+                                ratio =
+                                    run {
+                                        val pw = photo.width
+                                        val ph = photo.height
+                                        if (pw != null && ph != null && ph > 0) pw.toFloat() / ph.toFloat() else 1f
+                                    },
                             ),
                         )
                     }
@@ -68,10 +69,11 @@ internal fun linkCommentsSourceOfTruth(cache: AppCache) =
                         cache.embedQueries.insertOrReplace(
                             Embed(
                                 id = embed.url,
-                                type = when (embed.type) {
-                                    "video" -> EmbedType.Video
-                                    else -> EmbedType.Unknown
-                                },
+                                type =
+                                    when (embed.type) {
+                                        "video" -> EmbedType.Video
+                                        else -> EmbedType.Unknown
+                                    },
                                 fileName = null,
                                 preview = embed.thumbnail ?: embed.url,
                                 size = null,

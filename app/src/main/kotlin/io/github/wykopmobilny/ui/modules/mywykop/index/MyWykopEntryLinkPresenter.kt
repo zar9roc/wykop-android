@@ -26,18 +26,23 @@ class MyWykopEntryLinkPresenter(
     EntryActionListener,
     LinkActionListener {
     var page = 1
+    private var indexPage: String? = null
+    private var indexPageNumber: Int = 1
 
     fun loadIndex(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = 1
+        if (shouldRefresh) {
+            indexPage = null
+            indexPageNumber = 1
+        }
         myWykopApi
-            .getIndex(page)
+            .getIndex(indexPage)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
-                {
-                    if (it.isNotEmpty()) {
-                        page++
-                        view?.addItems(it, shouldRefresh)
+                { data ->
+                    if (data.totalCount > 0) {
+                        indexPage = data.nextPage ?: (++indexPageNumber).toString()
+                        view?.addItems(data.filtered, shouldRefresh)
                     } else {
                         view?.disableLoading()
                     }

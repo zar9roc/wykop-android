@@ -18,7 +18,8 @@ sealed interface MediaUploadException {
     data class FileTooLarge(
         override val message: String = "Plik jest za duży. Maksymalny rozmiar pliku wynosi 10MB.",
         override val httpCode: Int = 413,
-    ) : MediaUploadException, Exception(message)
+    ) : Exception(message),
+        MediaUploadException
 
     /**
      * File type is not supported by the server (HTTP 415 Unsupported Media Type).
@@ -26,7 +27,8 @@ sealed interface MediaUploadException {
     data class UnsupportedMediaType(
         override val message: String = "Nieobsługiwany typ pliku. Dozwolone formaty: JPEG, PNG, GIF.",
         override val httpCode: Int = 415,
-    ) : MediaUploadException, Exception(message)
+    ) : Exception(message),
+        MediaUploadException
 
     /**
      * Unknown upload error occurred.
@@ -35,7 +37,8 @@ sealed interface MediaUploadException {
         override val message: String,
         override val httpCode: Int?,
         override val cause: Throwable? = null,
-    ) : MediaUploadException, Exception(message, cause)
+    ) : Exception(message, cause),
+        MediaUploadException
 }
 
 /**
@@ -59,13 +62,21 @@ suspend fun handleMediaUpload(block: suspend () -> WykopApiResponseV3<PhotoRespo
         )
     } catch (e: HttpException) {
         throw when (e.code()) {
-            413 -> MediaUploadException.FileTooLarge()
-            415 -> MediaUploadException.UnsupportedMediaType()
-            else -> MediaUploadException.Unknown(
-                message = "Błąd podczas uploadu pliku: ${e.message()}",
-                httpCode = e.code(),
-                cause = e,
-            )
+            413 -> {
+                MediaUploadException.FileTooLarge()
+            }
+
+            415 -> {
+                MediaUploadException.UnsupportedMediaType()
+            }
+
+            else -> {
+                MediaUploadException.Unknown(
+                    message = "Błąd podczas uploadu pliku: ${e.message()}",
+                    httpCode = e.code(),
+                    cause = e,
+                )
+            }
         }
     } catch (e: IOException) {
         throw MediaUploadException.Unknown(
