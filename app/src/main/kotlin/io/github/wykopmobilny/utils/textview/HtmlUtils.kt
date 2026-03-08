@@ -3,9 +3,6 @@ package io.github.wykopmobilny.utils.textview
 import android.text.Spannable
 import androidx.core.text.HtmlCompat
 import androidx.core.text.toSpannable
-import java.net.URLDecoder
-import java.net.URLEncoder
-import java.util.regex.Pattern
 
 fun String.toSpannable(): Spannable = HtmlCompat.fromHtml(this, HtmlCompat.FROM_HTML_MODE_COMPACT, null, CodeTagHandler()).toSpannable()
 
@@ -35,8 +32,7 @@ fun String.convertWykopContentToHtml(): String {
             when {
                 trimmed.startsWith("!") && trimmed.length > 1 -> {
                     val spoilerContent = trimmed.removePrefix("!").trim()
-                    val encoded = URLEncoder.encode(spoilerContent, "UTF-8")
-                    "<a href=\"spoiler:$encoded\">[pokaż spoiler]</a>"
+                    "<code>$spoilerContent</code>"
                 }
 
                 trimmed.startsWith(">") -> {
@@ -75,37 +71,7 @@ fun String.convertWykopContentToHtml(): String {
     return html
 }
 
-fun String.removeSpoilerHtml(): String {
-    val regexBegin = "<a href=\"spoiler:"
-    val matcher =
-        Pattern
-            .compile("($regexBegin).*?\">\\[pokaż spoiler]</a>")
-            .matcher(this)
-    val matches = ArrayList<String>()
-    var fullstring = this
-    while (matcher.find()) {
-        matches.add(matcher.group())
-    }
-
-    matches.forEach {
-        val text =
-            "! " +
-                URLDecoder.decode(
-                    it.replace(regexBegin, "").replace("\">[pokaż spoiler]</a>", ""),
-                    "UTF-8",
-                )
-        fullstring = fullstring.replaceFirst(it, text)
-    }
-
-    return fullstring
-}
-
-fun String.stripWykopFormatting(): String =
-    if (contains("<a href=\"spoiler:")) {
-        removeSpoilerHtml().removeHtml()
-    } else {
-        removeHtml()
-    }
+fun String.stripWykopFormatting(): String = removeHtml()
 
 /**
  * Wraps #tags and @mentions in <a> tags so they become clickable links.
