@@ -109,9 +109,17 @@
         />
 
     <TextView
+        android:id="@+id/quoteTextView"
+        style="@style/ButtonTextView"
+        app:drawableStartCompat="?attr/quoteDrawable"
+        app:layout_constraintLeft_toRightOf="@id/shareTextView"
+        app:layout_constraintTop_toBottomOf="@id/wykopEmbedView"
+        />
+
+    <TextView
         android:id="@+id/replyTextView"
         style="@style/ButtonTextView"
-        app:layout_constraintLeft_toRightOf="@id/shareTextView"
+        app:layout_constraintLeft_toRightOf="@id/quoteTextView"
         app:layout_constraintTop_toBottomOf="@id/wykopEmbedView"
         app:drawableStartCompat="?attr/replyDrawable"
         />

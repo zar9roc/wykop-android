@@ -77,6 +77,7 @@ class LinkCommentViewHolder(
     // Bind correct views
     override var commentContent: TextView = binding.commentContentTextView
     override var replyButton: TextView = binding.replyTextView
+    override var quoteButton: TextView = binding.quoteTextView
     override var collapseButton: ImageView = binding.collapseButtonImageView
     override var authorBadgeStrip: View = binding.authorBadgeStripView
     override var plusButton: PlusVoteButton = binding.plusVoteButton

@@ -85,6 +85,7 @@ abstract class BaseLinkCommentViewHolder(
     abstract var embedView: WykopEmbedView
     abstract var commentContent: TextView
     abstract var replyButton: TextView
+    abstract var quoteButton: TextView
     abstract var collapseButton: ImageView
     abstract var authorBadgeStrip: View
     abstract var plusButton: PlusVoteButton
@@ -128,6 +129,11 @@ abstract class BaseLinkCommentViewHolder(
         // Reply button - visible if authorized, disabled if deleted
         replyButton.isVisible = userAuthorized && commentViewListener != null
         replyButton.isEnabled = !isDeleted
+
+        // Quote button - visible if authorized, disabled if deleted
+        quoteButton.isVisible = userAuthorized && commentViewListener != null
+        quoteButton.isEnabled = !isDeleted
+        quoteButton.setOnClickListener { commentViewListener?.quoteComment(comment) }
 
         if (isDeleted) {
             setupDeletedBody(comment)

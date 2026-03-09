@@ -5,6 +5,8 @@ import io.github.wykopmobilny.models.dataclass.LinkComment
 interface LinkCommentViewListener {
     fun replyComment(comment: LinkComment)
 
+    fun quoteComment(comment: LinkComment)
+
     fun setCollapsed(
         comment: LinkComment,
         isCollapsed: Boolean,
