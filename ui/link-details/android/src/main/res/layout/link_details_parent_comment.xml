@@ -8,6 +8,14 @@
     android:layout_height="wrap_content"
     >
 
+    <View
+        android:id="@+id/separatorTop"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?colorDivider"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
     <com.github.wykopmobilny.ui.components.AvatarView
         android:id="@+id/imgAvatar"
         android:layout_width="32dp"
