@@ -176,8 +176,7 @@
             android:background="?selectableItemBackgroundBorderless"
             android:padding="8dp"
             tools:src="@drawable/ic_favorite_outlined"
-            tools:tint="?colorControlNormal"
-            />
+            tools:tint="?colorControlNormal" />
 
         <View
             android:layout_width="0dp"
@@ -232,9 +231,9 @@
                 android:id="@+id/commentIcon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:foreground="@drawable/ic_comment"
                 android:src="@drawable/ic_comment"
-                app:tint="?colorControlNormal"
-                />
+                app:tint="?colorControlNormal" />
 
             <TextView
                 android:id="@+id/commentCount"
@@ -262,9 +261,8 @@
                 android:id="@+id/voteUpIcon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_chevron_up"
-                tools:tint="?colorControlNormal"
-                />
+                android:src="@drawable/ic_logo"
+                tools:tint="?colorControlNormal" />
 
             <TextView
                 android:id="@+id/voteCount"
