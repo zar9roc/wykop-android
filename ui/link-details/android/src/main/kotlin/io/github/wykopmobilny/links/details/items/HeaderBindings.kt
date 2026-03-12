@@ -6,6 +6,7 @@ import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import androidx.core.widget.TextViewCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
 import com.github.wykopmobilny.ui.components.StandaloneTagView
@@ -58,46 +59,46 @@ internal fun LinkDetailsHeaderBinding.bindHeader(
 
         hotBadgeStrip.isVisible = header.badge != null
         hotBadgeStrip.setBackgroundColor(header.badge.toColorInt(hotBadgeStrip.context).defaultColor)
+        hotIcon.isVisible = header.badge != null
 
         favoriteButton.isVisible = header.favoriteButton.isVisible
         favoriteButton.setOnClick(header.favoriteButton.clickAction)
-        favoriteButton.setImageResource(
-            if (header.favoriteButton.isToggled) {
-                BaseR.drawable.ic_favorite
-            } else {
-                BaseR.drawable.ic_favorite_outlined
-            },
-        )
-        favoriteButton.imageTintList =
+        val favoriteResId = if (header.favoriteButton.isToggled) {
+            BaseR.drawable.ic_favorite
+        } else {
+            BaseR.drawable.ic_favorite_outlined
+        }
+        favoriteButton.setCompoundDrawablesRelativeWithIntrinsicBounds(favoriteResId, 0, 0, 0)
+        TextViewCompat.setCompoundDrawableTintList(
+            favoriteButton,
             if (header.favoriteButton.isToggled) {
                 ColorStateList.valueOf(ContextCompat.getColor(favoriteButton.context, BaseR.color.favorite_enabled))
             } else {
                 favoriteButton.context.readColorAttr(AppcompatR.attr.colorControlNormal)
-            }
+            },
+        )
 
         // Related links button
         relatedButton.isVisible = relatedCount > 0
-        relatedCount.let { count ->
-            this.relatedCount.text = count.toString()
-        }
+        relatedButton.text = relatedCount.toString()
 
         // Comment count — inline button
         val commentsLabel = header.commentsCount.label
-        commentCount.text = commentsLabel
+        commentButton.text = commentsLabel
         val commentsColor =
             header.commentsCount.color?.toColorInt(commentButton.context)
                 ?: commentButton.context.readColorAttr(AppcompatR.attr.colorControlNormal)
-        commentCount.setTextColor(commentsColor)
-        commentIcon.imageTintList = commentsColor
+        commentButton.setTextColor(commentsColor)
+        TextViewCompat.setCompoundDrawableTintList(commentButton, commentsColor)
         commentButton.setOnClick(header.commentsCount.clickAction)
 
         // Vote button — only up, color changes based on state
         val voteColor =
             header.voteCount.color?.toColorInt(voteButton.context)
                 ?: voteButton.context.readColorAttr(AppcompatR.attr.colorControlNormal)
-        voteCount.text = header.voteCount.count.toString()
-        voteCount.setTextColor(voteColor)
-        voteUpIcon.imageTintList = voteColor
+        voteButton.text = header.voteCount.count.toString()
+        voteButton.setTextColor(voteColor)
+        TextViewCompat.setCompoundDrawableTintList(voteButton, voteColor)
         voteButton.setOnClick(header.voteCount.upvoteAction)
 
         moreButton.setOnClick(header.moreAction)
