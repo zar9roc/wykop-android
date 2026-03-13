@@ -8,8 +8,9 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.github.wykopmobilny.ui.components.bind
+import com.github.wykopmobilny.ui.components.toColorInt
 import io.github.wykopmobilny.R
-import io.github.wykopmobilny.databinding.LinkRelatedListItemBinding
+import io.github.wykopmobilny.databinding.LinkRelatedItemV3Binding
 import io.github.wykopmobilny.links.details.RelatedLinkUi
 
 internal class RelatedLinksAdapter : ListAdapter<RelatedLinkUi, RelatedLinksAdapter.ViewHolder>(RelatedLinkDiff) {
@@ -17,7 +18,7 @@ internal class RelatedLinksAdapter : ListAdapter<RelatedLinkUi, RelatedLinksAdap
         parent: ViewGroup,
         viewType: Int,
     ): ViewHolder {
-        val binding = LinkRelatedListItemBinding.inflate(
+        val binding = LinkRelatedItemV3Binding.inflate(
             LayoutInflater.from(parent.context),
             parent,
             false
@@ -33,7 +34,7 @@ internal class RelatedLinksAdapter : ListAdapter<RelatedLinkUi, RelatedLinksAdap
     }
 
     class ViewHolder(
-        private val binding: LinkRelatedListItemBinding,
+        private val binding: LinkRelatedItemV3Binding,
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(link: RelatedLinkUi) {
             // Author avatar and name
