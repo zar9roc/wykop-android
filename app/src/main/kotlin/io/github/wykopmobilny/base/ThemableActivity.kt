@@ -61,9 +61,9 @@ internal abstract class ThemableActivity : AppCompatActivity() {
     private fun updateTheme(theme: ApplicableStyleUi) {
         val themeRes =
             when (theme) {
-                ApplicableStyleUi.Light -> BaseR.style.Theme_App_Light
-                ApplicableStyleUi.Dark -> BaseR.style.Theme_App_Dark
-                ApplicableStyleUi.DarkAmoled -> BaseR.style.Theme_App_Amoled
+                ApplicableStyleUi.Light -> io.github.wykopmobilny.R.style.WykopAppTheme
+                ApplicableStyleUi.Dark -> io.github.wykopmobilny.R.style.WykopAppTheme_Dark
+                ApplicableStyleUi.DarkAmoled -> io.github.wykopmobilny.R.style.WykopAppTheme_Amoled
             }
         setTheme(themeRes)
     }

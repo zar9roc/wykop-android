@@ -14,7 +14,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.api.WykopImageFile
-import io.github.wykopmobilny.base.BaseActivity
 import io.github.wykopmobilny.databinding.ImagechooserBottomsheetBinding
 import io.github.wykopmobilny.databinding.MarkdownToolbarBinding
 import io.github.wykopmobilny.ui.dialogs.FormatDialogCallback
@@ -61,7 +60,7 @@ class MarkdownToolbar(
     init {
         val binding = MarkdownToolbarBinding.inflate(layoutInflater, this, true)
 
-        val activity = getActivityContext() as BaseActivity
+        val activity = getActivityContext() as androidx.activity.ComponentActivity
         val permissions =
             activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
                 if (isGranted) {
