@@ -504,6 +504,15 @@ open class WykopApp :
                     is InteropRequest.ShowImage -> {
                         context.startActivity(PhotoViewActivity.createIntent(context, it.url))
                     }
+
+                    is InteropRequest.RelatedLinks -> {
+                        context.startActivity(
+                            io.github.wykopmobilny.ui.modules.links.relatedlinks.RelatedLinksActivity.createIntent(
+                                context,
+                                it.linkId,
+                            ),
+                        )
+                    }
                 }.run { }
             }
         }

@@ -75,6 +75,10 @@ sealed class InteropRequest {
     class OpenPlayer(
         val url: String,
     ) : InteropRequest()
+
+    data class RelatedLinks(
+        val linkId: Long,
+    ) : InteropRequest()
 }
 
 @Singleton

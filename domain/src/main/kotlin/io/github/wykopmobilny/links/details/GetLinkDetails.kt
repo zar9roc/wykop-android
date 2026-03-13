@@ -50,6 +50,7 @@ sealed class LinkDetailsHeaderUi {
         val viewLinkAction: () -> Unit,
         val moreAction: () -> Unit,
         val addCommentAction: () -> Unit,
+        val relatedCountAction: (() -> Unit)? = null,
     ) : LinkDetailsHeaderUi()
 }
 

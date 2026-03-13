@@ -324,6 +324,7 @@ internal class GetLinkDetailsQuery
                                 ),
                             currentUser = loggedUser?.toUi(onClicked = null),
                             addCommentAction = safeCallback { TODO("Not supported") },
+                            relatedCountAction = safeCallback { interopRequests.request(InteropRequest.RelatedLinks(link.id)) },
                         )
                     }
                 val commentsSection =

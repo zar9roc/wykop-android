@@ -76,6 +76,7 @@ internal fun LinkDetailsHeaderLayoutBinding.bindHeaderV3(
         // Related count
         relatedCountTextView.isVisible = relatedCount > 0
         relatedCountTextView.text = relatedCount.toString()
+        relatedCountTextView.setOnClick(header.relatedCountAction)
 
         // Comments count
         commentsCountTextView.text = header.commentsCount.label
