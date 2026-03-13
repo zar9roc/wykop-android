@@ -24,7 +24,7 @@ class AvatarView(
 
 fun AvatarView.bind(model: AvatarUi?) {
     val binding = ViewAvatarSimpleBinding.bind(this)
-    val transformation = CircleCrop()
+//    val transformation = CircleCrop()
 
     binding.imgAvatar.setOnClick(model?.onClicked)
 
@@ -34,7 +34,7 @@ fun AvatarView.bind(model: AvatarUi?) {
     val requestOptions =
         RequestOptions()
             .centerCrop()
-            .transform(transformation)
+//            .transform(transformation)
 
     val placeholder =
         Glide
@@ -46,7 +46,6 @@ fun AvatarView.bind(model: AvatarUi?) {
         .load(model?.avatarUrl)
         .apply(requestOptions)
         .thumbnail(placeholder)
-        .circleCrop()
         .into(binding.imgAvatar)
     Glide
         .with(binding.imgGenderStrip)
@@ -57,7 +56,6 @@ fun AvatarView.bind(model: AvatarUi?) {
                 .defaultColor
                 .let(::ColorDrawable),
         ).dontAnimate()
-        .circleCrop()
         .into(binding.imgGenderStrip)
     setTag(BaseR.id.cache, model.toString())
 }

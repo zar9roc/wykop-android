@@ -13,7 +13,6 @@ fun TextView.setUserNick(userInfoUi: UserInfoUi?) {
         userInfoUi?.let { info ->
             buildSpannedString {
                 color(info.color.toColorInt(context).defaultColor) {
-                    append("@")
                     append(info.name)
                 }
             }
