@@ -1,6 +1,5 @@
 package io.github.wykopmobilny.utils
 
-import android.view.View
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -8,6 +7,11 @@ import androidx.core.view.WindowInsetsCompat
 /**
  * Ustawia gorny padding toolbara na rzeczywista wysokosc status bar
  * uzywajac WindowInsetsCompat API zamiast stalej wartosci 24dp.
+ *
+ * Wymaga android:fitsSystemWindows="true" na toolbarze w XML,
+ * aby view uczestniczyl w dystrybucji window insets.
+ * Listener nadpisuje domyslne zachowanie fitsSystemWindows
+ * i aplikuje wylacznie gorny inset status bar.
  */
 fun Toolbar.applyStatusBarInsets() {
     ViewCompat.setOnApplyWindowInsetsListener(this) { view, windowInsets ->
@@ -20,4 +24,5 @@ fun Toolbar.applyStatusBarInsets() {
         )
         windowInsets
     }
+    ViewCompat.requestApplyInsets(this)
 }

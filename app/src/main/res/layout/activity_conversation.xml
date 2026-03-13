@@ -13,6 +13,7 @@
         android:layout_height="wrap_content"
         android:background="?attr/colorPrimaryDark"
         android:elevation="0dp"
+        android:fitsSystemWindows="true"
         android:gravity="start"
         android:minHeight="?attr/actionBarSize"
         app:buttonGravity="top"
