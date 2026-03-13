@@ -89,5 +89,10 @@ internal abstract class LinkDetailsModule {
     ): io.github.wykopmobilny.links.details.RefreshRelatedLinks
 
     @Binds
+    abstract fun addRelatedLink(
+        impl: io.github.wykopmobilny.domain.linkdetails.GetRelatedLinksQuery,
+    ): io.github.wykopmobilny.links.details.AddRelatedLink
+
+    @Binds
     abstract fun scopeInitializer(impl: InitializeLinkDetails): ScopeInitializer
 }

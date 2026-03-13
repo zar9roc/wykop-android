@@ -16,6 +16,8 @@ import io.github.wykopmobilny.databinding.FragmentRelatedLinksBinding
 import io.github.wykopmobilny.debug.DiagnosticCheckpoint
 import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsComponent
 import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsKey
+import io.github.wykopmobilny.links.details.AddRelatedLink
+import io.github.wykopmobilny.ui.dialogs.addRelatedDialog
 import io.github.wykopmobilny.utils.InjectableViewModel
 import io.github.wykopmobilny.utils.longArgument
 import io.github.wykopmobilny.utils.viewModelWrapperFactoryKeyed
@@ -28,6 +30,7 @@ class RelatedLinksFragment : Fragment() {
         get() = LinkDetailsKey(linkId = linkId, initialCommentId = null)
 
     private lateinit var refreshCallback: () -> Unit
+    private var addRelatedLink: AddRelatedLink? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,6 +44,7 @@ class RelatedLinksFragment : Fragment() {
         }
         val getRelatedLinks = viewModel.dependency.getRelatedLinks()
         val refreshRelatedLinks = viewModel.dependency.refreshRelatedLinks()
+        addRelatedLink = viewModel.dependency.addRelatedLink()
 
         refreshCallback = { refreshRelatedLinks.refresh() }
 
@@ -94,6 +98,19 @@ class RelatedLinksFragment : Fragment() {
             )
             refreshCallback()
         }
+    }
+
+    fun showAddRelatedDialog() {
+        val context = context ?: return
+        addRelatedDialog(context) { url, title ->
+            if (url.isNotBlank()) {
+                DiagnosticCheckpoint.log(
+                    "RelatedLinks",
+                    "Adding related link: url=$url, title=$title, linkId=$linkId",
+                )
+                addRelatedLink?.add(url = url, title = title)
+            }
+        }.show()
     }
 
     companion object {

@@ -6,6 +6,7 @@ import io.github.wykopmobilny.api.endpoints.v3.FavouritesV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.LinksV3RetrofitApi
 import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
 import io.github.wykopmobilny.api.requests.v3.favourites.FavouriteRequestV3
+import io.github.wykopmobilny.api.requests.v3.links.AddRelatedRequestV3
 import io.github.wykopmobilny.data.cache.api.AppCache
 import io.github.wykopmobilny.data.cache.api.UserVote
 import io.github.wykopmobilny.domain.linkdetails.VoteDownReason
@@ -164,6 +165,22 @@ internal class LinksRepository
                     userVote = UserVote.Down,
                 )
             }
+        }
+
+        suspend fun addRelated(
+            linkId: Long,
+            url: String,
+            title: String,
+        ) {
+            linksV3Api.addRelated(
+                linkId = linkId,
+                request = WykopApiRequestV3(
+                    AddRelatedRequestV3(
+                        title = title,
+                        url = url,
+                    ),
+                ),
+            )
         }
     }
 

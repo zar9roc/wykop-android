@@ -54,7 +54,7 @@ internal class RelatedLinksActivity : ThemableActivity() {
                 true
             }
             R.id.add_related -> {
-                // TODO: Implement add related link functionality
+                relatedLinksFragment?.showAddRelatedDialog()
                 true
             }
             else -> super.onOptionsItemSelected(item)

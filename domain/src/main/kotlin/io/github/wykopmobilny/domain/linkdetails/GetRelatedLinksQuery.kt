@@ -13,6 +13,7 @@ import io.github.wykopmobilny.domain.repositories.LinksRepository
 import io.github.wykopmobilny.domain.utils.safe
 import io.github.wykopmobilny.domain.utils.safeKeyed
 import io.github.wykopmobilny.kotlin.AppScopes
+import io.github.wykopmobilny.links.details.AddRelatedLink
 import io.github.wykopmobilny.links.details.GetRelatedLinks
 import io.github.wykopmobilny.links.details.RefreshRelatedLinks
 import io.github.wykopmobilny.links.details.RelatedLinkUi
@@ -34,7 +35,8 @@ internal class GetRelatedLinksQuery
         private val interopRequests: InteropRequestsProvider,
         private val appScopes: AppScopes,
     ) : GetRelatedLinks,
-        RefreshRelatedLinks {
+        RefreshRelatedLinks,
+        AddRelatedLink {
         override fun invoke(): Flow<List<RelatedLinkUi>> =
             relatedLinksStore
                 .stream(StoreReadRequest.cached(key = key.linkId, refresh = false))
@@ -95,6 +97,19 @@ internal class GetRelatedLinksQuery
         override fun refresh() {
             appScopes.safeKeyed<LinkDetailsScope>(id = key) {
                 runCatching {
+                    relatedLinksStore.fresh(key.linkId)
+                }
+            }
+        }
+
+        override fun add(url: String, title: String) {
+            appScopes.safeKeyed<LinkDetailsScope>(id = key) {
+                runCatching {
+                    linksRepository.addRelated(
+                        linkId = key.linkId,
+                        url = url,
+                        title = title,
+                    )
                     relatedLinksStore.fresh(key.linkId)
                 }
             }
