@@ -334,7 +334,7 @@ internal class GetLinkDetailsQuery
                 val relatedSection =
                     if (link == null) {
                         null
-                    } else if (link.relatedCount > 0) {
+                    } else {
                         val resource = viewState.relatedResource
                         if (resource.isLoading) {
                             RelatedLinksSectionUi.Loading
@@ -348,21 +348,15 @@ internal class GetLinkDetailsQuery
                                             .invoke()
                                     },
                             )
-                        } else {
+                        } else if (!relatedLinks.isNullOrEmpty()) {
                             val addLinkAction = safeCallback { TODO() }
-                            if (!relatedLinks.isNullOrEmpty()) {
-                                RelatedLinksSectionUi.WithData(
-                                    links = relatedLinks.map { related -> related.toUi(linkId = link.id) },
-                                    addLinkAction = addLinkAction,
-                                )
-                            } else {
-                                RelatedLinksSectionUi.Empty(
-                                    addLinkAction = addLinkAction,
-                                )
-                            }
+                            RelatedLinksSectionUi.WithData(
+                                links = relatedLinks.map { related -> related.toUi(linkId = link.id) },
+                                addLinkAction = addLinkAction,
+                            )
+                        } else {
+                            null
                         }
-                    } else {
-                        null
                     }
 
                 LinkDetailsUi(
@@ -375,8 +369,9 @@ internal class GetLinkDetailsQuery
                                         viewStateStorage.update { it.copy(generalResource = Resource.loading()) }
                                         val linkRefresh = async { linkStore.fresh(key = key.linkId) }
                                         val commentsRefresh = async { commentsStore.fresh(key = key.linkId) }
+                                        val relatedRefresh = async { relatedLinksStore.fresh(key = key.linkId) }
 
-                                        runCatching { awaitAll(linkRefresh, commentsRefresh) }
+                                        runCatching { awaitAll(linkRefresh, commentsRefresh, relatedRefresh) }
                                             .onSuccess {
                                                 viewStateStorage.update {
                                                     it.copy(

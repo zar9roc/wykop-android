@@ -35,7 +35,7 @@ internal class InitializeLinkDetails
                     update = { resource -> viewStateStorage.update { it.copy(generalResource = resource) } },
                 )
 
-            if (link.isSuccess && link.getOrThrow().relatedCount > 0) {
+            if (link.isSuccess) {
                 withResource(
                     refresh = { relatedLinksStore.fresh(key = key.linkId) },
                     update = { resource -> viewStateStorage.update { it.copy(relatedResource = resource) } },
