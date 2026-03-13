@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import io.github.wykopmobilny.base.ThemableActivity
 import io.github.wykopmobilny.databinding.ActivityContainerBinding
-import io.github.wykopmobilny.links.details.linkDetailsFragment
 import io.github.wykopmobilny.utils.viewBinding
 
 internal class LinkDetailsActivityV2 : ThemableActivity() {
@@ -29,7 +28,7 @@ internal class LinkDetailsActivityV2 : ThemableActivity() {
         if (savedInstanceState == null) {
             supportFragmentManager
                 .beginTransaction()
-                .replace(binding.fragmentContainer.id, linkDetailsFragment(linkId = linkId, commentId = commentId))
+                .replace(binding.fragmentContainer.id, LinkDetailsFragment.newInstance(linkId = linkId, commentId = commentId))
                 .commit()
         }
     }
