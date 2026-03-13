@@ -67,30 +67,20 @@ Przenieść logikę API v3 z modułu `ui/link-details` do modułu `app`, zachowu
 - `WykopLinkHandler.kt` — `getLinkIntent()` bez zmian
 - `DebugStateHelper.kt` — `openLink()` bez zmian
 
-### Etap 4: Usunięcie modułu ui/link-details
+### Etap 4: Usunięcie modułu ui/link-details ✅
 
-**Cel**: Usunąć cały moduł `ui/link-details` i powiązane zależności.
-
-**Pliki/katalogi do usunięcia:**
-- `ui/link-details/` — cały katalog (api + android)
-  - `LinkDetailsMainFragment.kt`
-  - `LinkDetailsAdapter.kt`
-  - `HeaderBindings.kt`, `ParentCommentBindings.kt`, `ReplyCommentBindings.kt`, `RelatedBindings.kt`
-  - Wszystkie 7 layoutów XML
-  - Testy (`LinkDetailsMainFragmentTest.kt`, `Factories.kt`)
-  - Build.gradle (api + android)
-
-**Pliki do modyfikacji:**
-- `settings.gradle` — usunąć wpisy `ui:link-details:api` i `ui:link-details:android`
-- `app/build.gradle` — usunąć `implementation(projects.ui.linkDetails.android)`
-- `WykopApp.kt` — usunąć import `LinkDetailsDependencies`, `LinkDetailsKey`; uprościć `getDependency()`/`destroyDependency()`
+**Zrealizowano:**
+- Usunięto cały katalog `ui/link-details/` (android + api source files)
+- Przeniesiono `GetLinkDetails.kt` i `LinkDetailsDependencies.kt` z `ui/link-details/api` do `domain/src/main/kotlin/io/github/wykopmobilny/links/details/` (ten sam pakiet — bez zmian importów)
+- `domain/build.gradle` — zastąpiono `implementation(projects.ui.linkDetails.api)` na `implementation(projects.ui.base.api)` + `implementation(projects.ui.components.widgets.api)`
+- `app/build.gradle` — usunięto `implementation(projects.ui.linkDetails.android)`
+- `settings.gradle` — nie wymaga zmian (auto.include plugin automatycznie wykrył usunięcie)
+- `WykopApp.kt` — zachowano getDependency/destroyDependency dla LinkDetails (nadal używane przez nowy LinkDetailsFragment w app)
+- `detekt-baseline.xml` — usunięto stale entry dla LinkDetailsAdapter.kt
 
 ### Etap 5: Czyszczenie domain layer (opcjonalnie)
 
-**Cel**: Uprościć warstwę domain jeśli interfejsy z `ui/link-details/api` już nie są potrzebne.
-
 **Do rozważenia:**
-- `GetLinkDetails` interface — jeśli nowy Fragment bezpośrednio używa `GetLinkDetailsQuery`, interfejs można usunąć
 - `LinkDetailsDependencies` interface — zastąpić bezpośrednim DI w `app` module
 - `LinkDetailsComponent` — uprościć lub przenieść do `app`-level DI
 

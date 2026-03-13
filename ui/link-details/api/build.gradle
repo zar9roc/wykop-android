@@ -1,9 +1,0 @@
-// TODO: Potentially deprecated - consider migrating link details to app-level layouts with API v3 models
-plugins {
-    id("com.starter.library.kotlin")
-}
-
-dependencies {
-    api(projects.ui.base.api)
-    api(projects.ui.components.widgets.api)
-}

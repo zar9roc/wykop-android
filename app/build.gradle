@@ -143,7 +143,6 @@ dependencies {
     implementation(projects.ui.base.android)
     implementation(projects.ui.components.widgets.android)
     implementation(projects.ui.blacklist.android)
-    implementation(projects.ui.linkDetails.android)
     implementation(projects.ui.login.android)
     implementation(projects.ui.styles.android)
     implementation(projects.ui.profile.android)

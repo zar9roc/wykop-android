@@ -8,7 +8,6 @@
     <ID>TooGenericExceptionCaught:AuthorHeaderView.kt$AuthorHeaderView$exception: Throwable</ID>
     <ID>TooGenericExceptionCaught:EntryCommentViewHolder.kt$EntryCommentViewHolder$exception: Throwable</ID>
     <ID>TooGenericExceptionCaught:LinkCommentViewHolder.kt$LinkCommentViewHolder$exception: Throwable</ID>
-    <ID>TooGenericExceptionCaught:LinkDetailsAdapter.kt$LinkDetailsAdapter$exception: Exception</ID>
     <ID>TooGenericExceptionCaught:NewNavigator.kt$NewNavigator$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:ViewHolderDependentItemDecorator.kt$ViewHolderDependentItemDecorator$exception: Throwable</ID>
     <ID>UnnecessaryAbstractClass:BaseActivityTest.kt$BaseActivityTest</ID>
