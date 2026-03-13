@@ -141,6 +141,7 @@ dependencies {
     implementation(projects.data.cache.sqldelight)
     implementation(projects.data.work.android)
     implementation(projects.ui.base.android)
+    implementation(projects.ui.components.widgets.android)
     implementation(projects.ui.blacklist.android)
     implementation(projects.ui.linkDetails.android)
     implementation(projects.ui.login.android)
