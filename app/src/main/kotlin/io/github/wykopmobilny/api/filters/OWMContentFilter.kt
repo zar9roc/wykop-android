@@ -6,7 +6,7 @@ import io.github.wykopmobilny.data.storage.api.AppStorage
 import io.github.wykopmobilny.models.dataclass.Entry
 import io.github.wykopmobilny.models.dataclass.EntryComment
 import io.github.wykopmobilny.models.dataclass.Link
-import io.github.wykopmobilny.models.dataclass.LinkComment
+import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
 import io.github.wykopmobilny.storage.api.SettingsPreferencesApi
 import io.github.wykopmobilny.utils.textview.removeHtml
 import java.util.Collections
@@ -40,7 +40,7 @@ class OWMContentFilter
                     (settingsPreferencesApi.hideLowRangeAuthors && author.group == 0)
             }
 
-        fun filterLinkComment(comment: LinkComment) =
+        fun filterLinkComment(comment: LinkCommentV3Item) =
             comment.apply {
                 author.badge = patronsApi.getBadgeFor(author)
                 isBlocked =

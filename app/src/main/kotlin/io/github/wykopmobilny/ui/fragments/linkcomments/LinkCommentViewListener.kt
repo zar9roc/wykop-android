@@ -1,14 +1,14 @@
 package io.github.wykopmobilny.ui.fragments.linkcomments
 
-import io.github.wykopmobilny.models.dataclass.LinkComment
+import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
 
 interface LinkCommentViewListener {
-    fun replyComment(comment: LinkComment)
+    fun replyComment(comment: LinkCommentV3Item)
 
-    fun quoteComment(comment: LinkComment)
+    fun quoteComment(comment: LinkCommentV3Item)
 
     fun setCollapsed(
-        comment: LinkComment,
+        comment: LinkCommentV3Item,
         isCollapsed: Boolean,
     )
 }

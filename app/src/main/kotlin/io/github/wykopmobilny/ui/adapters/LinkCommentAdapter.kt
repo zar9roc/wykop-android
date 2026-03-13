@@ -3,7 +3,7 @@ package io.github.wykopmobilny.ui.adapters
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import io.github.wykopmobilny.base.adapter.EndlessProgressAdapter
-import io.github.wykopmobilny.models.dataclass.LinkComment
+import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
 import io.github.wykopmobilny.storage.api.SettingsPreferencesApi
 import io.github.wykopmobilny.ui.adapters.viewholders.BaseLinkCommentViewHolder
 import io.github.wykopmobilny.ui.adapters.viewholders.BlockedViewHolder
@@ -21,7 +21,7 @@ class LinkCommentAdapter
         settingsPreferencesApi: SettingsPreferencesApi,
         private val navigator: NewNavigator,
         private val linkHandler: WykopLinkHandler,
-    ) : EndlessProgressAdapter<ViewHolder, LinkComment>() {
+    ) : EndlessProgressAdapter<ViewHolder, LinkCommentV3Item>() {
         // Required field, interacts with presenter. Otherwise will throw exception
         lateinit var linkCommentActionListener: LinkCommentActionListener
 
@@ -57,7 +57,7 @@ class LinkCommentAdapter
             }
 
         override fun addData(
-            items: List<LinkComment>,
+            items: List<LinkCommentV3Item>,
             shouldClearAdapter: Boolean,
         ) {
             super.addData(items.filterNot { hideBlacklistedViews && it.isBlocked }, shouldClearAdapter)
@@ -86,8 +86,8 @@ class LinkCommentAdapter
             }
         }
 
-        fun updateComment(comment: LinkComment) {
-            val position = data.indexOf(comment).takeIf { it >= 0 } ?: return
+        fun updateComment(comment: LinkCommentV3Item) {
+            val position = data.indexOfFirst { it.id == comment.id }.takeIf { it >= 0 } ?: return
             dataset[position] = comment
             notifyItemChanged(position)
         }

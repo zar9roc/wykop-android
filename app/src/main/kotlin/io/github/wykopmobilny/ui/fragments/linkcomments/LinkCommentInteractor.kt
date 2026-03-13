@@ -1,7 +1,7 @@
 package io.github.wykopmobilny.ui.fragments.linkcomments
 
 import io.github.wykopmobilny.api.links.LinksApi
-import io.github.wykopmobilny.models.dataclass.LinkComment
+import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -10,7 +10,7 @@ class LinkCommentInteractor
     constructor(
         val linksApi: LinksApi,
     ) {
-        fun commentVoteUp(comment: LinkComment): Single<LinkComment> =
+        fun commentVoteUp(comment: LinkCommentV3Item): Single<LinkCommentV3Item> =
             linksApi
                 .commentVoteUp(comment.linkId, comment.id)
                 .map {
@@ -20,7 +20,7 @@ class LinkCommentInteractor
                     comment
                 }
 
-        fun commentVoteDown(comment: LinkComment): Single<LinkComment> =
+        fun commentVoteDown(comment: LinkCommentV3Item): Single<LinkCommentV3Item> =
             linksApi
                 .commentVoteDown(comment.linkId, comment.id)
                 .map {
@@ -30,7 +30,7 @@ class LinkCommentInteractor
                     comment
                 }
 
-        fun commentVoteCancel(comment: LinkComment): Single<LinkComment> =
+        fun commentVoteCancel(comment: LinkCommentV3Item): Single<LinkCommentV3Item> =
             linksApi
                 .commentVoteCancel(comment.linkId, comment.id)
                 .map {
@@ -41,7 +41,7 @@ class LinkCommentInteractor
                     comment
                 }
 
-        fun removeComment(comment: LinkComment): Single<LinkComment> =
+        fun removeComment(comment: LinkCommentV3Item): Single<LinkCommentV3Item> =
             linksApi
                 .commentDelete(comment.linkId, comment.id)
                 .map {

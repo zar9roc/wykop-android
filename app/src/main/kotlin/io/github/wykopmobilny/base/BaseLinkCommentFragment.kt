@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.databinding.EntriesFragmentBinding
-import io.github.wykopmobilny.models.dataclass.LinkComment
+import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
 import io.github.wykopmobilny.ui.adapters.LinkCommentAdapter
 import io.github.wykopmobilny.ui.fragments.linkcomments.LinkCommentsFragmentView
 import io.github.wykopmobilny.utils.prepare
@@ -63,7 +63,7 @@ open class BaseLinkCommentFragment :
      * @param shouldRefresh If true adapter will refresh its data with provided items. False by default
      */
     override fun addItems(
-        items: List<LinkComment>,
+        items: List<LinkCommentV3Item>,
         shouldRefresh: Boolean,
     ) {
         linkCommentsAdapter.addData(items, shouldRefresh)
@@ -78,5 +78,5 @@ open class BaseLinkCommentFragment :
 
     override fun onRefresh() = loadDataListener(true)
 
-    override fun updateComment(comment: LinkComment) = linkCommentsAdapter.updateComment(comment)
+    override fun updateComment(comment: LinkCommentV3Item) = linkCommentsAdapter.updateComment(comment)
 }

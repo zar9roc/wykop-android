@@ -12,9 +12,16 @@ internal fun <Key : Any, Local : Any, Output : Any> flowSourceOfTruth(
     writer: suspend (Key, Local) -> Unit,
     delete: suspend (Key) -> Unit = {},
     deleteAll: suspend () -> Unit = {},
-): SourceOfTruth<Key, Local, Output> = object : SourceOfTruth<Key, Local, Output> {
-    override fun reader(key: Key): Flow<Output> = reader(key)
-    override suspend fun write(key: Key, value: Local) = writer(key, value)
-    override suspend fun delete(key: Key) = delete(key)
-    override suspend fun deleteAll() = deleteAll()
-}
+): SourceOfTruth<Key, Local, Output> =
+    object : SourceOfTruth<Key, Local, Output> {
+        override fun reader(key: Key): Flow<Output> = reader(key)
+
+        override suspend fun write(
+            key: Key,
+            value: Local,
+        ) = writer(key, value)
+
+        override suspend fun delete(key: Key) = delete(key)
+
+        override suspend fun deleteAll() = deleteAll()
+    }

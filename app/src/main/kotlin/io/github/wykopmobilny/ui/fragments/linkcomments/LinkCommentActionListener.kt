@@ -1,13 +1,13 @@
 package io.github.wykopmobilny.ui.fragments.linkcomments
 
-import io.github.wykopmobilny.models.dataclass.LinkComment
+import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
 
 interface LinkCommentActionListener {
-    fun digComment(comment: LinkComment)
+    fun digComment(comment: LinkCommentV3Item)
 
-    fun buryComment(comment: LinkComment)
+    fun buryComment(comment: LinkCommentV3Item)
 
-    fun removeVote(comment: LinkComment)
+    fun removeVote(comment: LinkCommentV3Item)
 
-    fun deleteComment(comment: LinkComment)
+    fun deleteComment(comment: LinkCommentV3Item)
 }

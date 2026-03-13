@@ -6,7 +6,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
 import io.github.wykopmobilny.databinding.TopLinkCommentLayoutBinding
-import io.github.wykopmobilny.models.dataclass.LinkComment
+import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
 import io.github.wykopmobilny.ui.fragments.linkcomments.LinkCommentActionListener
 import io.github.wykopmobilny.ui.fragments.linkcomments.LinkCommentViewListener
 import io.github.wykopmobilny.ui.modules.NewNavigator
@@ -82,7 +82,7 @@ class TopLinkCommentViewHolder(
     }
 
     override fun bindView(
-        linkComment: LinkComment,
+        linkComment: LinkCommentV3Item,
         isAuthorComment: Boolean,
         commentId: Long,
         openSpoilersDialog: Boolean,

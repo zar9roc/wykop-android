@@ -95,26 +95,27 @@ internal class StoresModule {
         storage: UserInfoStorage,
         appScopes: AppScopes,
         errorBodyParser: ErrorBodyParser,
-    ): Store<UserSession, LoggedUserInfo> = StoreBuilder
-        .from(
-            fetcher =
-                Fetcher.ofResult { request: UserSession ->
-                    apiCall(
-                        errorBodyParser = errorBodyParser,
-                        onTwoFactorAuthorizationRequired = { Napier.e("2FA not handled") },
-                        rawCall = { retrofitApi.getUserSessionToken(login = request.login, accountKey = request.token) },
-                        onUnauthorized = null,
-                    )
-                },
-            sourceOfTruth =
-                flowSourceOfTruth(
-                    reader = { storage.loggedUser.filterNotNull() },
-                    writer = { _, newValue -> storage.updateLoggedUser(newValue.toLoggedUserInfo()) },
-                    delete = { storage.updateLoggedUser(null) },
-                    deleteAll = { storage.updateLoggedUser(null) },
-                ),
-        ).scope(appScopes.applicationScope)
-        .build()
+    ): Store<UserSession, LoggedUserInfo> =
+        StoreBuilder
+            .from(
+                fetcher =
+                    Fetcher.ofResult { request: UserSession ->
+                        apiCall(
+                            errorBodyParser = errorBodyParser,
+                            onTwoFactorAuthorizationRequired = { Napier.e("2FA not handled") },
+                            rawCall = { retrofitApi.getUserSessionToken(login = request.login, accountKey = request.token) },
+                            onUnauthorized = null,
+                        )
+                    },
+                sourceOfTruth =
+                    flowSourceOfTruth(
+                        reader = { storage.loggedUser.filterNotNull() },
+                        writer = { _, newValue -> storage.updateLoggedUser(newValue.toLoggedUserInfo()) },
+                        delete = { storage.updateLoggedUser(null) },
+                        deleteAll = { storage.updateLoggedUser(null) },
+                    ),
+            ).scope(appScopes.applicationScope)
+            .build()
 }
 
 fun LoginResponse.toLoggedUserInfo() =

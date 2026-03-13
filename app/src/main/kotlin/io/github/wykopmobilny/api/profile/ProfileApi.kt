@@ -8,7 +8,7 @@ import io.github.wykopmobilny.models.dataclass.Entry
 import io.github.wykopmobilny.models.dataclass.EntryComment
 import io.github.wykopmobilny.models.dataclass.EntryLink
 import io.github.wykopmobilny.models.dataclass.Link
-import io.github.wykopmobilny.models.dataclass.LinkComment
+import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
 import io.github.wykopmobilny.models.dataclass.Related
 import io.reactivex.Single
 
@@ -40,7 +40,7 @@ interface ProfileApi {
     fun getLinkComments(
         username: String,
         page: Int,
-    ): Single<List<LinkComment>>
+    ): Single<List<LinkCommentV3Item>>
 
     fun getEntries(
         username: String,

@@ -4,7 +4,7 @@ import io.github.wykopmobilny.api.WykopImageFile
 import io.github.wykopmobilny.api.entries.FilteredData
 import io.github.wykopmobilny.models.dataclass.Downvoter
 import io.github.wykopmobilny.models.dataclass.Link
-import io.github.wykopmobilny.models.dataclass.LinkComment
+import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
 import io.github.wykopmobilny.models.dataclass.LinkVoteResponsePublishModel
 import io.github.wykopmobilny.models.dataclass.Related
 import io.github.wykopmobilny.models.dataclass.Upvoter
@@ -28,7 +28,7 @@ interface LinksApi {
     fun getLinkComments(
         linkId: Long,
         sortBy: String,
-    ): Single<List<LinkComment>>
+    ): Single<List<LinkCommentV3Item>>
 
     fun getLink(linkId: Long): Single<Link>
 
@@ -68,7 +68,7 @@ interface LinksApi {
         inputStream: WykopImageFile,
         linkId: Long,
         linkComment: Long,
-    ): Single<LinkComment>
+    ): Single<LinkCommentV3Item>
 
     fun relatedAdd(
         title: String,
@@ -83,21 +83,21 @@ interface LinksApi {
         plus18: Boolean,
         linkId: Long,
         linkComment: Long,
-    ): Single<LinkComment>
+    ): Single<LinkCommentV3Item>
 
     fun commentAdd(
         body: String,
         plus18: Boolean,
         inputStream: WykopImageFile,
         linkId: Long,
-    ): Single<LinkComment>
+    ): Single<LinkCommentV3Item>
 
     fun commentAdd(
         body: String,
         embed: String?,
         plus18: Boolean,
         linkId: Long,
-    ): Single<LinkComment>
+    ): Single<LinkCommentV3Item>
 
     fun commentEdit(
         body: String,

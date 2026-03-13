@@ -8,7 +8,7 @@ import androidx.core.view.isVisible
 import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.databinding.LinkCommentLayoutBinding
-import io.github.wykopmobilny.models.dataclass.LinkComment
+import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
 import io.github.wykopmobilny.models.dataclass.drawBadge
 import io.github.wykopmobilny.ui.fragments.linkcomments.LinkCommentActionListener
 import io.github.wykopmobilny.ui.fragments.linkcomments.LinkCommentViewListener
@@ -86,7 +86,7 @@ class LinkCommentViewHolder(
     override var shareButton: TextView = binding.shareTextView
 
     override fun bindView(
-        linkComment: LinkComment,
+        linkComment: LinkCommentV3Item,
         isAuthorComment: Boolean,
         commentId: Long,
         openSpoilersDialog: Boolean,

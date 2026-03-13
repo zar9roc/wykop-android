@@ -16,7 +16,7 @@ import io.github.wykopmobilny.api.responses.v3.user.UserFullResponseV3
 import io.github.wykopmobilny.data.storage.api.AppStorage
 import io.github.wykopmobilny.models.dataclass.EntryComment
 import io.github.wykopmobilny.models.dataclass.EntryLink
-import io.github.wykopmobilny.models.dataclass.LinkComment
+import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
 import io.github.wykopmobilny.models.dataclass.Related
 import io.github.wykopmobilny.models.mapper.apiv3.EntryCommentMapperV3
 import io.github.wykopmobilny.models.mapper.apiv3.LinkCommentMapperV3
@@ -96,7 +96,7 @@ class ProfileRepository
         override fun getLinkComments(
             username: String,
             page: Int,
-        ): Single<List<LinkComment>> =
+        ): Single<List<LinkCommentV3Item>> =
             rxSingle { profileApiV3.getUserLinksCommented(username, page) }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<List<LinkCommentResponseV3>>(errorBodyParser))

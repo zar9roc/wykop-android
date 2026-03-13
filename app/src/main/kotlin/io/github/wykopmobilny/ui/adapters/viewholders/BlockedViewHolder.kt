@@ -11,7 +11,7 @@ import io.github.wykopmobilny.models.dataclass.Author
 import io.github.wykopmobilny.models.dataclass.Entry
 import io.github.wykopmobilny.models.dataclass.EntryComment
 import io.github.wykopmobilny.models.dataclass.Link
-import io.github.wykopmobilny.models.dataclass.LinkComment
+import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
 import io.github.wykopmobilny.utils.api.getGroupColor
 import io.github.wykopmobilny.utils.layoutInflater
 
@@ -53,7 +53,7 @@ class BlockedViewHolder(
         }
     }
 
-    fun bindView(linkComment: LinkComment) {
+    fun bindView(linkComment: LinkCommentV3Item) {
         showText("komentarz", linkComment.author)
 
         itemView.setOnClickListener {

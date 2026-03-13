@@ -14,7 +14,7 @@ class Link(
     val sourceLabel: String?,
     var voteCount: Int,
     var buryCount: Int,
-    var comments: MutableList<LinkComment>,
+    var comments: MutableList<LinkCommentV3Item>,
     val commentsCount: Int,
     val relatedCount: Int,
     val author: Author?,
@@ -42,7 +42,7 @@ class Link(
         parcel.readString(),
         parcel.readInt(),
         parcel.readInt(),
-        parcel.createTypedArrayList(LinkComment.CREATOR)!!,
+        mutableListOf<LinkCommentV3Item>().also { parcel.readInt() }, // comments not parceled
         parcel.readInt(),
         parcel.readInt(),
         parcel.readParcelable(Author::class.java.classLoader),
@@ -72,7 +72,7 @@ class Link(
         parcel.writeString(sourceLabel)
         parcel.writeInt(voteCount)
         parcel.writeInt(buryCount)
-        parcel.writeTypedList(comments)
+        parcel.writeInt(0) // comments not parceled
         parcel.writeInt(commentsCount)
         parcel.writeInt(relatedCount)
         parcel.writeParcelable(author, flags)

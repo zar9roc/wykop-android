@@ -63,11 +63,12 @@ internal fun LinkDetailsHeaderBinding.bindHeader(
 
         favoriteButton.isVisible = header.favoriteButton.isVisible
         favoriteButton.setOnClick(header.favoriteButton.clickAction)
-        val favoriteResId = if (header.favoriteButton.isToggled) {
-            BaseR.drawable.ic_favorite
-        } else {
-            BaseR.drawable.ic_favorite_outlined
-        }
+        val favoriteResId =
+            if (header.favoriteButton.isToggled) {
+                BaseR.drawable.ic_favorite
+            } else {
+                BaseR.drawable.ic_favorite_outlined
+            }
         favoriteButton.setCompoundDrawablesRelativeWithIntrinsicBounds(favoriteResId, 0, 0, 0)
         TextViewCompat.setCompoundDrawableTintList(
             favoriteButton,

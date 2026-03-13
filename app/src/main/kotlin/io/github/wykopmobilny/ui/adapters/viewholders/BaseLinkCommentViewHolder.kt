@@ -14,7 +14,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.databinding.LinkCommentMenuBottomsheetBinding
-import io.github.wykopmobilny.models.dataclass.LinkComment
+import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
 import io.github.wykopmobilny.ui.dialogs.confirmationDialog
 import io.github.wykopmobilny.ui.fragments.linkcomments.LinkCommentActionListener
 import io.github.wykopmobilny.ui.fragments.linkcomments.LinkCommentViewListener
@@ -46,7 +46,7 @@ abstract class BaseLinkCommentViewHolder(
 ) : RecyclableViewHolder(view) {
     companion object {
         fun getViewTypeForComment(
-            comment: LinkComment,
+            comment: LinkCommentV3Item,
             forceTop: Boolean = false,
         ): Int =
             if (comment.parentId != comment.id && !forceTop) {
@@ -95,7 +95,7 @@ abstract class BaseLinkCommentViewHolder(
     open var collapsedCommentsTextView: TextView? = null
 
     open fun bindView(
-        linkComment: LinkComment,
+        linkComment: LinkCommentV3Item,
         isAuthorComment: Boolean,
         commentId: Long = -1,
         openSpoilersDialog: Boolean,
@@ -117,7 +117,7 @@ abstract class BaseLinkCommentViewHolder(
     }
 
     private fun setupBody(
-        comment: LinkComment,
+        comment: LinkCommentV3Item,
         openSpoilersDialog: Boolean,
         enableYoutubePlayer: Boolean,
         enableEmbedPlayer: Boolean,
@@ -179,7 +179,7 @@ abstract class BaseLinkCommentViewHolder(
         commentContent.setOnClickListener(null)
     }
 
-    private fun setupDeletedBody(comment: LinkComment) {
+    private fun setupDeletedBody(comment: LinkCommentV3Item) {
         val context = itemView.context
         val deletedText =
             when (comment.deletedReason) {
@@ -209,7 +209,8 @@ abstract class BaseLinkCommentViewHolder(
         }
     }
 
-    private fun showSlugDialog(slug: String) {
+    private fun showSlugDialog(slug: String?) {
+        if (slug.isNullOrEmpty()) return
         val context = itemView.getActivityContext() ?: return
         AlertDialog
             .Builder(context)
@@ -219,7 +220,7 @@ abstract class BaseLinkCommentViewHolder(
             .show()
     }
 
-    private fun handleClick(comment: LinkComment) {
+    private fun handleClick(comment: LinkCommentV3Item) {
         // Register click listener for comments list
         if (commentViewListener == null) {
             navigator.openLinkDetailsActivity(comment.linkId, comment.id)
@@ -227,7 +228,7 @@ abstract class BaseLinkCommentViewHolder(
     }
 
     private fun setStyleForComment(
-        comment: LinkComment,
+        comment: LinkCommentV3Item,
         isAuthorComment: Boolean,
         commentId: Long = -1,
     ) {
@@ -247,7 +248,7 @@ abstract class BaseLinkCommentViewHolder(
         }
     }
 
-    private fun setupButtons(comment: LinkComment) {
+    private fun setupButtons(comment: LinkCommentV3Item) {
         val isDeleted = comment.deletedReason != null
 
         plusButton.setup(userManagerApi)
@@ -329,7 +330,7 @@ abstract class BaseLinkCommentViewHolder(
         }
     }
 
-    private fun openLinkCommentMenu(comment: LinkComment) {
+    private fun openLinkCommentMenu(comment: LinkCommentV3Item) {
         val activityContext = itemView.getActivityContext() ?: return
         val dialog = BottomSheetDialog(activityContext)
         val bottomSheetView = LinkCommentMenuBottomsheetBinding.inflate(activityContext.layoutInflater)
@@ -345,14 +346,15 @@ abstract class BaseLinkCommentViewHolder(
                     .run {
                         LocalDateTime.of(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond)
                     }.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM))
-            date.text = comment.app?.takeIf { it.isNotEmpty() }?.let { root.context.getString(R.string.date_with_user_app, dateAsString, comment.app) }
-                ?: dateAsString
+            date.text = comment.app?.takeIf { it.isNotEmpty() }?.let {
+                root.context.getString(R.string.date_with_user_app, dateAsString, comment.app)
+            } ?: dateAsString
 
             // Copy - copies slug if deleted and available, otherwise body
             commentMenuCopy.setOnClickListener {
                 val textToCopy =
                     if (isDeleted && !comment.slug.isNullOrEmpty()) {
-                        comment.slug
+                        comment.slug.orEmpty()
                     } else {
                         comment.body?.stripWykopFormatting() ?: ""
                     }
