@@ -56,9 +56,14 @@ class RelatedLinksFragment : Fragment() {
                         binding.emptyStateText.text = "Brak powiązanych linków"
                     } else {
                         binding.emptyStateText.isVisible = false
+                        val voteSummary = relatedLinks.mapIndexed { idx, link ->
+                            "#$idx ${link.title.take(20)}:${link.upvotesCount.count}" +
+                                "(up=${link.upvotesCount.upvoteAction != null}" +
+                                ",down=${link.upvotesCount.downvoteAction != null})"
+                        }.joinToString(separator = " | ")
                         DiagnosticCheckpoint.log(
                             "RelatedLinks",
-                            "Loaded ${relatedLinks.size} related links for linkId=$linkId",
+                            "Loaded ${relatedLinks.size} items for linkId=$linkId [$voteSummary]",
                         )
                     }
                 }

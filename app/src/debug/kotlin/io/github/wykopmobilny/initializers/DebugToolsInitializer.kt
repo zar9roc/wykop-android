@@ -20,7 +20,8 @@ internal class DebugToolsInitializer : Initializer<Unit> {
 
         val wykopApp = context.applicationContext as WykopApp
         val entriesApi = wykopApp.wykopApi.entriesV3RetrofitApi()
-        DebugServerHolder.initialize(context.applicationContext, entriesApi)
+        val linksApi = wykopApp.wykopApi.linksV3RetrofitApi()
+        DebugServerHolder.initialize(context.applicationContext, entriesApi, linksApi)
         Napier.d("DebugHttpServer initialized via DebugServerHolder", tag = "DebugToolsInitializer")
     }
 

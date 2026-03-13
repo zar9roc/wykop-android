@@ -19,6 +19,8 @@ import org.json.JSONObject
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import io.github.wykopmobilny.api.endpoints.v3.EntriesV3RetrofitApi
+import io.github.wykopmobilny.api.endpoints.v3.LinksV3RetrofitApi
+import io.github.wykopmobilny.ui.modules.links.relatedlinks.RelatedLinksActivity
 
 /**
  * Debug HTTP server exposing app state and actions via REST API.
@@ -30,6 +32,7 @@ import io.github.wykopmobilny.api.endpoints.v3.EntriesV3RetrofitApi
 class DebugHttpServer(
     private val appContext: Context,
     private val entriesApi: EntriesV3RetrofitApi,
+    private val linksApi: LinksV3RetrofitApi,
 ) : NanoHTTPD(PORT) {
 
     companion object {
@@ -37,6 +40,9 @@ class DebugHttpServer(
         const val PORT = 8899
         private const val MAIN_THREAD_TIMEOUT_SECONDS = 5L
         private val VOTE_ENTRY_REGEX = Regex("/action/vote/entry/\\d+")
+        private val VOTE_RELATED_REGEX = Regex("/action/vote/related/\\d+/\\d+/(up|down)")
+        private val LIST_RELATED_REGEX = Regex("/action/list/related/\\d+")
+        private val OPEN_RELATED_REGEX = Regex("/action/open/related/\\d+")
         private val OPEN_LINK_REGEX = Regex("/action/open/link/\\d+")
         private val OPEN_ENTRY_REGEX = Regex("/action/open/entry/\\d+")
         private val AVAILABLE_TABS = listOf(
@@ -82,6 +88,14 @@ class DebugHttpServer(
                     handleVoteEntry(uri, vote = true)
                 method == Method.DELETE && uri.matches(VOTE_ENTRY_REGEX) ->
                     handleVoteEntry(uri, vote = false)
+                method == Method.POST && uri.matches(VOTE_RELATED_REGEX) ->
+                    handleVoteRelated(uri)
+                method == Method.GET && uri.matches(VOTE_RELATED_REGEX) ->
+                    handleVoteRelated(uri)
+                method == Method.GET && uri.matches(LIST_RELATED_REGEX) ->
+                    handleListRelatedLinks(uri)
+                method == Method.POST && uri.matches(OPEN_RELATED_REGEX) ->
+                    handleOpenRelatedLinks(uri)
                 method == Method.POST && uri.matches(OPEN_LINK_REGEX) ->
                     handleOpenLink(uri)
                 method == Method.POST && uri.matches(OPEN_ENTRY_REGEX) ->
@@ -91,6 +105,8 @@ class DebugHttpServer(
                 method == Method.GET && uri == "/checkpoints" -> handleCheckpoints(session)
                 method == Method.DELETE && uri == "/checkpoints" -> handleClearCheckpoints()
                 // GET convenience for browser
+                method == Method.GET && uri.matches(OPEN_RELATED_REGEX) ->
+                    handleOpenRelatedLinks(uri)
                 method == Method.GET && uri.matches(OPEN_LINK_REGEX) ->
                     handleOpenLink(uri)
                 method == Method.GET && uri.matches(OPEN_ENTRY_REGEX) ->
@@ -130,6 +146,21 @@ class DebugHttpServer(
                 put(endpoint("POST", "/navigate/{tab}", "Switch to tab"))
                 put(endpoint("POST", "/action/vote/entry/{id}", "Vote on entry"))
                 put(endpoint("DELETE", "/action/vote/entry/{id}", "Unvote entry"))
+                put(endpoint(
+                    "POST",
+                    "/action/vote/related/{linkId}/{relatedId}/{up|down}",
+                    "Vote on related link",
+                ))
+                put(endpoint(
+                    "GET",
+                    "/action/list/related/{linkId}",
+                    "List related links with IDs for a link",
+                ))
+                put(endpoint(
+                    "POST",
+                    "/action/open/related/{linkId}",
+                    "Open related links screen for link",
+                ))
                 put(endpoint("POST", "/action/open/link/{id}", "Open link detail by ID"))
                 put(endpoint("POST", "/action/open/entry/{id}", "Open entry detail by ID"))
                 put(endpoint("POST", "/action/clear-cache", "Clear app cache"))
@@ -266,6 +297,133 @@ class DebugHttpServer(
                 JSONObject().apply {
                     put("action", action)
                     put("entry_id", entryId)
+                    put("success", false)
+                    put("error", e.message ?: e.javaClass.simpleName)
+                }
+            }
+        }
+        return jsonResponse(Response.Status.OK, json)
+    }
+
+    private fun handleListRelatedLinks(uri: String): Response {
+        val idStr = uri.substringAfterLast("/")
+        val linkId = idStr.toLongOrNull()
+            ?: return jsonResponse(
+                Response.Status.BAD_REQUEST,
+                JSONObject().put("error", "Invalid link id: $idStr"),
+            )
+
+        val json = runOnMainThreadSuspend {
+            try {
+                val response = linksApi.getRelated(linkId = linkId)
+                val items = response.data.orEmpty()
+                JSONObject().apply {
+                    put("link_id", linkId)
+                    put("count", items.size)
+                    put("related", JSONArray().apply {
+                        for (item in items) {
+                            put(JSONObject().apply {
+                                put("id", item.id)
+                                put("title", item.title)
+                                put("url", item.url)
+                                put("votes_up", item.votes.up)
+                                put("votes_down", item.votes.down)
+                                put("voted", item.voted)
+                                put("author", item.author.username)
+                            })
+                        }
+                    })
+                }
+            } catch (e: java.io.IOException) {
+                Napier.w("Failed to list related links for link $linkId", e, tag = TAG)
+                JSONObject().apply {
+                    put("error", e.message ?: e.javaClass.simpleName)
+                }
+            } catch (e: retrofit2.HttpException) {
+                Napier.w("Failed to list related links for link $linkId", e, tag = TAG)
+                JSONObject().apply {
+                    put("error", e.message ?: e.javaClass.simpleName)
+                }
+            }
+        }
+        return jsonResponse(Response.Status.OK, json)
+    }
+
+    private fun handleOpenRelatedLinks(uri: String): Response {
+        val idStr = uri.substringAfterLast("/")
+        val linkId = idStr.toLongOrNull()
+            ?: return jsonResponse(
+                Response.Status.BAD_REQUEST,
+                JSONObject().put("error", "Invalid link id: $idStr"),
+            )
+
+        val json = runOnMainThread {
+            val intent = RelatedLinksActivity.createIntent(appContext, linkId)
+            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            appContext.startActivity(intent)
+            JSONObject().apply {
+                put("action", "open_related_links")
+                put("success", true)
+                put("link_id", linkId)
+            }
+        }
+        return jsonResponse(Response.Status.OK, json)
+    }
+
+    private fun handleVoteRelated(uri: String): Response {
+        // URI: /action/vote/related/{linkId}/{relatedId}/{up|down}
+        val parts = uri.removePrefix("/action/vote/related/").split("/")
+        if (parts.size != 3) {
+            return jsonResponse(
+                Response.Status.BAD_REQUEST,
+                JSONObject().put("error", "Expected /action/vote/related/{linkId}/{relatedId}/{up|down}"),
+            )
+        }
+        val linkId = parts[0].toLongOrNull()
+            ?: return jsonResponse(
+                Response.Status.BAD_REQUEST,
+                JSONObject().put("error", "Invalid linkId: ${parts[0]}"),
+            )
+        val relatedId = parts[1].toLongOrNull()
+            ?: return jsonResponse(
+                Response.Status.BAD_REQUEST,
+                JSONObject().put("error", "Invalid relatedId: ${parts[1]}"),
+            )
+        val voteType = parts[2]
+
+        val json = runOnMainThreadSuspend {
+            try {
+                val response = linksApi.voteRelated(
+                    linkId = linkId,
+                    relatedId = relatedId,
+                    type = voteType,
+                )
+                JSONObject().apply {
+                    put("action", "vote_related")
+                    put("link_id", linkId)
+                    put("related_id", relatedId)
+                    put("vote_type", voteType)
+                    put("success", response.isSuccessful)
+                    put("status_code", response.code())
+                    if (!response.isSuccessful) {
+                        put("error", response.message())
+                    }
+                }
+            } catch (e: java.io.IOException) {
+                Napier.w("Failed to vote related link=$linkId related=$relatedId type=$voteType", e, tag = TAG)
+                JSONObject().apply {
+                    put("action", "vote_related")
+                    put("link_id", linkId)
+                    put("related_id", relatedId)
+                    put("success", false)
+                    put("error", e.message ?: e.javaClass.simpleName)
+                }
+            } catch (e: retrofit2.HttpException) {
+                Napier.w("Failed to vote related link=$linkId related=$relatedId type=$voteType", e, tag = TAG)
+                JSONObject().apply {
+                    put("action", "vote_related")
+                    put("link_id", linkId)
+                    put("related_id", relatedId)
                     put("success", false)
                     put("error", e.message ?: e.javaClass.simpleName)
                 }

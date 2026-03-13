@@ -3,6 +3,7 @@ package io.github.wykopmobilny.debug
 import android.content.Context
 import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.api.endpoints.v3.EntriesV3RetrofitApi
+import io.github.wykopmobilny.api.endpoints.v3.LinksV3RetrofitApi
 
 /**
  * Singleton holder for [DebugHttpServer] to prevent garbage collection.
@@ -18,7 +19,7 @@ import io.github.wykopmobilny.api.endpoints.v3.EntriesV3RetrofitApi
  * Usage:
  * ```
  * // Initialize once during app startup (DebugToolsInitializer)
- * DebugServerHolder.initialize(context, entriesApi)
+ * DebugServerHolder.initialize(context, entriesApi, linksApi)
  *
  * // Check if running
  * if (DebugServerHolder.isRunning()) { ... }
@@ -37,7 +38,7 @@ object DebugServerHolder {
      * Initialize and start the debug HTTP server.
      * Safe to call multiple times (idempotent).
      */
-    fun initialize(context: Context, entriesApi: EntriesV3RetrofitApi) {
+    fun initialize(context: Context, entriesApi: EntriesV3RetrofitApi, linksApi: LinksV3RetrofitApi) {
         synchronized(this) {
             if (server != null) {
                 Napier.d("DebugHttpServer already initialized, skipping", tag = TAG)
@@ -45,7 +46,7 @@ object DebugServerHolder {
             }
 
             try {
-                server = DebugHttpServer(context.applicationContext, entriesApi).apply {
+                server = DebugHttpServer(context.applicationContext, entriesApi, linksApi).apply {
                     start()
                 }
                 Napier.i(

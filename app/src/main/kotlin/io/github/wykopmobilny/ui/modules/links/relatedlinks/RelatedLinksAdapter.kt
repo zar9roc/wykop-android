@@ -11,6 +11,7 @@ import com.github.wykopmobilny.ui.components.bind
 import com.github.wykopmobilny.ui.components.toColorInt
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.databinding.LinkRelatedItemV3Binding
+import io.github.wykopmobilny.debug.DiagnosticCheckpoint
 import io.github.wykopmobilny.links.details.RelatedLinkUi
 
 internal class RelatedLinksAdapter : ListAdapter<RelatedLinkUi, RelatedLinksAdapter.ViewHolder>(RelatedLinkDiff) {
@@ -77,12 +78,20 @@ internal class RelatedLinksAdapter : ListAdapter<RelatedLinkUi, RelatedLinksAdap
             // Plus button
             binding.plusButton.isEnabled = link.upvotesCount.upvoteAction != null
             binding.plusButton.setOnClickListener {
+                DiagnosticCheckpoint.log(
+                    "RelatedLinks",
+                    "Upvote clicked: title=${link.title}, count=${link.upvotesCount.count}",
+                )
                 link.upvotesCount.upvoteAction?.invoke()
             }
 
             // Minus button
             binding.minusButton.isEnabled = link.upvotesCount.downvoteAction != null
             binding.minusButton.setOnClickListener {
+                DiagnosticCheckpoint.log(
+                    "RelatedLinks",
+                    "Downvote clicked: title=${link.title}, count=${link.upvotesCount.count}",
+                )
                 link.upvotesCount.downvoteAction?.invoke()
             }
 
