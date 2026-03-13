@@ -1,23 +1,25 @@
 package io.github.wykopmobilny.debug
 
+import com.squareup.moshi.JsonDataException
+import com.squareup.moshi.JsonEncodingException
 import com.squareup.moshi.Moshi
 import io.github.aakira.napier.Napier
-import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
 import okhttp3.Interceptor
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
-import okio.Buffer
-import java.lang.reflect.ParameterizedType
-import java.lang.reflect.Type
+import java.io.IOException
 
 /**
  * OkHttp interceptor that logs parsed Moshi responses for debugging.
  *
  * This interceptor:
  * 1. Intercepts successful HTTP responses (2xx)
- * 2. Attempts to parse the JSON body as WykopApiResponseV3<*>
- * 3. Logs the parsed object structure to Logcat via Napier
+ * 2. Attempts to parse the JSON body as a generic Map
+ * 3. Logs the parsed data structure and pagination to Logcat via Napier
  * 4. Preserves the original response body for Retrofit
+ *
+ * Uses Map parsing instead of WykopApiResponseV3<Any> to avoid PhpArrayAdapterFactory
+ * issues with generic Any type.
  *
  * Only active in debug builds. Use with Logcat filter: tag:MoshiResponse
  *
@@ -49,14 +51,12 @@ class MoshiResponseLoggingInterceptor(
             val buffer = source.buffer.clone()
             val bodyString = buffer.readUtf8()
 
-            // Parse as generic WykopApiResponseV3
-            val type = createParameterizedType(WykopApiResponseV3::class.java, Any::class.java)
-            val adapter = moshi.adapter<WykopApiResponseV3<Any>>(type)
+            // Parse as Map to avoid PhpArrayAdapterFactory issues with Any type
+            val adapter = moshi.adapter<Map<String, Any>>(Map::class.java)
+            val jsonMap = adapter.fromJson(bodyString)
 
-            val parsedResponse = adapter.fromJson(bodyString)
-
-            if (parsedResponse != null) {
-                logParsedResponse(request.url.encodedPath, parsedResponse, bodyString)
+            if (jsonMap != null) {
+                logParsedResponse(request.url.encodedPath, jsonMap, bodyString)
             }
 
             // Return response with preserved body
@@ -64,11 +64,27 @@ class MoshiResponseLoggingInterceptor(
                 .newBuilder()
                 .body(bodyString.toResponseBody(responseBody.contentType()))
                 .build()
-        } catch (e: Exception) {
-            // If parsing fails, log error but don't break the chain
+        } catch (e: IOException) {
+            // Network error during parsing
             Napier.w(
                 tag = "MoshiResponse",
-                message = "Failed to parse response for ${request.url.encodedPath}: ${e.message}",
+                message = "IO error while parsing response for ${request.url.encodedPath}: ${e.message}",
+                throwable = e,
+            )
+            return response
+        } catch (e: JsonDataException) {
+            // Malformed JSON data
+            Napier.w(
+                tag = "MoshiResponse",
+                message = "JSON data error for ${request.url.encodedPath}: ${e.message}",
+                throwable = e,
+            )
+            return response
+        } catch (e: JsonEncodingException) {
+            // JSON encoding error
+            Napier.w(
+                tag = "MoshiResponse",
+                message = "JSON encoding error for ${request.url.encodedPath}: ${e.message}",
                 throwable = e,
             )
             return response
@@ -77,18 +93,20 @@ class MoshiResponseLoggingInterceptor(
 
     private fun logParsedResponse(
         path: String,
-        response: WykopApiResponseV3<Any>,
+        jsonMap: Map<String, Any>,
         rawJson: String,
     ) {
-        val dataType = response.data?.javaClass?.simpleName ?: "null"
+        val data = jsonMap["data"]
+        val dataType = data?.javaClass?.simpleName ?: "null"
         val dataPreview =
-            when (val data = response.data) {
+            when (data) {
                 is List<*> -> "List<${data.firstOrNull()?.javaClass?.simpleName}>(${data.size} items)"
                 is Map<*, *> -> "Map(${data.size} entries)"
                 else -> data?.toString()?.take(100) ?: "null"
             }
 
-        val pagination = response.pagination
+        @Suppress("UNCHECKED_CAST")
+        val pagination = jsonMap["pagination"] as? Map<String, Any>
 
         val logMessage =
             buildString {
@@ -100,15 +118,15 @@ class MoshiResponseLoggingInterceptor(
                 appendLine("║ Data Preview: $dataPreview")
                 if (pagination != null) {
                     appendLine("║ Pagination:")
-                    appendLine("║   - per_page: ${pagination.perPage}")
-                    appendLine("║   - total: ${pagination.total}")
-                    appendLine("║   - next: ${pagination.next ?: "null"}")
+                    appendLine("║   - per_page: ${pagination["per_page"]}")
+                    appendLine("║   - total: ${pagination["total"]}")
+                    appendLine("║   - next: ${pagination["next"] ?: "null"}")
                 } else {
                     appendLine("║ Pagination: null")
                 }
                 appendLine("╠═══════════════════════════════════════════════════════════════")
-                appendLine("║ Parsed Object:")
-                appendLine("║ $response")
+                appendLine("║ Parsed Map Keys:")
+                appendLine("║ ${jsonMap.keys}")
                 appendLine("╠═══════════════════════════════════════════════════════════════")
                 appendLine("║ Raw JSON (first 500 chars):")
                 appendLine("║ ${rawJson.take(500)}")
@@ -117,16 +135,4 @@ class MoshiResponseLoggingInterceptor(
 
         Napier.d(logMessage, tag = "MoshiResponse")
     }
-
-    private fun createParameterizedType(
-        rawType: Type,
-        vararg typeArguments: Type,
-    ): ParameterizedType =
-        object : ParameterizedType {
-            override fun getRawType() = rawType
-
-            override fun getActualTypeArguments() = typeArguments
-
-            override fun getOwnerType() = null
-        }
 }

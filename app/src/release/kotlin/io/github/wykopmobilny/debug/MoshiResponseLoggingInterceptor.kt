@@ -8,7 +8,7 @@ import okhttp3.Interceptor
  * MoshiResponseLoggingInterceptor is only active in debug builds.
  */
 class MoshiResponseLoggingInterceptor(
-    private val moshi: Moshi,
+    @Suppress("UNUSED_PARAMETER") moshi: Moshi,
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain) = chain.proceed(chain.request())
 }
