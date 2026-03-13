@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     >
@@ -12,7 +13,9 @@
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:scaleType="centerCrop"
-        android:foreground="?selectableItemBackground"
+        android:clickable="false"
+        android:focusable="false"
+        android:duplicateParentState="true"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -25,29 +28,35 @@
         android:id="@+id/txtTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:paddingTop="8dp"
+        android:paddingTop="6dp"
         android:paddingBottom="4dp"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp"
         android:textAppearance="@style/TextAppearance.MaterialScale.Body1"
         android:textStyle="bold"
+        android:clickable="false"
+        android:focusable="false"
+        android:duplicateParentState="true"
         app:layout_constraintTop_toBottomOf="@id/imgPreview"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        tools:text="Tytuł znaleziska"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        tools:text="Tytu\u0142 znaleziska"
         />
 
     <TextView
         android:id="@+id/txtDescription"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:paddingBottom="8dp"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
+        android:paddingBottom="6dp"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp"
         android:textAppearance="@style/TextAppearance.MaterialScale.Body2"
-        app:layout_constraintTop_toBottomOf="@id/txtTitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:clickable="false"
+        android:focusable="false"
+        android:duplicateParentState="true"
+        app:layout_constraintTop_toBottomOf="@+id/txtTitle"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         tools:text="Opis znaleziska"
         />
 
@@ -57,28 +66,33 @@
         android:layout_height="1dp"
         android:background="?colorDivider"
         app:layout_constraintTop_toBottomOf="@id/txtDescription"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         />
 
     <HorizontalScrollView
         android:id="@+id/detailsScrollView"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
         android:scrollbars="none"
         app:layout_constraintTop_toBottomOf="@id/separator1"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         >
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:orientation="horizontal"
-            android:gravity="center_vertical"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
             >
 
             <com.github.wykopmobilny.ui.components.AvatarView
                 android:id="@+id/imgAvatar"
                 android:layout_width="36dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
+                android:paddingLeft="12dp"
                 />
 
             <TextView
@@ -86,8 +100,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
                 android:textAppearance="@style/TextAppearance.MaterialScale.Caption"
                 tools:text="Powodzenia"
                 />
@@ -103,8 +117,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
                 android:textAppearance="@style/TextAppearance.MaterialScale.Caption"
                 tools:text="2 godz. temu"
                 />
@@ -120,8 +134,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
                 android:textAppearance="@style/TextAppearance.MaterialScale.Caption"
                 tools:text="wykop.pl"
                 />
@@ -138,8 +152,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
                 android:gravity="center_vertical"
                 />
 
@@ -150,9 +164,24 @@
     <View
         android:id="@+id/separator2"
         android:layout_width="match_parent"
-        android:layout_height="1dp"
+        android:layout_height="0.5dp"
         android:background="?colorDivider"
         app:layout_constraintTop_toBottomOf="@id/detailsScrollView"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        />
+
+    <TextView
+        android:id="@+id/shareButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="?selectableItemBackgroundBorderless"
+        android:gravity="center"
+        android:padding="8dp"
+        app:drawableStartCompat="@drawable/ic_share"
+        app:drawableTint="?colorControlNormal"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/separator2"
         />
 
     <TextView
@@ -163,7 +192,7 @@
         android:gravity="center"
         android:padding="8dp"
         app:drawableStartCompat="@drawable/ic_favorite_outlined"
-        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/shareButton"
         app:layout_constraintTop_toBottomOf="@id/separator2"
         />
 
@@ -234,8 +263,8 @@
         android:id="@+id/hotIcon"
         android:layout_width="11dp"
         android:layout_height="11dp"
-        android:layout_marginStart="@dimen/margin_dp_huge"
-        android:layout_marginTop="@dimen/margin_dp_tiny"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="2dp"
         android:visibility="gone"
         app:layout_constraintLeft_toLeftOf="@id/voteButton"
         app:layout_constraintTop_toTopOf="@id/voteButton"

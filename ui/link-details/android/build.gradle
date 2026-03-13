@@ -1,3 +1,6 @@
+// TODO: Potentially deprecated - consider migrating to app-level layouts
+//  (link_details_header_layout.xml + link_*.xml) with API v3 models directly.
+//  This module's layouts are being aligned with app-level link_details_header_layout.xml.
 plugins {
     id("com.starter.library.android")
     //     id("io.github.wykopmobilny.screenshots")  // Disabled - not compatible with AGP 9.0

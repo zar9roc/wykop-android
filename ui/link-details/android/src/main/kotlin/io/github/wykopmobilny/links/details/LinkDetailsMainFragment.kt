@@ -47,6 +47,7 @@ fun linkDetailsFragment(
             this.commentId = commentId
         }
 
+// TODO: Potentially deprecated - layouts being aligned with app-level link_details_header_layout.xml
 internal class LinkDetailsMainFragment : Fragment(R.layout.fragment_link_details) {
     private var sortClickAction: (() -> Unit)? = null
 

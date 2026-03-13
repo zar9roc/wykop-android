@@ -101,6 +101,9 @@ internal fun LinkDetailsHeaderBinding.bindHeader(
         TextViewCompat.setCompoundDrawableTintList(voteButton, voteColor)
         voteButton.setOnClick(header.voteCount.upvoteAction)
 
+        // Share button — uses viewLinkAction until dedicated shareAction is added to model
+        shareButton.setOnClick(header.viewLinkAction)
+
         moreButton.setOnClick(header.moreAction)
     }
 }

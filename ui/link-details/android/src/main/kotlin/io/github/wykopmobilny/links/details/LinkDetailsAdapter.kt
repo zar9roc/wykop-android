@@ -21,6 +21,7 @@ import io.github.wykopmobilny.ui.link_details.android.databinding.LinkDetailsRep
 import io.github.wykopmobilny.ui.link_details.android.databinding.LinkDetailsReplyCommentHiddenBinding
 import io.github.wykopmobilny.utils.asyncDifferConfig
 
+// TODO: Potentially deprecated - layouts being aligned with app-level link_details_header_layout.xml
 internal class LinkDetailsAdapter : ListAdapter<ListItem, LinkDetailsAdapter.BindingViewHolder>(asyncDifferConfig(ListItem.Diff)) {
     override fun getItemViewType(position: Int) =
         when (val item = getItem(position)) {
