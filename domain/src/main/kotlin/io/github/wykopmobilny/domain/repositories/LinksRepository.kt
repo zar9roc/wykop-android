@@ -167,6 +167,21 @@ internal class LinksRepository
             }
         }
 
+        suspend fun removeRelatedVote(
+            linkId: Long,
+            relatedId: Long,
+        ) {
+            linksV3Api.removeRelatedVote(linkId = linkId, relatedId = relatedId)
+            withContext(AppDispatchers.IO) {
+                appCache.linksRelatedQueries.removeVoteOptimistic(
+                    id = relatedId,
+                    linkId = linkId,
+                    wasUp = UserVote.Up,
+                    wasDown = UserVote.Down,
+                )
+            }
+        }
+
         suspend fun addRelated(
             linkId: Long,
             url: String,

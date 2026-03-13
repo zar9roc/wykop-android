@@ -13,6 +13,7 @@ import io.github.wykopmobilny.R
 import io.github.wykopmobilny.databinding.LinkRelatedItemV3Binding
 import io.github.wykopmobilny.debug.DiagnosticCheckpoint
 import io.github.wykopmobilny.links.details.RelatedLinkUi
+import io.github.wykopmobilny.ui.components.widgets.ColorConst
 
 internal class RelatedLinksAdapter : ListAdapter<RelatedLinkUi, RelatedLinksAdapter.ViewHolder>(RelatedLinkDiff) {
     override fun onCreateViewHolder(
@@ -64,16 +65,26 @@ internal class RelatedLinksAdapter : ListAdapter<RelatedLinkUi, RelatedLinksAdap
             val voteCount = link.upvotesCount.count
             binding.voteCountTextView.text = if (voteCount > 0) "+$voteCount" else "$voteCount"
 
-            val voteColor = when {
-                voteCount > 0 -> R.color.plusPressedColor
-                voteCount < 0 -> R.color.minusPressedColor
+            val userVoteColor = link.upvotesCount.color
+            val voteColorRes = when (userVoteColor) {
+                ColorConst.CounterUpvoted -> R.color.plusPressedColor
+                ColorConst.CounterDownvoted -> R.color.minusPressedColor
                 else -> null
             }
-            voteColor?.let {
+            if (voteColorRes != null) {
                 binding.voteCountTextView.setTextColor(
-                    ContextCompat.getColor(binding.root.context, it)
+                    ContextCompat.getColor(binding.root.context, voteColorRes)
+                )
+            } else {
+                // Reset to default text color when no vote
+                binding.voteCountTextView.setTextColor(
+                    binding.title.currentTextColor
                 )
             }
+
+            // Set selected state on vote buttons
+            binding.plusButton.isButtonSelected = userVoteColor == ColorConst.CounterUpvoted
+            binding.minusButton.isButtonSelected = userVoteColor == ColorConst.CounterDownvoted
 
             // Plus button
             binding.plusButton.isEnabled = link.upvotesCount.upvoteAction != null

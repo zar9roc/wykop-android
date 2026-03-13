@@ -38,6 +38,13 @@ UPDATE relatedLinkEntity
 SET voteCount = voteCount - 1, userVote = :userVote
 WHERE id = :id AND linkId = :linkId;
 
+removeVoteOptimistic:
+UPDATE relatedLinkEntity
+SET
+  voteCount = CASE WHEN userVote = :wasUp THEN voteCount - 1 WHEN userVote = :wasDown THEN voteCount + 1 ELSE voteCount END,
+  userVote = NULL
+WHERE id = :id AND linkId = :linkId;
+
 selectByLinkId:
 SELECT
   relatedLinkEntity.*,

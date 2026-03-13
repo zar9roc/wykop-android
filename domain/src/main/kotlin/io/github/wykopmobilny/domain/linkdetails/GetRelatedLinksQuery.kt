@@ -59,7 +59,9 @@ internal class GetRelatedLinksQuery
                         upvoteAction =
                             when (userVote) {
                                 UserVote.Up -> {
-                                    null
+                                    safeCallback {
+                                        linksRepository.removeRelatedVote(linkId = linkId, relatedId = id)
+                                    }
                                 }
 
                                 UserVote.Down, null -> {
@@ -71,7 +73,9 @@ internal class GetRelatedLinksQuery
                         downvoteAction =
                             when (userVote) {
                                 UserVote.Down -> {
-                                    null
+                                    safeCallback {
+                                        linksRepository.removeRelatedVote(linkId = linkId, relatedId = id)
+                                    }
                                 }
 
                                 UserVote.Up, null -> {
