@@ -19,6 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimaryDark"
+            android:paddingTop="@dimen/toolbar_top_padding"
             app:contentInsetStartWithNavigation="0dp"
             app:elevation="0dp"
             app:subtitleTextAppearance="@style/Toolbar.Subtitle"
