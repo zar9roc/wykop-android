@@ -3,15 +3,16 @@ package io.github.wykopmobilny.ui.modules.links.relatedlinks
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.widget.Toolbar
+import android.view.Menu
+import android.view.MenuItem
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.base.ThemableActivity
-import io.github.wykopmobilny.databinding.ActivityContainerBinding
+import io.github.wykopmobilny.databinding.ActivityRelatedLinksBinding
 import io.github.wykopmobilny.utils.bindings.bindBackButton
 import io.github.wykopmobilny.utils.viewBinding
 
 internal class RelatedLinksActivity : ThemableActivity() {
-    private val binding by viewBinding(ActivityContainerBinding::inflate)
+    private val binding by viewBinding(ActivityRelatedLinksBinding::inflate)
 
     private val linkId
         get() =
@@ -20,23 +21,44 @@ internal class RelatedLinksActivity : ThemableActivity() {
                 ?.getLongExtra(EXTRA_LINK_ID, 0L)
                 .let(::checkNotNull)
 
+    private var relatedLinksFragment: RelatedLinksFragment? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val toolbar = binding.root.findViewById<Toolbar>(R.id.toolbar)
-        if (toolbar != null) {
-            setSupportActionBar(toolbar)
-            toolbar.bindBackButton(activity = this)
-            supportActionBar?.title = "Powiązane linki"
-        }
+        setSupportActionBar(binding.toolbar)
+        binding.toolbar.bindBackButton(activity = this)
+        supportActionBar?.title = "Powiązane"
 
         if (savedInstanceState == null) {
+            relatedLinksFragment = RelatedLinksFragment.newInstance(linkId = linkId)
             supportFragmentManager
                 .beginTransaction()
-                .replace(binding.fragmentContainer.id, RelatedLinksFragment.newInstance(linkId = linkId))
+                .replace(binding.fragmentContainer.id, relatedLinksFragment!!)
                 .commit()
+        } else {
+            relatedLinksFragment =
+                supportFragmentManager.findFragmentById(binding.fragmentContainer.id) as? RelatedLinksFragment
         }
     }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.related_links_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+        when (item.itemId) {
+            R.id.refresh -> {
+                relatedLinksFragment?.refresh()
+                true
+            }
+            R.id.add_related -> {
+                // TODO: Implement add related link functionality
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
 
     companion object {
         const val EXTRA_LINK_ID = "EXTRA_LINKID"

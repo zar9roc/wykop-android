@@ -27,6 +27,8 @@ class RelatedLinksFragment : Fragment() {
     private val key: LinkDetailsKey
         get() = LinkDetailsKey(linkId = linkId, initialCommentId = null)
 
+    private lateinit var refreshCallback: () -> Unit
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -38,13 +40,18 @@ class RelatedLinksFragment : Fragment() {
             viewModelWrapperFactoryKeyed<LinkDetailsKey, LinkDetailsComponent>(key = key)
         }
         val getRelatedLinks = viewModel.dependency.getRelatedLinks()
+        val refreshRelatedLinks = viewModel.dependency.refreshRelatedLinks()
+
+        refreshCallback = { refreshRelatedLinks.refresh() }
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         val adapter = RelatedLinksAdapter()
         binding.recyclerView.adapter = adapter
 
-        // Disable swipe refresh for now (data loaded automatically via InitializeLinkDetails)
-        binding.swiperefresh.isEnabled = false
+        binding.swiperefresh.setOnRefreshListener {
+            refreshCallback()
+            binding.swiperefresh.isRefreshing = false
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
@@ -77,6 +84,16 @@ class RelatedLinksFragment : Fragment() {
         Napier.i("RelatedLinksFragment opened for linkId=$linkId")
 
         return binding.root
+    }
+
+    fun refresh() {
+        if (::refreshCallback.isInitialized) {
+            DiagnosticCheckpoint.log(
+                "RelatedLinks",
+                "Refresh triggered for linkId=$linkId",
+            )
+            refreshCallback()
+        }
     }
 
     companion object {

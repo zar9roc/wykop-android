@@ -17,6 +17,8 @@ interface LinkDetailsComponent : HasScopeInitializer {
 
     fun getRelatedLinks(): io.github.wykopmobilny.links.details.GetRelatedLinks
 
+    fun refreshRelatedLinks(): io.github.wykopmobilny.links.details.RefreshRelatedLinks
+
     @Subcomponent.Factory
     interface Factory {
         fun create(

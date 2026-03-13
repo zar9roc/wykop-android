@@ -2,6 +2,7 @@ package io.github.wykopmobilny.domain.linkdetails
 
 import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreReadRequest
+import org.mobilenativefoundation.store.store5.impl.extensions.fresh
 import io.github.wykopmobilny.data.cache.api.UserVote
 import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsKey
 import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsScope
@@ -9,9 +10,11 @@ import io.github.wykopmobilny.domain.navigation.InteropRequest
 import io.github.wykopmobilny.domain.navigation.InteropRequestsProvider
 import io.github.wykopmobilny.domain.profile.toUi
 import io.github.wykopmobilny.domain.repositories.LinksRepository
+import io.github.wykopmobilny.domain.utils.safe
 import io.github.wykopmobilny.domain.utils.safeKeyed
 import io.github.wykopmobilny.kotlin.AppScopes
 import io.github.wykopmobilny.links.details.GetRelatedLinks
+import io.github.wykopmobilny.links.details.RefreshRelatedLinks
 import io.github.wykopmobilny.links.details.RelatedLinkUi
 import io.github.wykopmobilny.ui.components.widgets.ColorConst
 import io.github.wykopmobilny.ui.components.widgets.TwoActionsCounterUi
@@ -30,7 +33,8 @@ internal class GetRelatedLinksQuery
         private val linksRepository: LinksRepository,
         private val interopRequests: InteropRequestsProvider,
         private val appScopes: AppScopes,
-    ) : GetRelatedLinks {
+    ) : GetRelatedLinks,
+        RefreshRelatedLinks {
         override fun invoke(): Flow<List<RelatedLinkUi>> =
             relatedLinksStore
                 .stream(StoreReadRequest.cached(key = key.linkId, refresh = false))
@@ -87,4 +91,12 @@ internal class GetRelatedLinksQuery
                     runCatching { function() }
                 }
             }
+
+        override fun refresh() {
+            appScopes.safe<LinkDetailsScope> {
+                runCatching {
+                    relatedLinksStore.fresh(key.linkId)
+                }
+            }
+        }
     }
