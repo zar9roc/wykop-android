@@ -34,7 +34,7 @@ import io.github.wykopmobilny.links.details.CommentsSectionUi
 import io.github.wykopmobilny.links.details.GetLinkDetails
 import io.github.wykopmobilny.links.details.LinkCommentUi
 import io.github.wykopmobilny.links.details.LinkDetailsHeaderUi
-import io.github.wykopmobilny.links.details.LinkDetailsKey
+import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsKey
 import io.github.wykopmobilny.links.details.LinkDetailsUi
 import io.github.wykopmobilny.links.details.ParentCommentUi
 import io.github.wykopmobilny.links.details.RelatedLinkUi

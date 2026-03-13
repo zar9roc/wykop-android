@@ -7,7 +7,7 @@ import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsScope
 import io.github.wykopmobilny.domain.profile.LinkInfo
 import io.github.wykopmobilny.domain.utils.safeKeyed
 import io.github.wykopmobilny.domain.utils.withResource
-import io.github.wykopmobilny.links.details.LinkDetailsKey
+import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsKey
 import io.github.wykopmobilny.kotlin.AppScopes
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch

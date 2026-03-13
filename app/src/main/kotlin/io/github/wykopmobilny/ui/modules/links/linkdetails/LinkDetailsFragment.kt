@@ -18,9 +18,9 @@ import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.databinding.ActivityLinkDetailsBinding
 import io.github.wykopmobilny.kotlin.AppDispatchers
-import io.github.wykopmobilny.links.details.LinkDetailsDependencies
+import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsComponent
+import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsKey
 import io.github.wykopmobilny.links.details.LinkDetailsHeaderUi
-import io.github.wykopmobilny.links.details.LinkDetailsKey
 import io.github.wykopmobilny.ui.base.components.ContextMenuOptionUi
 import io.github.wykopmobilny.utils.InjectableViewModel
 import io.github.wykopmobilny.utils.bindings.bindBackButton
@@ -61,8 +61,8 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        val viewModel by viewModels<InjectableViewModel<LinkDetailsDependencies>> {
-            viewModelWrapperFactoryKeyed<LinkDetailsKey, LinkDetailsDependencies>(key = key)
+        val viewModel by viewModels<InjectableViewModel<LinkDetailsComponent>> {
+            viewModelWrapperFactoryKeyed<LinkDetailsKey, LinkDetailsComponent>(key = key)
         }
         val getLinkDetails = viewModel.dependency.getLinkDetails()
         val binding = ActivityLinkDetailsBinding.bind(view)

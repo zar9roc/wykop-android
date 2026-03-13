@@ -34,8 +34,8 @@ import io.github.wykopmobilny.domain.styles.di.StylesScope
 import io.github.wykopmobilny.domain.twofactor.di.TwoFactorAuthScope
 import io.github.wykopmobilny.domain.work.di.WorkScope
 import io.github.wykopmobilny.initializers.RemoteConfigKeys
-import io.github.wykopmobilny.links.details.LinkDetailsDependencies
-import io.github.wykopmobilny.links.details.LinkDetailsKey
+import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsComponent
+import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsKey
 import io.github.wykopmobilny.notification.AppNotification.Type.Notifications
 import io.github.wykopmobilny.notification.NotificationDependencies
 import io.github.wykopmobilny.notification.di.DaggerNotificationsComponent
@@ -319,7 +319,7 @@ open class WykopApp :
                 getOrPutScope<TwoFactorAuthScope>(scopeId) { domainComponent.twoFactor() }
             }
 
-            LinkDetailsDependencies::class -> {
+            LinkDetailsComponent::class -> {
                 scopeId as LinkDetailsKey
                 getOrPutScope<LinkDetailsScope>(scopeId) { domainComponent.linkDetails().create(key = scopeId) }
             }
@@ -368,7 +368,7 @@ open class WykopApp :
             BlacklistDependencies::class -> scopes.remove(scopeKey<BlacklistScope>(scopeId))
             WorkDependencies::class -> scopes.remove(scopeKey<WorkScope>(scopeId))
             SearchDependencies::class -> scopes.remove(scopeKey<SearchScope>(scopeId))
-            LinkDetailsDependencies::class -> scopes.remove(scopeKey<LinkDetailsScope>(scopeId))
+            LinkDetailsComponent::class -> scopes.remove(scopeKey<LinkDetailsScope>(scopeId))
             ProfileDependencies::class -> scopes.remove(scopeKey<ProfileScope>(scopeId))
             NotificationDependencies::class -> scopes.remove(scopeKey<NotificationsScope>(scopeId))
             TwoFactorAuthDependencies::class -> scopes.remove(scopeKey<TwoFactorAuthScope>(scopeId))

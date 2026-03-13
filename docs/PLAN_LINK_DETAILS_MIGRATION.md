@@ -78,11 +78,16 @@ Przenieść logikę API v3 z modułu `ui/link-details` do modułu `app`, zachowu
 - `WykopApp.kt` — zachowano getDependency/destroyDependency dla LinkDetails (nadal używane przez nowy LinkDetailsFragment w app)
 - `detekt-baseline.xml` — usunięto stale entry dla LinkDetailsAdapter.kt
 
-### Etap 5: Czyszczenie domain layer (opcjonalnie)
+### Etap 5: Czyszczenie domain layer ✅
 
-**Do rozważenia:**
-- `LinkDetailsDependencies` interface — zastąpić bezpośrednim DI w `app` module
-- `LinkDetailsComponent` — uprościć lub przenieść do `app`-level DI
+**Zrealizowano:**
+- Usunięto interfejs `LinkDetailsDependencies` — zbędna warstwa abstrakcji po usunięciu modułu `ui/link-details`
+- Przeniesiono `LinkDetailsKey` z `io.github.wykopmobilny.links.details` do `io.github.wykopmobilny.domain.linkdetails.di` (obok `LinkDetailsComponent`)
+- `LinkDetailsComponent` bezpośrednio deklaruje `fun getLinkDetails(): GetLinkDetails` (bez pośrednictwa interfejsu)
+- `LinkDetailsFragment` używa `LinkDetailsComponent` jako typu zależności w ViewModel
+- `WykopApp` używa `LinkDetailsComponent::class` w getDependency/destroyDependency
+- Zaktualizowano importy w `GetLinkDetailsQuery.kt` i `InitializeLinkDetails.kt`
+- Usunięto plik `LinkDetailsDependencies.kt`
 
 ## Mapowanie layoutów: ui/link-details → app
 
