@@ -217,12 +217,18 @@ tasks.register('verifyThemes', Exec) {
     description = 'Verifies that all themes used in AndroidManifest.xml are defined in resource files'
 
     workingDir = rootProject.projectDir
+    commandLine 'bash', './scripts/verify_themes.sh'
 
-    if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
-        commandLine 'bash', '-c', './scripts/verify_themes.sh'
-    } else {
-        commandLine 'bash', './scripts/verify_themes.sh'
-    }
+    // Define inputs to enable proper incremental builds
+    inputs.file("${rootProject.projectDir}/app/src/main/AndroidManifest.xml")
+    inputs.file("${rootProject.projectDir}/app/src/main/res/values/styles.xml")
+    inputs.file("${rootProject.projectDir}/scripts/verify_themes.sh")
+    inputs.files(fileTree("${rootProject.projectDir}/ui/base/android/src/main/res/values") {
+        include 'themes.xml', 'styles.xml'
+    }).optional(true)
+
+    // Disable caching for verification tasks - always run fresh
+    outputs.upToDateWhen { false }
 }
 
 // Run theme verification before preBuild
