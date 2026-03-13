@@ -5,5 +5,6 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class LinkRelatedWrapperResponseV3(
+    @field:Json(name = "count") val count: Int?,
     @field:Json(name = "items") val items: List<RelatedResponseV3>?,
 )
