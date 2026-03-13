@@ -27,7 +27,7 @@ class RelatedLinksFragment : Fragment() {
     var linkId by longArgument("linkId")
 
     private val key: LinkDetailsKey
-        get() = LinkDetailsKey(linkId = linkId, initialCommentId = null)
+        get() = LinkDetailsKey(linkId = linkId, initialCommentId = null, source = "related")
 
     private lateinit var refreshCallback: () -> Unit
     private var addRelatedLink: AddRelatedLink? = null

@@ -8,6 +8,7 @@ import io.github.wykopmobilny.links.details.GetLinkDetails
 data class LinkDetailsKey(
     val linkId: Long,
     val initialCommentId: Long?,
+    val source: String = "details",
 )
 
 @LinkDetailsScope
