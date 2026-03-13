@@ -41,12 +41,19 @@ fun AvatarView.bind(model: AvatarUi?) {
             .with(context)
             .load(BaseR.drawable.avatar)
             .apply(requestOptions)
-    Glide
-        .with(binding.imgAvatar)
-        .load(model?.avatarUrl)
-        .apply(requestOptions)
-        .thumbnail(placeholder)
-        .into(binding.imgAvatar)
+
+    // Jeśli avatarUrl jest null lub pusty, użyj tylko placeholdera
+    val avatarUrl = model?.avatarUrl
+    if (avatarUrl.isNullOrBlank()) {
+        placeholder.into(binding.imgAvatar)
+    } else {
+        Glide
+            .with(binding.imgAvatar)
+            .load(avatarUrl)
+            .apply(requestOptions)
+            .thumbnail(placeholder)
+            .into(binding.imgAvatar)
+    }
     Glide
         .with(binding.imgGenderStrip)
         .load(

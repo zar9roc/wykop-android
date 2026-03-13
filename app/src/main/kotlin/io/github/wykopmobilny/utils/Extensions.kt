@@ -112,6 +112,11 @@ fun ImageView.loadImage(
     renderParams: String? = null,
     signature: Int? = null,
 ) {
+    // Nie ładuj pustych URL - pozostaw widok w obecnym stanie (placeholder lub poprzedni obraz)
+    if (url.isBlank()) {
+        return
+    }
+
     val finalUrl = url.withImageParams(renderParams)
 
     if (signature == null) {

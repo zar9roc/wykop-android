@@ -8,6 +8,7 @@ import io.github.wykopmobilny.models.dataclass.Author
 import io.github.wykopmobilny.utils.api.getGenderStripResource
 import io.github.wykopmobilny.utils.layoutInflater
 import io.github.wykopmobilny.utils.loadImage
+import io.github.wykopmobilny.ui.base.android.R as BaseR
 
 class AvatarView(
     context: Context,
@@ -17,7 +18,11 @@ class AvatarView(
 
     fun setAuthor(author: Author) {
         author.apply {
-            binding.avatarImageView.loadImage(avatarUrl)
+            if (avatarUrl.isBlank()) {
+                binding.avatarImageView.setImageResource(BaseR.drawable.avatar)
+            } else {
+                binding.avatarImageView.loadImage(avatarUrl, renderParams = "q80")
+            }
             binding.genderStripImageView.setBackgroundResource(getGenderStripResource(sex))
         }
     }
