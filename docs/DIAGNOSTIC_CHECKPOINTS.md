@@ -42,6 +42,22 @@ DiagnosticCheckpoint.log("Pagination", "Loaded page $page with ${items.size} ite
 | `ImageLoad` | Ladowanie obrazkow/miniatur |
 | `Login` | Flow logowania |
 
+### Zaimplementowane checkpointy
+
+#### LinkDetails (LinkDetailsFragment)
+
+1. **Header loaded** - zalogowane gdy header zostanie zaladowany z danymi
+   - Format: `"Header loaded: title={title}, votes={count}, comments={label}"`
+   - Miejsce: `LinkDetailsFragment.kt` (collect UI state)
+
+2. **Adapter list updated** - zalogowane przy kazdej aktualizacji listy adaptera
+   - Format: `"Adapter list updated: {size} items"`
+   - Miejsce: `LinkDetailsFragment.kt` (adapterList.collect)
+
+3. **Scrolled to comment** - zalogowane gdy automatyczny scroll do komentarza zostanie wykonany
+   - Format: `"Scrolled to comment: commentId={id}, position={index}"`
+   - Miejsce: `LinkDetailsFragment.kt` (scroll to target comment)
+
 ## Odczyt checkpointow - HTTP Debug Server
 
 ### Wymagana konfiguracja

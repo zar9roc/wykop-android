@@ -17,6 +17,7 @@ import com.github.wykopmobilny.ui.components.utils.dpToPx
 import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.databinding.ActivityLinkDetailsBinding
+import io.github.wykopmobilny.debug.DiagnosticCheckpoint
 import io.github.wykopmobilny.kotlin.AppDispatchers
 import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsComponent
 import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsKey
@@ -127,6 +128,10 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
                                         targetElement,
                                         8.dpToPx(resources),
                                     )
+                                    DiagnosticCheckpoint.log(
+                                        "LinkDetails",
+                                        "Scrolled to comment: commentId=$targetCommentId, position=$targetElement",
+                                    )
                                 }
                             }
                         } catch (e: CancellationException) {
@@ -137,7 +142,13 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
                             Napier.w("Couldn't find target comment key=$key", e)
                         }
                     }
-                    adapterList.collect { adapter.submitList(it) }
+                    adapterList.collect {
+                        adapter.submitList(it)
+                        DiagnosticCheckpoint.log(
+                            "LinkDetails",
+                            "Adapter list updated: ${it.size} items",
+                        )
+                    }
                 }
                 launch {
                     shared.map { it.errorDialog }.collectErrorDialog(view.context)
@@ -160,6 +171,11 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
                         val header = ui.header
                         if (header is LinkDetailsHeaderUi.WithData) {
                             bindSortMenu(header)
+                            DiagnosticCheckpoint.log(
+                                "LinkDetails",
+                                "Header loaded: title=${header.title}, votes=${header.voteCount.count}, " +
+                                    "comments=${header.commentsCount.label}",
+                            )
                         }
                     }
                 }
