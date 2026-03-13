@@ -53,11 +53,15 @@ internal class RelatedLinksActivity : ThemableActivity() {
                 relatedLinksFragment?.refresh()
                 true
             }
+
             R.id.add_related -> {
                 relatedLinksFragment?.showAddRelatedDialog()
                 true
             }
-            else -> super.onOptionsItemSelected(item)
+
+            else -> {
+                super.onOptionsItemSelected(item)
+            }
         }
 
     companion object {

@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withCreated
+import androidx.appcompat.widget.Toolbar
 import com.r0adkll.slidr.attachSlidr
 import com.r0adkll.slidr.model.SlidrConfig
 import dagger.android.AndroidInjection
@@ -16,6 +17,7 @@ import io.github.wykopmobilny.storage.api.SettingsPreferencesApi
 import io.github.wykopmobilny.styles.ApplicableStyleUi
 import io.github.wykopmobilny.styles.StylesDependencies
 import io.github.wykopmobilny.ui.dialogs.showExceptionDialog
+import io.github.wykopmobilny.utils.applyStatusBarInsets
 import io.github.wykopmobilny.utils.requireDependency
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.dropWhile
@@ -48,6 +50,8 @@ abstract class BaseActivity :
         val initialStyle = runBlocking { getAppStyle().first() }.style
         initTheme(initialStyle)
         super.onCreate(savedInstanceState)
+
+        findViewById<Toolbar>(R.id.toolbar)?.applyStatusBarInsets()
 
         val slidr =
             if (enableSwipeBackLayout) {

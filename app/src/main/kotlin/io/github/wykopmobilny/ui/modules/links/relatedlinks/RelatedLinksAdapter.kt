@@ -20,11 +20,12 @@ internal class RelatedLinksAdapter : ListAdapter<RelatedLinkUi, RelatedLinksAdap
         parent: ViewGroup,
         viewType: Int,
     ): ViewHolder {
-        val binding = LinkRelatedItemV3Binding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
+        val binding =
+            LinkRelatedItemV3Binding.inflate(
+                LayoutInflater.from(parent.context),
+                parent,
+                false,
+            )
         return ViewHolder(binding)
     }
 
@@ -47,7 +48,7 @@ internal class RelatedLinksAdapter : ListAdapter<RelatedLinkUi, RelatedLinksAdap
                 binding.authorHeaderView.bind(author.avatar)
                 binding.userNameTextView.text = author.name
                 binding.userNameTextView.setTextColor(
-                    author.color.toColorInt(binding.root.context)
+                    author.color.toColorInt(binding.root.context),
                 )
                 binding.authorHeaderView.setOnClickListener {
                     author.avatar.onClicked?.invoke()
@@ -66,19 +67,20 @@ internal class RelatedLinksAdapter : ListAdapter<RelatedLinkUi, RelatedLinksAdap
             binding.voteCountTextView.text = if (voteCount > 0) "+$voteCount" else "$voteCount"
 
             val userVoteColor = link.upvotesCount.color
-            val voteColorRes = when (userVoteColor) {
-                ColorConst.CounterUpvoted -> R.color.plusPressedColor
-                ColorConst.CounterDownvoted -> R.color.minusPressedColor
-                else -> null
-            }
+            val voteColorRes =
+                when (userVoteColor) {
+                    ColorConst.CounterUpvoted -> R.color.plusPressedColor
+                    ColorConst.CounterDownvoted -> R.color.minusPressedColor
+                    else -> null
+                }
             if (voteColorRes != null) {
                 binding.voteCountTextView.setTextColor(
-                    ContextCompat.getColor(binding.root.context, voteColorRes)
+                    ContextCompat.getColor(binding.root.context, voteColorRes),
                 )
             } else {
                 // Reset to default text color when no vote
                 binding.voteCountTextView.setTextColor(
-                    binding.title.currentTextColor
+                    binding.title.currentTextColor,
                 )
             }
 
