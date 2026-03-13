@@ -79,5 +79,10 @@ internal abstract class LinkDetailsModule {
     abstract fun getProfileDetails(impl: GetLinkDetailsQuery): GetLinkDetails
 
     @Binds
+    abstract fun getRelatedLinks(
+        impl: io.github.wykopmobilny.domain.linkdetails.GetRelatedLinksQuery,
+    ): io.github.wykopmobilny.links.details.GetRelatedLinks
+
+    @Binds
     abstract fun scopeInitializer(impl: InitializeLinkDetails): ScopeInitializer
 }

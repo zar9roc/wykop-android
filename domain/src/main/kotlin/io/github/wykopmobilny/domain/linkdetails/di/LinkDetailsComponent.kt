@@ -15,6 +15,8 @@ data class LinkDetailsKey(
 interface LinkDetailsComponent : HasScopeInitializer {
     fun getLinkDetails(): GetLinkDetails
 
+    fun getRelatedLinks(): io.github.wykopmobilny.links.details.GetRelatedLinks
+
     @Subcomponent.Factory
     interface Factory {
         fun create(

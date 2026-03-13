@@ -8,8 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.links.details.RelatedLinkUi
 
-internal class RelatedLinksAdapter :
-    ListAdapter<RelatedLinkUi, RelatedLinksAdapter.ViewHolder>(RelatedLinkDiff) {
+internal class RelatedLinksAdapter : ListAdapter<RelatedLinkUi, RelatedLinksAdapter.ViewHolder>(RelatedLinkDiff) {
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
@@ -61,4 +60,3 @@ internal class RelatedLinksAdapter :
         ) = oldItem == newItem
     }
 }
-

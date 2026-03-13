@@ -26,11 +26,12 @@ class PhpArrayAdapterFactory : JsonAdapter.Factory {
 
         // Try to create adapter for element type. If it fails (e.g. for generic types),
         // return null to let Moshi use default adapter
-        val elementAdapter = try {
-            moshi.adapter<Any>(elementType)
-        } catch (e: IllegalArgumentException) {
-            return null
-        }
+        val elementAdapter =
+            try {
+                moshi.adapter<Any>(elementType)
+            } catch (e: IllegalArgumentException) {
+                return null
+            }
 
         return PhpArrayAdapter(delegate, elementAdapter)
     }

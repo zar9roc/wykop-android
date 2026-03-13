@@ -6,15 +6,26 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.databinding.FragmentRelatedLinksBinding
 import io.github.wykopmobilny.debug.DiagnosticCheckpoint
-import io.github.wykopmobilny.links.details.RelatedLinkUi
+import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsComponent
+import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsKey
+import io.github.wykopmobilny.utils.InjectableViewModel
 import io.github.wykopmobilny.utils.longArgument
+import io.github.wykopmobilny.utils.viewModelWrapperFactoryKeyed
+import kotlinx.coroutines.launch
 
 class RelatedLinksFragment : Fragment() {
     var linkId by longArgument("linkId")
+
+    private val key: LinkDetailsKey
+        get() = LinkDetailsKey(linkId = linkId, initialCommentId = null)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -23,14 +34,36 @@ class RelatedLinksFragment : Fragment() {
     ): View {
         val binding = FragmentRelatedLinksBinding.inflate(inflater, container, false)
 
+        val viewModel by viewModels<InjectableViewModel<LinkDetailsComponent>> {
+            viewModelWrapperFactoryKeyed<LinkDetailsKey, LinkDetailsComponent>(key = key)
+        }
+        val getRelatedLinks = viewModel.dependency.getRelatedLinks()
+
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         val adapter = RelatedLinksAdapter()
         binding.recyclerView.adapter = adapter
 
-        // TODO: Implement full data loading from RelatedLinksStore
-        // For now, show empty list as placeholder
-        adapter.submitList(emptyList<RelatedLinkUi>())
-        binding.swiperefresh.isRefreshing = false
+        // Disable swipe refresh for now (data loaded automatically via InitializeLinkDetails)
+        binding.swiperefresh.isEnabled = false
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                getRelatedLinks().collect { relatedLinks ->
+                    adapter.submitList(relatedLinks)
+
+                    if (relatedLinks.isEmpty()) {
+                        binding.emptyStateText.isVisible = true
+                        binding.emptyStateText.text = "Brak powiązanych linków"
+                    } else {
+                        binding.emptyStateText.isVisible = false
+                        DiagnosticCheckpoint.log(
+                            "RelatedLinks",
+                            "Loaded ${relatedLinks.size} related links for linkId=$linkId",
+                        )
+                    }
+                }
+            }
+        }
 
         DiagnosticCheckpoint.log(
             "RelatedLinks",
