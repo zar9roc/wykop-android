@@ -93,7 +93,7 @@ internal class GetRelatedLinksQuery
             }
 
         override fun refresh() {
-            appScopes.safe<LinkDetailsScope> {
+            appScopes.safeKeyed<LinkDetailsScope>(id = key) {
                 runCatching {
                     relatedLinksStore.fresh(key.linkId)
                 }
