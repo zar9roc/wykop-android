@@ -88,12 +88,15 @@ class DebugHttpServer(
                     handleOpenEntry(uri)
                 method == Method.POST && uri == "/action/clear-cache" -> handleClearCache()
                 method == Method.POST && uri == "/action/logout" -> handleLogout()
+                method == Method.GET && uri == "/checkpoints" -> handleCheckpoints(session)
+                method == Method.DELETE && uri == "/checkpoints" -> handleClearCheckpoints()
                 // GET convenience for browser
                 method == Method.GET && uri.matches(OPEN_LINK_REGEX) ->
                     handleOpenLink(uri)
                 method == Method.GET && uri.matches(OPEN_ENTRY_REGEX) ->
                     handleOpenEntry(uri)
                 method == Method.GET && uri == "/action/clear-cache" -> handleClearCache()
+                method == Method.GET && uri == "/action/clear-checkpoints" -> handleClearCheckpoints()
                 method == Method.GET && uri.startsWith("/navigate/") -> handleNavigate(uri)
                 else -> jsonResponse(
                     Response.Status.NOT_FOUND,
@@ -131,6 +134,8 @@ class DebugHttpServer(
                 put(endpoint("POST", "/action/open/entry/{id}", "Open entry detail by ID"))
                 put(endpoint("POST", "/action/clear-cache", "Clear app cache"))
                 put(endpoint("POST", "/action/logout", "Force logout"))
+                put(endpoint("GET", "/checkpoints", "Diagnostic checkpoints (?tag=X to filter)"))
+                put(endpoint("DELETE", "/checkpoints", "Clear all diagnostic checkpoints"))
             })
         }
         return jsonResponse(Response.Status.OK, json)
@@ -306,6 +311,19 @@ class DebugHttpServer(
         val json = runOnMainThreadSuspend {
             DebugStateHelper.forceLogout(appContext)
         }
+        return jsonResponse(Response.Status.OK, json)
+    }
+
+    // --- Diagnostic checkpoints ---
+
+    private fun handleCheckpoints(session: IHTTPSession): Response {
+        val filterTag = session.parms?.get("tag")
+        val json = DiagnosticCheckpoint.toJson(filterTag)
+        return jsonResponse(Response.Status.OK, json)
+    }
+
+    private fun handleClearCheckpoints(): Response {
+        val json = DiagnosticCheckpoint.clear()
         return jsonResponse(Response.Status.OK, json)
     }
 
