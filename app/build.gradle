@@ -212,23 +212,84 @@ dependencies {
 // Detekt tasks removed - plugin not installed
 
 // Theme verification task - checks if all themes used in AndroidManifest.xml are defined
-tasks.register('verifyThemes', Exec) {
+// Implemented in pure Groovy for cross-platform compatibility (no bash dependency)
+tasks.register('verifyThemes') {
     group = 'verification'
     description = 'Verifies that all themes used in AndroidManifest.xml are defined in resource files'
 
-    workingDir = rootProject.projectDir
-    commandLine 'bash', './scripts/verify_themes.sh'
+    def manifestFile = file("${rootProject.projectDir}/app/src/main/AndroidManifest.xml")
+    def stylesApp = file("${rootProject.projectDir}/app/src/main/res/values/styles.xml")
+    def themesUiBase = file("${rootProject.projectDir}/ui/base/android/src/main/res/values/themes.xml")
+    def stylesUiBase = file("${rootProject.projectDir}/ui/base/android/src/main/res/values/styles.xml")
 
-    // Define inputs to enable proper incremental builds
-    inputs.file("${rootProject.projectDir}/app/src/main/AndroidManifest.xml")
-    inputs.file("${rootProject.projectDir}/app/src/main/res/values/styles.xml")
-    inputs.file("${rootProject.projectDir}/scripts/verify_themes.sh")
-    inputs.files(fileTree("${rootProject.projectDir}/ui/base/android/src/main/res/values") {
-        include 'themes.xml', 'styles.xml'
-    }).optional(true)
-
-    // Disable caching for verification tasks - always run fresh
+    inputs.file(manifestFile)
+    inputs.file(stylesApp).optional(true)
+    inputs.file(themesUiBase).optional(true)
+    inputs.file(stylesUiBase).optional(true)
     outputs.upToDateWhen { false }
+
+    doLast {
+        if (!manifestFile.exists()) {
+            throw new GradleException("AndroidManifest.xml not found: ${manifestFile}")
+        }
+
+        def frameworkThemes = [
+            '@android:style/Theme.NoTitleBar.Fullscreen',
+            '@style/Theme.AppCompat.DayNight',
+        ] as Set
+
+        // Extract android:theme values from manifest (skip XML comments)
+        def themes = [] as Set
+        def inComment = false
+        manifestFile.eachLine { line ->
+            if (line.contains('<!--')) inComment = true
+            if (!inComment) {
+                def matcher = (line =~ /android:theme="([^"]*)"/)
+                while (matcher.find()) {
+                    themes.add(matcher.group(1))
+                }
+            }
+            if (line.contains('-->')) inComment = false
+        }
+
+        if (themes.isEmpty()) {
+            logger.warn("verifyThemes: No themes found in manifest")
+            return
+        }
+
+        logger.lifecycle("verifyThemes: Found ${themes.size()} themes in manifest")
+
+        def resourceFiles = [stylesApp, themesUiBase, stylesUiBase].findAll { it.exists() }
+        def errors = []
+
+        themes.each { theme ->
+            if (frameworkThemes.contains(theme)) {
+                logger.lifecycle("  OK: ${theme} (framework theme)")
+                return
+            }
+
+            def themeName = theme.replaceFirst(/^@style\//, '').replaceFirst(/^@android:style\//, '')
+            def found = resourceFiles.any { resFile ->
+                resFile.text.contains("name=\"${themeName}\"")
+            }
+
+            if (found) {
+                logger.lifecycle("  OK: ${theme}")
+            } else {
+                logger.error("  MISSING: ${theme} - no definition found!")
+                errors.add(theme)
+            }
+        }
+
+        if (!errors.isEmpty()) {
+            throw new GradleException(
+                "verifyThemes: ${errors.size()} undefined theme(s): ${errors.join(', ')}\n" +
+                "See docs/THEME_VERIFICATION.md"
+            )
+        }
+
+        logger.lifecycle("verifyThemes: All themes verified successfully")
+    }
 }
 
 // Run theme verification before preBuild
