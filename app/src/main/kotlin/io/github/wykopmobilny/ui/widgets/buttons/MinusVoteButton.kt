@@ -1,6 +1,7 @@
 package io.github.wykopmobilny.ui.widgets.buttons
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.util.AttributeSet
 import android.util.TypedValue
 import androidx.core.content.ContextCompat
@@ -18,7 +19,19 @@ class MinusVoteButton
             val typedValue = TypedValue()
             getActivityContext()!!.theme?.resolveAttribute(R.attr.voteMinusButtonStatelist, typedValue, true)
             setBackgroundResource(typedValue.resourceId)
-            setTextColor(ContextCompat.getColorStateList(context, typedValue.resourceId))
+
+            // Create ColorStateList programmatically to support theme colors
+            val textColorTypedValue = TypedValue()
+            context.theme.resolveAttribute(R.attr.textColorButtonToolbar, textColorTypedValue, true)
+            val defaultColor = textColorTypedValue.data
+            val selectedColor = ContextCompat.getColor(context, R.color.minusPressedColor)
+
+            val states = arrayOf(
+                intArrayOf(android.R.attr.state_selected),
+                intArrayOf()
+            )
+            val colors = intArrayOf(selectedColor, defaultColor)
+            setTextColor(ColorStateList(states, colors))
         }
 
         override fun setLightThemeDrawable() {

@@ -302,6 +302,7 @@
         <item name="android:paddingRight">@dimen/padding_dp_small</item>
         <item name="android:background">?attr/buttonStatelist</item>
         <item name="android:gravity">center</item>
+        <item name="android:textColor">?attr/textColorButtonToolbar</item>
     </style>
 
     <style name="CommentButtonTextView"
