@@ -210,3 +210,22 @@ dependencies {
 }
 
 // Detekt tasks removed - plugin not installed
+
+// Theme verification task - checks if all themes used in AndroidManifest.xml are defined
+tasks.register('verifyThemes', Exec) {
+    group = 'verification'
+    description = 'Verifies that all themes used in AndroidManifest.xml are defined in resource files'
+
+    workingDir = rootProject.projectDir
+
+    if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
+        commandLine 'bash', '-c', './scripts/verify_themes.sh'
+    } else {
+        commandLine 'bash', './scripts/verify_themes.sh'
+    }
+}
+
+// Run theme verification before preBuild
+tasks.named('preBuild').configure {
+    dependsOn('verifyThemes')
+}

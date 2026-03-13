@@ -28,7 +28,7 @@
             android:name="io.github.wykopmobilny.ui.modules.loginscreen.LoginScreenActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:exported="false"
-            android:theme="@style/Theme.App.Dark"
+            android:theme="@style/WykopAppTheme.Dark"
             />
         <activity
             android:name="io.github.wykopmobilny.ui.modules.photoview.PhotoViewActivity"
@@ -98,7 +98,7 @@
         <activity
             android:name=".ui.modules.settings.SettingsActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:theme="@style/Theme.App.Dark"
+            android:theme="@style/WykopAppTheme.Dark"
             />
         <activity
             android:name="io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsActivityV2"
@@ -107,7 +107,7 @@
             />
         <activity
             android:name="io.github.wykopmobilny.ui.modules.twofactor.TwoFactorAuthorizationActivity"
-            android:theme="@style/Theme.App.Dark"
+            android:theme="@style/WykopAppTheme.Dark"
             android:windowSoftInputMode="adjustResize"
             />
         <activity
@@ -285,7 +285,7 @@
             android:name=".ui.modules.profile.ProfileActivityV2"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:launchMode="singleTop"
-            android:theme="@style/Theme.App.Dark"
+            android:theme="@style/WykopAppTheme.Dark"
             android:windowSoftInputMode="stateUnchanged|adjustResize"
             />
         <activity
