@@ -81,7 +81,7 @@ internal fun LinkDetailsHeaderLayoutBinding.bindHeaderV3(
         commentsCountTextView.text = header.commentsCount.label
         val commentsColor =
             header.commentsCount.color?.toColorInt(commentsCountTextView.context)
-                ?: commentsCountTextView.context.readColorAttr(AppcompatR.attr.colorControlNormal)
+                ?: commentsCountTextView.context.readColorAttr(R.attr.textColorButtonToolbar)
         commentsCountTextView.setTextColor(commentsColor)
         commentsCountTextView.setOnClick(header.commentsCount.clickAction)
 
