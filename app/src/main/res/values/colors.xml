@@ -19,8 +19,8 @@
     <color name="textColorLight.Dark">#99ffffff</color>
     <color name="textColorLight.Amoled">#94ffffff</color>
 
-    <color name="textColorButtonToolbar">#8c000000</color>
-    <color name="textColorButtonToolbar.Dark">#80ffffff</color>
+    <color name="textColorButtonToolbar">#cc000000</color>
+    <color name="textColorButtonToolbar.Dark">#deffffff</color>
 
     <color name="colorAccent">#3c84c1</color>
     <color name="colorAccent.Dark">#3a80bc</color>
