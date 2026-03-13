@@ -140,7 +140,7 @@
     <io.github.wykopmobilny.ui.widgets.buttons.DigVoteButton
         android:id="@+id/diggCountTextView"
         style="@style/VoteButtonTextView"
-        android:drawableStart="?attr/wypokDrawable"
+        app:drawableStartCompat="?attr/wypokDrawable"
         android:drawablePadding="2dp"
         app:layout_constraintEnd_toStartOf="@id/moreOptionsTextView"
         app:layout_constraintTop_toBottomOf="@+id/barrier"

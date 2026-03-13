@@ -83,7 +83,7 @@
     <io.github.wykopmobilny.ui.widgets.buttons.PlusVoteButton
         android:id="@+id/voteButton"
         style="@style/VoteButtonTextView"
-        android:drawableStart="?attr/plusDrawable"
+        app:drawableStartCompat="?attr/plusDrawable"
         app:layout_constraintRight_toLeftOf="@+id/moreOptionsTextView"
         app:layout_constraintTop_toBottomOf="@id/entryImageView"
         tools:text="2"

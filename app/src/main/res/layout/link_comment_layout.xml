@@ -127,7 +127,7 @@
     <io.github.wykopmobilny.ui.widgets.buttons.PlusVoteButton
         android:id="@+id/plusVoteButton"
         style="@style/VoteButtonTextView"
-        android:drawableStart="?attr/plusDrawable"
+        app:drawableStartCompat="?attr/plusDrawable"
         app:layout_constraintRight_toLeftOf="@id/minusVoteButton"
         app:layout_constraintTop_toBottomOf="@id/wykopEmbedView"
         tools:text="7"
@@ -136,7 +136,7 @@
     <io.github.wykopmobilny.ui.widgets.buttons.MinusVoteButton
         android:id="@+id/minusVoteButton"
         style="@style/VoteButtonTextView"
-        android:drawableStart="?attr/minusDrawable"
+        app:drawableStartCompat="?attr/minusDrawable"
         app:layout_constraintRight_toLeftOf="@+id/moreOptionsTextView"
         app:layout_constraintTop_toBottomOf="@id/wykopEmbedView"
         tools:text="1"

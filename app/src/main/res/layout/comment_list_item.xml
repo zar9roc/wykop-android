@@ -92,7 +92,7 @@
     <TextView
         android:id="@+id/shareTextView"
         style="@style/ButtonTextView"
-        android:drawableStart="?attr/sharebtnDrawable"
+        app:drawableStartCompat="?attr/sharebtnDrawable"
         app:layout_constraintLeft_toRightOf="@id/avatarView"
         app:layout_constraintTop_toBottomOf="@id/entryImageViewStub"
         />
@@ -100,7 +100,7 @@
     <TextView
         android:id="@+id/quoteTextView"
         style="@style/ButtonTextView"
-        android:drawableStart="?attr/quoteDrawable"
+        app:drawableStartCompat="?attr/quoteDrawable"
         app:layout_constraintLeft_toRightOf="@id/shareTextView"
         app:layout_constraintTop_toBottomOf="@id/entryImageViewStub"
         />
@@ -108,7 +108,7 @@
     <TextView
         android:id="@+id/replyTextView"
         style="@style/ButtonTextView"
-        android:drawableStart="?attr/replyDrawable"
+        app:drawableStartCompat="?attr/replyDrawable"
         app:layout_constraintLeft_toRightOf="@id/quoteTextView"
         app:layout_constraintTop_toBottomOf="@id/entryImageViewStub"
         />
@@ -116,7 +116,7 @@
     <io.github.wykopmobilny.ui.widgets.buttons.PlusVoteButton
         android:id="@+id/voteButton"
         style="@style/VoteButtonTextView"
-        android:drawableStart="?attr/plusDrawable"
+        app:drawableStartCompat="?attr/plusDrawable"
         app:layout_constraintRight_toLeftOf="@+id/moreOptionsTextView"
         app:layout_constraintTop_toBottomOf="@id/entryImageViewStub"
         tools:text="2"
@@ -125,7 +125,7 @@
     <TextView
         android:id="@+id/moreOptionsTextView"
         style="@style/ButtonTextView"
-        android:drawableStart="?attr/dotsDrawable"
+        app:drawableStartCompat="?attr/dotsDrawable"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/entryImageViewStub"
         />

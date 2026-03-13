@@ -22,8 +22,14 @@ class PlusVoteButton
 
             // Create ColorStateList programmatically to support theme colors
             val textColorTypedValue = TypedValue()
-            context.theme.resolveAttribute(R.attr.textColorButtonToolbar, textColorTypedValue, true)
-            val defaultColor = textColorTypedValue.data
+            val resolvedTextColor = context.theme.resolveAttribute(R.attr.textColorButtonToolbar, textColorTypedValue, true)
+            val defaultColor = if (resolvedTextColor && textColorTypedValue.data != 0) {
+                textColorTypedValue.data
+            } else {
+                // Fallback to colorControlNormal if textColorButtonToolbar is not defined
+                context.theme.resolveAttribute(androidx.appcompat.R.attr.colorControlNormal, textColorTypedValue, true)
+                textColorTypedValue.data
+            }
             val selectedColor = ContextCompat.getColor(context, R.color.plusPressedColor)
 
             val states = arrayOf(
