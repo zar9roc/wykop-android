@@ -105,7 +105,7 @@
     </style>
 
     <style name="WykopAppTheme.Dark"
-        parent="Theme.AppCompat.NoActionBar">
+        parent="Theme.MaterialComponents.NoActionBar.Bridge">
         <item name="bottomSheetStyle">@style/WykopBottomSheet</item>
         <item name="android:scrollbarThumbVertical">@drawable/scrollbar_gradient</item>
         <item name="textColorGrey">@color/textColorGrey.Dark</item>
