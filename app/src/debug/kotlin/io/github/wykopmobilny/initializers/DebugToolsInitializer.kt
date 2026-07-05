@@ -6,6 +6,7 @@ import androidx.startup.Initializer
 import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.debug.DebugActivityTracker
 import io.github.wykopmobilny.debug.DebugServerHolder
+import io.github.wykopmobilny.debug.LeakCanaryToggle
 import io.github.wykopmobilny.WykopApp
 
 /**
@@ -23,6 +24,8 @@ internal class DebugToolsInitializer : Initializer<Unit> {
         val linksApi = wykopApp.wykopApi.linksV3RetrofitApi()
         DebugServerHolder.initialize(context.applicationContext, entriesApi, linksApi)
         Napier.d("DebugHttpServer initialized via DebugServerHolder", tag = "DebugToolsInitializer")
+
+        LeakCanaryToggle.apply(context)
     }
 
     override fun dependencies() = emptyList<Class<out Initializer<*>>>()

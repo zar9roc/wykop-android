@@ -18,12 +18,14 @@ import kotlinx.coroutines.launch
  *   DEBUG_CLEAR_CACHE — clear app cache directory
  *   DEBUG_LOGOUT — force logout current user
  *   DEBUG_SWITCH_TAB — switch to specific tab in MainNavigationActivity
+ *   DEBUG_LEAKCANARY — enable/disable LeakCanary heap dumps (--ez enabled true|false)
  *
  * Usage examples:
  *   adb shell am broadcast -a io.github.wykopmobilny.debug.DEBUG_STATE
  *   adb shell am broadcast -a io.github.wykopmobilny.debug.DEBUG_CLEAR_CACHE
  *   adb shell am broadcast -a io.github.wykopmobilny.debug.DEBUG_LOGOUT
  *   adb shell am broadcast -a io.github.wykopmobilny.debug.DEBUG_SWITCH_TAB --es tab "promoted"
+ *   adb shell am broadcast -a io.github.wykopmobilny.debug.DEBUG_LEAKCANARY --ez enabled false
  *   adb logcat -s DebugState -d | tail -1
  *
  * Optional extras for DEBUG_STATE:
@@ -39,6 +41,7 @@ class DebugStateReceiver : BroadcastReceiver() {
         const val ACTION_CLEAR_CACHE = "io.github.wykopmobilny.debug.DEBUG_CLEAR_CACHE"
         const val ACTION_LOGOUT = "io.github.wykopmobilny.debug.DEBUG_LOGOUT"
         const val ACTION_SWITCH_TAB = "io.github.wykopmobilny.debug.DEBUG_SWITCH_TAB"
+        const val ACTION_LEAKCANARY = "io.github.wykopmobilny.debug.DEBUG_LEAKCANARY"
 
         @Deprecated("Use ACTION_DEBUG_STATE")
         const val ACTION = ACTION_DEBUG_STATE
@@ -67,6 +70,12 @@ class DebugStateReceiver : BroadcastReceiver() {
                     val result = DebugStateHelper.forceLogout(context)
                     Napier.i(result.toString(2), tag = TAG)
                 }
+            }
+
+            ACTION_LEAKCANARY -> {
+                val enabled = intent.getBooleanExtra("enabled", true)
+                LeakCanaryToggle.set(context, enabled)
+                Napier.i("""{"action": "leakcanary", "heap_dump_enabled": $enabled}""", tag = TAG)
             }
 
             ACTION_SWITCH_TAB -> {

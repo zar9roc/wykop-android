@@ -39,6 +39,7 @@
                 <action android:name="io.github.wykopmobilny.debug.DEBUG_CLEAR_CACHE" />
                 <action android:name="io.github.wykopmobilny.debug.DEBUG_LOGOUT" />
                 <action android:name="io.github.wykopmobilny.debug.DEBUG_SWITCH_TAB" />
+                <action android:name="io.github.wykopmobilny.debug.DEBUG_LEAKCANARY" />
             </intent-filter>
         </receiver>
     </application>

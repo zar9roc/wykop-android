@@ -63,3 +63,10 @@
 -dontwarn org.conscrypt.**
 -dontwarn org.bouncycastle.**
 -dontwarn org.openjsse.**
+# dagger.android: DispatchingAndroidInjector sprawdza w runtime, czy fabryka
+# subkomponentu implementuje AndroidInjector.Factory. Horyzontalne scalanie klas
+# przez R8 (proguard-android-optimize) gubi ten interfejs i aplikacja wywala sie
+# przy wstrzykiwaniu ("X does not implement AndroidInjector.Factory").
+# allowobfuscation/allowshrinking: tylko blokada optymalizacji, nazwy i usuwanie ok.
+-keep,allowobfuscation,allowshrinking class * implements dagger.android.AndroidInjector$Factory
+-keep,allowobfuscation,allowshrinking class * implements dagger.android.AndroidInjector

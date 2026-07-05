@@ -60,7 +60,9 @@ android {
             keyPassword = 'android'
         }
         register("release") {
-            storeFile rootProject.file("keys/release.keystore")
+            // wykop.keystore.file pozwala podpisywac wlasnym keystorem (np. build
+            // wlasnego uzytku) bez ruszania oficjalnego keys/release.keystore.
+            storeFile rootProject.file(findProperty("wykop.keystore.file") ?: "keys/release.keystore")
             storePassword findProperty("wykop.keystore.password")
             keyAlias findProperty("wykop.keystore.key.name")
             keyPassword findProperty("wykop.keystore.key.password")
@@ -109,6 +111,7 @@ android {
         disable += "UnknownNullness"
         disable += "Range"
     }
+
 }
 
 
@@ -172,7 +175,9 @@ dependencies {
     debugImplementation(libs.flipper.network)
     debugImplementation(libs.flipper.leakcanary)
     debugImplementation(libs.soloader.core)
-    debugImplementation(libs.moshi.core) // For MoshiResponseLoggingInterceptor
+    // Moshi w glownym source set (ErrorHandlerTransformerV3 lapie JsonDataException)
+    // oraz w debug (MoshiResponseLoggingInterceptor).
+    implementation(libs.moshi.core)
     debugImplementation(libs.nanohttpd.core)
     implementation(platform("com.google.firebase:firebase-bom:34.9.0"))
     implementation("com.google.firebase:firebase-analytics")

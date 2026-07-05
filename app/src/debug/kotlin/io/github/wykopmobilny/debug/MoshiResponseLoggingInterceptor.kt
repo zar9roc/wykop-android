@@ -128,8 +128,8 @@ class MoshiResponseLoggingInterceptor(
                 appendLine("║ Parsed Map Keys:")
                 appendLine("║ ${jsonMap.keys}")
                 appendLine("╠═══════════════════════════════════════════════════════════════")
-                appendLine("║ Raw JSON (first 500 chars):")
-                appendLine("║ ${rawJson.take(500)}")
+                appendLine("║ Raw JSON (first 3000 chars):")
+                appendLine("║ ${rawJson.take(3000)}")
                 appendLine("╚═══════════════════════════════════════════════════════════════")
             }
 

@@ -73,3 +73,5 @@ docs/WYKOP_API_V3_MIGRATION_PLAN.md
 
 
 .mcp.json
+# Osobisty keystore do lokalnych buildow release - nie commitowac
+keys/release-local.keystore
