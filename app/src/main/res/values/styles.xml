@@ -95,6 +95,7 @@
         <item name="textSizeHuge">@dimen/text_normal_size_huge</item>
         <item name="alertDialogTheme">@android:style/Theme.DeviceDefault.Light.Dialog.NoActionBar
         </item>
+        <item name="bottomSheetDialogTheme">@style/Theme.Wykop.BottomSheetDialog.Light</item>
     </style>
 
 
@@ -107,6 +108,7 @@
     <style name="WykopAppTheme.Dark"
         parent="Theme.MaterialComponents.NoActionBar.Bridge">
         <item name="bottomSheetStyle">@style/WykopBottomSheet</item>
+        <item name="bottomSheetDialogTheme">@style/Theme.Wykop.BottomSheetDialog.Dark</item>
         <item name="android:scrollbarThumbVertical">@drawable/scrollbar_gradient</item>
         <item name="textColorGrey">@color/textColorGrey.Dark</item>
         <item name="textColorLight">@color/textColorLight.Dark</item>
@@ -206,6 +208,7 @@
 
     <style name="WykopAppTheme.Amoled"
         parent="WykopAppTheme.Dark">
+        <item name="bottomSheetDialogTheme">@style/Theme.Wykop.BottomSheetDialog.Amoled</item>
         <item name="textColorGrey">@color/textColorGrey.Amoled</item>
         <item name="textColorLight">@color/textColorLight.Amoled</item>
         <item name="android:textColor">@color/textColor.Amoled</item>
@@ -577,5 +580,30 @@
     <style name="WykopBottomSheet"
         parent="Widget.Design.BottomSheet.Modal">
         <item name="android:background">@android:color/transparent</item>
+    </style>
+
+    <!-- BottomSheetDialog (np. OptionPicker) bez zdefiniowanego bottomSheetDialogTheme
+         dostawal domyslny JASNY motyw Material - w ciemnym motywie dawalo to biale
+         tlo z nieczytelnym tekstem. Osobny overlay per motyw ustawia colorSurface
+         (tlo arkusza) i kolory tekstu. -->
+    <style name="Theme.Wykop.BottomSheetDialog.Light"
+        parent="ThemeOverlay.MaterialComponents.BottomSheetDialog">
+        <item name="colorSurface">@color/windowBackground</item>
+        <item name="android:textColorPrimary">@color/textColor</item>
+        <item name="android:textColor">@color/textColor</item>
+    </style>
+
+    <style name="Theme.Wykop.BottomSheetDialog.Dark"
+        parent="ThemeOverlay.MaterialComponents.BottomSheetDialog">
+        <item name="colorSurface">@color/windowBackground.Dark</item>
+        <item name="android:textColorPrimary">@color/textColor.Dark</item>
+        <item name="android:textColor">@color/textColor.Dark</item>
+    </style>
+
+    <style name="Theme.Wykop.BottomSheetDialog.Amoled"
+        parent="ThemeOverlay.MaterialComponents.BottomSheetDialog">
+        <item name="colorSurface">@color/windowBackground.Amoled</item>
+        <item name="android:textColorPrimary">@color/textColor.Amoled</item>
+        <item name="android:textColor">@color/textColor.Amoled</item>
     </style>
 </resources>
