@@ -26,8 +26,9 @@ internal class BearerAuthInterceptor
             Napier.d("BearerAuthInterceptor - URL: $url", tag = "BearerAuthInterceptor")
             Napier.d("BearerAuthInterceptor - Path: $path", tag = "BearerAuthInterceptor")
 
-            // Only add bearer token for v3 API endpoints (skip /v3/auth where we obtain it)
-            if (!path.startsWith("/api/v3/") || path.startsWith("/api/v3/auth")) {
+            // Only add bearer token for v3 API endpoints (skip /v3/auth where we obtain it
+            // and /v3/refresh-token which per spec requires no Authorization)
+            if (!path.startsWith("/api/v3/") || path.startsWith("/api/v3/auth") || path == "/api/v3/refresh-token") {
                 Napier.d("BearerAuthInterceptor - Skipping: not v3 API or auth endpoint", tag = "BearerAuthInterceptor")
                 return chain.proceed(request)
             }

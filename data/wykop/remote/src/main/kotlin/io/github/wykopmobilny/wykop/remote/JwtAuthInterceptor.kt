@@ -27,8 +27,9 @@ internal class JwtAuthInterceptor
                 return chain.proceed(request)
             }
 
-            // Skip JWT for auth and connect endpoints
-            if (path.startsWith("/api/v3/auth") || path == "/api/v3/connect") {
+            // Skip JWT for auth, connect and refresh endpoints (refresh-token per spec
+            // requires no Authorization; sending an expired JWT here could fail the refresh)
+            if (path.startsWith("/api/v3/auth") || path == "/api/v3/connect" || path == "/api/v3/refresh-token") {
                 Napier.d("JwtAuthInterceptor - Skipping: auth or connect endpoint", tag = "JwtAuthInterceptor")
                 return chain.proceed(request)
             }

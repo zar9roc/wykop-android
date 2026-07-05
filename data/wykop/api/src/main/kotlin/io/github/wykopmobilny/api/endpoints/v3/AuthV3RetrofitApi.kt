@@ -17,7 +17,7 @@ interface AuthV3RetrofitApi {
         @Body request: WykopApiRequestV3<AuthRequestV3>,
     ): WykopApiResponseV3<AuthResponseV3>
 
-    @POST("v3/auth/refresh")
+    @POST("v3/refresh-token")
     suspend fun refreshToken(
         @Body request: WykopApiRequestV3<RefreshTokenRequestV3>,
     ): WykopApiResponseV3<RefreshTokenResponseV3>

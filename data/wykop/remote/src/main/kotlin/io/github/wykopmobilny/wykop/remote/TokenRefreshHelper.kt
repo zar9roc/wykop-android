@@ -46,13 +46,16 @@ internal class TokenRefreshHelper
                             e,
                             tag = "TokenRefreshHelper",
                         )
-                        // Refresh failed, clear tokens (user needs to re-login)
-                        jwtTokenStorage.updateJwtToken(null)
+                        // Tokeny czyscimy tylko, gdy serwer faktycznie odrzucil refresh token
+                        // (401 = bledny, 423 = zablokowany). Inne kody (np. 5xx) sa przejsciowe -
+                        // wyczyszczenie ich wylogowaloby uzytkownika bez powodu.
+                        if (e.code() == 401 || e.code() == 423) {
+                            jwtTokenStorage.updateJwtToken(null)
+                        }
                         return@runBlocking null
                     } catch (e: IOException) {
                         Napier.w("TokenRefreshHelper - JWT refresh failed due to network error", e, tag = "TokenRefreshHelper")
-                        // Network error, clear tokens (user needs to re-login)
-                        jwtTokenStorage.updateJwtToken(null)
+                        // Blad sieci jest przejsciowy - nie wylogowujemy uzytkownika.
                         return@runBlocking null
                     }
                 }

@@ -27,7 +27,9 @@ internal class TokenRefreshAuthenticator
             Napier.d("TokenRefreshAuthenticator - Path: $path", tag = "TokenRefreshAuthenticator")
 
             // Only handle 401 for v3 API endpoints (except auth and connect endpoints)
-            if (!path.startsWith("/api/v3/") || path.startsWith("/api/v3/auth") || path == "/api/v3/connect") {
+            if (!path.startsWith("/api/v3/") || path.startsWith("/api/v3/auth") ||
+                path == "/api/v3/connect" || path == "/api/v3/refresh-token"
+            ) {
                 Napier.d("TokenRefreshAuthenticator - Skipping: not v3 API or auth/connect endpoint", tag = "TokenRefreshAuthenticator")
                 return null
             }
