@@ -24,6 +24,12 @@
         />
 
     <item
+        android:id="@+id/period2"
+        android:title="@string/period2"
+        app:showAsAction="never"
+        />
+
+    <item
         android:id="@+id/period6"
         android:title="@string/period6"
         app:showAsAction="never"

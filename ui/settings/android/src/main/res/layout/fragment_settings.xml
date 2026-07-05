@@ -11,8 +11,15 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="?attr/colorPrimaryDark"
+        android:fitsSystemWindows="true"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:contentInsetStartWithNavigation="0dp"
+        app:elevation="0dp"
         app:navigationIcon="?homeAsUpIndicator"
         app:title="@string/settings"
+        app:titleTextAppearance="@style/SettingsToolbar.TitleText"
         />
 
     <androidx.fragment.app.FragmentContainerView

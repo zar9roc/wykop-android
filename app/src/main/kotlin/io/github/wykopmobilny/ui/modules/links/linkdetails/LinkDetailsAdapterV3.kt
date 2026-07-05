@@ -9,7 +9,6 @@ import androidx.viewbinding.ViewBinding
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.databinding.LinkCommentLayoutBinding
 import io.github.wykopmobilny.databinding.LinkDetailsHeaderLayoutBinding
-import io.github.wykopmobilny.databinding.LinkDetailsRelatedSectionBinding
 import io.github.wykopmobilny.databinding.TopLinkCommentLayoutBinding
 import io.github.wykopmobilny.links.details.LinkCommentUi
 import io.github.wykopmobilny.links.details.LinkDetailsHeaderUi
@@ -20,7 +19,6 @@ import io.github.wykopmobilny.ui.modules.links.linkdetails.items.bindHeaderV3
 import io.github.wykopmobilny.ui.modules.links.linkdetails.items.bindHiddenCommentV3
 import io.github.wykopmobilny.ui.modules.links.linkdetails.items.bindHiddenReplyV3
 import io.github.wykopmobilny.ui.modules.links.linkdetails.items.bindParentCommentV3
-import io.github.wykopmobilny.ui.modules.links.linkdetails.items.bindRelatedSectionV3
 import io.github.wykopmobilny.ui.modules.links.linkdetails.items.bindReplyCommentV3
 import io.github.wykopmobilny.utils.asyncDifferConfig
 
@@ -47,10 +45,6 @@ internal class LinkDetailsAdapterV3 :
                     is LinkCommentUi.Normal -> VIEW_TYPE_REPLY_COMMENT
                 }
             }
-
-            is LinkDetailsListItem.RelatedSection -> {
-                VIEW_TYPE_RELATED
-            }
         }
 
     override fun onCreateViewHolder(
@@ -65,7 +59,6 @@ internal class LinkDetailsAdapterV3 :
                 VIEW_TYPE_PARENT_COMMENT_HIDDEN -> LinkCommentLayoutBinding.inflate(inflater, parent, false)
                 VIEW_TYPE_REPLY_COMMENT -> LinkCommentLayoutBinding.inflate(inflater, parent, false)
                 VIEW_TYPE_REPLY_COMMENT_HIDDEN -> LinkCommentLayoutBinding.inflate(inflater, parent, false)
-                VIEW_TYPE_RELATED -> LinkDetailsRelatedSectionBinding.inflate(inflater, parent, false)
                 else -> error("unsupported viewType=$viewType")
             }
         return BindingViewHolder(binding)
@@ -116,12 +109,6 @@ internal class LinkDetailsAdapterV3 :
                     }
                 }
             }
-
-            is LinkDetailsListItem.RelatedSection -> {
-                (holder.binding as LinkDetailsRelatedSectionBinding).bindRelatedSectionV3(
-                    item.related,
-                )
-            }
         }
     }
 
@@ -135,7 +122,6 @@ internal class LinkDetailsAdapterV3 :
         private const val VIEW_TYPE_PARENT_COMMENT_HIDDEN = 2
         private const val VIEW_TYPE_REPLY_COMMENT = 3
         private const val VIEW_TYPE_REPLY_COMMENT_HIDDEN = 4
-        private const val VIEW_TYPE_RELATED = 5
     }
 }
 
@@ -143,10 +129,6 @@ internal sealed class LinkDetailsListItem {
     data class Header(
         val header: LinkDetailsHeaderUi,
         val relatedCount: Int = 0,
-    ) : LinkDetailsListItem()
-
-    data class RelatedSection(
-        val related: RelatedLinksSectionUi,
     ) : LinkDetailsListItem()
 
     data class ParentComment(
@@ -171,7 +153,6 @@ internal sealed class LinkDetailsListItem {
             when (oldItem) {
                 is Header -> newItem is Header
                 is ParentComment -> oldItem.id == (newItem as? ParentComment)?.id
-                is RelatedSection -> newItem is RelatedSection
                 is ReplyComment -> oldItem.id == (newItem as? ReplyComment)?.id
             }
 
@@ -202,12 +183,11 @@ private val LinkCommentUi.commentId
 @OptIn(ExperimentalStdlibApi::class)
 internal fun LinkDetailsUi.toAdapterListV3(): List<LinkDetailsListItem> =
     buildList {
+        // Sekcja "Powiazane" nie jest renderowana na liscie - duplikowala przycisk
+        // z ikona lancucha w naglowku (relatedCountTextView), ktory otwiera
+        // pelny ekran powiazanych. Licznik z sekcji zasila sam przycisk.
         val relatedCount = (relatedSection as? RelatedLinksSectionUi.WithData)?.links?.size ?: 0
         add(LinkDetailsListItem.Header(header, relatedCount))
-        val related = relatedSection
-        if (related != null) {
-            add(LinkDetailsListItem.RelatedSection(related))
-        }
         commentsSection.comments.forEach { (parent, replies) ->
             add(LinkDetailsListItem.ParentComment(parent, hasReplies = replies.isNotEmpty()))
             addAll(

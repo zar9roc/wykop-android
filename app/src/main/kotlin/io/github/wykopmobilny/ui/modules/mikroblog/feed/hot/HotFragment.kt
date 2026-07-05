@@ -86,6 +86,7 @@ class HotFragment :
                 "24" -> R.string.period24
                 "12" -> R.string.period12
                 "6" -> R.string.period6
+                "2" -> R.string.period2
                 "active" -> R.string.active_entries
                 else -> R.string.newest_entries
             },
@@ -94,6 +95,11 @@ class HotFragment :
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            R.id.period2 -> {
+                presenter.period = "2"
+                navigation.activityToolbar.setTitle(R.string.period2)
+            }
+
             R.id.period6 -> {
                 presenter.period = "6"
                 navigation.activityToolbar.setTitle(R.string.period6)

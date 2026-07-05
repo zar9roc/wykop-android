@@ -2,6 +2,7 @@ package io.github.wykopmobilny.ui.adapters
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import io.github.wykopmobilny.api.links.LinksApi
 import io.github.wykopmobilny.data.storage.api.AppStorage
 import io.github.wykopmobilny.models.dataclass.Link
 import io.github.wykopmobilny.storage.api.SettingsPreferencesApi
@@ -20,6 +21,7 @@ class NoProgressLinkAdapter
         settingsPreferencesApi: SettingsPreferencesApi,
         private val navigator: NewNavigator,
         private val appStorage: AppStorage,
+        private val linksApi: LinksApi,
     ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         // Required field, interacts with presenter. Otherwise will throw exception
         val items = mutableListOf<Link>()
@@ -65,6 +67,7 @@ class NoProgressLinkAdapter
                         navigator = navigator,
                         linkActionListener = linksActionListener,
                         appStorage = appStorage,
+                        linksApi = linksApi,
                         linkImagePosition = linkImagePosition,
                         linkShowAuthor = linkShowAuthor,
                     )

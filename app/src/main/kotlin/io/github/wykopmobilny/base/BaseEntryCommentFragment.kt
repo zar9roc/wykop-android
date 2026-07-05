@@ -75,7 +75,14 @@ open class BaseEntryCommentFragment :
     /**
      * Removes progressbar from adapter
      */
-    override fun disableLoading() = entryCommentsAdapter.disableLoading()
+    override fun disableLoading() {
+        entryCommentsAdapter.disableLoading()
+        binding.swipeRefresh.isRefreshing = false
+        binding.loadingView.isVisible = false
+        // Pusta pierwsza strona: addItems() nie zostanie wywolane - chowamy loader
+        // i pokazujemy pusty stan zamiast wiecznego kreciolka.
+        showSearchEmptyView = entryCommentsAdapter.data.isEmpty()
+    }
 
     /**
      * Use this function to add items to EntriesFragment

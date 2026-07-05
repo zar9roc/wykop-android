@@ -36,6 +36,11 @@ class AddLinkDuplicatesListFragment :
 
     override fun dig(link: Link) = Unit
 
+    override fun bury(
+        link: Link,
+        reason: Int,
+    ) = Unit
+
     override fun removeVote(link: Link) = Unit
 
     override fun onViewCreated(

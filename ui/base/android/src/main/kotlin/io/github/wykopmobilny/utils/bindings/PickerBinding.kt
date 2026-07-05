@@ -3,12 +3,15 @@ package io.github.wykopmobilny.utils.bindings
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.AsyncDifferConfig
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import io.github.wykopmobilny.kotlin.AppDispatchers
 import io.github.wykopmobilny.ui.base.android.databinding.ItemOptionBinding
@@ -57,6 +60,22 @@ private class OptionPickerBottomSheet(
             }
         binding.txtTitle.text = picker.title
         setContentView(binding.root)
+
+        // RecyclerView z auto-measure zweza kontener arkusza do szerokosci tresci,
+        // a domyslny peekHeight (proporcja 16:9 od tej szerokosci) ucina liste na
+        // dole - wymuszamy pelna szerokosc i pelne rozwiniecie.
+        findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+            ?.updateLayoutParams { width = ViewGroup.LayoutParams.MATCH_PARENT }
+        behavior.state = BottomSheetBehavior.STATE_EXPANDED
+        behavior.skipCollapsed = true
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // Motyw aktywnosci (LinkDetails) daje dialogowi PLYWAJACE okno z marginesami -
+        // arkusz nie moze byc wtedy szerszy niz okno i wyglada jak maly popup.
+        // Pelnowymiarowe okno przywraca normalne zachowanie bottom sheeta.
+        window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
     }
 }
 

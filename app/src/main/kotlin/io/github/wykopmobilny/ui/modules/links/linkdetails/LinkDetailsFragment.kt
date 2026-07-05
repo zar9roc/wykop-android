@@ -34,14 +34,13 @@ import io.github.wykopmobilny.utils.bindings.drawableRes
 import io.github.wykopmobilny.utils.longArgument
 import io.github.wykopmobilny.utils.longArgumentNullable
 import io.github.wykopmobilny.utils.viewModelWrapperFactoryKeyed
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 
 @Suppress("InjectDispatcher")
 internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
@@ -95,18 +94,21 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
 
                     val targetCommentId = commentId
                     if (savedInstanceState == null && targetCommentId != null) {
-                        try {
-                            withTimeout(3000) {
-                                val state = adapterList.stateIn(this)
-                                val targetElement =
-                                    state
+                        // Osobna korutyna - finder nie moze blokowac renderowania listy
+                        // (komentarze z odpowiedziami doplywaja progresywnie, docelowy
+                        // watek moze pojawic sie dopiero po kilkunastu sekundach).
+                        // withTimeoutOrNull + first() zamiast stateIn: stateIn odpala w scope
+                        // niekonczaca sie korutyne, przez co withTimeout ZAWSZE konczyl sie
+                        // TimeoutCancellationException i ubijal caly kolektor listy.
+                        launch {
+                            val target =
+                                withTimeoutOrNull(SCROLL_TO_COMMENT_TIMEOUT_MS) {
+                                    adapterList
                                         .mapNotNull { list ->
                                             list
                                                 .indexOfFirst { item ->
                                                     when (item) {
-                                                        is LinkDetailsListItem.Header,
-                                                        is LinkDetailsListItem.RelatedSection,
-                                                        -> {
+                                                        is LinkDetailsListItem.Header -> {
                                                             false
                                                         }
 
@@ -119,27 +121,30 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
                                                         }
                                                     }
                                                 }.takeIf { it >= 0 }
+                                                ?.let { position -> position to list }
                                         }.first()
-                                adapter.submitList(state.value) {
+                                }
+                            if (target != null) {
+                                val (position, list) = target
+                                // Jednorazowa nawigacja: bez wyczyszczenia argumentu kazdy powrot
+                                // do widoku (repeatOnLifecycle RESUMED) scrollowalby od nowa.
+                                commentId = null
+                                adapter.submitList(list) {
                                     val layoutManager =
                                         checkNotNull(binding.recyclerView.layoutManager)
                                             as LinearLayoutManager
                                     layoutManager.scrollToPositionWithOffset(
-                                        targetElement,
+                                        position,
                                         8.dpToPx(resources),
                                     )
                                     DiagnosticCheckpoint.log(
                                         "LinkDetails",
-                                        "Scrolled to comment: commentId=$targetCommentId, position=$targetElement",
+                                        "Scrolled to comment: commentId=$targetCommentId, position=$position",
                                     )
                                 }
+                            } else {
+                                Napier.w("Couldn't find target comment key=$key within timeout")
                             }
-                        } catch (e: CancellationException) {
-                            throw e
-                        } catch (
-                            @Suppress("TooGenericExceptionCaught") e: Exception,
-                        ) {
-                            Napier.w("Couldn't find target comment key=$key", e)
                         }
                     }
                     adapterList.collect {
@@ -235,6 +240,10 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
 
     companion object {
         private const val SORT_MENU_ID = 9999
+        // Komentarze + odpowiedzi laduja sie w wielu requestach, a API potrafi
+        // przytrzymac pojedynczy request (rate limiting) - scroll odpala sie gdy tylko
+        // docelowy watek doplynie, wiec dlugi timeout nie blokuje niczego.
+        private const val SCROLL_TO_COMMENT_TIMEOUT_MS = 30_000L
 
         fun newInstance(
             linkId: Long,

@@ -19,6 +19,19 @@ class LinksInteractor
                     link
                 }
 
+        fun bury(
+            link: Link,
+            reason: Int,
+        ): Single<Link> =
+            linksApi
+                .voteDown(link.id, reason, true)
+                .map {
+                    if (link.userVote == "dig") link.voteCount -= 1
+                    link.buryCount += 1
+                    link.userVote = "bury"
+                    link
+                }
+
         fun voteRemove(link: Link): Single<Link> =
             linksApi
                 .voteRemove(link.id, true)

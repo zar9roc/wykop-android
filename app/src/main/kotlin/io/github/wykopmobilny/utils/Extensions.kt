@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.SimpleItemAnimator
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.signature.ObjectKey
+import io.github.wykopmobilny.kotlin.withImageParams as sharedWithImageParams
 import io.github.wykopmobilny.utils.api.parseDate
 import io.github.wykopmobilny.utils.recyclerview.ViewHolderDependentItemDecorator
 import kotlinx.datetime.Instant
@@ -71,16 +72,7 @@ fun RecyclerView.prepareNoDivider() {
  * @param params Parametry renderowania (np. "w220h142", "w400", "q80") lub null dla oryginalnego URL
  * @return URL z dodanymi parametrami lub oryginalny URL jeśli params jest null lub brak rozszerzenia
  */
-fun String.withImageParams(params: String?): String {
-    if (params.isNullOrBlank()) return this
-
-    val lastDotIndex = lastIndexOf('.')
-    return if (lastDotIndex > 0) {
-        "${substring(0, lastDotIndex)},$params${substring(lastDotIndex)}"
-    } else {
-        this // Jeśli nie ma rozszerzenia, zwróć oryginalny URL
-    }
-}
+fun String.withImageParams(params: String?): String = sharedWithImageParams(params)
 
 /**
  * Transformuje URL obrazka na format z miniaturą dla widoków głównych.

@@ -68,6 +68,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
@@ -554,6 +555,13 @@ internal class GetLinkDetailsQuery
             relatedLinksStore
                 .stream(StoreReadRequest.cached(key = key.linkId, refresh = false))
                 .map { it.dataOrNull() }
+                // Podczas swipe-refresh Store5 fresh() przejsciowo czysci SoT i emituje PUSTA
+                // liste, a pasywny stream nie odtwarza pozniejszego zapisu (choc DB konczy z danymi
+                // - re-open pokazuje komplet). Trzymamy ostatnia NIEPUSTA liste; pusta i null i tak
+                // oba chowaja sekcje, wiec ich scalenie jest bezpieczne.
+                .scan(null as List<RelatedLink>?) { previous, next ->
+                    next?.takeIf { it.isNotEmpty() } ?: previous
+                }.distinctUntilChanged()
 
         private fun detailsFlow() =
             linkStore
@@ -603,24 +611,36 @@ internal class GetLinkDetailsQuery
                     body =
                         MessageBodyUi(
                             content =
-                                body.toCommentBody(
-                                    textUtils = textUtils,
-                                    showsSpoilersInDialog = commentPreferences.openSpoilersInDialog,
-                                    expandedSpoilers = viewState.expandedSpoilers[id].orEmpty(),
-                                    showSpoilerDialog =
-                                        safeCallback { content ->
-                                            val contentParsed = content()
-                                            viewStateStorage.update { it.copy(spoilerDialog = contentParsed) }
-                                        },
-                                    saveExpandedSpoiler =
-                                        safeCallback { spoilerId ->
-                                            viewStateStorage.update {
-                                                val spoilersInComment = it.expandedSpoilers[id].orEmpty() + spoilerId
-                                                it.copy(expandedSpoilers = it.expandedSpoilers + (id to spoilersInComment))
-                                            }
-                                        },
-                                    onNavigation = safeCallback { request -> interopRequests.request(request) },
-                                ),
+                                if (deletedReason != null && body.isBlank()) {
+                                    // Usuniety komentarz przychodzi z API z pusta trescia -
+                                    // bez adnotacji wiersz wygladal jak pusty wpis.
+                                    // Kursywa jak w klasycznym "usuniety przez autora".
+                                    val notice =
+                                        when (deletedReason) {
+                                            "moderator" -> Strings.Link.COMMENT_DELETED_BY_MODERATOR
+                                            else -> Strings.Link.COMMENT_DELETED
+                                        }
+                                    textUtils.parseHtml("<i>$notice</i>")
+                                } else {
+                                    body.toCommentBody(
+                                        textUtils = textUtils,
+                                        showsSpoilersInDialog = commentPreferences.openSpoilersInDialog,
+                                        expandedSpoilers = viewState.expandedSpoilers[id].orEmpty(),
+                                        showSpoilerDialog =
+                                            safeCallback { content ->
+                                                val contentParsed = content()
+                                                viewStateStorage.update { it.copy(spoilerDialog = contentParsed) }
+                                            },
+                                        saveExpandedSpoiler =
+                                            safeCallback { spoilerId ->
+                                                viewStateStorage.update {
+                                                    val spoilersInComment = it.expandedSpoilers[id].orEmpty() + spoilerId
+                                                    it.copy(expandedSpoilers = it.expandedSpoilers + (id to spoilersInComment))
+                                                }
+                                            },
+                                        onNavigation = safeCallback { request -> interopRequests.request(request) },
+                                    )
+                                },
                             maxLines =
                                 if (commentPreferences.cutLongComments &&
                                     !viewState.expandedComments.contains(id)

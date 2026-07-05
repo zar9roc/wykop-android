@@ -2,9 +2,7 @@ package com.github.wykopmobilny.ui.components.utils
 
 import android.content.Context
 import android.util.AttributeSet
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
@@ -50,14 +48,8 @@ fun EmbedMediaView.bind(model: EmbedMediaUi?) {
             is EmbedMediaUi.Content.StaticImage -> content.url
             is EmbedMediaUi.Content.PlayableMedia -> content.previewImage
         }
-    binding.imgPreview.updateLayoutParams<ConstraintLayout.LayoutParams> {
-        dimensionRatio =
-            model.widthToHeightRatio
-                .takeIf { it > 0 }
-                ?.let { 1 / it }
-                .toString()
-    }
-
+    // Wysokosc z adjustViewBounds po zaladowaniu bitmapy - 0dp + dimensionRatio
+    // nie rozwiazuje sie wewnatrz wrap_content i widok mial zerowa wysokosc.
     Glide
         .with(this)
         .load(url)

@@ -18,6 +18,7 @@ import io.github.wykopmobilny.styles.ApplicableStyleUi
 import io.github.wykopmobilny.styles.StylesDependencies
 import io.github.wykopmobilny.ui.dialogs.showExceptionDialog
 import io.github.wykopmobilny.utils.applyStatusBarInsets
+import io.github.wykopmobilny.utils.applyStatusBarInsetsToFragmentToolbars
 import io.github.wykopmobilny.utils.requireDependency
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.dropWhile
@@ -49,9 +50,8 @@ abstract class BaseActivity :
         val getAppStyle = application.requireDependency<StylesDependencies>().getAppStyle()
         val initialStyle = runBlocking { getAppStyle().first() }.style
         initTheme(initialStyle)
+        applyStatusBarInsetsToFragmentToolbars()
         super.onCreate(savedInstanceState)
-
-        findViewById<Toolbar>(R.id.toolbar)?.applyStatusBarInsets()
 
         val slidr =
             if (enableSwipeBackLayout) {
@@ -85,6 +85,13 @@ abstract class BaseActivity :
                     }
             }
         }
+    }
+
+    // Wolane przy kazdym setContentView() - rowniez tym opoznionym z ActivityViewBindingDelegate,
+    // ktory ustawia content view dopiero po zakonczeniu onCreate() (findViewById w onCreate zwracalby null).
+    override fun onContentChanged() {
+        super.onContentChanged()
+        findViewById<Toolbar>(R.id.toolbar)?.applyStatusBarInsets()
     }
 
     override fun onResume() {

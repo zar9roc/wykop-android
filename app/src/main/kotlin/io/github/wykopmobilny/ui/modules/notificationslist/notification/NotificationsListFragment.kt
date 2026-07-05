@@ -8,6 +8,7 @@ import io.github.wykopmobilny.models.fragments.DataFragment
 import io.github.wykopmobilny.models.fragments.PagedDataModel
 import io.github.wykopmobilny.models.fragments.getDataFragmentInstance
 import io.github.wykopmobilny.models.fragments.removeDataFragment
+import io.github.wykopmobilny.storage.api.SettingsPreferencesApi
 import io.github.wykopmobilny.ui.adapters.NotificationsListAdapter
 import io.github.wykopmobilny.ui.modules.notificationslist.BaseNotificationsListFragment
 import io.github.wykopmobilny.utils.linkhandler.WykopLinkHandler
@@ -29,11 +30,23 @@ class NotificationsListFragment : BaseNotificationsListFragment() {
     @Inject
     lateinit var presenter: NotificationsListPresenter
 
+    @Inject
+    lateinit var settingsApi: SettingsPreferencesApi
+
     private lateinit var entryFragmentData: DataFragment<PagedDataModel<List<Notification>>>
 
-    override fun loadMore() = presenter.loadData(false)
+    override fun loadMore() {
+        // W trybie grupowania wszystkie strony sa pobrane z gory - nie ma kolejnych.
+        if (!settingsApi.groupNotifications) presenter.loadData(false)
+    }
 
-    override fun onRefresh() = presenter.loadData(true)
+    override fun onRefresh() {
+        if (settingsApi.groupNotifications) {
+            presenter.loadAllGrouped(true)
+        } else {
+            presenter.loadData(true)
+        }
+    }
 
     override fun onViewCreated(
         view: View,

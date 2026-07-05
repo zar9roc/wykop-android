@@ -94,7 +94,14 @@ open class BaseEntriesFragment :
     /**
      * Removes progressbar from adapter
      */
-    override fun disableLoading() = entriesAdapter.disableLoading()
+    override fun disableLoading() {
+        entriesAdapter.disableLoading()
+        binding.swipeRefresh.isRefreshing = false
+        binding.loadingView.isVisible = false
+        // Pusta pierwsza strona: addItems() nie zostanie wywolane - chowamy loader
+        // i pokazujemy pusty stan zamiast wiecznego kreciolka.
+        showSearchEmptyView = entriesAdapter.data.isEmpty()
+    }
 
     /**
      * Use this function to add items to EntriesFragment

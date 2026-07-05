@@ -47,6 +47,7 @@ import io.github.wykopmobilny.ui.modules.profile.ProfileActivity
 import io.github.wykopmobilny.ui.modules.search.SearchFragment
 import io.github.wykopmobilny.ui.widgets.BadgeDrawerDrawable
 import io.github.wykopmobilny.ui.widgets.drawerheaderview.DrawerHeaderWidget
+import io.github.wykopmobilny.utils.applyStatusBarInsets
 import io.github.wykopmobilny.utils.linkhandler.WykopLinkHandler
 import io.github.wykopmobilny.utils.openBrowser
 import io.github.wykopmobilny.utils.shortcuts.ShortcutsDispatcher
@@ -239,6 +240,9 @@ class MainNavigationActivity :
         }
 
         (binding.navigationView.getChildAt(0) as NavigationMenuView).isVerticalScrollBarEnabled = false
+        // NavigationView przekazuje gorny inset tylko do headera, ktory przy wylogowaniu
+        // jest GONE - padding na calym NavigationView dziala niezaleznie od stanu headera.
+        binding.navigationView.applyStatusBarInsets()
 
         actionBarToggle.drawerArrowDrawable = badgeDrawable
         binding.toolbar.toolbar.tag = binding.toolbar.toolbar.overflowIcon // We want to save original overflow icon drawable into memory.

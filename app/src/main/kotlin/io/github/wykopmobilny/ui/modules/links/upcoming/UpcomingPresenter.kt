@@ -50,6 +50,11 @@ class UpcomingPresenter(
 
     override fun dig(link: Link) = linksInteractor.dig(link).processLinkSingle(link)
 
+    override fun bury(
+        link: Link,
+        reason: Int,
+    ) = linksInteractor.bury(link, reason).processLinkSingle(link)
+
     override fun removeVote(link: Link) = linksInteractor.voteRemove(link).processLinkSingle(link)
 
     fun Single<Link>.processLinkSingle(link: Link) {

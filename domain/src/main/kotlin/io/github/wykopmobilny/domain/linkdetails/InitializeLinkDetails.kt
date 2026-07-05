@@ -24,6 +24,11 @@ internal class InitializeLinkDetails
         private val appScopes: AppScopes,
     ) : ScopeInitializer {
         override suspend fun initialize() {
+            // Ekran "Powiazane" (osobny scope, source="related") reuzywa danych zapisanych
+            // w SoT przez ekran szczegolow - stream w GetRelatedLinksQuery czyta cached(refresh=false).
+            // Pobranie sieciowe tylko na jawne odswiezenie (przycisk / pull-to-refresh).
+            if (key.source == SOURCE_RELATED) return
+
             val link =
                 withResource(
                     refresh = {
@@ -42,5 +47,9 @@ internal class InitializeLinkDetails
                     launch = { callback -> appScopes.safeKeyed<LinkDetailsScope>(key, block = callback) },
                 )
             }
+        }
+
+        companion object {
+            private const val SOURCE_RELATED = "related"
         }
     }

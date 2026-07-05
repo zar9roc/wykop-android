@@ -55,7 +55,14 @@ open class BaseLinkCommentFragment :
     /**
      * Removes progressbar from adapter
      */
-    override fun disableLoading() = linkCommentsAdapter.disableLoading()
+    override fun disableLoading() {
+        linkCommentsAdapter.disableLoading()
+        binding.swipeRefresh.isRefreshing = false
+        binding.loadingView.isVisible = false
+        // Pusta pierwsza strona: addItems() nie zostanie wywolane - chowamy loader
+        // i pokazujemy pusty stan zamiast wiecznego kreciolka.
+        showSearchEmptyView = linkCommentsAdapter.data.isEmpty()
+    }
 
     /**
      * Use this function to add items to EntriesFragment

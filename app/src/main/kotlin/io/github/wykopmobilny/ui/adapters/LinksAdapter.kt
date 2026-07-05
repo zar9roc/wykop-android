@@ -2,6 +2,7 @@ package io.github.wykopmobilny.ui.adapters
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import io.github.wykopmobilny.api.links.LinksApi
 import io.github.wykopmobilny.base.adapter.EndlessProgressAdapter
 import io.github.wykopmobilny.data.storage.api.AppStorage
 import io.github.wykopmobilny.models.dataclass.Link
@@ -21,6 +22,7 @@ class LinksAdapter
         settingsPreferencesApi: SettingsPreferencesApi,
         private val navigator: NewNavigator,
         private val appStorage: AppStorage,
+        private val linksApi: LinksApi,
     ) : EndlessProgressAdapter<RecyclerView.ViewHolder, Link>() {
         // Required field, interacts with presenter. Otherwise will throw exception
         lateinit var linksActionListener: LinkActionListener
@@ -66,6 +68,7 @@ class LinksAdapter
                         navigator = navigator,
                         linkActionListener = linksActionListener,
                         appStorage = appStorage,
+                        linksApi = linksApi,
                         linkImagePosition = linkImagePosition,
                         linkShowAuthor = linkShowAuthor,
                     )

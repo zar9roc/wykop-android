@@ -16,7 +16,9 @@ import io.github.wykopmobilny.domain.profile.datasource.upsertV3
 import io.github.wykopmobilny.domain.profile.toColorDomain
 import io.github.wykopmobilny.domain.profile.toGenderDomain
 import io.github.wykopmobilny.kotlin.AppDispatchers
+import io.github.wykopmobilny.kotlin.withImageParams
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import kotlin.math.absoluteValue
 
 internal fun linkCommentsSourceOfTruth(cache: AppCache) =
@@ -33,6 +35,10 @@ internal fun linkCommentsSourceOfTruth(cache: AppCache) =
                             .filter { it.parentId == null || it.id == it.parentId }
                             .associateBy { it.id }
                     comments
+                        // Odpowiedzi moga trafic do cache przed watkiem nadrzednym
+                        // (doladowywanie w tle) albo zostac po usunietym watku -
+                        // bez rodzica nie da sie ich pokazac, pomijamy zamiast crashowac.
+                        .filter { commentsById.containsKey(it.parentId ?: it.id) }
                         .groupBy { commentsById.getValue(it.parentId ?: it.id) }
                         .map { (key, value) ->
                             val parent = key.toContent()
@@ -42,77 +48,91 @@ internal fun linkCommentsSourceOfTruth(cache: AppCache) =
                         }.toMap()
                 }
         },
-        writer = { linkId, comments ->
-            cache.transaction {
-                comments.forEach { comment ->
-                    cache.profileQueries.upsertV3(comment.author)
-                    val embedId = comment.media?.photo?.url ?: comment.media?.embed?.url
-                    comment.media?.photo?.let { photo ->
-                        cache.embedQueries.insertOrReplace(
-                            Embed(
-                                id = photo.url,
-                                type = EmbedType.StaticImage,
-                                fileName = photo.source,
-                                preview = photo.url,
-                                size = null,
-                                hasAdultContent = photo.plus18 ?: false,
-                                ratio =
-                                    run {
-                                        val pw = photo.width
-                                        val ph = photo.height
-                                        if (pw != null && ph != null && ph > 0) pw.toFloat() / ph.toFloat() else 1f
-                                    },
-                            ),
-                        )
-                    }
-                    comment.media?.embed?.let { embed ->
-                        cache.embedQueries.insertOrReplace(
-                            Embed(
-                                id = embed.url,
-                                type =
-                                    when (embed.type) {
-                                        "video" -> EmbedType.Video
-                                        else -> EmbedType.Unknown
-                                    },
-                                fileName = null,
-                                preview = embed.thumbnail ?: embed.url,
-                                size = null,
-                                hasAdultContent = false,
-                                ratio = 1f,
-                            ),
-                        )
-                    }
-                    cache.linkCommentsQueries.insertOrReplace(
-                        LinkCommentsEntity(
-                            id = comment.id,
-                            postedAt = comment.createdAt,
-                            profileId = comment.author.username,
-                            voteCount = comment.votes.up + comment.votes.down,
-                            voteCountPlus = comment.votes.up,
-                            body = comment.content.orEmpty(),
-                            parentId = comment.parentId ?: comment.id,
-                            canVote = true,
-                            userVote = comment.voted.asUserVote(),
-                            isBlocked = !comment.deleted.isNullOrEmpty(),
-                            isFavorite = false,
-                            linkId = linkId,
-                            embedId = embedId,
-                            app = comment.device,
-                            violationUrl = null,
-                            deletedReason = comment.deleted,
-                            slug = comment.slug,
-                        ),
-                    )
-                }
-            }
-        },
+        writer = { linkId, comments -> persistLinkComments(cache, linkId, comments) },
         delete = { linkId -> cache.linkCommentsQueries.deleteByLinkId(linkId) },
     )
+
+/**
+ * Wspolny zapis komentarzy do cache - uzywany przez writer source of truth (watki
+ * nadrzedne z fetchera) oraz przez doladowywanie odpowiedzi w tle (LinkDetailsModule),
+ * ktore omija fetcher, zeby nie wpasc w petle restartow flowSourceOfTruth.
+ */
+internal suspend fun persistLinkComments(
+    cache: AppCache,
+    linkId: Long,
+    comments: List<LinkCommentResponseV3>,
+) = withContext(AppDispatchers.IO) {
+    cache.transaction {
+        comments.forEach { comment ->
+            cache.profileQueries.upsertV3(comment.author)
+            val embedId = comment.media?.photo?.url ?: comment.media?.embed?.url
+            comment.media?.photo?.let { photo ->
+                cache.embedQueries.insertOrReplace(
+                    Embed(
+                        id = photo.url,
+                        type = EmbedType.StaticImage,
+                        fileName = photo.source,
+                        // Wariant w400 z CDN do wyswietlania na liscie - pelna
+                        // rozdzielczosc (id) tylko w pelnoekranowym podgladzie.
+                        preview = photo.url.withImageParams("w400"),
+                        size = null,
+                        hasAdultContent = photo.plus18 ?: false,
+                        ratio =
+                            run {
+                                val pw = photo.width
+                                val ph = photo.height
+                                if (pw != null && ph != null && ph > 0) pw.toFloat() / ph.toFloat() else 1f
+                            },
+                    ),
+                )
+            }
+            comment.media?.embed?.let { embed ->
+                cache.embedQueries.insertOrReplace(
+                    Embed(
+                        id = embed.url,
+                        type =
+                            when (embed.type) {
+                                "video" -> EmbedType.Video
+                                else -> EmbedType.Unknown
+                            },
+                        fileName = null,
+                        preview = embed.thumbnail ?: embed.url,
+                        size = null,
+                        hasAdultContent = false,
+                        ratio = 1f,
+                    ),
+                )
+            }
+            cache.linkCommentsQueries.insertOrReplace(
+                LinkCommentsEntity(
+                    id = comment.id,
+                    postedAt = comment.createdAt,
+                    profileId = comment.author.username,
+                    voteCount = comment.votes.up + comment.votes.down,
+                    voteCountPlus = comment.votes.up,
+                    body = comment.content.orEmpty(),
+                    parentId = comment.parentId ?: comment.id,
+                    canVote = true,
+                    userVote = comment.voted.asUserVote(),
+                    isBlocked = !comment.deleted.isNullOrEmpty(),
+                    isFavorite = false,
+                    linkId = linkId,
+                    embedId = embedId,
+                    app = comment.device,
+                    violationUrl = null,
+                    deletedReason = comment.deleted,
+                    slug = comment.slug,
+                ),
+            )
+        }
+    }
+}
 
 private fun SelectByLinkId.toContent() =
     LinkComment(
         id = id,
         body = body,
+        deletedReason = deletedReason,
         postedAt = postedAt,
         author =
             UserInfo(

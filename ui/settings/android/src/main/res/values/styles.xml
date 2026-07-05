@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Rozmiary zgodne z Toolbar.TitleText/Toolbar.Subtitle z modulu app -
+         tamte style nie sa widoczne w tym module w czasie kompilacji. -->
+    <style name="SettingsToolbar.TitleText"
+        parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:textSize">18dp</item>
+    </style>
+
+</resources>

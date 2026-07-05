@@ -43,53 +43,50 @@ class HashTagsNotificationsListPresenter(
             .intoComposite(compositeObservable)
     }
 
-    fun loadAllNotifications(shouldRefresh: Boolean) {
-        notificationsApi
-            .getHashTagNotificationCount()
+    fun loadAllNotifications(shouldRefresh: Boolean) = fetchAllPages(shouldRefresh)
+
+    private fun fetchAllPages(shouldRefresh: Boolean) {
+        if (shouldRefresh) page = 1
+        val allData = arrayListOf<Notification>()
+        var fetchedPages = 0
+        var done = false
+        Single
+            .defer { notificationsApi.getHashTagNotifications(page) }
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
+            .repeatUntil { done }
             .subscribe(
-                {
-                    if (it.count > 325) {
-                        view?.showTooManyNotifications()
+                { data ->
+                    allData.addAll(data)
+                    fetchedPages++
+                    if (data.isEmpty() || fetchedPages >= MAX_GROUPED_PAGES) {
+                        done = true
+                        publishGrouped(allData)
                     } else {
-                        fetchAllPages(shouldRefresh)
+                        page++
                     }
                 },
                 { view?.showErrorDialog(it) },
             ).intoComposite(compositeObservable)
     }
 
-    private fun fetchAllPages(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = 1
-        val allData = arrayListOf<Notification>()
-        var dataEmpty = false
-        Single
-            .defer { notificationsApi.getHashTagNotifications(page) }
-            .subscribeOn(schedulers.backgroundThread())
-            .observeOn(schedulers.mainThread())
-            .repeatUntil { dataEmpty }
-            .subscribe(
-                {
-                    val data = it.filter { it.new }.toMutableList()
+    // Grupuje WSZYSTKIE powiadomienia po tagu (nie tylko nieprzeczytane - w API v3
+    // wiekszosc jest przeczytana i filtr po nieprzeczytanych dawal pusta zakladke).
+    private fun publishGrouped(allData: List<Notification>) {
+        val sortedData = arrayListOf<Notification>()
+        for (tag in allData.map { it.tag }.distinct()) {
+            val group = allData.filter { it.tag == tag }
+            // Licznik w naglowku = tylko NIEPRZECZYTANE wpisy w grupie.
+            sortedData.add(NotificationHeader(tag, group.count { it.new }))
+            sortedData.addAll(group)
+        }
+        view?.addNotifications(sortedData, true)
+        view?.disableLoading()
+    }
 
-                    if (data.isNotEmpty()) {
-                        allData.addAll(data)
-                        page++
-                    } else {
-                        dataEmpty = true
-
-                        val sortedData = arrayListOf<Notification>()
-
-                        for (notification in allData.map { it.tag }.toHashSet().toList()) {
-                            sortedData.add(NotificationHeader(notification, allData.count { item -> item.tag == notification }))
-                            sortedData.addAll(allData.filter { it.tag == notification })
-                        }
-                        view?.addNotifications(sortedData, true)
-                        view?.disableLoading()
-                    }
-                },
-                { view?.showErrorDialog(it) },
-            ).intoComposite(compositeObservable)
+    companion object {
+        // 13 stron x 25 = 325 powiadomien - gorna granica trybu grupowania,
+        // zeby nie stronicowac calej historii powiadomien.
+        private const val MAX_GROUPED_PAGES = 13
     }
 }

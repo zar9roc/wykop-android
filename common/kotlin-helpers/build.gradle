@@ -6,4 +6,11 @@ dependencies {
     api(libs.coroutines.core)
     api(libs.napier.core)
     api(libs.annotation.core)
+
+    testImplementation(libs.junit.api)
+    testRuntimeOnly(libs.junit.engine)
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
 }

@@ -56,8 +56,9 @@ class CodeTagHandler : Html.TagHandler {
             marker?.let {
                 val start = output.getSpanStart(marker)
 
-                // Extract the spoiler content
-                val spoilerContent = output.subSequence(start, len).toString()
+                // Extract the spoiler content - jako CharSequence ZE spanami,
+                // zeby linki wewnatrz spoilera pozostaly klikalne po rozwinieciu.
+                val spoilerContent = output.subSequence(start, len)
 
                 // Create the clickable span
                 val spoilerSpan = SpoilerClickableSpan(spoilerContent)

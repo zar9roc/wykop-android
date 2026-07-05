@@ -33,7 +33,7 @@ class HotPresenter(
         }
 
         when (period) {
-            "24", "12", "6" -> {
+            "24", "12", "6", "2" -> {
                 entriesApi
                     .getHot(page, period)
                     .subscribeOn(schedulers.backgroundThread())

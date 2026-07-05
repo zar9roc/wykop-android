@@ -19,6 +19,8 @@ internal data class LinkComment(
     val userAction: UserVote?,
     val embed: Embed?,
     val userFavorite: Boolean,
+    // np. "moderator" - komentarz usuniety, API zwraca pusta tresc
+    val deletedReason: String?,
 ) {
     val totalCount = plusCount - minusCount
 }
@@ -50,13 +52,10 @@ internal fun Embed.toUi(
             EmbedType.StaticImage,
             EmbedType.Unknown,
             -> {
+                // Na liscie zawsze wariant preview (w400) - pelna rozdzielczosc (id)
+                // laduje dopiero pelnoekranowy podglad po kliknieciu.
                 EmbedMediaUi.Content.StaticImage(
-                    url =
-                        if (useLowQualityImage) {
-                            id
-                        } else {
-                            preview
-                        },
+                    url = preview,
                 )
             }
         },

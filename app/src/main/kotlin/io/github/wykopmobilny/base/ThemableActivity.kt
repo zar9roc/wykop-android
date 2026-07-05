@@ -4,12 +4,15 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withCreated
 import com.r0adkll.slidr.attachSlidr
 import com.r0adkll.slidr.model.SlidrConfig
 import io.github.wykopmobilny.styles.ApplicableStyleUi
 import io.github.wykopmobilny.styles.StylesDependencies
+import io.github.wykopmobilny.utils.applyStatusBarInsets
+import io.github.wykopmobilny.utils.applyStatusBarInsetsToFragmentToolbars
 import io.github.wykopmobilny.utils.requireDependency
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.dropWhile
@@ -25,6 +28,7 @@ internal abstract class ThemableActivity : AppCompatActivity() {
         val getAppStyle = requireDependency<StylesDependencies>().getAppStyle()
         val initialStyle = runBlocking { getAppStyle().first() }.style
         updateTheme(initialStyle)
+        applyStatusBarInsetsToFragmentToolbars()
         super.onCreate(savedInstanceState ?: intent.getBundleExtra("saved_State"))
 
         window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -56,6 +60,13 @@ internal abstract class ThemableActivity : AppCompatActivity() {
                     }
             }
         }
+    }
+
+    // Wolane przy kazdym setContentView() - rowniez tym opoznionym z ActivityViewBindingDelegate,
+    // ktory ustawia content view dopiero po zakonczeniu onCreate().
+    override fun onContentChanged() {
+        super.onContentChanged()
+        findViewById<Toolbar>(io.github.wykopmobilny.R.id.toolbar)?.applyStatusBarInsets()
     }
 
     private fun updateTheme(theme: ApplicableStyleUi) {

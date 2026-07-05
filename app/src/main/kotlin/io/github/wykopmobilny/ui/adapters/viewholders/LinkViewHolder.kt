@@ -3,6 +3,7 @@ package io.github.wykopmobilny.ui.adapters.viewholders
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.core.view.isVisible
+import io.github.wykopmobilny.api.links.LinksApi
 import io.github.wykopmobilny.data.storage.api.AppStorage
 import io.github.wykopmobilny.databinding.LinkLayoutBinding
 import io.github.wykopmobilny.models.dataclass.Link
@@ -11,6 +12,7 @@ import io.github.wykopmobilny.ui.modules.NewNavigator
 import io.github.wykopmobilny.utils.layoutInflater
 import io.github.wykopmobilny.utils.loadImageThumbnail
 import io.github.wykopmobilny.utils.usermanager.UserManagerApi
+import io.github.wykopmobilny.utils.usermanager.isUserAuthorized
 
 class LinkViewHolder(
     private val binding: LinkLayoutBinding,
@@ -18,6 +20,7 @@ class LinkViewHolder(
     private val userManagerApi: UserManagerApi,
     private val linkActionListener: LinkActionListener,
     private val appStorage: AppStorage,
+    private val linksApi: LinksApi,
 ) : RecyclableViewHolder(binding.root) {
     companion object {
         const val ALPHA_VISITED = 0.6f
@@ -36,6 +39,7 @@ class LinkViewHolder(
             navigator: NewNavigator,
             linkActionListener: LinkActionListener,
             appStorage: AppStorage,
+            linksApi: LinksApi,
             linkImagePosition: String,
             linkShowAuthor: Boolean,
         ): LinkViewHolder {
@@ -46,6 +50,7 @@ class LinkViewHolder(
                     userManagerApi,
                     linkActionListener,
                     appStorage,
+                    linksApi,
                 )
             if (viewType == TYPE_IMAGE) {
                 view.inflateCorrectImageView(
@@ -184,6 +189,15 @@ class LinkViewHolder(
         binding.shareTextView.setOnLongClickListener {
             navigator.shareUrl(link.title + "\n" + link.description + "\n\n" + link.sourceUrl)
             true
+        }
+        binding.moreOptionsTextView.setOnClickListener {
+            openLinkOptionsMenu(
+                anchor = itemView,
+                link = link,
+                navigator = navigator,
+                linksApi = linksApi,
+                onBury = if (userManagerApi.isUserAuthorized()) linkActionListener::bury else null,
+            )
         }
         itemView.setOnClickListener {
             openLinkDetail(link)

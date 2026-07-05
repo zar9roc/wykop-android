@@ -53,6 +53,25 @@
 
     </LinearLayout>
 
+    <HorizontalScrollView
+        android:id="@+id/diggersPreviewScroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="8dp"
+        android:scrollbars="none"
+        android:visibility="gone"
+        >
+
+        <LinearLayout
+            android:id="@+id/diggersPreview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            />
+    </HorizontalScrollView>
+
     <LinearLayout
         android:id="@+id/link_bury_list"
         style="@style/BottomSheetMenuItem"
@@ -74,6 +93,25 @@
             />
 
     </LinearLayout>
+
+    <HorizontalScrollView
+        android:id="@+id/buryListPreviewScroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="8dp"
+        android:scrollbars="none"
+        android:visibility="gone"
+        >
+
+        <LinearLayout
+            android:id="@+id/buryListPreview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            />
+    </HorizontalScrollView>
 
     <LinearLayout
         android:id="@+id/link_related"

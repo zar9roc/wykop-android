@@ -106,9 +106,16 @@ open class BaseLinksFragment :
     }
 
     /**
-     * Removes progressbar from adapter
+     * Removes progressbar from adapter. Gdy pierwsza strona jest pusta, addItems()
+     * nigdy nie zostanie wywolane - trzeba tu schowac pelnoekranowy loader
+     * i pokazac pusty stan zamiast wiecznego kreciolka.
      */
-    override fun disableLoading() = linksAdapter.disableLoading()
+    override fun disableLoading() {
+        linksAdapter.disableLoading()
+        binding.swipeRefresh.isRefreshing = false
+        binding.loadingView.isVisible = false
+        showSearchEmptyView = linksAdapter.data.isEmpty()
+    }
 
     /**
      * Use this function to add items to EntriesFragment

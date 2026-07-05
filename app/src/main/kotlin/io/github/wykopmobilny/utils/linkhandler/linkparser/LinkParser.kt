@@ -12,6 +12,10 @@ object LinkParser {
         if (url.contains("/#comment-")) {
             return url.substringAfter("/#comment-").substringBefore("/").toLongOrNull()
         }
+        // Format sciezkowy ze strony: /link/{id}/{slug}/komentarz/{commentId}/
+        if (url.contains("/komentarz/")) {
+            return url.substringAfter("/komentarz/").substringBefore("/").toLongOrNull()
+        }
         return null
     }
 }

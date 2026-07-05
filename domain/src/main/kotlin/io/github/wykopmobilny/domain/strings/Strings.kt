@@ -49,6 +49,9 @@ object Strings {
         const val COMMENTS_SORT_OLD = "Najstarsze"
         const val COMMENTS_SORT_TITLE = "Sortuj komentarze"
 
+        const val COMMENT_DELETED_BY_MODERATOR = "Komentarz usunięty przez moderatora"
+        const val COMMENT_DELETED = "Komentarz usunięty"
+
         fun upvotesPercentage(value: Int) = "$value% wykopało"
 
         fun moreOptionUpvotersList(count: Int) = "Lista wykopujących ($count)"

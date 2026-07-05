@@ -1,6 +1,8 @@
 package io.github.wykopmobilny.utils.usermanager
 
 import android.content.Context
+import android.webkit.CookieManager
+import android.webkit.WebStorage
 import io.github.wykopmobilny.api.responses.LoginResponse
 import io.github.wykopmobilny.storage.api.JwtToken
 import io.github.wykopmobilny.storage.api.JwtTokenStorage
@@ -18,6 +20,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 data class UserCredentials(
     val login: String,
@@ -62,8 +66,22 @@ class UserManager
         override suspend fun logoutUser() {
             userInfoStorage.updateLoggedUser(null)
             jwtTokenStorage.updateJwtToken(null)
+            clearWebViewSession()
             userInfo.first { it == null }
         }
+
+        // Sesja wykop.pl zyje tez w cookies/localStorage WebView z ekranu logowania -
+        // bez wyczyszczenia strona connect loguje ponownie bez pytania o haslo.
+        private suspend fun clearWebViewSession() =
+            withContext(Dispatchers.Main) {
+                suspendCoroutine { continuation ->
+                    CookieManager.getInstance().removeAllCookies {
+                        CookieManager.getInstance().flush()
+                        continuation.resume(Unit)
+                    }
+                }
+                WebStorage.getInstance().deleteAllData()
+            }
 
         override suspend fun saveCredentials(credentials: LoginResponse) {
             userInfoStorage.updateLoggedUser(

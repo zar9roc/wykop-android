@@ -5,6 +5,8 @@ import io.github.wykopmobilny.domain.navigation.InteropRequest
 import io.github.wykopmobilny.domain.navigation.WykopTextUtils
 import io.github.wykopmobilny.domain.navigation.WykopTextUtils.RecognizedLink
 import io.github.wykopmobilny.kotlin.AppDispatchers
+import io.github.wykopmobilny.kotlin.convertWykopContentToHtml
+import io.github.wykopmobilny.kotlin.linkifyTagsAndMentions
 import kotlinx.coroutines.withContext
 
 internal suspend fun String?.toCommentBody(
@@ -18,8 +20,10 @@ internal suspend fun String?.toCommentBody(
     withContext(AppDispatchers.Default) {
         if (isNullOrBlank()) return@withContext null
 
+        // Tresc z API v3 to markdown z golymi @loginami/#tagami/URL-ami - parseHtml
+        // tworzy klikalne spany tylko z tagow <a>, wiec najpierw budujemy HTML.
         textUtils.parseHtml(
-            text = this@toCommentBody,
+            text = this@toCommentBody.convertWykopContentToHtml().linkifyTagsAndMentions(),
             onLinkClicked = { link ->
                 when (link) {
                     is RecognizedLink.Profile -> {

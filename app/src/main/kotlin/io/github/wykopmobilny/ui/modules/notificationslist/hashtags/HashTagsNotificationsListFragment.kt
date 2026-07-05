@@ -112,11 +112,8 @@ class HashTagsNotificationsListFragment : BaseNotificationsListFragment() {
     }
 
     override fun loadMore() {
-        if (settingsApi.groupNotifications) {
-            presenter.loadAllNotifications(false)
-        } else {
-            presenter.loadData(false)
-        }
+        // W trybie grupowania wszystkie strony sa pobrane z gory - nie ma kolejnych.
+        if (!settingsApi.groupNotifications) presenter.loadData(false)
     }
 
     override fun onRefresh() {

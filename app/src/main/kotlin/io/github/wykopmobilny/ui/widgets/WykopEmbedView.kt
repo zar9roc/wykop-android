@@ -205,6 +205,11 @@ class WykopEmbedView(
                     }
                 }
             }
+
+            // Nieznany typ nie moze byc cichym no-opem - przegladarka zawsze zadziala.
+            else -> {
+                navigator.openBrowser(image.url)
+            }
         }
     }
 }

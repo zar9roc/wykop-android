@@ -2,6 +2,7 @@ package io.github.wykopmobilny.ui.adapters
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import io.github.wykopmobilny.api.links.LinksApi
 import io.github.wykopmobilny.base.adapter.EndlessProgressAdapter
 import io.github.wykopmobilny.data.storage.api.AppStorage
 import io.github.wykopmobilny.models.dataclass.Entry
@@ -27,6 +28,7 @@ class EntryLinksAdapter
         private val navigator: NewNavigator,
         private val linkHandler: WykopLinkHandler,
         private val appStorage: AppStorage,
+        private val linksApi: LinksApi,
     ) : EndlessProgressAdapter<ViewHolder, EntryLink>() {
         // Required field, interacts with presenter. Otherwise will throw exception
         lateinit var entryActionListener: EntryActionListener
@@ -80,6 +82,7 @@ class EntryLinksAdapter
                         navigator = navigator,
                         linkActionListener = linkActionListener,
                         appStorage = appStorage,
+                        linksApi = linksApi,
                         linkImagePosition = linkImagePosition,
                         linkShowAuthor = linkShowAuthor,
                     )

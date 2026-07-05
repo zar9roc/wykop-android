@@ -1,7 +1,9 @@
 package io.github.wykopmobilny.utils.textview
 
 import android.text.SpannableStringBuilder
+import android.text.style.URLSpan
 import android.widget.TextView
+import io.github.wykopmobilny.kotlin.linkifyTagsAndMentions
 
 fun TextView.prepareBody(
     html: String,
@@ -10,8 +12,14 @@ fun TextView.prepareBody(
     text = SpannableStringBuilder(html.linkifyTagsAndMentions().toSpannable())
     val method = BetterLinkMovementMethod.linkifyHtml(this)
     method.setOnLinkClickListener { _, url ->
-        listener.invoke(url.text())
-        true
+        if (url.span() is URLSpan) {
+            listener.invoke(url.text())
+            true
+        } else {
+            // Niestandardowe spany (np. spoiler) obsluguja klikniecie same - ich
+            // "tekst" to nie URL i otwieranie go w przegladarce konczy sie bledem.
+            false
+        }
     }
 }
 
@@ -29,7 +37,11 @@ fun TextView.prepareBody(
         }
     }
     method.setOnLinkClickListener { _, url ->
-        urlClickListener(url.text())
-        true
+        if (url.span() is URLSpan) {
+            urlClickListener(url.text())
+            true
+        } else {
+            false
+        }
     }
 }
