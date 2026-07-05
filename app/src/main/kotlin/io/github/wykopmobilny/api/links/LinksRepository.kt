@@ -15,9 +15,9 @@ import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
 import retrofit2.HttpException
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
+import io.github.wykopmobilny.api.responses.v3.links.LinkVoterResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.RelatedResponseV3
 import io.github.wykopmobilny.api.responses.v3.observed.ObservedItemV3
-import io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3
 import io.github.wykopmobilny.models.dataclass.LinkVoteResponsePublishModel
 import io.github.wykopmobilny.models.mapper.apiv3.filterLinkV3
 import io.github.wykopmobilny.models.mapper.apiv3.filterLinksV3
@@ -25,6 +25,18 @@ import io.reactivex.subjects.PublishSubject
 import kotlinx.coroutines.rx2.rxSingle
 import javax.inject.Inject
 import javax.inject.Singleton
+
+// Etykiety powodow zakopu z GET /links/{id}/upvotes/down -> legacy id (1-5)
+// uzywane przez DownvoterViewHolder (0 = nieznany, bez etykiety).
+private fun String?.toBuryReasonId(): Int =
+    when (this) {
+        "duplicate" -> 1
+        "spam" -> 2
+        "fake_info" -> 3
+        "wrong_content" -> 4
+        "unsuitable_content" -> 5
+        else -> 0
+    }
 
 @Singleton
 class LinksRepository
@@ -345,15 +357,15 @@ class LinksRepository
         override fun getDownvoters(linkId: Long) =
             rxSingle { linksApiV3.getDownvoters(linkId) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<UserShortResponseV3>>(errorBodyParser))
-                .map { users ->
-                    users.map { userResponse ->
+                .compose(ErrorHandlerTransformerV3<List<LinkVoterResponseV3>>(errorBodyParser))
+                .map { voters ->
+                    voters.map { voter ->
                         io.github.wykopmobilny.models.dataclass.Downvoter(
                             author =
                                 io.github.wykopmobilny.models.mapper.apiv3.AuthorMapperV3
-                                    .map(userResponse),
-                            date = "",
-                            reason = 0,
+                                    .map(voter.user),
+                            date = voter.createdAt.orEmpty(),
+                            reason = voter.reason.toBuryReasonId(),
                         )
                     }
                 }
@@ -361,14 +373,14 @@ class LinksRepository
         override fun getUpvoters(linkId: Long) =
             rxSingle { linksApiV3.getUpvoters(linkId) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<UserShortResponseV3>>(errorBodyParser))
-                .map { users ->
-                    users.map { userResponse ->
+                .compose(ErrorHandlerTransformerV3<List<LinkVoterResponseV3>>(errorBodyParser))
+                .map { voters ->
+                    voters.map { voter ->
                         io.github.wykopmobilny.models.dataclass.Upvoter(
                             author =
                                 io.github.wykopmobilny.models.mapper.apiv3.AuthorMapperV3
-                                    .map(userResponse),
-                            date = "",
+                                    .map(voter.user),
+                            date = voter.createdAt.orEmpty(),
                         )
                     }
                 }

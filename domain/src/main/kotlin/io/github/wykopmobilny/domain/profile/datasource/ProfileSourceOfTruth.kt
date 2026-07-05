@@ -12,6 +12,7 @@ import io.github.wykopmobilny.data.cache.api.EmbedType
 import io.github.wykopmobilny.data.cache.api.EntryEntity
 import io.github.wykopmobilny.data.cache.api.ProfileActionsEntity
 import io.github.wykopmobilny.data.cache.api.ProfileQueries
+import io.github.wykopmobilny.data.cache.api.UserColorEntity
 import io.github.wykopmobilny.data.cache.api.UserVote
 import io.github.wykopmobilny.domain.profile.EntryInfo
 import io.github.wykopmobilny.domain.profile.LinkInfo
@@ -184,7 +185,14 @@ internal fun ProfileQueries.upsertV3(author: UserShortResponseV3) {
     upsert(
         id = author.username,
         avatar = author.avatar.orEmpty(),
-        color = author.color.toColorEntityFromName(),
+        // Zbanowani/usunieci maja w `color` dalej rangowy kolor - status
+        // decyduje o szarym nicku (UserColorEntity.Banned/Deleted -> #999999).
+        color =
+            when (author.status) {
+                "banned" -> UserColorEntity.Banned
+                "removed" -> UserColorEntity.Deleted
+                else -> author.color.toColorEntityFromName()
+            },
         gender = author.gender.toGenderEntity(),
     )
 }

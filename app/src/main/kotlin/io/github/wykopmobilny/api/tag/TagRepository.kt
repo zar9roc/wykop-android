@@ -9,7 +9,6 @@ import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.responses.ObserveStateResponse
 import io.github.wykopmobilny.api.responses.ObservedTagResponse
 import io.github.wykopmobilny.api.responses.TagMetaResponse
-import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
 import io.github.wykopmobilny.api.responses.v3.tags.TagDetailsResponseV3
 import io.github.wykopmobilny.data.storage.api.AppStorage
 import io.github.wykopmobilny.models.dataclass.TagEntries
@@ -19,6 +18,8 @@ import io.github.wykopmobilny.models.mapper.apiv3.filterLinkV3
 import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 import io.reactivex.Single
 import kotlinx.coroutines.rx2.rxSingle
+import retrofit2.HttpException
+import retrofit2.Response
 import javax.inject.Inject
 
 class TagRepository
@@ -85,17 +86,17 @@ class TagRepository
         }
 
         override fun observe(tag: String) =
-            rxSingle { tagsApiV3.observeTag(tag) }
+            rxSingle { tagsApiV3.observeTag(tag).requireStateChanged() }
                 .retryWhen(userTokenRefresher)
                 .map { ObserveStateResponse(isObserved = true, isBlocked = false) }
 
         override fun unobserve(tag: String) =
-            rxSingle { tagsApiV3.unobserveTag(tag) ?: WykopApiResponseV3(data = Unit, pagination = null) }
+            rxSingle { tagsApiV3.unobserveTag(tag).requireStateChanged() }
                 .retryWhen(userTokenRefresher)
                 .map { ObserveStateResponse(isObserved = false, isBlocked = false) }
 
         override fun block(tag: String) =
-            rxSingle { tagsApiV3.blockTag(tag) }
+            rxSingle { tagsApiV3.blockTag(tag).requireStateChanged() }
                 .retryWhen(userTokenRefresher)
                 .map {
                     appStorage.blacklistQueries.insertOrReplaceTag(tag.removePrefix("#"))
@@ -103,10 +104,16 @@ class TagRepository
                 }
 
         override fun unblock(tag: String) =
-            rxSingle { tagsApiV3.unblockTag(tag) ?: WykopApiResponseV3(data = Unit, pagination = null) }
+            rxSingle { tagsApiV3.unblockTag(tag).requireStateChanged() }
                 .retryWhen(userTokenRefresher)
                 .map {
                     appStorage.blacklistQueries.deleteTag(tag.removePrefix("#"))
                     ObserveStateResponse(isObserved = false, isBlocked = false)
                 }
     }
+
+// 409 = stan juz osiagniety (np. tag juz obserwowany po rozjechaniu sie UI) -
+// traktujemy jak sukces, zeby przycisk moc sie zsynchronizowac.
+private fun Response<Unit>.requireStateChanged() {
+    if (!isSuccessful && code() != 409) throw HttpException(this)
+}

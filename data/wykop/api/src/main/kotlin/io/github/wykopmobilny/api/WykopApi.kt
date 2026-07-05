@@ -19,6 +19,7 @@ import io.github.wykopmobilny.api.endpoints.v3.LinksV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.MediaV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.NotificationsV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.ObservedV3RetrofitApi
+import io.github.wykopmobilny.api.endpoints.v3.PmV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.ProfileV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.TagsV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.SuggestV3RetrofitApi
@@ -70,6 +71,8 @@ interface WykopApi {
     fun favouritesV3RetrofitApi(): FavouritesV3RetrofitApi
 
     fun suggestV3RetrofitApi(): SuggestV3RetrofitApi
+
+    fun pmV3RetrofitApi(): PmV3RetrofitApi
 
     fun errorBodyParser(): ErrorBodyParser
 

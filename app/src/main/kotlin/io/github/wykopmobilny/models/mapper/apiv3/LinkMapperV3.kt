@@ -47,7 +47,13 @@ fun List<LinkResponseV3>.filterLinksV3(
     owmContentFilter: OWMContentFilter,
     pagination: PaginationResponseV3? = null,
 ) = FilteredData(
+    // totalCount z PELNEJ listy - strona zlozona z samych wpisow nie moze
+    // zatrzymac paginacji (presenterzy traktuja totalCount=0 jako koniec danych).
     totalCount = size,
-    filtered = map { response -> response.filterLinkV3(owmContentFilter) },
+    filtered =
+        // API v3 miesza wpisy mikrobloga w liste znalezisk (anyOf Link|Entry na /links) -
+        // na listach znalezisk pokazujemy tylko znaleziska.
+        filter { it.resource == null || it.resource == "link" }
+            .map { response -> response.filterLinkV3(owmContentFilter) },
     nextPage = pagination?.next,
 )

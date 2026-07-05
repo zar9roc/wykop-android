@@ -24,4 +24,12 @@ data class LinkCommentResponseV3(
     @field:Json(name = "actions") val actions: ActionsResponseV3?,
     @field:Json(name = "deleted") val deleted: String?,
     @field:Json(name = "slug") val slug: String?,
+    // Metadane odpowiedzi w watku - lista /links/{id}/comments zwraca tylko watki
+    // nadrzedne, odpowiedzi trzeba dociagnac z /comments/{commentId}/comments.
+    @field:Json(name = "comments") val comments: LinkCommentRepliesInfoResponseV3?,
+)
+
+@JsonClass(generateAdapter = true)
+data class LinkCommentRepliesInfoResponseV3(
+    @field:Json(name = "count") val count: Int?,
 )

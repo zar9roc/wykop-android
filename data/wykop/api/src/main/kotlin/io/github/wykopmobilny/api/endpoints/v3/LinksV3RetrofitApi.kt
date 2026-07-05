@@ -6,8 +6,8 @@ import io.github.wykopmobilny.api.requests.v3.links.AddRelatedRequestV3
 import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
+import io.github.wykopmobilny.api.responses.v3.links.LinkVoterResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.RelatedResponseV3
-import io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -47,22 +47,39 @@ interface LinksV3RetrofitApi {
     suspend fun getLinkComments(
         @Path("id") linkId: Long,
         @Query("sort") sortBy: String,
+        // null = pierwsza strona (regula paginacji API v3), potem 2, 3...
+        @Query("page") page: Int? = null,
     ): WykopApiResponseV3<List<LinkCommentResponseV3>>
+
+    @GET("v3/links/{linkId}/comments/{commentId}/comments")
+    suspend fun getLinkCommentReplies(
+        @Path("linkId") linkId: Long,
+        @Path("commentId") commentId: Long,
+        @Query("page") page: Int? = null,
+    ): WykopApiResponseV3<List<LinkCommentResponseV3>>
+
+    @GET("v3/links/{linkId}/comments/{commentId}")
+    suspend fun getLinkComment(
+        @Path("linkId") linkId: Long,
+        @Path("commentId") commentId: Long,
+    ): WykopApiResponseV3<LinkCommentResponseV3>
 
     @GET("v3/links/{id}")
     suspend fun getLink(
         @Path("id") linkId: Long,
     ): WykopApiResponseV3<LinkResponseV3>
 
-    @GET("v3/links/{id}/votes/up")
+    // Lista glosujacych to GET /links/{id}/upvotes/{type} (up|down) -
+    // sciezki /votes/up i /votes/down/{reason} sa TYLKO do oddawania glosow (POST).
+    @GET("v3/links/{id}/upvotes/up")
     suspend fun getUpvoters(
         @Path("id") linkId: Long,
-    ): WykopApiResponseV3<List<UserShortResponseV3>>
+    ): WykopApiResponseV3<List<LinkVoterResponseV3>>
 
-    @GET("v3/links/{id}/votes/down")
+    @GET("v3/links/{id}/upvotes/down")
     suspend fun getDownvoters(
         @Path("id") linkId: Long,
-    ): WykopApiResponseV3<List<UserShortResponseV3>>
+    ): WykopApiResponseV3<List<LinkVoterResponseV3>>
 
     @GET("v3/links/{id}/related")
     suspend fun getRelated(

@@ -12,7 +12,11 @@ open class Notification(
     var new: Boolean,
 ) {
     var visible = true
-    val tag by lazy { this.body.substringAfter("#").substringBefore(" ") }
+
+    // Klucz grupowania akordeonu. Zakladka tagow: nazwa taga wyciagana z tresci (fallback);
+    // zakladka "Do mnie": ustawiany jawnie na URL celu przy grupowaniu po wpisie/znalezisku.
+    var tag: String = ""
+        get() = field.ifEmpty { body.substringAfter("#").substringBefore(" ") }
 
     override fun equals(other: Any?): Boolean =
         if (other !is Notification) {

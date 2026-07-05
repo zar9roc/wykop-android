@@ -3,7 +3,7 @@ package io.github.wykopmobilny.models.mapper.apiv3
 import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
 import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
-import io.github.wykopmobilny.utils.textview.convertWykopContentToHtml
+import io.github.wykopmobilny.kotlin.convertWykopContentToHtml
 
 object LinkCommentMapperV3 {
     fun map(

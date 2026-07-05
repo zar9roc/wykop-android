@@ -30,4 +30,7 @@ data class LinkResponseV3(
     @field:Json(name = "deleted") val deleted: Boolean?,
     @field:Json(name = "archive") val archive: Boolean?,
     @field:Json(name = "hot") val hot: Boolean?,
+    // API v3 miesza wpisy mikrobloga w liste znalezisk (/links: anyOf Link|Entry).
+    // "link" / "entry" - pozwala odfiltrowac wpisy z listy znalezisk.
+    @field:Json(name = "resource") val resource: String?,
 )

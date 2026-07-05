@@ -5,7 +5,7 @@ import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.responses.v3.common.PaginationResponseV3
 import io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3
 import io.github.wykopmobilny.models.dataclass.Entry
-import io.github.wykopmobilny.utils.textview.convertWykopContentToHtml
+import io.github.wykopmobilny.kotlin.convertWykopContentToHtml
 
 fun EntryResponseV3.filterEntryV3(owmContentFilter: OWMContentFilter) =
     owmContentFilter.filterEntry(

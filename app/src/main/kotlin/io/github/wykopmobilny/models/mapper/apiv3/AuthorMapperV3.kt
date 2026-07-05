@@ -10,7 +10,16 @@ object AuthorMapperV3 : Mapper<UserShortResponseV3, Author> {
         Author(
             value.username,
             value.avatar.orEmpty(),
-            colorNameToGroupId(value.color),
+            // Zbanowani/usunieci maja w `color` dalej rangowy kolor - status
+            // decyduje o szarym nicku (grupy 1001/1002 = #999999 w getGroupColor).
+            when (value.status) {
+                "banned" -> GROUP_ID_BANNED
+                "removed" -> GROUP_ID_DELETED
+                else -> colorNameToGroupId(value.color)
+            },
             value.gender.orEmpty(),
         )
+
+    private const val GROUP_ID_BANNED = 1001
+    private const val GROUP_ID_DELETED = 1002
 }
