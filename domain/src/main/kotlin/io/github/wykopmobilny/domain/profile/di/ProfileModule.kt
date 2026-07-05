@@ -11,6 +11,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import io.github.wykopmobilny.api.endpoints.v3.ProfileV3RetrofitApi
+import io.github.wykopmobilny.api.responses.v3.observed.ObservedItemV3
 import io.github.wykopmobilny.api.responses.v3.user.UserFullResponseV3
 import io.github.wykopmobilny.data.cache.api.AppCache
 import io.github.wykopmobilny.data.cache.api.GenderEntity
@@ -55,7 +56,17 @@ internal abstract class ProfileModule {
                 .from(
                     fetcher =
                         Fetcher.of { page: Int ->
-                            profileApiV3.getUserActions(profileId, page).data.orEmpty()
+                            // Endpoint zwraca teraz mieszane wpisy+znaleziska (ObservedItemV3).
+                            // Ten uśpiony pipeline profilu V2 (ProfileActivityV2 nie jest
+                            // podpięty w nawigacji) i tak persystował tylko wpisy - zachowujemy
+                            // to zachowanie, wyłuskując same wpisy. Mieszane znaleziska obsługuje
+                            // aktywny profil V1 (ProfileRepository.getActions).
+                            profileApiV3
+                                .getUserActions(profileId, page)
+                                .data
+                                .orEmpty()
+                                .filterIsInstance<ObservedItemV3.EntryItem>()
+                                .map { it.entry }
                         },
                     sourceOfTruth = profileSourceOfTruth(profileId, cache),
                 ).scope(appScopes.applicationScope)

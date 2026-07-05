@@ -9,6 +9,7 @@ import io.github.wykopmobilny.api.responses.ObserveStateResponse
 import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
 import io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
+import io.github.wykopmobilny.api.responses.v3.observed.ObservedItemV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.RelatedResponseV3
 import io.github.wykopmobilny.api.responses.v3.profile.BadgeResponseV3
@@ -23,6 +24,7 @@ import io.github.wykopmobilny.models.mapper.apiv3.LinkCommentMapperV3
 import io.github.wykopmobilny.models.mapper.apiv3.RelatedMapperV3
 import io.github.wykopmobilny.models.mapper.apiv3.filterEntriesV3
 import io.github.wykopmobilny.models.mapper.apiv3.filterLinksV3
+import io.github.wykopmobilny.models.mapper.apiv3.toEntryLink
 import io.reactivex.Single
 import kotlinx.coroutines.rx2.rxSingle
 import javax.inject.Inject
@@ -53,12 +55,11 @@ class ProfileRepository
         override fun getActions(username: String): Single<List<EntryLink>> =
             rxSingle { profileApiV3.getUserActions(username) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<EntryResponseV3>>(errorBodyParser))
-                .map { entries ->
-                    entries
-                        .filterEntriesV3(owmContentFilter = owmContentFilter)
-                        .filtered
-                        .map { entry -> EntryLink(link = null, entry = entry) }
+                .compose(ErrorHandlerTransformerV3<List<ObservedItemV3>>(errorBodyParser))
+                .map { items ->
+                    // Mieszane wpisy i znaleziska - kazdy element mapowany na wlasny
+                    // szablon (Entry albo Link) wg dyskryminatora resource.
+                    items.map { it.toEntryLink(owmContentFilter) }
                 }
 
         override fun getPublished(

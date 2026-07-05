@@ -5,6 +5,7 @@ import io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.RelatedResponseV3
+import io.github.wykopmobilny.api.responses.v3.observed.ObservedItemV3
 import io.github.wykopmobilny.api.responses.v3.profile.BadgeResponseV3
 import io.github.wykopmobilny.api.responses.v3.tags.ShortTagResponseV3
 import io.github.wykopmobilny.api.responses.v3.user.UserFullResponseV3
@@ -86,11 +87,14 @@ interface ProfileV3RetrofitApi {
         @Query("page") page: Int,
     ): WykopApiResponseV3<List<RelatedResponseV3>>
 
+    // Mieszana treść: wpisy (resource="entry") + znaleziska (resource="link").
+    // Spec OpenAPI kłamie deklarując tu wyłącznie Entry - stąd ObservedItemV3
+    // z dyskryminatorem "resource" (ten sam wzorzec co /v3/links i observed).
     @GET("v3/profile/users/{username}/actions")
     suspend fun getUserActions(
         @Path("username") username: String,
         @Query("page") page: Int = 1,
-    ): WykopApiResponseV3<List<EntryResponseV3>>
+    ): WykopApiResponseV3<List<ObservedItemV3>>
 
     @GET("v3/profile/users/{username}/badges")
     suspend fun getUserBadges(
