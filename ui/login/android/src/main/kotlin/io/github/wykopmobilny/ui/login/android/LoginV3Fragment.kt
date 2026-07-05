@@ -1,12 +1,15 @@
 package io.github.wykopmobilny.ui.login.android
 
-import android.content.ClipData
-import android.content.ClipboardManager
+import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.View
+import android.webkit.CookieManager
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -16,6 +19,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.ui.login.LoginDependencies
 import io.github.wykopmobilny.ui.login.LoginV3
+import io.github.wykopmobilny.ui.login.LoginV3Ui
 import io.github.wykopmobilny.ui.login.android.databinding.FragmentLoginV3Binding
 import io.github.wykopmobilny.utils.bindings.collectErrorDialog
 import io.github.wykopmobilny.utils.requireDependency
@@ -31,6 +35,17 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
     private val binding by viewBinding(FragmentLoginV3Binding::bind)
     private lateinit var loginV3: LoginV3
 
+    // Chroni przed wielokrotnym parsowaniem tego samego callbacku -
+    // redirect potrafi przejsc przez kilka callbackow WebViewClient.
+    private var callbackHandled = false
+
+    // Ostatni stan Ui - callbacki WebViewClient sa synchroniczne,
+    // wiec nie moga czekac na Flow.
+    private var latestUi: LoginV3Ui? = null
+
+    // Automatyczny start flow po wejsciu na ekran - raz na instancje fragmentu.
+    private var autoLoginTriggered = false
+
     override fun onAttach(context: Context) {
         loginV3 = context.requireDependency<LoginDependencies>().loginV3()
         super.onAttach(context)
@@ -42,66 +57,88 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
     ) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupClickListeners()
+        setupWebView()
         observeState()
     }
 
-    private fun setupClickListeners() {
-        binding.loginButton.setOnClickListener {
-            Napier.i(tag = TAG) { "loginButton clicked: Starting login flow" }
-            loginV3.login()
+    @SuppressLint("SetJavaScriptEnabled")
+    private fun setupWebView() {
+        CookieManager.getInstance().apply {
+            setAcceptCookie(true)
+            setAcceptThirdPartyCookies(binding.loginWebView, true)
         }
-
-        binding.copyUrlButton.setOnClickListener {
-            val url = binding.connectUrlText.text?.toString() ?: return@setOnClickListener
-            val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            clipboard.setPrimaryClip(ClipData.newPlainText("login_url", url))
-            Toast.makeText(requireContext(), getString(R.string.login_url_copied), Toast.LENGTH_SHORT).show()
+        binding.loginWebView.settings.apply {
+            // Strona logowania wykop.pl to aplikacja JS - bez domStorage
+            // renderuje sie pusta albo przycisk logowania nie dziala.
+            javaScriptEnabled = true
+            domStorageEnabled = true
         }
+        binding.loginWebView.webViewClient =
+            object : WebViewClient() {
+                override fun shouldOverrideUrlLoading(
+                    view: WebView,
+                    request: WebResourceRequest,
+                ): Boolean {
+                    val url = request.url.toString()
+                    Napier.d(tag = TAG) { "WebView shouldOverrideUrlLoading: ${url.take(URL_LOG_LENGTH)}" }
+                    return handleUrl(url)
+                }
 
-        binding.openBrowserButton.setOnClickListener {
-            val url = binding.connectUrlText.text?.toString() ?: return@setOnClickListener
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-            startActivity(intent)
-        }
+                // shouldOverrideUrlLoading NIE jest wolane dla redirectow serwera (302)
+                // ani zmian location przez JS - finalny callback z tokenami przychodzi
+                // wlasnie tak, wiec sprawdzamy URL takze tutaj.
+                override fun onPageStarted(
+                    view: WebView,
+                    url: String,
+                    favicon: Bitmap?,
+                ) {
+                    Napier.d(tag = TAG) { "WebView onPageStarted: ${url.take(URL_LOG_LENGTH)}" }
+                    if (handleUrl(url)) {
+                        view.stopLoading()
+                    }
+                    super.onPageStarted(view, url, favicon)
+                }
 
-        binding.submitCallbackButton.setOnClickListener {
-            val callbackUrl =
-                binding.callbackUrlInput.text
-                    ?.toString()
-                    ?.trim()
-            if (callbackUrl.isNullOrBlank()) {
-                binding.callbackUrlInputLayout.error = getString(R.string.login_paste_url)
-                return@setOnClickListener
+                override fun doUpdateVisitedHistory(
+                    view: WebView,
+                    url: String,
+                    isReload: Boolean,
+                ) {
+                    Napier.d(tag = TAG) { "WebView doUpdateVisitedHistory: ${url.take(URL_LOG_LENGTH)}" }
+                    if (handleUrl(url)) {
+                        view.stopLoading()
+                    }
+                    super.doUpdateVisitedHistory(view, url, isReload)
+                }
+
+                override fun onReceivedError(
+                    view: WebView,
+                    request: WebResourceRequest,
+                    error: WebResourceError,
+                ) {
+                    if (request.isForMainFrame) {
+                        Napier.e(tag = TAG) { "WebView onReceivedError: ${error.errorCode} ${error.description}" }
+                        binding.loginWebView.isVisible = false
+                    }
+                    super.onReceivedError(view, request, error)
+                }
             }
-            binding.callbackUrlInputLayout.error = null
-            submitCallbackUrl(callbackUrl)
-        }
-
-        binding.switchToOAuthButton.setOnClickListener {
-            Napier.i(tag = TAG) { "switchToOAuthButton clicked: Switching to OAuth login" }
-            val containerId = (requireView().parent as? View)?.id ?: return@setOnClickListener
-            parentFragmentManager
-                .beginTransaction()
-                .replace(containerId, loginFragment())
-                .commit()
-        }
     }
 
-    private fun submitCallbackUrl(url: String) {
-        Napier.i(tag = TAG) { "submitCallbackUrl: URL=$url" }
-        viewLifecycleOwner.lifecycleScope.launch {
-            val state = loginV3().stateIn(viewLifecycleOwner.lifecycleScope).value
-            val isCallback = state.isCallbackUrl(url)
-            Napier.d(tag = TAG) { "submitCallbackUrl: isCallbackUrl=$isCallback" }
-            if (isCallback) {
-                Napier.i(tag = TAG) { "submitCallbackUrl: Valid callback URL, parsing credentials" }
-                state.parseUrlAction(url)
-            } else {
-                Napier.w(tag = TAG) { "submitCallbackUrl: Invalid callback URL" }
-                binding.callbackUrlInputLayout.error = getString(R.string.login_invalid_url)
-            }
-        }
+    /**
+     * Zwraca true gdy URL to callback z tokenami - wtedy nawigacja jest blokowana,
+     * a token/rtoken z query params trafiaja do [LoginV3Ui.parseUrlAction].
+     */
+    private fun handleUrl(url: String): Boolean {
+        if (callbackHandled) return true
+        val state = latestUi ?: return false
+        if (!state.isCallbackUrl(url)) return false
+        callbackHandled = true
+        Napier.i(tag = TAG) { "WebView captured callback URL, parsing credentials" }
+        binding.loginWebView.isVisible = false
+        binding.loginWebView.stopLoading()
+        state.parseUrlAction(url)
+        return true
     }
 
     private fun observeState() {
@@ -109,17 +146,30 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 val sharedFlow = loginV3().stateIn(this)
 
+                launch { sharedFlow.collect { latestUi = it } }
+
+                // "Zaloguj sie" prowadzi bezposrednio do WebView - startujemy flow
+                // automatycznie zamiast czekac na klikniecie przycisku z kroku 1.
+                val initial = sharedFlow.value
+                if (!autoLoginTriggered && initial.connectUrl == null && !initial.isLoading) {
+                    autoLoginTriggered = true
+                    Napier.i(tag = TAG) { "Auto-starting login flow (direct WebView)" }
+                    loginV3.login()
+                }
+
                 launch {
                     sharedFlow
                         .map { it.connectUrl }
                         .distinctUntilChanged()
                         .collect { connectUrl ->
                             Napier.i(tag = TAG) { "connectUrl changed: $connectUrl" }
-                            val hasUrl = connectUrl != null
-                            binding.urlCard.isVisible = hasUrl
-                            binding.callbackCard.isVisible = hasUrl
-                            if (hasUrl) {
-                                binding.connectUrlText.text = connectUrl
+                            if (connectUrl != null) {
+                                callbackHandled = false
+                                binding.loginWebView.isVisible = true
+                                Napier.i(tag = TAG) { "Loading connectUrl in WebView" }
+                                binding.loginWebView.loadUrl(connectUrl)
+                            } else {
+                                binding.loginWebView.isVisible = false
                             }
                         }
                 }
@@ -131,7 +181,6 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
                         .collect { isLoading ->
                             Napier.i(tag = TAG) { "isLoading changed: $isLoading" }
                             binding.fullScreenProgress.isVisible = isLoading
-                            binding.loginButton.isEnabled = !isLoading
                         }
                 }
 
@@ -165,5 +214,8 @@ internal class LoginV3Fragment : Fragment(R.layout.fragment_login_v3) {
 
     companion object {
         private const val TAG = "LoginV3Fragment"
+
+        // Nie logujemy pelnych URLi - callback zawiera tokeny.
+        private const val URL_LOG_LENGTH = 60
     }
 }
