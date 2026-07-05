@@ -40,6 +40,27 @@ fun View.applyStatusBarInsets() {
 }
 
 /**
+ * Dosuwa content aktywnosci nad klawiature ekranowa.
+ *
+ * Od targetSdk 35 (wymuszony edge-to-edge) manifestowe adjustResize jest ignorowane -
+ * okno nie zmniejsza sie po otwarciu IME i klawiatura rysuje sie NA polu odpowiedzi.
+ * Listener na android.R.id.content odtwarza zachowanie adjustResize: dolny padding
+ * rowny insetowi IME. Gdy klawiatura jest schowana, inset wynosi 0.
+ */
+fun AppCompatActivity.applyImeInsetsToContent() {
+    val content = findViewById<View>(android.R.id.content) ?: return
+    ViewCompat.setOnApplyWindowInsetsListener(content) { view, windowInsets ->
+        val imeBottom = windowInsets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+        if (view.paddingBottom != imeBottom) {
+            view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, imeBottom)
+            DiagnosticCheckpoint.log("ImeInsets", "content paddingBottom=${imeBottom}px")
+        }
+        windowInsets
+    }
+    ViewCompat.requestApplyInsets(content)
+}
+
+/**
  * Aplikuje inset status bar na toolbarach tworzonych w layoutach fragmentow
  * (np. LinkDetailsFragment). Toolbary z layoutu activity obsluguje
  * onContentChanged() w klasach bazowych - fragmenty tworza swoje widoki

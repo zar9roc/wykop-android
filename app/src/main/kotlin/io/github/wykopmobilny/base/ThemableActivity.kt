@@ -11,6 +11,7 @@ import com.r0adkll.slidr.attachSlidr
 import com.r0adkll.slidr.model.SlidrConfig
 import io.github.wykopmobilny.styles.ApplicableStyleUi
 import io.github.wykopmobilny.styles.StylesDependencies
+import io.github.wykopmobilny.utils.applyImeInsetsToContent
 import io.github.wykopmobilny.utils.applyStatusBarInsets
 import io.github.wykopmobilny.utils.applyStatusBarInsetsToFragmentToolbars
 import io.github.wykopmobilny.utils.requireDependency
@@ -67,6 +68,7 @@ internal abstract class ThemableActivity : AppCompatActivity() {
     override fun onContentChanged() {
         super.onContentChanged()
         findViewById<Toolbar>(io.github.wykopmobilny.R.id.toolbar)?.applyStatusBarInsets()
+        applyImeInsetsToContent()
     }
 
     private fun updateTheme(theme: ApplicableStyleUi) {

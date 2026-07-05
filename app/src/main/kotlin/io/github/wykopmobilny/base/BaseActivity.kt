@@ -18,6 +18,7 @@ import io.github.wykopmobilny.styles.ApplicableStyleUi
 import io.github.wykopmobilny.styles.StylesDependencies
 import io.github.wykopmobilny.ui.dialogs.showExceptionDialog
 import io.github.wykopmobilny.utils.applyStatusBarInsets
+import io.github.wykopmobilny.utils.applyImeInsetsToContent
 import io.github.wykopmobilny.utils.applyStatusBarInsetsToFragmentToolbars
 import io.github.wykopmobilny.utils.requireDependency
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -92,6 +93,7 @@ abstract class BaseActivity :
     override fun onContentChanged() {
         super.onContentChanged()
         findViewById<Toolbar>(R.id.toolbar)?.applyStatusBarInsets()
+        applyImeInsetsToContent()
     }
 
     override fun onResume() {
