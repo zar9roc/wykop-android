@@ -18,7 +18,7 @@
         app:layout_constraintTop_toTopOf="parent"
         />
 
-    <MultiAutoCompleteTextView
+    <io.github.wykopmobilny.ui.widgets.WykopMultiAutoCompleteTextView
         android:id="@+id/body"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

@@ -56,7 +56,7 @@
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
         >
 
-        <MultiAutoCompleteTextView
+        <io.github.wykopmobilny.ui.widgets.WykopMultiAutoCompleteTextView
             android:id="@+id/body"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
