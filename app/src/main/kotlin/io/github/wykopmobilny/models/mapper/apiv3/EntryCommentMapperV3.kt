@@ -9,10 +9,14 @@ object EntryCommentMapperV3 {
     fun map(
         value: EntryCommentResponseV3,
         owmContentFilter: OWMContentFilter,
+        // Id wpisu-rodzica z kontekstu wywolania - w zagnieszczonych listach
+        // (komentarze wpisu, profil "komentowane") API pomija parent_id
+        // i bez tego entryId byloby 0 (nawigacja do wpisu = 404).
+        entryId: Long? = null,
     ) = owmContentFilter.filterEntryComment(
         EntryComment(
             id = value.id,
-            entryId = value.parentId ?: 0L,
+            entryId = entryId ?: value.parentId ?: 0L,
             author = AuthorMapperV3.map(value.author),
             body = value.content.orEmpty().convertWykopContentToHtml(),
             fullDate = value.createdAt,

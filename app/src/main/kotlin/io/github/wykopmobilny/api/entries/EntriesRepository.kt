@@ -595,7 +595,7 @@ class EntriesRepository
                     ),
                 ).map { comments ->
                     comments.map { comment ->
-                        EntryCommentMapperV3.map(comment, owmContentFilter)
+                        EntryCommentMapperV3.map(comment, owmContentFilter, entryId = id)
                     }
                 }
 

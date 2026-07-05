@@ -89,7 +89,7 @@ class ProfileRepository
                     entries.flatMap { entry ->
                         entry.comments.items
                             .orEmpty()
-                            .map { comment -> EntryCommentMapperV3.map(comment, owmContentFilter) }
+                            .map { comment -> EntryCommentMapperV3.map(comment, owmContentFilter, entryId = entry.id) }
                     }
                 }
 

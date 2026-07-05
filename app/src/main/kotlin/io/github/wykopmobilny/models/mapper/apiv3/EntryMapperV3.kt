@@ -23,7 +23,7 @@ fun EntryResponseV3.filterEntryV3(owmContentFilter: OWMContentFilter) =
             comments =
                 comments.items
                     .orEmpty()
-                    .map { EntryCommentMapperV3.map(it, owmContentFilter) }
+                    .map { EntryCommentMapperV3.map(it, owmContentFilter, entryId = id) }
                     .toMutableList(),
             app = device,
             violationUrl = null,
