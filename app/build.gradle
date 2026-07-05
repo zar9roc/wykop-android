@@ -80,6 +80,10 @@ android {
             signingConfig = signingConfigs.getByName("release")
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             firebaseCrashlytics.mappingFileUploadEnabled = findProperty("uploadMapping") == "true"
+            // Release moze uzywac osobnego zestawu kluczy v3 (wykop.v3.appKey.release /
+            // wykop.v3.appSecret.release w local.properties); bez nich spada na podstawowe.
+            buildConfigField 'String', 'V3_API_KEY', "\"${findProperty("wykop.v3.appKey.release") ?: findProperty("wykop.v3.appKey")}\""
+            buildConfigField 'String', 'V3_API_SECRET', "\"${findProperty("wykop.v3.appSecret.release") ?: findProperty("wykop.v3.appSecret")}\""
         }
         register("releaseTest") {
             minifyEnabled = true
