@@ -80,6 +80,11 @@ android {
             signingConfig = signingConfigs.getByName("release")
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             firebaseCrashlytics.mappingFileUploadEnabled = findProperty("uploadMapping") == "true"
+            // Testowe wydania: -Pwykop.versionSuffix=-rc1 dokleja sufiks do versionName
+            // (plugin wersjonujacy ucina sufiksy z tagow, np. v1.3.3-rc1 -> 1.3.3).
+            // Uwaga: versionCode pozostaje ten sam - przed instalacja finalnej wersji
+            // o tym samym X.Y.Z trzeba odinstalowac testowa.
+            versionNameSuffix = findProperty("wykop.versionSuffix") ?: ""
             // Release moze uzywac osobnego zestawu kluczy v3 (wykop.v3.appKey.release /
             // wykop.v3.appSecret.release w local.properties); bez nich spada na podstawowe.
             buildConfigField 'String', 'V3_API_KEY', "\"${findProperty("wykop.v3.appKey.release") ?: findProperty("wykop.v3.appKey")}\""
