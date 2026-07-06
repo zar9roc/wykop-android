@@ -7,6 +7,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.github.wykopmobilny.ui.components.bind
 import com.github.wykopmobilny.ui.components.toColorInt
 import io.github.wykopmobilny.R
@@ -58,9 +59,20 @@ internal class RelatedLinksAdapter : ListAdapter<RelatedLinkUi, RelatedLinksAdap
                 }
             }
 
-            // Title and URL
+            // Title, thumbnail and URL
             binding.title.text = link.title
-            binding.urlTextView.text = link.domain
+            // Pelny adres zamiast samej domeny - dla kompletnosci wpisu.
+            binding.urlTextView.text = link.url
+            binding.thumbnailImageView.isVisible = link.previewImageUrl != null
+            if (link.previewImageUrl != null) {
+                Glide
+                    .with(binding.thumbnailImageView)
+                    .load(link.previewImageUrl)
+                    .centerCrop()
+                    .into(binding.thumbnailImageView)
+            } else {
+                Glide.with(binding.thumbnailImageView).clear(binding.thumbnailImageView)
+            }
 
             // Vote count and buttons
             val voteCount = link.upvotesCount.count

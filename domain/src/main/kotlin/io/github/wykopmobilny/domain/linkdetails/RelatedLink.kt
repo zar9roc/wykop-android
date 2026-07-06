@@ -6,6 +6,7 @@ import io.github.wykopmobilny.domain.profile.UserInfo
 internal data class RelatedLink(
     val id: Long,
     val url: String,
+    val previewImageUrl: String?,
     val voteCount: Int,
     val author: UserInfo?,
     val title: String,

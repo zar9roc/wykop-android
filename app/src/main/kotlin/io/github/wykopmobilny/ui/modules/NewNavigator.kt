@@ -20,7 +20,7 @@ import io.github.wykopmobilny.ui.modules.input.entry.edit.EditEntryActivity
 import io.github.wykopmobilny.ui.modules.input.link.edit.LinkCommentEditActivity
 import io.github.wykopmobilny.ui.modules.links.downvoters.DownvotersActivity
 import io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsActivityV2
-import io.github.wykopmobilny.ui.modules.links.related.RelatedActivity
+import io.github.wykopmobilny.ui.modules.links.relatedlinks.RelatedLinksActivity
 import io.github.wykopmobilny.ui.modules.links.upvoters.UpvotersActivity
 import io.github.wykopmobilny.ui.modules.loginscreen.LoginScreenActivity
 import io.github.wykopmobilny.ui.modules.mainnavigation.MainNavigationActivity
@@ -130,7 +130,8 @@ class NewNavigator
 
         fun openLinkDownvotersActivity(linkId: Long) = context.startActivity(DownvotersActivity.createIntent(linkId, context))
 
-        fun openLinkRelatedActivity(linkId: Long) = context.startActivity(RelatedActivity.createIntent(linkId, context))
+        // Nowy ekran powiazanych (v3: miniatury, pelny adres, natywne otwieranie).
+        fun openLinkRelatedActivity(linkId: Long) = context.startActivity(RelatedLinksActivity.createIntent(context, linkId))
 
         fun openProfileActivity(username: String) = context.startActivity(ProfileActivity.createIntent(context, username))
 

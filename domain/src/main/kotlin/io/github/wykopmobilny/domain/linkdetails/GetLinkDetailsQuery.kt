@@ -461,6 +461,8 @@ internal class GetLinkDetailsQuery
                     ),
                 title = title,
                 domain = url.takeIf { it.isNotEmpty() }?.let { URL(it).host.removePrefix("www.") }.orEmpty(),
+                url = url,
+                previewImageUrl = previewImageUrl,
                 clickAction = safeCallback { interopRequests.request(InteropRequest.WebBrowser(url)) },
                 shareAction = safeCallback { interopRequests.request(InteropRequest.Share(url)) },
             )

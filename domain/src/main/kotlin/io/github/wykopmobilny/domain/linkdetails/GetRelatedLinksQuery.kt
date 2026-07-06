@@ -87,6 +87,10 @@ internal class GetRelatedLinksQuery
                     ),
                 title = title,
                 domain = url.takeIf { it.isNotEmpty() }?.let { URL(it).host.removePrefix("www.") }.orEmpty(),
+                url = url,
+                previewImageUrl = previewImageUrl,
+                // WebBrowser bez force przechodzi przez WykopLinkHandler - adresy
+                // wykop.pl (w tym /komentarz/) otwieraja sie natywnie.
                 clickAction = safeCallback { interopRequests.request(InteropRequest.WebBrowser(url)) },
                 shareAction = safeCallback { interopRequests.request(InteropRequest.Share(url)) },
             )

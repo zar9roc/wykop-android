@@ -76,6 +76,8 @@ data class RelatedLinkUi(
     val upvotesCount: TwoActionsCounterUi,
     val title: String,
     val domain: String,
+    val url: String,
+    val previewImageUrl: String?,
     val clickAction: () -> Unit,
     val shareAction: () -> Unit,
 )

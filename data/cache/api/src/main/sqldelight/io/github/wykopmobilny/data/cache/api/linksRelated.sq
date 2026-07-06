@@ -8,6 +8,7 @@ CREATE TABLE relatedLinkEntity (
     userVote INTEGER AS UserVote,
     voteCount INTEGER AS Int NOT NULL,
     url TEXT NOT NULL,
+    previewImageUrl TEXT,
     profileId TEXT,
     title TEXT NOT NULL,
     linkId INTEGER NOT NULL,

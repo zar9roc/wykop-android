@@ -56,34 +56,60 @@
             app:layout_constraintTop_toBottomOf="@+id/authorHeaderView"
             />
 
+        <ImageView
+            android:id="@+id/thumbnailImageView"
+            android:layout_width="100dp"
+            android:layout_height="72dp"
+            android:layout_marginStart="@dimen/link_related_layout_padding_vertical"
+            android:layout_marginTop="@dimen/link_related_layout_title_padding_top"
+            android:importantForAccessibility="no"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/lineTop"
+            tools:visibility="visible"
+            />
+
         <TextView
             android:id="@+id/title"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textSize="@dimen/link_related_layout_title_text_size"
             android:paddingStart="@dimen/link_related_layout_padding_vertical"
             android:paddingEnd="@dimen/link_related_layout_padding_vertical"
             android:paddingTop="@dimen/link_related_layout_title_padding_top"
             android:paddingBottom="@dimen/link_related_layout_title_padding_bottom"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@id/thumbnailImageView"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/lineTop"
+            app:layout_goneMarginStart="0dp"
             tools:text="Przykładowy opis strzelaniny w rosji"
             />
 
         <TextView
             android:id="@+id/urlTextView"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textSize="@dimen/link_related_layout_link_text_size"
             android:textColor="?attr/colorAccent"
+            android:ellipsize="end"
+            android:maxLines="2"
             android:paddingStart="@dimen/link_related_layout_padding_vertical"
             android:paddingEnd="@dimen/link_related_layout_padding_vertical"
             android:paddingBottom="@dimen/link_related_layout_link_padding_bottom"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@id/thumbnailImageView"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/title"
+            app:layout_goneMarginStart="0dp"
             tools:text="https://www.wykop.pl/wykopalisko/aktywne/"
+            />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/contentBottomBarrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="thumbnailImageView,urlTextView"
             />
 
         <View
@@ -93,7 +119,7 @@
             android:background="?attr/lineColor"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/urlTextView"
+            app:layout_constraintTop_toBottomOf="@+id/contentBottomBarrier"
             />
 
         <androidx.constraintlayout.widget.ConstraintLayout

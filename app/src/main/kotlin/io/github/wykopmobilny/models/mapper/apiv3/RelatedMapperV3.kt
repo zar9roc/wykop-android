@@ -8,7 +8,7 @@ object RelatedMapperV3 : Mapper<RelatedResponseV3, Related> {
     override fun map(value: RelatedResponseV3) =
         Related(
             id = value.id.toInt(),
-            url = value.url.orEmpty(),
+            url = value.source?.url ?: value.url.orEmpty(),
             voteCount = value.votes.up - value.votes.down,
             author = AuthorMapperV3.map(value.author),
             title = value.title.orEmpty(),

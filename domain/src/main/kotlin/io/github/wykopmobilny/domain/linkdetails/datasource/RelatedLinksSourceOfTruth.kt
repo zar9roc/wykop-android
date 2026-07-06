@@ -14,6 +14,7 @@ import io.github.wykopmobilny.domain.profile.datasource.upsertV3
 import io.github.wykopmobilny.domain.profile.toColorDomain
 import io.github.wykopmobilny.domain.profile.toGenderDomain
 import io.github.wykopmobilny.kotlin.AppDispatchers
+import io.github.wykopmobilny.kotlin.withImageParams
 import kotlinx.coroutines.flow.map
 
 internal fun relatedLinksSourceOfTruth(cache: AppCache) =
@@ -43,7 +44,9 @@ private fun RelatedResponseV3.toEntity(
     id = id,
     userVote = voted.asUserVote(),
     voteCount = votes.up,
-    url = url.orEmpty(),
+    // Realny adres przychodzi w source.url; plaskie url to martwe pole.
+    url = source?.url ?: url.orEmpty(),
+    previewImageUrl = media?.photo?.url?.withImageParams("w400"),
     profileId = author.username,
     title = title.orEmpty(),
     linkId = linkId,
@@ -54,6 +57,7 @@ private fun SelectByLinkId.toDomain() =
     RelatedLink(
         id = id,
         url = url,
+        previewImageUrl = previewImageUrl,
         voteCount = voteCount,
         author =
             profileId?.let {
