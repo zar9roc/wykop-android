@@ -9,13 +9,15 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.DownsampleStrategy
 import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
 import com.davemorrissey.labs.subscaleview.ImageSource
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.base.BaseActivity
 import io.github.wykopmobilny.databinding.ActivityPhotoviewBinding
+import io.github.wykopmobilny.debug.DiagnosticCheckpoint
+import io.github.wykopmobilny.glide.GlideProgressSupport
 import io.github.wykopmobilny.utils.ClipboardHelperApi
 import io.github.wykopmobilny.utils.KotlinGlideRequestListener
 import io.github.wykopmobilny.utils.viewBinding
@@ -54,7 +56,11 @@ internal class PhotoViewActivity : BaseActivity() {
         binding.loadingView.isIndeterminate = true
         title = null
         url = intent.getStringExtra(URL_EXTRA) ?: return finish()
-        if (url.endsWith(".gif")) {
+        trackDownloadProgress()
+        // CDN dokleja query string (?author=...&auth=...) - endsWith(".gif") na calym
+        // URL-u kierowal gify do SubsamplingScaleImageView, ktory nie dekoduje GIF-ow
+        // (pusty ekran). Rozszerzenie sprawdzamy na samej sciezce.
+        if (Uri.parse(url).path.orEmpty().endsWith(".gif", ignoreCase = true)) {
             loadGif()
         } else {
             loadImage()
@@ -96,7 +102,7 @@ internal class PhotoViewActivity : BaseActivity() {
                         resource: File,
                         transition: Transition<in File>?,
                     ) {
-                        binding.loadingView.isVisible = false
+                        hideProgress()
                         binding.image.setImage(ImageSource.uri(resource.absolutePath))
                     }
 
@@ -111,9 +117,53 @@ internal class PhotoViewActivity : BaseActivity() {
         Glide
             .with(this)
             .load(url)
-            .listener(KotlinGlideRequestListener({ binding.loadingView.isVisible = false }, { binding.loadingView.isVisible = false }))
-            .dontTransform()
-            .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
+            .listener(KotlinGlideRequestListener({ hideProgress() }, { hideProgress() }))
+            // SIZE_ORIGINAL wysypywalo bardzo wysokie gify (np. 358x20000) - ramka
+            // przekraczala limit tekstury GPU i viewer zostawal pusty. AT_MOST
+            // gwarantuje dekodowanie w rozmiarze <= MAX_GIF_DECODE_SIZE; szczegoly
+            // odzyskuje zoom PhotoView.
+            .downsample(DownsampleStrategy.AT_MOST)
+            .override(MAX_GIF_DECODE_SIZE, MAX_GIF_DECODE_SIZE)
             .into(binding.gif)
     }
+
+    private fun trackDownloadProgress() {
+        GlideProgressSupport.register(url) { bytesRead, totalBytes ->
+            runOnUiThread {
+                if (isDestroyed || !binding.loadingView.isVisible) return@runOnUiThread
+                if (totalBytes > 0) {
+                    binding.loadingView.isIndeterminate = false
+                    binding.loadingView.progress =
+                        (bytesRead * binding.loadingView.max / totalBytes).toInt()
+                    binding.progressLabel.text = "${bytesRead.formatBytes()} / ${totalBytes.formatBytes()}"
+                } else {
+                    binding.progressLabel.text = bytesRead.formatBytes()
+                }
+                binding.progressLabel.isVisible = true
+                DiagnosticCheckpoint.log("PhotoViewProgress", "${binding.progressLabel.text}")
+            }
+        }
+    }
+
+    private fun hideProgress() {
+        binding.loadingView.isVisible = false
+        binding.progressLabel.isVisible = false
+    }
+
+    override fun onDestroy() {
+        GlideProgressSupport.unregister(url)
+        super.onDestroy()
+    }
+
+    private fun Long.formatBytes(): String =
+        if (this < BYTES_IN_MEGABYTE) {
+            "${this / BYTES_IN_KILOBYTE} KB"
+        } else {
+            String.format(java.util.Locale.getDefault(), "%.1f MB", toDouble() / BYTES_IN_MEGABYTE)
+        }
 }
+
+// Bezpieczny limit boku dekodowanego gifa - ponizej typowych limitow tekstur GPU (>=4096).
+private const val MAX_GIF_DECODE_SIZE = 4096
+private const val BYTES_IN_KILOBYTE = 1024L
+private const val BYTES_IN_MEGABYTE = 1024L * 1024L

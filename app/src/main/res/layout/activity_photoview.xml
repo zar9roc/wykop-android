@@ -17,7 +17,9 @@
         app:layout_constraintTop_toBottomOf="parent"
         />
 
-    <ImageView
+    <!-- PhotoView (zoom/pan) zamiast ImageView - bardzo wysokie gify sa dekodowane
+         w pomniejszeniu (limit tekstury GPU), wiec bez zoomu bylyby nieczytelne. -->
+    <com.github.chrisbanes.photoview.PhotoView
         android:id="@+id/gif"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -46,6 +48,20 @@
         android:visibility="visible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar"
+        />
+
+    <TextView
+        android:id="@+id/progressLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:shadowColor="@android:color/black"
+        android:shadowRadius="4"
+        android:textColor="@android:color/white"
+        android:textSize="12sp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/loadingView"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

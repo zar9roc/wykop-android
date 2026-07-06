@@ -45,6 +45,8 @@ class GlideModule : AppGlideModule() {
                 .writeTimeout(30, TimeUnit.SECONDS)
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .addInterceptor(RetryInterceptor())
+                // Sieciowy (nie aplikacyjny) - liczy bajty realnie pobierane z sieci.
+                .addNetworkInterceptor(GlideProgressSupport.interceptor)
         registry.append(GlideUrl::class.java, InputStream::class.java, OkHttpUrlLoader.Factory(builder.build()))
     }
 }
