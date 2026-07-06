@@ -5,17 +5,19 @@ import android.net.Uri
 import android.os.Environment
 import androidx.core.content.FileProvider
 import io.github.aakira.napier.Napier
-import io.github.wykopmobilny.ui.modules.photoview.PhotoViewActions
 import java.io.File
 import java.io.IOException
 
 object CameraUtils {
     fun createPictureUri(context: Context): Uri? {
         val filename = "owmcamera_${System.currentTimeMillis()}.jpg"
+        // Katalog aplikacji zamiast publicznego Pictures - zapis do publicznego
+        // katalogu wymaga uprawnien niedostepnych od Androida 10 (scoped storage),
+        // a zdjecie i tak jest tylko buforem do wyslania na serwer.
         val file =
             File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                "${PhotoViewActions.SAVED_FOLDER}/${PhotoViewActions.SHARED_FOLDER}/$filename",
+                context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                filename,
             )
 
         try {

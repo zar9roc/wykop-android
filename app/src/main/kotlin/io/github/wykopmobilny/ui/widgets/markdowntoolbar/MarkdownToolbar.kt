@@ -1,15 +1,10 @@
 package io.github.wykopmobilny.ui.widgets.markdowntoolbar
 
-import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.AttributeSet
 import android.view.View
 import android.widget.LinearLayout
-import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import io.github.wykopmobilny.R
@@ -60,20 +55,6 @@ class MarkdownToolbar(
     init {
         val binding = MarkdownToolbarBinding.inflate(layoutInflater, this, true)
 
-        val activity = getActivityContext() as androidx.activity.ComponentActivity
-        val permissions =
-            activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-                if (isGranted) {
-                    showUploadPhotoBottomsheet()
-                } else {
-                    Toast
-                        .makeText(
-                            activity,
-                            "Aplikacja wymaga uprawnień zapisu do pamięci aby wysyłać zdjęcia.",
-                            Toast.LENGTH_LONG,
-                        ).show()
-                }
-            }
         // Create callbacks
         markdownDialogs.apply {
             binding.formatBold.setOnClickListener { insertFormat("**", "**") }
@@ -83,17 +64,11 @@ class MarkdownToolbar(
             binding.insertCode.setOnClickListener { insertFormat("`", "`") }
             binding.insertSpoiler.setOnClickListener { insertFormat("\n!", "") }
             binding.insertEmoticon.setOnClickListener { showLennyfaceDialog(formatText) }
-            binding.insertPhoto.setOnClickListener {
-                if (ContextCompat.checkSelfPermission(
-                        activity,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    ) == PackageManager.PERMISSION_GRANTED
-                ) {
-                    showUploadPhotoBottomsheet()
-                } else {
-                    permissions.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                }
-            }
+            // Zadna z opcji nie wymaga uprawnien: galeria = ACTION_GET_CONTENT,
+            // aparat = FileProvider w katalogu aplikacji, URL = wpisanie adresu.
+            // Stary gate na WRITE_EXTERNAL_STORAGE blokowal caly wybor zdjecia,
+            // bo na Androidzie 11+ system zawsze odmawia tego uprawnienia.
+            binding.insertPhoto.setOnClickListener { showUploadPhotoBottomsheet() }
         }
     }
 
