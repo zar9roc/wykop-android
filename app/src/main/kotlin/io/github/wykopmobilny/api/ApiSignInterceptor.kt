@@ -24,13 +24,21 @@ class ApiSignInterceptor(
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
+
+        // Podpisy apisign to mechanizm API v1/v2 - v3 uwierzytelnia bearerem.
+        // Liczenie podpisu dla v3 czytalo multipart.part(1), a upload v3 ma
+        // JEDNA czesc ("file") -> IndexOutOfBounds, OkHttp anulowal request
+        // i user widzial "Blad sieciowy podczas transferu plikow".
+        if (request.url.encodedPath.startsWith("/api/v3/")) {
+            return chain.proceed(request)
+        }
+
         val builder = request.newBuilder()
         var url = request.url.toString()
 
         val customHeaders = request.headers("@")
         val credentials = userManagerApi.getUserCredentials()
-        val isV3Endpoint = request.url.encodedPath.startsWith("/api/v3/")
-        if (credentials != null && !customHeaders.contains(REMOVE_USERKEY_HEADER) && !isV3Endpoint) {
+        if (credentials != null && !customHeaders.contains(REMOVE_USERKEY_HEADER)) {
             url += "/userkey/${credentials.userKey}"
         }
         val appSecret = FirebaseRemoteConfig.getInstance().getString(RemoteConfigKeys.API_APP_SECRET)
