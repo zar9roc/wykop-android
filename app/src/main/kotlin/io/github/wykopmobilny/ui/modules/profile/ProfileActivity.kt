@@ -108,7 +108,15 @@ class ProfileActivity :
             }.getOrElse { Instant.DISTANT_PAST }
         binding.signup.text = signupAt.periodUntil(Clock.System.now(), TimeZone.currentSystemDefault()).toPrettyString()
         binding.nickname.text = profileResponse.username
-        binding.nickname.setTextColor(getGroupColor(colorNameToGroupId(profileResponse.color)))
+        // Zbanowani/usunieci maja w color dalej rangowy kolor - status decyduje
+        // o szarym nicku (spojnie z listami i komentarzami).
+        val nicknameGroupId =
+            when (profileResponse.status) {
+                "banned" -> GROUP_ID_BANNED
+                "removed" -> GROUP_ID_DELETED
+                else -> colorNameToGroupId(profileResponse.color)
+            }
+        binding.nickname.setTextColor(getGroupColor(nicknameGroupId))
         binding.loadingView.isVisible = false
         binding.description.isVisible = profileResponse.about != null
         profileResponse.about?.let {
@@ -219,6 +227,10 @@ class ProfileActivity :
     }
 
     companion object {
+        // Zgodne z AuthorMapperV3 i getGroupColor (1001/1002 -> #999999).
+        private const val GROUP_ID_BANNED = 1001
+        private const val GROUP_ID_DELETED = 1002
+
         const val EXTRA_USERNAME = "EXTRA_USERNAME"
         const val DATA_FRAGMENT_TAG = "PROFILE_DATAFRAGMENT"
 
