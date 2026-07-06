@@ -103,7 +103,7 @@ interface LinksV3RetrofitApi {
     suspend fun deleteLinkComment(
         @Path("linkId") linkId: Long,
         @Path("commentId") commentId: Long,
-    ): WykopApiResponseV3<Unit>?
+    ): Response<Unit>
 
     // region Link votes
 

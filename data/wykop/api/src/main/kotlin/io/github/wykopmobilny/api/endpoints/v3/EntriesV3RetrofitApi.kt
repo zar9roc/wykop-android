@@ -94,7 +94,7 @@ interface EntriesV3RetrofitApi {
     @DELETE("v3/entries/{entryId}")
     suspend fun deleteEntry(
         @Path("entryId") entryId: Long,
-    ): WykopApiResponseV3<Unit>?
+    ): Response<Unit>
 
     @POST("v3/entries/{entryId}/votes")
     suspend fun voteEntry(
@@ -123,7 +123,7 @@ interface EntriesV3RetrofitApi {
     suspend fun deleteEntryComment(
         @Path("entryId") entryId: Long,
         @Path("commentId") commentId: Long,
-    ): WykopApiResponseV3<Unit>?
+    ): Response<Unit>
 
     @POST("v3/entries/{entryId}/comments/{commentId}/votes")
     suspend fun voteComment(
