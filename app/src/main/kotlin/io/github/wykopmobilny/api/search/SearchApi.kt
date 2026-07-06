@@ -8,12 +8,12 @@ import io.reactivex.Single
 
 interface SearchApi {
     fun searchLinks(
-        page: Int,
+        page: String?,
         query: String,
     ): Single<FilteredData<Link>>
 
     fun searchEntries(
-        page: Int,
+        page: String?,
         query: String,
     ): Single<FilteredData<Entry>>
 

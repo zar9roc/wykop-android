@@ -1,46 +1,42 @@
 package io.github.wykopmobilny.api.search
 
 import io.github.wykopmobilny.api.UserTokenRefresher
-import io.github.wykopmobilny.api.endpoints.SearchRetrofitApi
-import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformer
+import io.github.wykopmobilny.api.endpoints.v3.SearchV3RetrofitApi
 import io.github.wykopmobilny.api.filters.OWMContentFilter
-import io.github.wykopmobilny.api.patrons.PatronsApi
-import io.github.wykopmobilny.models.mapper.apiv2.AuthorMapper
-import io.github.wykopmobilny.models.mapper.apiv2.filterEntries
-import io.github.wykopmobilny.models.mapper.apiv2.filterLinks
+import io.github.wykopmobilny.models.mapper.apiv3.AuthorMapperV3
+import io.github.wykopmobilny.models.mapper.apiv3.filterEntriesV3
+import io.github.wykopmobilny.models.mapper.apiv3.filterLinksV3
 import kotlinx.coroutines.rx2.rxSingle
 import javax.inject.Inject
 
+// Stare endpointy wyszukiwania v1/v2 juz nie dzialaja - v3: /search/links|entries|users.
 class SearchRepository
     @Inject
     constructor(
-        private val searchApi: SearchRetrofitApi,
+        private val searchApiV3: SearchV3RetrofitApi,
         private val userTokenRefresher: UserTokenRefresher,
         private val owmContentFilter: OWMContentFilter,
-        private val patronsApi: PatronsApi,
     ) : SearchApi {
         override fun searchLinks(
-            page: Int,
+            page: String?,
             query: String,
-        ) = rxSingle { searchApi.searchLinks(page, query) }
+        ) = rxSingle { searchApiV3.searchLinks(query, page) }
             .retryWhen(userTokenRefresher)
-            .flatMap { patronsApi.ensurePatrons(it) }
-            .compose(ErrorHandlerTransformer())
-            .map { it.filterLinks(owmContentFilter = owmContentFilter) }
+            .map { response ->
+                response.data.orEmpty().filterLinksV3(owmContentFilter, response.pagination)
+            }
 
         override fun searchEntries(
-            page: Int,
+            page: String?,
             query: String,
-        ) = rxSingle { searchApi.searchEntries(page, query) }
+        ) = rxSingle { searchApiV3.searchEntries(query, page) }
             .retryWhen(userTokenRefresher)
-            .flatMap { patronsApi.ensurePatrons(it) }
-            .compose(ErrorHandlerTransformer())
-            .map { it.filterEntries(owmContentFilter = owmContentFilter) }
+            .map { response ->
+                response.data.orEmpty().filterEntriesV3(owmContentFilter, response.pagination)
+            }
 
         override fun searchProfiles(query: String) =
-            rxSingle { searchApi.searchProfiles(query) }
+            rxSingle { searchApiV3.searchUsers(query) }
                 .retryWhen(userTokenRefresher)
-                .flatMap { patronsApi.ensurePatrons(it) }
-                .compose(ErrorHandlerTransformer())
-                .map { it.map { response -> AuthorMapper.map(response) } }
+                .map { it.data.orEmpty().map { response -> AuthorMapperV3.map(response) } }
     }

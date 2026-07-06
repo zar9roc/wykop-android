@@ -15,25 +15,30 @@ class LinkSearchPresenter(
     val linksInteractor: LinksInteractor,
 ) : BasePresenter<LinkSearchView>(),
     LinkActionListener {
-    var page = 1
+    private var page: String? = null
+    private var pageNumber = 1
 
     fun searchLinks(
         q: String,
         shouldRefresh: Boolean,
     ) {
-        if (shouldRefresh) page = 1
+        if (shouldRefresh) {
+            page = null
+            pageNumber = 1
+        }
+        val isFirstPage = page == null
         searchApi
             .searchLinks(page, q)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
                 {
-                    view?.showSearchEmptyView = (page == 1 && it.totalCount <= 0)
+                    view?.showSearchEmptyView = (isFirstPage && it.totalCount <= 0)
                     if (it.totalCount > 0) {
-                        page++
+                        page = it.nextPage ?: (++pageNumber).toString()
                         view?.addItems(it.filtered, shouldRefresh)
                     } else {
-                        view?.addItems(it.filtered, (page == 1))
+                        view?.addItems(it.filtered, isFirstPage)
                         view?.disableLoading()
                     }
                 },
