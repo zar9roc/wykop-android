@@ -26,7 +26,14 @@ class HotFragment :
     BaseNavigationView,
     HotView {
     companion object {
+        private const val PREFS_NAME = "mikroblog"
+        private const val KEY_LAST_PERIOD = "last_period"
+
         fun newInstance() = HotFragment()
+    }
+
+    private val lastPeriodPrefs by lazy {
+        requireContext().getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
     }
 
     @Inject
@@ -59,7 +66,12 @@ class HotFragment :
         navigation.activityToolbar.overflowIcon = ContextCompat.getDrawable(requireActivity(), R.drawable.ic_hot)
 
         presenter.subscribe(this)
-        presenter.period = settingsPreferences.hotEntriesScreen ?: "newest"
+        // Ostatnio uzywany tryb ma pierwszenstwo przed domyslnym ekranem z ustawien -
+        // widok pamieta wybor uzytkownika miedzy wejsciami (np. gorace 24h).
+        presenter.period =
+            lastPeriodPrefs.getString(KEY_LAST_PERIOD, null)
+                ?: settingsPreferences.hotEntriesScreen
+                ?: "newest"
         entriesFragment.loadDataListener = { presenter.loadData(it) }
         presenter.loadData(true)
     }
@@ -126,6 +138,7 @@ class HotFragment :
             }
         }
 
+        lastPeriodPrefs.edit().putString(KEY_LAST_PERIOD, presenter.period).apply()
         view?.findViewById<SwipeRefreshLayout>(R.id.swipeRefresh)?.isRefreshing = true
         presenter.loadData(true)
         return true
