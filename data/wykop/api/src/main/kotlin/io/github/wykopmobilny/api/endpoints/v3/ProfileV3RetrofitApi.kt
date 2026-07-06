@@ -101,7 +101,9 @@ interface ProfileV3RetrofitApi {
         @Path("username") username: String,
     ): WykopApiResponseV3<List<BadgeResponseV3>>
 
-    @GET("v3/profile/users/{username}/observed/tags/menu")
+    // Wariant "/observed/tags/menu" ze specy nie istnieje na serwerze
+    // (404 "No route found") - dziala goly "/observed/tags".
+    @GET("v3/profile/users/{username}/observed/tags")
     suspend fun getObservedTagsMenu(
         @Path("username") username: String,
     ): WykopApiResponseV3<List<ShortTagResponseV3>>

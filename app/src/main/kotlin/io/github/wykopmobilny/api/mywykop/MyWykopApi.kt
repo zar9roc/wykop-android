@@ -7,7 +7,7 @@ import io.reactivex.Single
 interface MyWykopApi {
     fun getIndex(page: String?): Single<FilteredData<EntryLink>>
 
-    fun byTags(page: Int): Single<List<EntryLink>>
+    fun byTags(page: String?): Single<FilteredData<EntryLink>>
 
-    fun byUsers(page: Int): Single<List<EntryLink>>
+    fun byUsers(page: String?): Single<FilteredData<EntryLink>>
 }

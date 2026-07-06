@@ -10,4 +10,14 @@ interface ObservedV3RetrofitApi {
     suspend fun getObservedAll(
         @Query("page") page: String? = null,
     ): WykopApiResponseV3<List<ObservedItemV3>>
+
+    @GET("v3/observed/users")
+    suspend fun getObservedUsers(
+        @Query("page") page: String? = null,
+    ): WykopApiResponseV3<List<ObservedItemV3>>
+
+    @GET("v3/observed/tags/stream")
+    suspend fun getObservedTagsStream(
+        @Query("page") page: String? = null,
+    ): WykopApiResponseV3<List<ObservedItemV3>>
 }

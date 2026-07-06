@@ -25,9 +25,12 @@ class MyWykopEntryLinkPresenter(
 ) : BasePresenter<EntryLinkFragmentView>(),
     EntryActionListener,
     LinkActionListener {
-    var page = 1
     private var indexPage: String? = null
     private var indexPageNumber: Int = 1
+    private var tagsPage: String? = null
+    private var tagsPageNumber: Int = 1
+    private var usersPage: String? = null
+    private var usersPageNumber: Int = 1
 
     fun loadIndex(shouldRefresh: Boolean) {
         if (shouldRefresh) {
@@ -52,16 +55,19 @@ class MyWykopEntryLinkPresenter(
     }
 
     fun loadTags(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = 1
+        if (shouldRefresh) {
+            tagsPage = null
+            tagsPageNumber = 1
+        }
         myWykopApi
-            .byTags(page)
+            .byTags(tagsPage)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
-                {
-                    if (it.isNotEmpty()) {
-                        page++
-                        view?.addItems(it, shouldRefresh)
+                { data ->
+                    if (data.totalCount > 0) {
+                        tagsPage = data.nextPage ?: (++tagsPageNumber).toString()
+                        view?.addItems(data.filtered, shouldRefresh)
                     } else {
                         view?.disableLoading()
                     }
@@ -71,16 +77,19 @@ class MyWykopEntryLinkPresenter(
     }
 
     fun loadUsers(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = 1
+        if (shouldRefresh) {
+            usersPage = null
+            usersPageNumber = 1
+        }
         myWykopApi
-            .byUsers(page)
+            .byUsers(usersPage)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
-                {
-                    if (it.isNotEmpty()) {
-                        page++
-                        view?.addItems(it, shouldRefresh)
+                { data ->
+                    if (data.totalCount > 0) {
+                        usersPage = data.nextPage ?: (++usersPageNumber).toString()
+                        view?.addItems(data.filtered, shouldRefresh)
                     } else {
                         view?.disableLoading()
                     }
