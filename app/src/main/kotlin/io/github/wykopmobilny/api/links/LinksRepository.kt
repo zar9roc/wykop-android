@@ -9,9 +9,9 @@ import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
 import io.github.wykopmobilny.api.exceptions.handleMediaUpload
 import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
+import io.github.wykopmobilny.api.requests.v3.media.UploadPhotoByUrlRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateCommentRequestV3
 import io.github.wykopmobilny.api.requests.v3.links.AddRelatedRequestV3
-import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
 import retrofit2.HttpException
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
@@ -209,12 +209,13 @@ class LinksRepository
             plus18: Boolean,
             linkId: Long,
         ) = rxSingle {
+            val photoKey = uploadPhotoUrlAndGetKey(embed)
             linksApiV3.addLinkComment(
                 linkId,
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body,
-                        embed = embed,
+                        photo = photoKey,
                         adult = plus18,
                     ),
                 ),
@@ -283,12 +284,13 @@ class LinksRepository
             linkId: Long,
             linkComment: Long,
         ) = rxSingle {
+            val photoKey = uploadPhotoUrlAndGetKey(embed)
             linksApiV3.addLinkComment(
                 linkId,
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body,
-                        embed = embed,
+                        photo = photoKey,
                         adult = plus18,
                     ),
                 ),
@@ -350,8 +352,11 @@ class LinksRepository
         override fun commentDelete(
             linkId: Long,
             commentId: Long,
-        ) = rxSingle { linksApiV3.deleteLinkComment(linkId, commentId) ?: WykopApiResponseV3(data = Unit, pagination = null) }
-            .retryWhen(userTokenRefresher)
+        ) = rxSingle {
+            // 204 No Content - patrz requireSuccessful (Response<Unit> zamiast body).
+            val response = linksApiV3.deleteLinkComment(linkId, commentId)
+            if (!response.isSuccessful && response.code() != 409) throw HttpException(response)
+        }.retryWhen(userTokenRefresher)
             .map { }
 
         override fun getDownvoters(linkId: Long) =
@@ -426,5 +431,13 @@ class LinksRepository
                     mediaApiV3.uploadPhoto(wykopImageFile.getFileMultipartForV3())
                 }
             return uploadedPhoto.key
+        }
+
+        // Obraz z URL: wgrywany przez /media/photos, klucz idzie w polu "photo".
+        private suspend fun uploadPhotoUrlAndGetKey(url: String?): String? {
+            val photoUrl = url?.takeIf { it.isNotBlank() } ?: return null
+            return handleMediaUpload {
+                mediaApiV3.uploadPhotoByUrl(WykopApiRequestV3(UploadPhotoByUrlRequestV3(url = photoUrl)))
+            }.key
         }
     }

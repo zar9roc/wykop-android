@@ -7,12 +7,14 @@ import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
 import io.github.wykopmobilny.api.exceptions.handleMediaUpload
 import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
+import io.github.wykopmobilny.api.requests.v3.media.UploadPhotoByUrlRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateCommentRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateEntryRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.VoteSurveyRequestV3
 import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
 import io.github.wykopmobilny.api.responses.v3.observed.ObservedItemV3
 import retrofit2.HttpException
+import retrofit2.Response
 import io.github.wykopmobilny.api.responses.EntryCommentResponse
 import io.github.wykopmobilny.api.responses.EntryResponse
 import io.github.wykopmobilny.api.toRequestBody
@@ -140,11 +142,12 @@ class EntriesRepository
             embed: String?,
             plus18: Boolean,
         ) = rxSingle {
+            val photoKey = uploadPhotoUrlAndGetKey(embed)
             entriesApiV3.addEntry(
                 WykopApiRequestV3(
                     CreateUpdateEntryRequestV3(
                         content = body,
-                        embed = embed,
+                        photo = photoKey,
                         adult = plus18,
                     ),
                 ),
@@ -222,12 +225,13 @@ class EntriesRepository
             embed: String?,
             plus18: Boolean,
         ) = rxSingle {
+            val photoKey = uploadPhotoUrlAndGetKey(embed)
             entriesApiV3.addEntryComment(
                 entryId,
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body,
-                        embed = embed,
+                        photo = photoKey,
                         adult = plus18,
                     ),
                 ),
@@ -261,12 +265,13 @@ class EntriesRepository
             embed: String?,
             plus18: Boolean,
         ) = rxSingle {
+            val photoKey = uploadPhotoUrlAndGetKey(embed)
             entriesApiV3.editEntry(
                 entryId,
                 WykopApiRequestV3(
                     CreateUpdateEntryRequestV3(
                         content = body,
-                        embed = embed,
+                        photo = photoKey,
                         adult = plus18,
                     ),
                 ),
@@ -356,9 +361,8 @@ class EntriesRepository
             .map { !currentlyFavorite }
 
         override fun deleteEntry(entryId: Long) =
-            rxSingle { entriesApiV3.deleteEntry(entryId) ?: WykopApiResponseV3(data = Unit, pagination = null) }
+            rxSingle { entriesApiV3.deleteEntry(entryId).requireSuccessful() }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
                 .map {
                     // API v3 returns 204 with no body, return minimal EntryResponse for compatibility
                     EntryResponse(
@@ -390,13 +394,14 @@ class EntriesRepository
             embed: String?,
             plus18: Boolean,
         ) = rxSingle {
+            val photoKey = uploadPhotoUrlAndGetKey(embed)
             entriesApiV3.editEntryComment(
                 entryId,
                 commentId,
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body,
-                        embed = embed,
+                        photo = photoKey,
                         adult = plus18,
                     ),
                 ),
@@ -470,9 +475,8 @@ class EntriesRepository
         override fun deleteEntryComment(
             entryId: Long,
             commentId: Long,
-        ) = rxSingle { entriesApiV3.deleteEntryComment(entryId, commentId) ?: WykopApiResponseV3(data = Unit, pagination = null) }
+        ) = rxSingle { entriesApiV3.deleteEntryComment(entryId, commentId).requireSuccessful() }
             .retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
             .map {
                 // API v3 returns 204 with no body, return minimal EntryCommentResponse for compatibility
                 EntryCommentResponse(
@@ -634,6 +638,23 @@ class EntriesRepository
                 }
             return uploadedPhoto.key
         }
+
+        // Obraz z URL: v3 nie przyjmuje adresu jako "embed" (to pole na embedy wideo) -
+        // trzeba wgrac go przez /media/photos i wyslac zwrocony klucz jako "photo".
+        private suspend fun uploadPhotoUrlAndGetKey(url: String?): String? {
+            val photoUrl = url?.takeIf { it.isNotBlank() } ?: return null
+            return handleMediaUpload {
+                mediaApiV3.uploadPhotoByUrl(WykopApiRequestV3(UploadPhotoByUrlRequestV3(url = photoUrl)))
+            }.key
+        }
     }
 
 internal fun String.allowImageOnly() = ifEmpty { " " }
+
+// 204 No Content: ten Retrofit rzuca NPE przy nienullowalnym zwrocie z pustym body
+// (ignoruje '?'), a body-owe WykopApiResponseV3 nie parsuje sie z pustej odpowiedzi.
+// Response<Unit> pozwala sprawdzic status; 409 = zasob juz w docelowym stanie (np.
+// komentarz usuniety rownolegle) - traktujemy jak sukces.
+internal fun Response<Unit>.requireSuccessful() {
+    if (!isSuccessful && code() != 409) throw HttpException(this)
+}

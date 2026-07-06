@@ -8,6 +8,7 @@ import io.github.wykopmobilny.api.endpoints.v3.PmV3RetrofitApi
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
 import io.github.wykopmobilny.api.exceptions.handleMediaUpload
 import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
+import io.github.wykopmobilny.api.requests.v3.media.UploadPhotoByUrlRequestV3
 import io.github.wykopmobilny.api.requests.v3.pm.CreatePmMessageRequestV3
 import io.github.wykopmobilny.api.responses.ConversationDeleteResponse
 import io.github.wykopmobilny.api.responses.v3.pm.PmConversationMessagesResponseV3
@@ -81,9 +82,20 @@ class PMRepository
             embed: String?,
             plus18: Boolean,
         ) = rxSingle {
+            // Obraz z URL: v3 nie przyjmuje adresu jako "embed" - wgrywamy przez
+            // /media/photos (type=conversations) i wysylamy klucz w polu "photo".
+            val photoKey =
+                embed?.takeIf { it.isNotBlank() }?.let {
+                    handleMediaUpload {
+                        mediaApiV3.uploadPhotoByUrl(
+                            WykopApiRequestV3(UploadPhotoByUrlRequestV3(url = it)),
+                            type = "conversations",
+                        )
+                    }.key
+                }
             pmApiV3.sendMessage(
                 username = user,
-                body = WykopApiRequestV3(CreatePmMessageRequestV3(content = body, embed = embed)),
+                body = WykopApiRequestV3(CreatePmMessageRequestV3(content = body.ifEmpty { " " }, photo = photoKey)),
             )
         }.retryWhen(userTokenRefresher)
             .compose(ErrorHandlerTransformerV3<PmMessageResponseV3>(errorBodyParser))
