@@ -92,4 +92,9 @@ internal abstract class ActivityBuilder {
 
     @ContributesAndroidInjector(modules = [AddlinkModule::class, AddlinkFragmentProvider::class])
     abstract fun bindAddLinkActivity(): AddlinkActivity
+
+    // LinkDetailsActivityV2 nie jest daggerowa (ThemableActivity) - fragment
+    // injectuje sie sam przez AndroidSupportInjection (fallback na Application).
+    @ContributesAndroidInjector
+    abstract fun bindLinkDetailsFragment(): io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsFragment
 }

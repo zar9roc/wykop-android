@@ -1,11 +1,25 @@
 package io.github.wykopmobilny.ui.modules.links.linkdetails
 
+import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import dagger.android.support.AndroidSupportInjection
+import io.github.wykopmobilny.api.suggest.SuggestApi
+import io.github.wykopmobilny.api.links.LinksApi
+import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
+import io.github.wykopmobilny.ui.widgets.InputToolbar
+import io.github.wykopmobilny.ui.widgets.InputToolbarListener
+import io.github.wykopmobilny.api.WykopImageFile
+import io.github.wykopmobilny.utils.usermanager.UserManagerApi
+import io.github.wykopmobilny.utils.usermanager.isUserAuthorized
+import javax.inject.Inject
+import kotlinx.coroutines.rx2.await
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -46,6 +60,28 @@ import kotlinx.coroutines.withTimeoutOrNull
 internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
     private var sortClickAction: (() -> Unit)? = null
 
+    @Inject
+    lateinit var userManagerApi: UserManagerApi
+
+    @Inject
+    lateinit var suggestApi: SuggestApi
+
+    @Inject
+    lateinit var linksApi: LinksApi
+
+    private var inputToolbar: InputToolbar? = null
+    private var commentsRefreshAction: (() -> Unit)? = null
+    private var cameraPhotoUri: Uri? = null
+
+    private val galleryPicker =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            uri?.let { inputToolbar?.setPhoto(it) }
+        }
+    private val cameraCapture =
+        registerForActivityResult(ActivityResultContracts.TakePicture()) { saved ->
+            if (saved) cameraPhotoUri?.let { inputToolbar?.setPhoto(it) }
+        }
+
     var linkId by longArgument("linkId")
     var commentId by longArgumentNullable("commentId")
 
@@ -55,6 +91,11 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
                 linkId = linkId,
                 initialCommentId = commentId,
             )
+
+    override fun onAttach(context: Context) {
+        AndroidSupportInjection.inject(this)
+        super.onAttach(context)
+    }
 
     override fun onViewCreated(
         view: View,
@@ -69,8 +110,7 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
         val toolbar = binding.toolbar.root as Toolbar
         toolbar.bindBackButton(activity = activity)
         setupSortMenu(toolbar)
-
-        val adapter = LinkDetailsAdapterV3()
+        val adapter = setupCommentInput(binding)
         adapter.stateRestorationPolicy = StateRestorationPolicy.PREVENT_WHEN_EMPTY
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
@@ -172,6 +212,7 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
                 }
                 launch {
                     shared.collect { ui ->
+                        commentsRefreshAction = ui.swipeRefresh.refreshAction
                         bindContextMenu(toolbar, ui.contextMenuOptions)
                         val header = ui.header
                         if (header is LinkDetailsHeaderUi.WithData) {
@@ -185,6 +226,76 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Wiaze InputToolbar (pole odpowiedzi) i tworzy adapter z akcjami
+     * Odpowiedz/Cytat. Dla niezalogowanych pole jest ukryte, a przyciski
+     * w komentarzach niewidoczne (callbacki = null).
+     */
+    private fun setupCommentInput(binding: ActivityLinkDetailsBinding): LinkDetailsAdapterV3 {
+        val toolbar = binding.inputToolbar
+        inputToolbar = toolbar
+        if (!userManagerApi.isUserAuthorized()) {
+            toolbar.hide()
+            return LinkDetailsAdapterV3()
+        }
+        toolbar.setup(userManagerApi, suggestApi)
+        toolbar.inputToolbarListener =
+            object : InputToolbarListener {
+                override fun sendPhoto(
+                    photo: WykopImageFile,
+                    body: String,
+                    containsAdultContent: Boolean,
+                ) = sendComment(body, containsAdultContent) {
+                    linksApi.commentAdd(body, containsAdultContent, photo, linkId)
+                }
+
+                override fun sendPhoto(
+                    photo: String?,
+                    body: String,
+                    containsAdultContent: Boolean,
+                ) = sendComment(body, containsAdultContent) {
+                    linksApi.commentAdd(body, photo, containsAdultContent, linkId)
+                }
+
+                override fun openGalleryImageChooser() {
+                    galleryPicker.launch("image/*")
+                }
+
+                override fun openCamera(uri: Uri) {
+                    cameraPhotoUri = uri
+                    cameraCapture.launch(uri)
+                }
+            }
+        return LinkDetailsAdapterV3(
+            onReplyComment = { author -> toolbar.addAddressant(author) },
+            onQuoteComment = { author, body -> toolbar.addQuoteText(body, author) },
+        )
+    }
+
+    private fun sendComment(
+        body: String,
+        containsAdultContent: Boolean,
+        request: () -> io.reactivex.Single<LinkCommentV3Item>,
+    ) {
+        if (body.isBlank()) return
+        val toolbar = inputToolbar ?: return
+        toolbar.showProgress(true)
+        viewLifecycleOwner.lifecycleScope.launch {
+            runCatching { request().subscribeOn(io.reactivex.schedulers.Schedulers.io()).await() }
+                .onSuccess {
+                    toolbar.resetState()
+                    // Odswiezenie listy przez akcje domeny (ta sama co swipe-refresh).
+                    commentsRefreshAction?.invoke()
+                }.onFailure { failure ->
+                    toolbar.showProgress(false)
+                    Napier.w("Nie udalo sie dodac komentarza", failure)
+                    android.widget.Toast
+                        .makeText(requireContext(), "Nie udało się dodać komentarza", android.widget.Toast.LENGTH_SHORT)
+                        .show()
+                }
         }
     }
 

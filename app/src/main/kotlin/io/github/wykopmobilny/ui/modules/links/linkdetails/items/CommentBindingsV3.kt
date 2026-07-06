@@ -87,6 +87,11 @@ internal fun TopLinkCommentLayoutBinding.bindParentCommentV3(
     parent: ParentCommentUi,
     data: LinkCommentUi.Normal,
     hasReplies: Boolean,
+    // Wstawianie tekstu do pola odpowiedzi to operacja czysto widokowa
+    // (InputToolbar w LinkDetailsFragment) - stad callbacki z adaptera,
+    // nie akcje domeny. null = uzytkownik niezalogowany, przyciski ukryte.
+    onReply: (() -> Unit)?,
+    onQuote: (() -> Unit)?,
 ) {
     root.setOnClick(data.clickAction)
     root.setOnLongClick(parent.toggleExpansionStateAction)
@@ -156,6 +161,10 @@ internal fun TopLinkCommentLayoutBinding.bindParentCommentV3(
     // Action buttons
     shareTextView.setOnClick(data.shareAction)
     moreOptionsTextView.setOnClick(data.moreAction)
+    replyTextView.isVisible = onReply != null
+    replyTextView.setOnClick(onReply)
+    quoteTextView.isVisible = onQuote != null
+    quoteTextView.setOnClick(onQuote)
 
     // Message text (hidden state indicator) — hide for normal comments
     messageTextView.isVisible = false
@@ -167,6 +176,8 @@ internal fun TopLinkCommentLayoutBinding.bindParentCommentV3(
 internal fun LinkCommentLayoutBinding.bindReplyCommentV3(
     comment: LinkCommentUi.Normal,
     isLast: Boolean,
+    onReply: (() -> Unit)?,
+    onQuote: (() -> Unit)?,
 ) {
     root.setOnClick(comment.clickAction)
     if (comment.showsOption) {
@@ -228,6 +239,10 @@ internal fun LinkCommentLayoutBinding.bindReplyCommentV3(
     // Action buttons
     shareTextView.setOnClick(comment.shareAction)
     moreOptionsTextView.setOnClick(comment.moreAction)
+    replyTextView.isVisible = onReply != null
+    replyTextView.setOnClick(onReply)
+    quoteTextView.isVisible = onQuote != null
+    quoteTextView.setOnClick(onQuote)
 }
 
 // --- Hidden parent comment (using link_comment_layout.xml) ---

@@ -22,10 +22,21 @@ import io.github.wykopmobilny.ui.modules.links.linkdetails.items.bindParentComme
 import io.github.wykopmobilny.ui.modules.links.linkdetails.items.bindReplyCommentV3
 import io.github.wykopmobilny.utils.asyncDifferConfig
 
-internal class LinkDetailsAdapterV3 :
-    ListAdapter<LinkDetailsListItem, LinkDetailsAdapterV3.BindingViewHolder>(
+internal class LinkDetailsAdapterV3(
+    // null = niezalogowany: przyciski Odpowiedz/Cytat ukryte.
+    private val onReplyComment: ((author: String) -> Unit)? = null,
+    private val onQuoteComment: ((author: String, body: String) -> Unit)? = null,
+) : ListAdapter<LinkDetailsListItem, LinkDetailsAdapterV3.BindingViewHolder>(
         asyncDifferConfig(LinkDetailsListItem.Diff),
     ) {
+    private fun replyActionFor(data: LinkCommentUi.Normal): (() -> Unit)? =
+        onReplyComment?.let { callback -> { callback(data.author.name) } }
+
+    private fun quoteActionFor(data: LinkCommentUi.Normal): (() -> Unit)? =
+        onQuoteComment?.let { callback ->
+            { callback(data.author.name, data.body.content?.toString().orEmpty()) }
+        }
+
     override fun getItemViewType(position: Int) =
         when (val item = getItem(position)) {
             is LinkDetailsListItem.Header -> {
@@ -83,6 +94,8 @@ internal class LinkDetailsAdapterV3 :
                             parent = item.comment,
                             data = data,
                             hasReplies = item.hasReplies,
+                            onReply = replyActionFor(data),
+                            onQuote = quoteActionFor(data),
                         )
                     }
 
@@ -101,6 +114,8 @@ internal class LinkDetailsAdapterV3 :
                         (holder.binding as LinkCommentLayoutBinding).bindReplyCommentV3(
                             comment,
                             item.isLast,
+                            onReply = replyActionFor(comment),
+                            onQuote = quoteActionFor(comment),
                         )
                     }
 
