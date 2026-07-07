@@ -10,6 +10,10 @@ import io.github.wykopmobilny.api.responses.v3.profile.BadgeResponseV3
 import io.github.wykopmobilny.api.responses.v3.tags.ShortTagResponseV3
 import io.github.wykopmobilny.api.responses.v3.user.UserFullResponseV3
 import io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3
+import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
+import io.github.wykopmobilny.api.requests.v3.blacklist.BlacklistUserRequestV3
+import retrofit2.Response
+import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -118,13 +122,16 @@ interface ProfileV3RetrofitApi {
         @Path("username") username: String,
     ): WykopApiResponseV3<Unit>?
 
-    @POST("v3/settings/blacklists/users/{username}")
+    // Blokada uzytkownika: sciezka /users/{username} zwraca 405 (spec klamie) -
+    // dziala kolekcja POST /users z body {data:{username}}. Puste body 201/204 →
+    // Response<Unit> (WykopApiResponseV3<Unit> wywalalby parsing).
+    @POST("v3/settings/blacklists/users")
     suspend fun blockUser(
-        @Path("username") username: String,
-    ): WykopApiResponseV3<Unit>
+        @Body request: WykopApiRequestV3<BlacklistUserRequestV3>,
+    ): Response<Unit>
 
     @DELETE("v3/settings/blacklists/users/{username}")
     suspend fun unblockUser(
         @Path("username") username: String,
-    ): WykopApiResponseV3<Unit>?
+    ): Response<Unit>
 }

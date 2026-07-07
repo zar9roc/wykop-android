@@ -9,7 +9,6 @@ import io.github.wykopmobilny.models.dataclass.Link
 import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
 import io.github.wykopmobilny.storage.api.SettingsPreferencesApi
 import io.github.wykopmobilny.utils.textview.removeHtml
-import java.util.Collections
 import javax.inject.Inject
 
 class OWMContentFilter
@@ -60,23 +59,32 @@ class OWMContentFilter
                     (settingsPreferencesApi.hideLowRangeAuthors && author?.group == 0)
             }
 
-        private val tagsRegex = "(^|\\s)(#[a-z\\d-]+)".toRegex()
+        // [a-z] lapal tylko male litery - tagi z wielka litera (#Wordziel) albo polskimi
+        // znakami byly niewykrywane. \p{L} + IGNORE_CASE obejmuje wszystkie litery.
+        private val tagsRegex = "(^|\\s)(#[\\p{L}\\d_-]+)".toRegex(RegexOption.IGNORE_CASE)
 
         private fun String.bodyContainsTags() = tagsRegex.containsMatchIn(this.removeHtml())
 
-        private fun String.bodyContainsBlockedTags(): Boolean =
-            !Collections.disjoint(
-                appStorage.blacklistQueries.allTags().executeAsList(),
+        private fun String.bodyContainsBlockedTags(): Boolean {
+            val blockedTags = appStorage.blacklistQueries.allTags().executeAsList()
+            if (blockedTags.isEmpty()) return false
+            val blockedLower = blockedTags.map { it.lowercase() }
+            // matchEntire wymagalo, by CALA tresc byla jednym tagiem - dla realnych
+            // wpisow (tekst + tagi) zwracalo null i blokada nigdy nie dzialala.
+            // findAll wyciaga WSZYSTKIE tagi z tresci; grupa 2 = "#tag".
+            val tagsInBody =
                 tagsRegex
-                    .matchEntire(this)
-                    ?.groupValues
-                    ?.map { it.removePrefix("#") }
-                    .orEmpty(),
-            )
+                    .findAll(this.removeHtml())
+                    .map { it.groupValues[2].removePrefix("#").lowercase() }
+                    .toSet()
+            return tagsInBody.any { it in blockedLower }
+        }
 
-        private fun String.isUserBlocked() =
-            appStorage.blacklistQueries
+        private fun String.isUserBlocked(): Boolean {
+            val nick = this.removePrefix("@").lowercase()
+            return appStorage.blacklistQueries
                 .allProfiles()
                 .executeAsList()
-                .contains(this.removePrefix("@"))
+                .any { it.lowercase() == nick }
+        }
     }

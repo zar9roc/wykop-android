@@ -4,6 +4,9 @@ import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
 import io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
 import io.github.wykopmobilny.api.responses.v3.tags.TagDetailsResponseV3
+import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
+import io.github.wykopmobilny.api.requests.v3.blacklist.BlacklistTagRequestV3
+import retrofit2.http.Body
 import retrofit2.Response
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -45,9 +48,11 @@ interface TagsV3RetrofitApi {
         @Path("tagName") tagName: String,
     ): Response<Unit>
 
-    @POST("v3/settings/blacklists/tags/{tag}")
+    // Blokada tagu: sciezka /tags/{tag} zwraca 405 (spec klamie) - dziala kolekcja
+    // POST /tags z body {data:{tag}}. Odblokowanie dziala per-tag (DELETE /tags/{tag}).
+    @POST("v3/settings/blacklists/tags")
     suspend fun blockTag(
-        @Path("tag") tag: String,
+        @Body request: WykopApiRequestV3<BlacklistTagRequestV3>,
     ): Response<Unit>
 
     @DELETE("v3/settings/blacklists/tags/{tag}")

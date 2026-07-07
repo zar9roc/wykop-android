@@ -1,6 +1,9 @@
 package io.github.wykopmobilny.api.profile
 
 import io.github.wykopmobilny.api.ErrorBodyParserV3
+import retrofit2.HttpException
+import io.github.wykopmobilny.api.requests.v3.blacklist.BlacklistUserRequestV3
+import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
 import io.github.wykopmobilny.api.UserTokenRefresher
 import io.github.wykopmobilny.api.endpoints.v3.ProfileV3RetrofitApi
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
@@ -158,16 +161,21 @@ class ProfileRepository
                 .map { ObserveStateResponse(isObserved = false, isBlocked = false) }
 
         override fun block(tag: String) =
-            rxSingle { profileApiV3.blockUser(tag) }
-                .retryWhen(userTokenRefresher)
+            rxSingle {
+                val username = tag.removePrefix("@")
+                val response = profileApiV3.blockUser(WykopApiRequestV3(BlacklistUserRequestV3(username = username)))
+                if (!response.isSuccessful && response.code() != 409) throw HttpException(response)
+            }.retryWhen(userTokenRefresher)
                 .map {
                     appStorage.blacklistQueries.insertOrReplaceProfile(tag.removePrefix("@"))
                     ObserveStateResponse(isObserved = false, isBlocked = true)
                 }
 
         override fun unblock(tag: String) =
-            rxSingle { profileApiV3.unblockUser(tag) ?: WykopApiResponseV3(data = Unit, pagination = null) }
-                .retryWhen(userTokenRefresher)
+            rxSingle {
+                val response = profileApiV3.unblockUser(tag.removePrefix("@"))
+                if (!response.isSuccessful && response.code() != 409) throw HttpException(response)
+            }.retryWhen(userTokenRefresher)
                 .map {
                     appStorage.blacklistQueries.deleteProfile(tag.removePrefix("@"))
                     ObserveStateResponse(isObserved = false, isBlocked = false)

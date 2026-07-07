@@ -1,5 +1,7 @@
 package io.github.wykopmobilny.api.tag
 
+import io.github.wykopmobilny.api.requests.v3.blacklist.BlacklistTagRequestV3
+import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
 import io.github.wykopmobilny.api.ErrorBodyParserV3
 import io.github.wykopmobilny.api.UserTokenRefresher
 import io.github.wykopmobilny.api.endpoints.v3.ProfileV3RetrofitApi
@@ -96,8 +98,11 @@ class TagRepository
                 .map { ObserveStateResponse(isObserved = false, isBlocked = false) }
 
         override fun block(tag: String) =
-            rxSingle { tagsApiV3.blockTag(tag).requireStateChanged() }
-                .retryWhen(userTokenRefresher)
+            rxSingle {
+                tagsApiV3
+                    .blockTag(WykopApiRequestV3(BlacklistTagRequestV3(tag = tag.removePrefix("#"))))
+                    .requireStateChanged()
+            }.retryWhen(userTokenRefresher)
                 .map {
                     appStorage.blacklistQueries.insertOrReplaceTag(tag.removePrefix("#"))
                     ObserveStateResponse(isObserved = false, isBlocked = true)
