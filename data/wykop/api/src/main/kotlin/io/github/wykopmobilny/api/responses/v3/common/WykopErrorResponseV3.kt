@@ -13,5 +13,10 @@ data class WykopErrorResponseV3(
 @JsonClass(generateAdapter = true)
 data class ErrorDetailsV3(
     @field:Json(name = "message") val message: String,
-    @field:Json(name = "key") val key: String?,
+    // Szczegoly walidacji: mapa pole/formularz -> lista kodow bledow
+    // (np. {"content":["too_short"]}, {"entry_form":["not_blank_content"]}).
+    @field:Json(name = "data") val data: Map<String, List<String>>? = null,
+    // UWAGA: pole "key" serwera bywa liczba ("key":0) - zadeklarowane jako String?
+    // wywalalo parsing calego bledu (JsonDataException), przez co uzytkownik widzial
+    // surowa fraze HTTP zamiast tresci. Pominiete (Moshi ignoruje nieznane pola).
 )

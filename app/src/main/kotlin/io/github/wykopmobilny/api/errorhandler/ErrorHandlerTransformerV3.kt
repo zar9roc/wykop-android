@@ -2,6 +2,7 @@ package io.github.wykopmobilny.api.errorhandler
 
 import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.api.ErrorBodyParserV3
+import io.github.wykopmobilny.api.responses.v3.common.ErrorDetailsV3
 import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
 import io.reactivex.Single
 import io.reactivex.SingleSource
@@ -47,7 +48,7 @@ class ErrorHandlerTransformerV3<T : Any>(
             if (errorDetails != null) {
                 WykopExceptionParser.WykopApiException(
                     code = errorResponse.code,
-                    message = errorDetails.message,
+                    message = errorDetails.toReadableMessage(),
                 )
             } else {
                 e
@@ -84,6 +85,24 @@ class ErrorHandlerTransformerV3<T : Any>(
  * @throws WykopExceptionParser.WykopApiException if API returns an error
  * @throws IllegalStateException if data is null
  */
+/**
+ * Zamienia szczegoly walidacji z serwera (message "Validate" + mapa data)
+ * na czytelny komunikat. Bez detali zwraca oryginalny message.
+ */
+internal fun ErrorDetailsV3.toReadableMessage(): String {
+    val codes = data?.values?.flatten().orEmpty()
+    return when {
+        // Serwer wymaga min. 5 znakow tresci (chyba ze dodano zdjecie/embed).
+        codes.any { it == "too_short" } ->
+            "Treść jest za krótka – wpis bez zdjęcia musi mieć minimum 5 znaków."
+        codes.any { it == "not_blank_content" || it == "not_blank" } ->
+            "Treść nie może być pusta."
+        codes.any { it == "too_long" } ->
+            "Treść jest za długa."
+        else -> message
+    }
+}
+
 suspend fun <T> unwrappingV3(
     errorBodyParser: ErrorBodyParserV3,
     block: suspend () -> WykopApiResponseV3<T>,
