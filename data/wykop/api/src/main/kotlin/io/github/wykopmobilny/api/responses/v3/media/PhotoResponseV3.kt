@@ -13,4 +13,5 @@ data class PhotoResponseV3(
     @field:Json(name = "plus18") val plus18: Boolean?,
     @field:Json(name = "width") val width: Int?,
     @field:Json(name = "height") val height: Int?,
+    @field:Json(name = "size") val size: Long?,
 )

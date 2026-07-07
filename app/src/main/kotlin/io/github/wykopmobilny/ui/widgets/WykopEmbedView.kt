@@ -148,12 +148,9 @@ class WykopEmbedView(
                 if (embed.isAnimated) {
                     binding.imageIconGifSize.isVisible = true
                     binding.imageIcon.isVisible = false
-                    val size = embed.size
-                    if (size.length <= 6) {
-                        binding.imageIconGifSize.text = embed.size.uppercase()
-                    } else {
-                        binding.imageIconGifSize.text = size.substringBefore(".") + size.substring(size.length - 2, size.length)
-                    }
+                    // embed.size to juz czytelny rozmiar pliku (np. "390 KB");
+                    // gdy brak - sam znacznik "GIF".
+                    binding.imageIconGifSize.text = embed.size.ifBlank { "GIF" }
                 } else {
                     binding.imageIcon.isVisible = false
                 }
