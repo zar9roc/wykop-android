@@ -99,6 +99,12 @@ abstract class BaseActivity :
     override fun onResume() {
         isRunning = true
         super.onResume()
+        // Rozmiar czcionki jest wpinany w motyw przy tworzeniu Activity (initTheme),
+        // wiec zmiana w ustawieniach nie odswieza otwartych ekranow. Po powrocie na
+        // widok porownujemy zapamietany rozmiar i przy zmianie odtwarzamy Activity.
+        if (appliedFontSize != themeSettingsPreferences.fontSize) {
+            recreate()
+        }
     }
 
     override fun onPause() {
@@ -106,9 +112,13 @@ abstract class BaseActivity :
         super.onPause()
     }
 
+    // Rozmiar czcionki zastosowany przy ostatnim initTheme (do wykrycia zmiany w onResume).
+    private var appliedFontSize: String? = null
+
     // This function initializes activity theme based on settings
     private fun initTheme(style: ApplicableStyleUi) {
         updateTheme(style)
+        appliedFontSize = themeSettingsPreferences.fontSize
         if (isActivityTransfluent || enableSwipeBackLayout) {
             theme.applyStyle(R.style.TransparentActivityTheme, true)
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
