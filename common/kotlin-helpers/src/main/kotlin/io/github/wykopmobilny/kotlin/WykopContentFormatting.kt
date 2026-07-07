@@ -107,13 +107,14 @@ fun String.linkifyTagsAndMentions(): String {
     return result.toString()
 }
 
-// Loginy moga zawierac myslniki w srodku (np. @Ja-nieja-niktja), tagi juz nie -
-// myslnik konczy tag. Myslnik na koncu (np. "@abc-") nie wchodzi do wzmianki.
+// Loginy moga zawierac myslniki takze na brzegach (realny przyklad:
+// @-SCHlZOFRENlCYZM-), wiec wzmianka to @ + dowolny ciag [litera/cyfra/_/-].
+// Tagi nadal tylko \w (myslnik konczy tag).
 private val linkableRegex =
     Regex(
         "(https?://[^\\s<>\"]+)" +
             "|(?<!&)(#)(\\w+)" +
-            "|(@)(\\w+(?:-\\w+)*)",
+            "|(@)([\\w-]+)",
     )
 
 // Znaki interpunkcyjne po URL-u ("zobacz https://x.pl/a.") nie sa jego czescia.

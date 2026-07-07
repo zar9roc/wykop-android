@@ -17,10 +17,11 @@ class WykopContentFormattingTest {
     }
 
     @Test
-    fun `trailing hyphen is not part of mention`() {
+    fun `mention with leading and trailing hyphen is whole login`() {
+        // Realny login z Wykopu: myslniki na obu brzegach nazwy.
         assertEquals(
-            """@<a href="@abc">abc</a>- reszta""",
-            "@abc- reszta".linkifyTagsAndMentions(),
+            """@<a href="@-SCHlZOFRENlCYZM-">-SCHlZOFRENlCYZM-</a> dobrze""",
+            "@-SCHlZOFRENlCYZM- dobrze".linkifyTagsAndMentions(),
         )
     }
 
