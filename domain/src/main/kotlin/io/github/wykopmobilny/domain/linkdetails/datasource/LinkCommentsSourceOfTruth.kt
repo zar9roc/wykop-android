@@ -90,11 +90,12 @@ internal suspend fun persistLinkComments(
                 cache.embedQueries.insertOrReplace(
                     Embed(
                         id = embed.url,
-                        type =
-                            when (embed.type) {
-                                "video" -> EmbedType.Video
-                                else -> EmbedType.Unknown
-                            },
+                        // media.embed to zawsze zewnetrzne medium odtwarzalne, a v3 podaje
+                        // typ per dostawca ("streamable"/"youtube"/"gfycat"/"coub"...), nie
+                        // "video" - stara mapa dawala Unknown i film sie nie odtwarzal.
+                        // MediaHandler routuje potem po hoscie (youtube -> player, reszta
+                        // -> odtwarzacz/przegladarka).
+                        type = EmbedType.Video,
                         fileName = null,
                         preview = embed.thumbnail ?: embed.url,
                         size = null,
