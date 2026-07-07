@@ -28,7 +28,8 @@ internal class GetNotificationPreferences
                     notificationRefreshPeriod =
                         notificationRefreshPeriod?.let(::findRefreshPeriod)
                             ?: NotificationsPreferences.RefreshPeriod.FifteenMinutes,
-                    exitConfirmation = exitConfirmation ?: true,
+                    // Domyslnie odznaczone: potwierdzenie wyjscia wlaczone (patrz InteropModule).
+                    exitConfirmation = exitConfirmation ?: false,
                 )
             }.distinctUntilChanged()
 

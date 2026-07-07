@@ -9,6 +9,7 @@ import android.os.Looper
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.activity.addCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.Toolbar
 import androidx.core.os.postDelayed
@@ -259,6 +260,7 @@ class MainNavigationActivity :
             }
         }
         setupNavigation()
+        onBackPressedDispatcher.addCallback(this) { handleBackPressed() }
         shortcutsDispatcher.dispatchIntent(
             intent = intent,
             startFragment = ::openFragment,
@@ -406,17 +408,20 @@ class MainNavigationActivity :
         navHeader.hashTagsNotificationsCount = hashNotifications
     }
 
-    override fun onBackPressed() {
+    // Obsluga "wstecz" musi isc przez OnBackPressedDispatcher - przy targetSdk 35+
+    // system domyslnie wlacza OnBackInvokedCallback i NIE wola juz przestarzalego
+    // onBackPressed(), wiec potwierdzenie wyjscia bylo martwym kodem (aplikacja
+    // wychodzila od razu). Callback zawsze aktywny, sam decyduje kiedy zamknac.
+    private fun handleBackPressed() {
         if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
             closeDrawer()
         } else {
             if (settingsApi.disableExitConfirmation || tapDoubleClickedMillis + 2000L > System.currentTimeMillis()) {
-                super.onBackPressed()
-                return
+                finish()
             } else {
                 Toast.makeText(this, R.string.doubleback_to_exit, Toast.LENGTH_SHORT).show()
+                tapDoubleClickedMillis = System.currentTimeMillis()
             }
-            tapDoubleClickedMillis = System.currentTimeMillis()
         }
     }
 

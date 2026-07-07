@@ -114,7 +114,10 @@ internal class InteropSettingPreferencesApi
                 runBlocking { appStorage.update(UserSettings.groupNotifications, value) }
             }
         override val disableExitConfirmation: Boolean
-            get() = interop(UserSettings.exitConfirmation) ?: true
+            // Ustawienie "Wyłącz potwierdzenie wyjścia": TRUE = potwierdzenie wylaczone.
+            // Domyslnie FALSE - potwierdzenie (double-back) wlaczone od startu; wczesniej
+            // domyslne true wylaczalo je, wiec prompt "nie dzialal" bez tykania ustawien.
+            get() = interop(UserSettings.exitConfirmation) ?: false
 
         private fun <T : Enum<T>> interop(setting: UserSetting<T>): T? =
             runBlocking {
