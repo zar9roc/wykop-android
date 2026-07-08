@@ -280,7 +280,6 @@ class EntryViewHolder(
                 item = entryMenuNote,
                 label = entryMenuNoteLabel,
                 nick = entry.author.nick,
-                hasNote = entry.author.hasNote,
                 dismissMenu = { dialog.dismiss() },
                 onChanged = {},
             )

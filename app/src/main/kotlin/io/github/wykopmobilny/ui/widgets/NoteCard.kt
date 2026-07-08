@@ -45,7 +45,6 @@ fun bindNoteMenuItem(
     item: View,
     label: TextView,
     nick: String,
-    hasNote: Boolean,
     dismissMenu: () -> Unit,
     onChanged: (Boolean) -> Unit,
 ) {
@@ -53,19 +52,15 @@ fun bindNoteMenuItem(
     val repo = (context.applicationContext as WykopApp).notesRepository.get()
     val scope = (item.getActivityContext() as? LifecycleOwner)?.lifecycleScope
 
-    if (hasNote) {
-        label.setText(R.string.note_dialog_title)
-        label.setTypeface(null, Typeface.NORMAL)
-        scope?.launch {
-            val content = runCatching { repo.getNote(nick) }.getOrNull()
-            if (!content.isNullOrBlank()) {
-                label.text = content
-                label.setTypeface(null, Typeface.ITALIC)
-            }
+    // Zawsze dociagamy aktualna tresc z API (flaga z payloadu bywa nieaktualna po edycji).
+    label.setText(R.string.note_menu_add)
+    label.setTypeface(null, Typeface.NORMAL)
+    scope?.launch {
+        val content = runCatching { repo.getNote(nick) }.getOrNull()
+        if (!content.isNullOrBlank()) {
+            label.text = content
+            label.setTypeface(null, Typeface.ITALIC)
         }
-    } else {
-        label.setText(R.string.note_menu_add)
-        label.setTypeface(null, Typeface.NORMAL)
     }
 
     item.setOnClickListener {

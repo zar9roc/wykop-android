@@ -319,7 +319,6 @@ class EntryCommentViewHolder(
                 item = entryCommentMenuNote,
                 label = entryCommentMenuNoteLabel,
                 nick = comment.author.nick,
-                hasNote = comment.author.hasNote,
                 dismissMenu = { dialog.dismiss() },
                 onChanged = { binding.authorTextView.setNoteCard(it) },
             )
