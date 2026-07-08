@@ -73,11 +73,13 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginStart="4dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="?attr/selectableItemBackground"
             android:contentDescription="@string/note_delete"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_trash"
             android:visibility="gone"
-            app:tint="?attr/colorControlNormal"
+            app:tint="?android:attr/textColorPrimary"
             />
     </LinearLayout>
 </LinearLayout>
