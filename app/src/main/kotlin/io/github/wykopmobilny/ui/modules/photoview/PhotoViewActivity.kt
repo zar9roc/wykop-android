@@ -2,6 +2,7 @@ package io.github.wykopmobilny.ui.modules.photoview
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
@@ -19,7 +20,6 @@ import io.github.wykopmobilny.databinding.ActivityPhotoviewBinding
 import io.github.wykopmobilny.debug.DiagnosticCheckpoint
 import io.github.wykopmobilny.glide.GlideProgressSupport
 import io.github.wykopmobilny.utils.ClipboardHelperApi
-import io.github.wykopmobilny.utils.KotlinGlideRequestListener
 import io.github.wykopmobilny.utils.viewBinding
 import java.io.File
 import javax.inject.Inject
@@ -114,17 +114,53 @@ internal class PhotoViewActivity : BaseActivity() {
     private fun loadGif() {
         binding.image.isVisible = false
         binding.gif.isVisible = true
+        // Najpierw pobieramy plik (postep na tym etapie), potem dekodujemy z dysku.
+        // Dzieki temu znamy wymiary gifa i mozemy zdecydowac czy w ogole pomniejszac.
         Glide
             .with(this)
+            .downloadOnly()
             .load(url)
-            .listener(KotlinGlideRequestListener({ hideProgress() }, { hideProgress() }))
-            // SIZE_ORIGINAL wysypywalo bardzo wysokie gify (np. 358x20000) - ramka
-            // przekraczala limit tekstury GPU i viewer zostawal pusty. AT_MOST
-            // gwarantuje dekodowanie w rozmiarze <= MAX_GIF_DECODE_SIZE; szczegoly
-            // odzyskuje zoom PhotoView.
-            .downsample(DownsampleStrategy.AT_MOST)
-            .override(MAX_GIF_DECODE_SIZE, MAX_GIF_DECODE_SIZE)
-            .into(binding.gif)
+            .into(
+                object : CustomTarget<File>() {
+                    override fun onResourceReady(
+                        resource: File,
+                        transition: Transition<in File>?,
+                    ) {
+                        hideProgress()
+                        showGif(resource)
+                    }
+
+                    override fun onLoadFailed(errorDrawable: Drawable?) {
+                        hideProgress()
+                    }
+
+                    override fun onLoadCleared(placeholder: Drawable?) = Unit
+                },
+            )
+    }
+
+    private fun showGif(file: File) {
+        // Wymiary pierwszej klatki - inJustDecodeBounds czyta tylko naglowek.
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(file.absolutePath, bounds)
+        val exceedsTextureLimit = bounds.outWidth > MAX_GIF_DECODE_SIZE || bounds.outHeight > MAX_GIF_DECODE_SIZE
+        Glide
+            .with(this)
+            .load(file)
+            // KLUCZOWE dla plynnosci: transformacja (downsample/override) animowanego GIF-a
+            // jest w Glide liczona DLA KAZDEJ KLATKI - przy wiekszych gifach dawalo to
+            // odtwarzanie "klatka po klatce". Dlatego domyslnie NIE transformujemy - gif gra
+            // natywnie i plynnie. Pomniejszamy tylko ekstremalne wymiary (np. 358x20000),
+            // ktore przekraczaja limit tekstury GPU i inaczej daja pusty ekran.
+            .let { request ->
+                if (exceedsTextureLimit) {
+                    request
+                        .downsample(DownsampleStrategy.AT_MOST)
+                        .override(MAX_GIF_DECODE_SIZE, MAX_GIF_DECODE_SIZE)
+                } else {
+                    request
+                }
+            }.into(binding.gif)
     }
 
     private fun trackDownloadProgress() {
