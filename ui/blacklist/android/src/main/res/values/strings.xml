@@ -3,8 +3,12 @@
     <string name="blacklist_title">Zarządzaj czarną listą</string>
     <string name="blacklist_tab_title_tags">Tagi</string>
     <string name="blacklist_tab_title_users">Użytkownicy</string>
-    <string name="blacklist_not_loaded">Wygląda na to że czarna lista nie została jeszcze zaimportowana.</string>
-    <string name="blacklist_load">Zaimportuj</string>
+    <string name="blacklist_tab_title_domains">Strony</string>
+    <string name="blacklist_add_user_hint">Dodaj użytkownika</string>
+    <string name="blacklist_add_tag_hint">Dodaj tag</string>
+    <string name="blacklist_add_domain_hint">Dodaj stronę (np. example.com)</string>
+    <string name="blacklist_add">Dodaj</string>
+    <string name="blacklist_empty">Lista jest pusta.</string>
     <string name="retry">Spróbuj ponownie</string>
     <string name="cancel">OK</string>
 </resources>

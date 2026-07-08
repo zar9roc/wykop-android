@@ -11,9 +11,9 @@ import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.api.ErrorBodyParser
 import io.github.wykopmobilny.api.endpoints.LoginRetrofitApi
 import io.github.wykopmobilny.api.responses.LoginResponse
-import io.github.wykopmobilny.blacklist.api.ScraperRetrofitApi
 import io.github.wykopmobilny.data.storage.api.AppStorage
 import io.github.wykopmobilny.domain.api.apiCall
+import io.github.wykopmobilny.domain.repositories.BlacklistRepository
 import io.github.wykopmobilny.storage.api.Blacklist
 import io.github.wykopmobilny.storage.api.LoggedUserInfo
 import io.github.wykopmobilny.storage.api.UserInfoStorage
@@ -29,27 +29,17 @@ internal class StoresModule {
     @Singleton
     @Provides
     fun blacklistStore(
-        retrofitApi: ScraperRetrofitApi,
+        blacklistRepository: BlacklistRepository,
         storage: AppStorage,
         appScopes: AppScopes,
     ) = StoreBuilder
         .from<Unit, Blacklist, Blacklist>(
             fetcher =
                 Fetcher.of {
-                    val api = retrofitApi.getBlacklist()
+                    // Zrodlo listy do filtrowania tresci - teraz z API v3 (dawniej scraper HTML).
                     Blacklist(
-                        tags =
-                            api.tags
-                                ?.tags
-                                ?.mapNotNull { it.tag?.removePrefix("#") }
-                                ?.toSet()
-                                .orEmpty(),
-                        users =
-                            api.users
-                                ?.users
-                                ?.mapNotNull { it.nick?.removePrefix("@") }
-                                ?.toSet()
-                                .orEmpty(),
+                        tags = blacklistRepository.getTags().map { it.removePrefix("#") }.toSet(),
+                        users = blacklistRepository.getUsers().map { it.removePrefix("@") }.toSet(),
                     )
                 },
             sourceOfTruth =

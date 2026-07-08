@@ -6,27 +6,24 @@ import io.github.wykopmobilny.ui.base.components.ErrorDialogUi
 interface GetBlacklistDetails : Query<BlacklistedDetailsUi>
 
 class BlacklistedDetailsUi(
-    val snackbar: String? = null, // TODO @mk : 19/07/2021 not supported yet
     val errorDialog: ErrorDialogUi?,
-    val content: Content,
+    val users: ElementPage,
+    val domains: ElementPage,
+    val tags: ElementPage,
 ) {
-    sealed class Content {
-        data class Empty(
-            val isLoading: Boolean,
-            val loadAction: () -> Unit,
-        ) : Content()
+    class ElementPage(
+        val isLoading: Boolean,
+        val elements: List<BlacklistedElementUi>,
+        val add: AddUi,
+        val refreshAction: () -> Unit,
+    )
 
-        data class WithData(
-            val tags: ElementPage,
-            val users: ElementPage,
-        ) : Content() {
-            data class ElementPage(
-                val isRefreshing: Boolean,
-                val refreshAction: () -> Unit,
-                val elements: List<BlacklistedElementUi>,
-            )
-        }
-    }
+    class AddUi(
+        val inProgress: Boolean,
+        // null => brak autopodpowiedzi (domeny wpisywane recznie w polu tekstowym)
+        val suggestions: (suspend (String) -> List<String>)?,
+        val submit: (String) -> Unit,
+    )
 }
 
 class BlacklistedElementUi(
