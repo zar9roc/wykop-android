@@ -21,6 +21,7 @@ class WykopEmbedView(
 ) : FrameLayout(context, attrs) {
     companion object {
         const val NSFW_IMAGE_PLACEHOLDER = "https://www.wykop.pl/cdn/c2526412/nsfw.jpg"
+        const val PLUS18_IMAGE_PLACEHOLDER = "https://www.wykop.pl/cdn/c2526412/18plus.jpg"
     }
 
     private val binding = WykopembedviewBinding.inflate(layoutInflater, this)
@@ -69,12 +70,11 @@ class WykopEmbedView(
                 binding.image.isResized = embed.isResize
                 binding.imageExpand.isVisible = false
                 isVisible = true
-                @Suppress("ComplexCondition")
-                if (
-                    !embed.isRevealed &&
-                    (plus18 && !showAdultContent || isNsfw && hideNsfw)
-                ) {
-                    binding.image.loadImageFromUrl(NSFW_IMAGE_PLACEHOLDER)
+                val hideForNsfw = isNsfw && hideNsfw
+                val hideForAdult = plus18 && !showAdultContent
+                if (!embed.isRevealed && (hideForNsfw || hideForAdult)) {
+                    // Dwa osobne placeholdery: #nsfw -> "nsfw", a tresc 18+ bez #nsfw -> "18+".
+                    binding.image.loadImageFromUrl(if (isNsfw) NSFW_IMAGE_PLACEHOLDER else PLUS18_IMAGE_PLACEHOLDER)
                     hiddenPreview = preview
                 } else {
                     binding.image.loadImageFromUrl(preview)

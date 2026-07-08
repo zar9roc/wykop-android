@@ -3,6 +3,7 @@ package io.github.wykopmobilny.ui.adapters.viewholders
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.core.view.isVisible
+import io.github.wykopmobilny.WykopApp
 import io.github.wykopmobilny.api.links.LinksApi
 import io.github.wykopmobilny.data.storage.api.AppStorage
 import io.github.wykopmobilny.databinding.LinkLayoutBinding
@@ -22,12 +23,20 @@ class LinkViewHolder(
     private val appStorage: AppStorage,
     private val linksApi: LinksApi,
 ) : RecyclableViewHolder(binding.root) {
+    private val showAdultContent by lazy {
+        (itemView.context.applicationContext as WykopApp).settingsPreferencesApi.get().showAdultContent
+    }
+
     companion object {
         const val ALPHA_VISITED = 0.6f
         const val ALPHA_NEW = 1f
         const val TYPE_IMAGE = 14
         const val TYPE_NOIMAGE = 15
         const val TYPE_BLOCKED = 16
+
+        // Maly badge "+18" (nie pelny placeholder jak w embedach wpisow) - pasuje do
+        // malych miniatur na listach znalezisk/wykopaliska.
+        private const val PLUS18_THUMBNAIL_PLACEHOLDER = "https://www.wykop.pl/cdn/c2526412/plus18.jpg"
 
         /**
          * Inflates correct view (with embed, survey or both) depending on viewType
@@ -154,7 +163,13 @@ class LinkViewHolder(
         }
 
         if (type == TYPE_IMAGE) {
-            link.fullImage?.let(previewImageView::loadImageThumbnail)
+            // Znaleziska 18+ (adult) zaslaniamy malym badgem "+18", chyba ze uzytkownik
+            // wlaczyl pokazywanie tresci 18+. Pelny obraz widac po wejsciu w znalezisko.
+            if (link.plus18 && !showAdultContent) {
+                previewImageView.loadImageThumbnail(PLUS18_THUMBNAIL_PLACEHOLDER)
+            } else {
+                link.fullImage?.let(previewImageView::loadImageThumbnail)
+            }
         }
         if (linkShowAuthor && link.author != null) {
             binding.authorHeaderView.setAuthorData(link.author, link.date, link.app)
