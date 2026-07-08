@@ -9,6 +9,7 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withC
 import com.google.android.material.card.MaterialCardView
 import io.github.wykopmobilny.ui.components.widgets.EmbedMediaUi
 import io.github.wykopmobilny.ui.components.widgets.NSFW_PLACEHOLDER
+import io.github.wykopmobilny.ui.components.widgets.PLUS18_PLACEHOLDER
 import io.github.wykopmobilny.ui.components.widgets.android.R
 import io.github.wykopmobilny.ui.components.widgets.android.databinding.ViewEmbedMediaBinding
 import io.github.wykopmobilny.utils.bindings.setOnClick
@@ -33,12 +34,18 @@ fun EmbedMediaView.bind(model: EmbedMediaUi?) {
     binding.root.isVisible = model != null
     model ?: return
 
-    binding.fullOverlay.isVisible = model.hasNsfwOverlay == true
-    binding.imgPreview.isVisible = model.hasNsfwOverlay != true
-    if (model.hasNsfwOverlay) {
+    val overlay = model.overlay
+    binding.fullOverlay.isVisible = overlay != null
+    binding.imgPreview.isVisible = overlay == null
+    if (overlay != null) {
+        val placeholder =
+            when (overlay) {
+                EmbedMediaUi.Overlay.Nsfw -> NSFW_PLACEHOLDER
+                EmbedMediaUi.Overlay.Plus18 -> PLUS18_PLACEHOLDER
+            }
         Glide
             .with(this)
-            .load(NSFW_PLACEHOLDER)
+            .load(placeholder)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
             .into(binding.fullOverlay)
     }

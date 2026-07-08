@@ -54,6 +54,7 @@ import io.github.wykopmobilny.ui.base.components.OptionPickerUi
 import io.github.wykopmobilny.ui.base.components.SwipeRefreshUi
 import io.github.wykopmobilny.ui.components.widgets.Button
 import io.github.wykopmobilny.ui.components.widgets.ColorConst
+import io.github.wykopmobilny.ui.components.widgets.EmbedMediaUi
 import io.github.wykopmobilny.ui.components.widgets.MessageBodyUi
 import io.github.wykopmobilny.ui.components.widgets.TagUi
 import io.github.wykopmobilny.ui.components.widgets.ToggleButtonUi
@@ -601,10 +602,18 @@ internal class GetLinkDetailsQuery
                         },
                 )
             } else {
-                val isConsideredNsfw = usedTags.contains("nsfw") && commentPreferences.hideNsfwContent
+                val hasNsfwTag = usedTags.contains("nsfw")
+                val isConsideredNsfw = hasNsfwTag && commentPreferences.hideNsfwContent
                 val isConsideredPlus18 = embed?.hasAdultContent == true && commentPreferences.hidePlus18Content
-                val couldHaveNsfwOverlay = isConsideredNsfw || isConsideredPlus18
-                val hasNsfwOverlay = couldHaveNsfwOverlay && !viewState.allowedNsfwImages.contains(embed?.id)
+                val couldHaveOverlay = isConsideredNsfw || isConsideredPlus18
+                val showOverlay = couldHaveOverlay && !viewState.allowedNsfwImages.contains(embed?.id)
+                // #nsfw -> placeholder nsfw; adult bez #nsfw -> placeholder 18+.
+                val overlay =
+                    when {
+                        !showOverlay -> null
+                        hasNsfwTag -> EmbedMediaUi.Overlay.Nsfw
+                        else -> EmbedMediaUi.Overlay.Plus18
+                    }
 
                 LinkCommentUi.Normal(
                     id = id,
@@ -699,7 +708,7 @@ internal class GetLinkDetailsQuery
                                 useLowQualityImage = commentPreferences.showMinifiedImages,
                                 clickAction =
                                     safeCallback {
-                                        if (hasNsfwOverlay) {
+                                        if (showOverlay) {
                                             viewStateStorage.update { it.copy(allowedNsfwImages = it.allowedNsfwImages + embed.id) }
                                         } else {
                                             interopRequests.openMedia(
@@ -709,7 +718,7 @@ internal class GetLinkDetailsQuery
                                             )
                                         }
                                     },
-                                hasNsfwOverlay = hasNsfwOverlay,
+                                overlay = overlay,
                                 widthToHeightRatio = embed.ratio,
                             )
                         },

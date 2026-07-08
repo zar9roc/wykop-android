@@ -29,7 +29,7 @@ internal fun LinkComment.wykopUrl(linkId: Long) = "https://www.wykop.pl/link/$li
 
 internal fun Embed.toUi(
     useLowQualityImage: Boolean,
-    hasNsfwOverlay: Boolean,
+    overlay: EmbedMediaUi.Overlay?,
     clickAction: () -> Unit,
     widthToHeightRatio: Float,
 ) = EmbedMediaUi(
@@ -60,7 +60,7 @@ internal fun Embed.toUi(
             }
         },
     size = size.takeIf { useLowQualityImage || type == EmbedType.AnimatedImage },
-    hasNsfwOverlay = hasNsfwOverlay,
+    overlay = overlay,
     widthToHeightRatio = widthToHeightRatio,
     clickAction = clickAction,
 )
