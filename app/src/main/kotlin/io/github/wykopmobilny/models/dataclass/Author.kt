@@ -15,6 +15,8 @@ class Author(
     val group: Int,
     val sex: String,
     var badge: AndroidPatronBadge? = null,
+    // Czy zalogowany user ma notatke o tym autorze (zolta kartka przy nicku).
+    val hasNote: Boolean = false,
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
@@ -22,6 +24,7 @@ class Author(
         parcel.readInt(),
         parcel.readString()!!,
         parcel.readParcelable(AndroidPatronBadge::class.java.classLoader),
+        parcel.readByte() != 0.toByte(),
     )
 
     override fun writeToParcel(
@@ -33,6 +36,7 @@ class Author(
         parcel.writeInt(group)
         parcel.writeString(sex)
         parcel.writeParcelable(badge, flags)
+        parcel.writeByte(if (hasNote) 1 else 0)
     }
 
     override fun describeContents(): Int = 0

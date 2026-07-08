@@ -15,4 +15,6 @@ data class UserShortResponseV3(
     @field:Json(name = "verified") val verified: Boolean?,
     @field:Json(name = "sponsor") val sponsor: Boolean?,
     @field:Json(name = "online") val online: Boolean?,
+    // Czy zalogowany uzytkownik ma notatke o tym autorze (tresc dociagana z /notes/{username}).
+    @field:Json(name = "note") val note: Boolean?,
 )

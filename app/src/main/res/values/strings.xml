@@ -88,6 +88,14 @@
     <string name="bury_list">Lista zakopujących (%1$d)</string>
     <string name="dig_list">Lista wykopujących (%1$d)</string>
     <string name="copy_content">Kopiuj treść</string>
+    <string name="note_menu_add">Dodaj notatkę</string>
+    <string name="note_add_title">Dodaj notatkę</string>
+    <string name="note_edit_title">Edytuj notatkę</string>
+    <string name="note_dialog_title">Notatka</string>
+    <string name="note_dialog_hint">Treść notatki</string>
+    <string name="note_save">Zapisz</string>
+    <string name="note_cancel">Anuluj</string>
+    <string name="note_delete">Usuń notatkę</string>
     <string name="delete">Usuń</string>
     <string name="report">Zgłoś</string>
     <string name="mywykop_all">Wszystko</string>

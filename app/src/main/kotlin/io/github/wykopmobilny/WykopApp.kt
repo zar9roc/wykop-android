@@ -103,6 +103,9 @@ open class WykopApp :
     @Inject
     lateinit var settingsPreferencesApi: Lazy<SettingsPreferencesApi>
 
+    @Inject
+    lateinit var notesRepository: Lazy<io.github.wykopmobilny.api.notes.NotesRepository>
+
     override val applicationScope = CoroutineScope(Job() + Dispatchers.Default)
 
     val okHttpClient =

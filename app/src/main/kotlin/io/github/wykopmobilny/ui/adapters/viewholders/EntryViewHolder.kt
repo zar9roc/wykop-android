@@ -276,6 +276,15 @@ class EntryViewHolder(
                     )
             }
 
+            io.github.wykopmobilny.ui.widgets.bindNoteMenuItem(
+                item = entryMenuNote,
+                label = entryMenuNoteLabel,
+                nick = entry.author.nick,
+                hasNote = entry.author.hasNote,
+                dismissMenu = { dialog.dismiss() },
+                onChanged = {},
+            )
+
             entryMenuCopy.setOnClickListener {
                 it.context.copyText(entry.body.stripWykopFormatting(), "entry-body")
                 dialog.dismiss()

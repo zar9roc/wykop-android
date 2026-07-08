@@ -4,6 +4,7 @@ data class UserInfoUi(
     val avatar: AvatarUi,
     val name: String,
     val color: Color?,
+    val hasNote: Boolean = false,
 )
 
 data class AvatarUi(

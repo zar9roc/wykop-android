@@ -18,6 +18,7 @@ object AuthorMapperV3 : Mapper<UserShortResponseV3, Author> {
                 else -> colorNameToGroupId(value.color)
             },
             value.gender.orEmpty(),
+            hasNote = value.note ?: false,
         )
 
     private const val GROUP_ID_BANNED = 1001

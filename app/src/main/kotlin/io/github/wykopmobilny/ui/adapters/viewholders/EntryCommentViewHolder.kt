@@ -22,6 +22,8 @@ import io.github.wykopmobilny.ui.fragments.entrycomments.EntryCommentActionListe
 import io.github.wykopmobilny.ui.fragments.entrycomments.EntryCommentViewListener
 import io.github.wykopmobilny.ui.modules.NewNavigator
 import io.github.wykopmobilny.ui.widgets.WykopEmbedView
+import io.github.wykopmobilny.ui.widgets.bindNoteMenuItem
+import io.github.wykopmobilny.ui.widgets.setNoteCard
 import io.github.wykopmobilny.utils.api.getGroupColor
 import io.github.wykopmobilny.utils.copyText
 import io.github.wykopmobilny.utils.getActivityContext
@@ -128,6 +130,7 @@ class EntryCommentViewHolder(
                 text = nick
                 setTextColor(context.getGroupColor(group))
                 setOnClickListener { navigator.openProfileActivity(nick) }
+                setNoteCard(hasNote)
             }
             binding.patronBadgeTextView.isVisible = badge != null
             badge?.let {
@@ -310,6 +313,16 @@ class EntryCommentViewHolder(
                         comment.app,
                     )
             }
+
+            // Notatka o autorze - pierwsza pozycja; etykieta = tresc kursywa / "Dodaj notatke".
+            bindNoteMenuItem(
+                item = entryCommentMenuNote,
+                label = entryCommentMenuNoteLabel,
+                nick = comment.author.nick,
+                hasNote = comment.author.hasNote,
+                dismissMenu = { dialog.dismiss() },
+                onChanged = { binding.authorTextView.setNoteCard(it) },
+            )
 
             // Copy - visible for all, copies slug if deleted and available
             entryCommentMenuCopy.setOnClickListener {

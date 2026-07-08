@@ -78,4 +78,7 @@
     <color name="digCountColor">#ef5213</color>
 
     <color name="ic_launcher_background">#3677AE</color>
+
+    <!-- Zolta kartka notatki przy nicku -->
+    <color name="note_card">#F9A825</color>
 </resources>
