@@ -30,6 +30,7 @@ class AuthorHeaderView(
                 text = nick
                 setOnClickListener { openProfile(author.nick) }
                 setTextColor(context.getGroupColor(group))
+                setNoteCard(hasNote)
             }
             binding.authorAvatarView.setAuthor(this)
             binding.authorAvatarView.setOnClickListener { openProfile(author.nick) }
@@ -46,6 +47,10 @@ class AuthorHeaderView(
             binding.entryDateTextView.text =
                 app?.takeIf { it.isNotEmpty() }?.let { context.getString(R.string.date_with_user_app, date, it) } ?: date
         }
+    }
+
+    fun refreshNoteCard(hasNote: Boolean) {
+        binding.userNameTextView.setNoteCard(hasNote)
     }
 
     private fun openProfile(username: String) {

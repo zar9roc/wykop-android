@@ -24,7 +24,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+            android:theme="@style/ThemeOverlay.Wykop.Input"
             >
 
             <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -48,9 +49,10 @@
                 android:id="@+id/btnAdd"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="?selectableItemBackgroundBorderless"
+                android:background="?selectableItemBackground"
                 android:contentDescription="@string/blacklist_add"
-                android:src="@android:drawable/ic_input_add"
+                android:src="@drawable/ic_plus"
+                app:tint="?android:attr/textColorPrimary"
                 />
 
             <ProgressBar

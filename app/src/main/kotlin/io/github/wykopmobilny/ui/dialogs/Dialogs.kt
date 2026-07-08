@@ -2,7 +2,6 @@ package io.github.wykopmobilny.ui.dialogs
 
 import android.app.AlertDialog
 import android.content.Context
-import androidx.core.view.isVisible
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.databinding.DialogEdittextBinding
 import io.github.wykopmobilny.databinding.DialogInsertLinkBinding
@@ -12,8 +11,8 @@ import io.github.wykopmobilny.utils.layoutInflater
 typealias FormatDialogCallback = (String) -> Unit
 typealias AddRelatedDialogCallback = (String, String) -> Unit
 
-// Popup edycji notatki o uzytkowniku. Czyste UI - zapis/usuniecie robi caller w onSave
-// (pusta tresc = usuniecie). Kosz widoczny tylko gdy notatka juz istnieje.
+// Popup edycji notatki o uzytkowniku. Czyste UI - zapis/usuniecie robi caller w onSave.
+// Usuwanie: wyczysc pole (X w polu) i zapisz - pusta tresc = usuniecie notatki.
 fun noteDialog(
     context: Context,
     initialContent: String?,
@@ -23,7 +22,6 @@ fun noteDialog(
     val hasNote = !initialContent.isNullOrBlank()
     binding.noteDialogTitle.setText(if (hasNote) R.string.note_edit_title else R.string.note_add_title)
     binding.noteEditText.setText(initialContent.orEmpty())
-    binding.noteDelete.isVisible = hasNote
     val dialog =
         AlertDialog.Builder(context)
             .setView(binding.root)
@@ -33,12 +31,6 @@ fun noteDialog(
     binding.noteSave.setOnClickListener {
         onSave(binding.noteEditText.text.toString())
         dialog.dismiss()
-    }
-    binding.noteDelete.setOnClickListener {
-        confirmationDialog(context) {
-            onSave("")
-            dialog.dismiss()
-        }.show()
     }
     return dialog
 }

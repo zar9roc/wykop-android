@@ -23,7 +23,9 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+        android:theme="@style/ThemeOverlay.Wykop.Input"
+        app:endIconMode="clear_text"
         >
 
         <com.google.android.material.textfield.TextInputEditText
@@ -60,26 +62,12 @@
             android:layout_weight="1"
             />
 
-        <!-- Segment zapisu: "Zapisz" + kosz (kosz widoczny gdy notatka istnieje) -->
+        <!-- Puste pole + Zapisz = usuniecie notatki (X w polu czysci tresc) -->
         <Button
             android:id="@+id/noteSave"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/note_save"
-            />
-
-        <ImageButton
-            android:id="@+id/noteDelete"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="4dp"
-            android:background="?attr/selectableItemBackground"
-            android:contentDescription="@string/note_delete"
-            android:padding="12dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_trash"
-            android:visibility="gone"
-            app:tint="?android:attr/textColorPrimary"
             />
     </LinearLayout>
 </LinearLayout>

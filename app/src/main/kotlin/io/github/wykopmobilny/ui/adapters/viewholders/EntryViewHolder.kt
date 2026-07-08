@@ -281,7 +281,7 @@ class EntryViewHolder(
                 label = entryMenuNoteLabel,
                 nick = entry.author.nick,
                 dismissMenu = { dialog.dismiss() },
-                onChanged = {},
+                onChanged = { binding.authorHeaderView.refreshNoteCard(it) },
             )
 
             entryMenuCopy.setOnClickListener {

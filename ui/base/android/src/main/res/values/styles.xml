@@ -77,4 +77,12 @@
         parent="">
         <item name="colorPrimary">?colorOnPrimary</item>
     </style>
+
+    <!-- Inputy Material: kursor/etykieta/podkreslenie biora kolor z colorPrimary, a ten
+         w trybie nocnym to prawie czarny kolor paska - stad niewidoczny kursor.
+         Overlay przestawia je na akcent (widoczny na jasnym i ciemnym tle). -->
+    <style name="ThemeOverlay.Wykop.Input" parent="">
+        <item name="colorPrimary">?attr/colorAccent</item>
+        <item name="colorControlActivated">?attr/colorAccent</item>
+    </style>
 </resources>
