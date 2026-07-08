@@ -21,7 +21,7 @@ object EntryCommentMapperV3 {
             body = value.content.orEmpty().convertWykopContentToHtml(),
             fullDate = value.createdAt,
             isVoted = (value.voted ?: 0) > 0,
-            embed = value.media?.let(MediaMapperV3::map),
+            embed = value.media?.let { MediaMapperV3.map(it, adult = value.adult ?: false) },
             voteCount = value.votes.up - value.votes.down,
             app = value.device,
             violationUrl = null,

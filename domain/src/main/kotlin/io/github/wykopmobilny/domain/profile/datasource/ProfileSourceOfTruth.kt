@@ -121,7 +121,8 @@ internal fun profileSourceOfTruth(
                             fileName = photo.source,
                             preview = photo.url,
                             size = null,
-                            hasAdultContent = photo.plus18 ?: false,
+                            // Flaga 18+ jest na wpisie (adult), nie na zdjeciu (Photo w API nie ma plus18).
+                            hasAdultContent = entry.adult ?: false,
                             ratio =
                                 run {
                                     val pw = photo.width
@@ -143,7 +144,7 @@ internal fun profileSourceOfTruth(
                             fileName = null,
                             preview = embed.thumbnail ?: embed.url,
                             size = null,
-                            hasAdultContent = false,
+                            hasAdultContent = entry.adult ?: false,
                             ratio = 1f,
                         ),
                     )

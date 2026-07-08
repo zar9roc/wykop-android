@@ -15,7 +15,7 @@ object LinkCommentMapperV3 {
             response = value,
             linkId = linkId,
             author = AuthorMapperV3.map(value.author),
-            embed = value.media?.let(MediaMapperV3::map),
+            embed = value.media?.let { MediaMapperV3.map(it, adult = value.adult ?: false) },
             body = value.content?.convertWykopContentToHtml(),
             isNsfw = value.content?.lowercase()?.contains("#nsfw") ?: false,
             isBlocked = !value.deleted.isNullOrEmpty(),

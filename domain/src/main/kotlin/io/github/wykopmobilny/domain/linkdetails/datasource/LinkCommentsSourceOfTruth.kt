@@ -76,7 +76,9 @@ internal suspend fun persistLinkComments(
                         // rozdzielczosc (id) tylko w pelnoekranowym podgladzie.
                         preview = photo.url.withImageParams("w400"),
                         size = null,
-                        hasAdultContent = photo.plus18 ?: false,
+                        // Flaga 18+ jest na komentarzu (adult), nie na zdjeciu - schemat Photo
+                        // w API nie ma plus18, wiec dawniej hasAdultContent bylo zawsze false.
+                        hasAdultContent = comment.adult ?: false,
                         ratio =
                             run {
                                 val pw = photo.width
@@ -99,7 +101,7 @@ internal suspend fun persistLinkComments(
                         fileName = null,
                         preview = embed.thumbnail ?: embed.url,
                         size = null,
-                        hasAdultContent = false,
+                        hasAdultContent = comment.adult ?: false,
                         ratio = 1f,
                     ),
                 )

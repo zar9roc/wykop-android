@@ -17,7 +17,7 @@ fun EntryResponseV3.filterEntryV3(owmContentFilter: OWMContentFilter) =
             isVoted = (voted ?: 0) > 0,
             isFavorite = favourite ?: false,
             survey = survey?.let(SurveyMapperV3::map),
-            embed = media?.let(MediaMapperV3::map),
+            embed = media?.let { MediaMapperV3.map(it, adult = adult ?: false) },
             voteCount = votes.up - votes.down,
             commentsCount = comments.count,
             comments =

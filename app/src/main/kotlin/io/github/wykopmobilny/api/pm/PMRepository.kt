@@ -32,7 +32,7 @@ private fun PmMessageResponseV3.toPMMessage() =
     PMMessage(
         date = createdAt?.toPrettyDate().orEmpty(),
         body = content.orEmpty().convertWykopContentToHtml(),
-        embed = media?.let(MediaMapperV3::map),
+        embed = media?.let { MediaMapperV3.map(it, adult = adult ?: false) },
         isSentFromUser = type == MESSAGE_TYPE_SENT,
         app = null,
     )
