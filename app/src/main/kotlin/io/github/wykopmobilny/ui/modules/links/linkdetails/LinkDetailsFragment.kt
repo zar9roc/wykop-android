@@ -26,6 +26,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Adapter.StateRestorationPolicy
 import com.github.wykopmobilny.ui.components.utils.dpToPx
 import io.github.aakira.napier.Napier
@@ -33,6 +34,7 @@ import io.github.wykopmobilny.R
 import io.github.wykopmobilny.databinding.ActivityLinkDetailsBinding
 import io.github.wykopmobilny.debug.DiagnosticCheckpoint
 import io.github.wykopmobilny.kotlin.AppDispatchers
+import io.github.wykopmobilny.domain.linkdetails.LinkCommentsPager
 import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsComponent
 import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsKey
 import io.github.wykopmobilny.links.details.LinkDetailsHeaderUi
@@ -106,6 +108,7 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
             viewModelWrapperFactoryKeyed<LinkDetailsKey, LinkDetailsComponent>(key = key)
         }
         val getLinkDetails = viewModel.dependency.getLinkDetails()
+        val pager = viewModel.dependency.linkCommentsPager()
         val binding = ActivityLinkDetailsBinding.bind(view)
         val toolbar = binding.toolbar.root as Toolbar
         toolbar.bindBackButton(activity = activity)
@@ -114,6 +117,19 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
         adapter.stateRestorationPolicy = StateRestorationPolicy.PREVENT_WHEN_EMPTY
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
+        // Leniwe ładowanie: kolejne strony wątków przy scrollu do dołu, a odpowiedzi
+        // dla wątków wchodzących w viewport (dedup i priorytet obsługuje pager).
+        binding.recyclerView.addOnScrollListener(
+            object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(
+                    recyclerView: RecyclerView,
+                    dx: Int,
+                    dy: Int,
+                ) {
+                    triggerLazyCommentLoads(recyclerView, adapter, pager)
+                }
+            },
+        )
         (binding.recyclerView.itemAnimator as? DefaultItemAnimator)?.let { animator ->
             animator.moveDuration =
                 (resources.getInteger(android.R.integer.config_shortAnimTime) / 1.5).toLong()
@@ -188,7 +204,10 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
                         }
                     }
                     adapterList.collect {
-                        adapter.submitList(it)
+                        adapter.submitList(it) {
+                            // Po zastosowaniu listy dociągnij odpowiedzi dla widocznych wątków.
+                            triggerLazyCommentLoads(binding.recyclerView, adapter, pager)
+                        }
                         DiagnosticCheckpoint.log(
                             "LinkDetails",
                             "Adapter list updated: ${it.size} items",
@@ -349,8 +368,36 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
         sortClickAction = header.commentsSort.clickAction
     }
 
+    /**
+     * Wyzwala leniwe doładowania: kolejną stronę wątków przy zbliżaniu się do dołu
+     * oraz odpowiedzi dla widocznych wątków, które ich jeszcze nie mają. Pager sam
+     * deduplikuje i pomija już załadowane, więc można wołać przy każdym scrollu.
+     */
+    private fun triggerLazyCommentLoads(
+        recyclerView: RecyclerView,
+        adapter: LinkDetailsAdapterV3,
+        pager: LinkCommentsPager,
+    ) {
+        val layoutManager = recyclerView.layoutManager as? LinearLayoutManager ?: return
+        if (adapter.itemCount == 0) return
+        val last = layoutManager.findLastVisibleItemPosition()
+        if (last == RecyclerView.NO_POSITION) return
+        if (last >= adapter.itemCount - LOAD_MORE_THRESHOLD) {
+            pager.loadMoreTopLevel(linkId)
+        }
+        val first = layoutManager.findFirstVisibleItemPosition().coerceAtLeast(0)
+        for (position in first..last) {
+            val item = adapter.currentList.getOrNull(position)
+            if (item is LinkDetailsListItem.ParentComment && !item.hasReplies) {
+                pager.loadReplies(linkId, item.id)
+            }
+        }
+    }
+
     companion object {
         private const val SORT_MENU_ID = 9999
+        // Ile pozycji przed końcem listy zacząć dociągać kolejną stronę wątków.
+        private const val LOAD_MORE_THRESHOLD = 3
         // Komentarze + odpowiedzi laduja sie w wielu requestach, a API potrafi
         // przytrzymac pojedynczy request (rate limiting) - scroll odpala sie gdy tylko
         // docelowy watek doplynie, wiec dlugi timeout nie blokuje niczego.

@@ -8,6 +8,8 @@ import io.github.wykopmobilny.models.dataclass.Voter
 interface EntryDetailView : BaseView {
     fun showEntry(entry: Entry)
 
+    fun appendComments(comments: List<EntryComment>)
+
     fun hideInputbarProgress()
 
     fun resetInputbarState()

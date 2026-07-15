@@ -71,6 +71,7 @@ interface EntriesV3RetrofitApi {
     @GET("v3/entries/{entryId}/comments")
     suspend fun getEntryComments(
         @Path("entryId") entryId: Long,
+        @Query("page") page: Int? = null,
     ): WykopApiResponseV3<List<EntryCommentResponseV3>>
 
     @GET("v3/entries/{entryId}/comments/{commentId}/votes")

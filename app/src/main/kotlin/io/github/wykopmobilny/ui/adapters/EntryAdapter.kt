@@ -142,6 +142,16 @@ class EntryAdapter
                 }
             }
 
+        fun appendComments(newComments: List<EntryComment>) {
+            val entry = entry ?: return
+            if (newComments.isEmpty()) return
+            newComments.forEach { it.entryId = entry.id }
+            entry.comments.addAll(newComments)
+            // Filtrowanie (hideBlacklistedViews) sprawia, że indeksy po filtrze nie
+            // odpowiadają wprost dołożonym elementom - pełne odświeżenie jest tu pewne.
+            notifyDataSetChanged()
+        }
+
         fun updateEntry(entry: Entry) {
             this.entry = entry
             notifyItemChanged(0)

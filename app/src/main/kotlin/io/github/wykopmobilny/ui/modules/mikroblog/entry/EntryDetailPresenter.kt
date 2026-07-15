@@ -26,6 +26,11 @@ class EntryDetailPresenter
         EntryCommentActionListener {
         var entryId = 0L
 
+        // Leniwe ładowanie komentarzy: null = brak kolejnej strony (koniec).
+        // Wpisy z ogromną liczbą komentarzy nie ładują już wszystkich stron naraz.
+        private var nextCommentsPage: Int? = null
+        private var isLoadingComments = false
+
         override fun voteEntry(entry: Entry) = entriesInteractor.voteEntry(entry).processEntrySingle(entry)
 
         override fun unvoteEntry(entry: Entry) = entriesInteractor.unvoteEntry(entry).processEntrySingle(entry)
@@ -79,22 +84,42 @@ class EntryDetailPresenter
 
         fun loadData() {
             view?.hideInputToolbar()
+            // Wpis pokazujemy od razu (bez czekania na komentarze), potem dociągamy
+            // pierwszą stronę komentarzy - a kolejne leniwie przy scrollu.
+            nextCommentsPage = 1
+            isLoadingComments = false
             entriesApi
                 .getEntry(entryId)
-                .flatMap { entry ->
-                    entriesApi
-                        .getEntryComments(entryId)
-                        .map { comments ->
-                            comments.forEach { it.entryId = entry.id }
-                            entry.comments.clear()
-                            entry.comments.addAll(comments)
-                            entry
-                        }.onErrorReturn { entry }
-                }.subscribeOn(schedulers.backgroundThread())
+                .subscribeOn(schedulers.backgroundThread())
                 .observeOn(schedulers.mainThread())
                 .subscribe(
-                    { view?.showEntry(it) },
+                    { entry ->
+                        entry.comments.clear()
+                        view?.showEntry(entry)
+                        loadMoreComments()
+                    },
                     { view?.showErrorDialog(it) },
+                ).intoComposite(compositeObservable)
+        }
+
+        fun loadMoreComments() {
+            val page = nextCommentsPage ?: return
+            if (isLoadingComments) return
+            isLoadingComments = true
+            entriesApi
+                .getEntryComments(entryId, page)
+                .subscribeOn(schedulers.backgroundThread())
+                .observeOn(schedulers.mainThread())
+                .subscribe(
+                    { result ->
+                        isLoadingComments = false
+                        nextCommentsPage = result.nextPage?.toIntOrNull()
+                        view?.appendComments(result.filtered)
+                    },
+                    {
+                        isLoadingComments = false
+                        view?.showErrorDialog(it)
+                    },
                 ).intoComposite(compositeObservable)
         }
 

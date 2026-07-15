@@ -590,18 +590,29 @@ class EntriesRepository
                     entry.filterEntryV3(owmContentFilter = owmContentFilter)
                 }
 
-        override fun getEntryComments(id: Long) =
-            rxSingle { entriesApiV3.getEntryComments(id) }
-                .retryWhen(userTokenRefresher)
-                .compose(
-                    ErrorHandlerTransformerV3<List<io.github.wykopmobilny.api.responses.v3.entries.EntryCommentResponseV3>>(
-                        errorBodyParser,
-                    ),
-                ).map { comments ->
-                    comments.map { comment ->
-                        EntryCommentMapperV3.map(comment, owmContentFilter, entryId = id)
+        override fun getEntryComments(
+            id: Long,
+            page: Int?,
+        ) = rxSingle { entriesApiV3.getEntryComments(id, page) }
+            .retryWhen(userTokenRefresher)
+            .map { response ->
+                val currentPage = page ?: 1
+                val data = response.data.orEmpty()
+                val perPage = response.pagination?.perPage
+                // Kolejna strona istnieje, gdy dostaliśmy pełną stronę. Endpoint v3
+                // komentarzy wpisu przyjmuje ?page i zwraca paginację (per_page/total).
+                val nextPage =
+                    when {
+                        data.isEmpty() -> null
+                        perPage != null && perPage > 0 && data.size < perPage -> null
+                        else -> (currentPage + 1).toString()
                     }
-                }
+                FilteredData(
+                    totalCount = response.pagination?.total ?: data.size,
+                    filtered = data.map { comment -> EntryCommentMapperV3.map(comment, owmContentFilter, entryId = id) },
+                    nextPage = nextPage,
+                )
+            }
 
         override fun getEntryVoters(id: Long) =
             rxSingle { entriesApiV3.getEntryVoters(id) }

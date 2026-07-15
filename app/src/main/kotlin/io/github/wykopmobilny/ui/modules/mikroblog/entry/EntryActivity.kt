@@ -10,6 +10,8 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import io.github.wykopmobilny.R
@@ -131,6 +133,21 @@ class EntryActivity :
             prepare()
             // Set margin, adapter
             this.adapter = this@EntryActivity.adapter
+            addOnScrollListener(
+                object : RecyclerView.OnScrollListener() {
+                    override fun onScrolled(
+                        recyclerView: RecyclerView,
+                        dx: Int,
+                        dy: Int,
+                    ) {
+                        if (dy <= 0) return
+                        val layoutManager = recyclerView.layoutManager as? LinearLayoutManager ?: return
+                        if (layoutManager.findLastVisibleItemPosition() >= layoutManager.itemCount - 3) {
+                            presenter.loadMoreComments()
+                        }
+                    }
+                },
+            )
         }
 
         // Prepare InputToolbar
@@ -168,7 +185,6 @@ class EntryActivity :
 
     override fun showEntry(entry: Entry) {
         adapter.entry = entry
-        entry.comments.forEach { it.entryId = entry.id }
         binding.inputToolbar.setDefaultAddressant(entry.author.nick)
         binding.inputToolbar.setIfIsCommentingPossible(entry.isCommentingPossible)
         binding.inputToolbar.show()
@@ -176,12 +192,16 @@ class EntryActivity :
         binding.swiperefresh.isRefreshing = false
         entry.embed?.isRevealed = isRevealed
         adapter.notifyDataSetChanged()
+    }
+
+    override fun appendComments(comments: List<EntryComment>) {
+        adapter.appendComments(comments)
+        // Podświetlony komentarz (z powiadomienia) może być na dalszej stronie -
+        // przewijamy do niego dopiero gdy pojawi się na załadowanej liście.
         if (highLightCommentId != -1L) {
-            entry.comments.forEachIndexed { index, comment ->
-                if (comment.id == highLightCommentId) {
-                    binding.recyclerView.scrollToPosition(index + 1)
-                }
-                binding.recyclerView.refreshDrawableState()
+            val index = adapter.entry?.comments?.indexOfFirst { it.id == highLightCommentId } ?: -1
+            if (index >= 0) {
+                binding.recyclerView.scrollToPosition(index + 1)
             }
         }
     }
