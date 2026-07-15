@@ -6,7 +6,9 @@ import io.github.aakira.napier.Napier
 
 internal class LoggingInitializer : Initializer<Napier> {
     override fun create(context: Context): Napier {
-        Napier.base(CrashlyticsAntilog())
+        val antilog = FileLogAntilog(context)
+        Napier.base(antilog)
+        antilog.installAsUncaughtExceptionHandler()
 
         return Napier
     }

@@ -6,8 +6,6 @@ import android.os.Bundle
 import android.webkit.CookieManager
 import android.widget.Toast
 import androidx.core.app.ShareCompat
-import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.Lazy
 import dagger.android.AndroidInjector
@@ -33,7 +31,6 @@ import io.github.wykopmobilny.domain.startup.AppConfig
 import io.github.wykopmobilny.domain.styles.di.StylesScope
 import io.github.wykopmobilny.domain.twofactor.di.TwoFactorAuthScope
 import io.github.wykopmobilny.domain.work.di.WorkScope
-import io.github.wykopmobilny.initializers.RemoteConfigKeys
 import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsComponent
 import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsKey
 import io.github.wykopmobilny.notification.AppNotification.Type.Notifications
@@ -76,7 +73,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
@@ -87,7 +83,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.reflect.KClass
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.days
 
 open class WykopApp :
     DaggerApplication(),
@@ -127,13 +123,6 @@ open class WykopApp :
         doInterop()
 
         applicationScope.launch { domainComponent.initializeApp().invoke() }
-        applicationScope.launch {
-            storages
-                .userInfoStorage()
-                .loggedUser
-                .mapNotNull { it?.id }
-                .collect { FirebaseCrashlytics.getInstance().setUserId(it) }
-        }
     }
 
     override fun applicationInjector(): AndroidInjector<out DaggerApplication> =
@@ -151,9 +140,7 @@ open class WykopApp :
         daggerDomain().create(
             appScopes = this,
             connectConfig = {
-                val appKey = FirebaseRemoteConfig.getInstance().getString(RemoteConfigKeys.API_APP_KEY)
                 ConnectConfig(connectUrl = "https://wykop.pl/api/v3/connect")
-                // ConnectConfig(connectUrl = "https://wykop.pl/api/v3/connect/appkey/$appKey")
             },
             clock = Clock.System,
             storages = storages,
@@ -169,20 +156,12 @@ open class WykopApp :
 
     val appConfig =
         object : AppConfig {
-            private val firebase
-                get() = FirebaseRemoteConfig.getInstance()
-            override val blacklistRefreshInterval: Duration
-                get() = firebase.getLong(RemoteConfigKeys.BLACKLIST_REFRESH_INTERVAL).milliseconds
-            override val blacklistFlexInterval: Duration
-                get() = firebase.getLong(RemoteConfigKeys.BLACKLIST_FLEX_INTERVAL).milliseconds
-            override val notificationsEnabled: Boolean
-                get() = firebase.getBoolean(RemoteConfigKeys.NOTIFICATIONS_ENABLED)
-            override val youtubeKey
-                get() = firebase.getString(RemoteConfigKeys.YOUTUBE_KEY)
-            override val v3ApiKey: String
-                get() = BuildConfig.V3_API_KEY
-            override val v3ApiSecret: String
-                get() = BuildConfig.V3_API_SECRET
+            override val blacklistRefreshInterval: Duration = 7.days
+            override val blacklistFlexInterval: Duration = 1.days
+            override val notificationsEnabled: Boolean = false
+            override val youtubeKey: String = BuildConfig.YOUTUBE_API_KEY
+            override val v3ApiKey: String = BuildConfig.V3_API_KEY
+            override val v3ApiSecret: String = BuildConfig.V3_API_SECRET
         }
 
     protected open val notifications by lazy {
@@ -248,7 +227,7 @@ open class WykopApp :
         daggerWykop().create(
             okHttpClient = okHttpClient,
             baseUrl = WYKOP_API_URL,
-            appKey = { FirebaseRemoteConfig.getInstance().getString(RemoteConfigKeys.API_APP_KEY) },
+            appKey = { BuildConfig.APP_KEY },
             signingInterceptor =
                 ApiSignInterceptor(
                     object : SimpleUserManagerApi {

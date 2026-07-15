@@ -6,8 +6,6 @@ plugins {
     alias(libs.plugins.google.devtools.ksp)
     // kotlin-kapt removed - migrated to KSP for AGP 9.0+
     id("org.jetbrains.kotlin.plugin.parcelize")
-    alias(libs.plugins.google.playservices)
-    alias(libs.plugins.google.firebase.crashlytics)
     // alias(libs.plugins.slack.keeper)  // Disabled - not compatible with AGP 9.0
     alias(libs.plugins.droidsonroids.animationdisabler)
 }
@@ -79,7 +77,6 @@ android {
             minifyEnabled = true
             signingConfig = signingConfigs.getByName("release")
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            firebaseCrashlytics.mappingFileUploadEnabled = findProperty("uploadMapping") == "true"
             // Testowe wydania: -Pwykop.versionSuffix=-rc1 dokleja sufiks do versionName
             // (plugin wersjonujacy ucina sufiksy z tagow, np. v1.3.3-rc1 -> 1.3.3).
             // Uwaga: versionCode pozostaje ten sam - przed instalacja finalnej wersji
@@ -95,7 +92,6 @@ android {
             signingConfig = signingConfigs.getByName("debug")
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             testProguardFile "proguard-rules-test.pro"
-            firebaseCrashlytics.mappingFileUploadEnabled = false
         }
     }
 
@@ -199,11 +195,6 @@ dependencies {
     // oraz w debug (MoshiResponseLoggingInterceptor).
     implementation(libs.moshi.core)
     debugImplementation(libs.nanohttpd.core)
-    implementation(platform("com.google.firebase:firebase-bom:34.9.0"))
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-crashlytics")
-    implementation("com.google.firebase:firebase-perf")
-    implementation("com.google.firebase:firebase-config")
     implementation(files('libs/YouTubeAndroidPlayerApi.jar'))
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
 
