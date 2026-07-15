@@ -78,6 +78,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import okhttp3.Cache
 import okhttp3.ConnectionPool
+import okhttp3.Dispatcher
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -108,6 +109,12 @@ open class WykopApp :
         OkHttpClient
             .Builder()
             .retryOnConnectionFailure(true)
+            // Podniesiony limit rownoleglych zapytan na host: gdy pierwsze zapytania o tresc
+            // czekaja w BearerAuthInterceptor na bearer, zapytanie /v3/auth (ktore ten bearer
+            // pobiera) nie moze zostac zaglodzone slotow (domyslnie 5/host) - inaczej deadlock.
+            .dispatcher(
+                Dispatcher().apply { maxRequestsPerHost = 16 },
+            )
             // https://github.com/square/okhttp/issues/3146
             .connectionPool(
                 ConnectionPool(
