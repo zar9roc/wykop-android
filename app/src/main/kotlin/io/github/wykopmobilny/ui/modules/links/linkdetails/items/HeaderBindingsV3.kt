@@ -15,6 +15,7 @@ import io.github.wykopmobilny.R
 import io.github.wykopmobilny.databinding.LinkDetailsHeaderLayoutBinding
 import io.github.wykopmobilny.links.details.LinkDetailsHeaderUi
 import io.github.wykopmobilny.ui.components.widgets.AvatarUi
+import io.github.wykopmobilny.ui.components.widgets.ColorConst
 import io.github.wykopmobilny.utils.bindings.setOnClick
 import io.github.wykopmobilny.utils.textview.BetterLinkMovementMethod
 import androidx.appcompat.R as AppcompatR
@@ -111,12 +112,16 @@ internal fun LinkDetailsHeaderLayoutBinding.bindHeaderV3(
         commentsCountTextView.setTextColor(commentsColor)
         commentsCountTextView.setOnClick(header.commentsCount.clickAction)
 
-        // Vote button (DigVoteButton)
-        val voteColor =
-            header.voteCount.color?.toColorInt(diggCountTextView.context)
-                ?: diggCountTextView.context.readColorAttr(android.R.attr.textColorSecondary)
+        // Vote button (DigVoteButton) — setVoteState koloruje ikone (dig=zielony,
+        // bury=czerwony) jak na mikroblogu; sam setTextColor kolorowal tylko liczbe.
         diggCountTextView.text = header.voteCount.count.toString()
-        diggCountTextView.setTextColor(voteColor)
+        diggCountTextView.setVoteState(
+            when (header.voteCount.color) {
+                ColorConst.CounterUpvoted -> "dig"
+                ColorConst.CounterDownvoted -> "bury"
+                else -> null
+            },
+        )
         diggCountTextView.setOnClick(header.voteCount.upvoteAction)
 
         // Share button

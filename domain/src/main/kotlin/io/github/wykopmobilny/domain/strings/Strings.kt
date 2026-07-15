@@ -39,6 +39,7 @@ object Strings {
 
         const val MORE_TITLE_LINK = "Opcje znaleziska:"
         const val MORE_TITLE_COMMENT = "Opcje komentarza:"
+        const val MORE_OPTION_BURY = "Zakop"
         const val MORE_OPTION_SHARE = "Udostępnij"
         const val MORE_OPTION_COPY = "Skopiuj treść"
         const val MORE_OPTION_REPORT = "Zgłoś naruszenie"

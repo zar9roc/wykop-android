@@ -5,21 +5,18 @@ import android.util.TypedValue
 import android.view.View
 import android.view.ViewStub
 import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import com.github.wykopmobilny.ui.components.toColorInt
-import com.github.wykopmobilny.ui.components.utils.EmbedMediaView
-import com.github.wykopmobilny.ui.components.utils.bind
 import com.github.wykopmobilny.ui.components.utils.readColorAttr
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.databinding.LinkCommentLayoutBinding
 import io.github.wykopmobilny.databinding.TopLinkCommentLayoutBinding
-import io.github.wykopmobilny.debug.DiagnosticCheckpoint
 import io.github.wykopmobilny.links.details.LinkCommentUi
 import io.github.wykopmobilny.links.details.ParentCommentUi
+import io.github.wykopmobilny.models.dataclass.Embed
 import io.github.wykopmobilny.ui.components.widgets.ColorConst
 import io.github.wykopmobilny.ui.components.widgets.EmbedMediaUi
+import io.github.wykopmobilny.ui.widgets.WykopEmbedView
 import io.github.wykopmobilny.utils.bindings.setOnClick
 import io.github.wykopmobilny.utils.bindings.setOnLongClick
 import io.github.wykopmobilny.utils.textview.BetterLinkMovementMethod
@@ -30,47 +27,64 @@ import io.github.wykopmobilny.ui.base.android.R as BaseR
 // czytelne na jasnym i ciemnym motywie.
 private val linkedCommentBackground = 0x26FFC107.toInt()
 
-// Layouty komentarzy maja ViewStub ze starym WykopEmbedView (uzywany przez adaptery v2) -
-// dla bindingow v3 podmieniamy layout stuba na EmbedMediaView z nowej architektury.
-// Po pierwszym inflate stub znika z hierarchii, wiec kolejne bindy znajduja widok po id.
+// Layouty komentarzy maja ViewStub z domyslnym WykopEmbedView (@layout/stub_embed).
+// Renderujemy embed 1:1 jak na mikroblogu (miniatura + ikona dostawcy w rogu, badge
+// GIF, zaslona 18+/nsfw). Klikniecie deleguje do akcji z domeny (clickAction), wiec
+// nie potrzeba tu nawigatora ani ustawien odtwarzacza. Po inflate stub znika z
+// hierarchii, wiec kolejne bindy znajduja widok po id.
 private fun bindEmbedV3(
     root: View,
     stub: ViewStub,
     embed: EmbedMediaUi?,
-    commentId: Long,
 ) {
-    val contentUrl =
-        when (val content = embed?.content) {
+    if (embed == null) {
+        hideEmbedV3(root)
+        return
+    }
+    val embedView =
+        (root.findViewById<View>(R.id.wykopEmbedView) as? WykopEmbedView)
+            ?: (stub.inflate() as WykopEmbedView)
+    val realPreview =
+        when (val content = embed.content) {
             is EmbedMediaUi.Content.StaticImage -> content.url
             is EmbedMediaUi.Content.PlayableMedia -> content.previewImage
-            null -> null
         }
-    DiagnosticCheckpoint.log(
-        "CommentEmbedV3",
-        "id=$commentId embed=${embed?.content?.javaClass?.simpleName} url=$contentUrl stubParent=${stub.parent != null}",
+    // Zaslona 18+/nsfw jest w calosci sterowana przez domene: gdy overlay != null
+    // pokazujemy placeholder, a klikniecie (clickAction) odslania obraz przez viewState
+    // (flow przeladowuje komentarz juz z overlay=null). WLASNA zaslona WykopEmbedView
+    // jest tu WYLACZONA (showAdultContent=true, hideNsfw=false, isNsfw=false) - inaczej
+    // byly dwie niezalezne zaslony i odslanianie zabieralo dodatkowe (trzecie) tapniecie.
+    val displayPreview =
+        when (embed.overlay) {
+            EmbedMediaUi.Overlay.Nsfw -> WykopEmbedView.NSFW_IMAGE_PLACEHOLDER
+            EmbedMediaUi.Overlay.Plus18 -> WykopEmbedView.PLUS18_IMAGE_PLACEHOLDER
+            null -> realPreview
+        }
+    val appEmbed =
+        Embed(
+            type = if (embed.content is EmbedMediaUi.Content.PlayableMedia) "video" else "image",
+            preview = displayPreview,
+            url = embed.url ?: realPreview,
+            plus18 = false,
+            source = null,
+            isAnimated = embed.isAnimated,
+            size = embed.size.orEmpty(),
+        )
+    embedView.isVisible = true
+    embedView.onEmbedClickOverride = embed.clickAction
+    embedView.setEmbed(
+        embed = appEmbed,
+        enableYoutubePlayer = false,
+        enableEmbedPlayer = false,
+        showAdultContent = true,
+        hideNsfw = false,
+        navigator = null,
+        isNsfw = false,
     )
-    val current = root.findViewById<View>(R.id.wykopEmbedView)
-    val embedView =
-        when {
-            current is EmbedMediaView -> current
-            embed != null -> {
-                stub.layoutResource = R.layout.stub_embed_media
-                (stub.inflate() as EmbedMediaView).apply {
-                    // Stub w XML ma wrap_content x wrap_content - karta bez zaladowanego
-                    // obrazka mierzy sie wtedy na 0x0. Pelna szerokosc z constraintow.
-                    updateLayoutParams<ConstraintLayout.LayoutParams> {
-                        width = ConstraintLayout.LayoutParams.MATCH_CONSTRAINT
-                        height = ConstraintLayout.LayoutParams.WRAP_CONTENT
-                    }
-                }
-            }
-            else -> null
-        }
-    embedView?.bind(embed)
 }
 
 private fun hideEmbedV3(root: View) {
-    (root.findViewById<View>(R.id.wykopEmbedView) as? EmbedMediaView)?.isVisible = false
+    (root.findViewById<View>(R.id.wykopEmbedView) as? WykopEmbedView)?.isVisible = false
 }
 
 // Zwiniety watek: strzalka w dol (mozna rozwinac), rozwiniety: w gore (mozna zwinac).
@@ -136,15 +150,18 @@ internal fun TopLinkCommentLayoutBinding.bindParentCommentV3(
     BetterLinkMovementMethod.linkifyHtml(commentContentTextView)
 
     // Embed
-    bindEmbedV3(root, wykopEmbedView, data.embed, data.id)
+    bindEmbedV3(root, wykopEmbedView, data.embed)
 
     // Badge
     authorBadgeStripView.setBackgroundColor(
         data.badge.toColorInt(context = root.context).defaultColor,
     )
 
-    // Vote buttons — bind directly without VoteButton.setup()
+    // Vote buttons — bind directly without VoteButton.setup().
+    // isButtonSelected przelacza ikone na wersje kolorowa (ic_*_activ) jak na
+    // mikroblogu; color != null z domeny = uzytkownik oddal ten glos.
     plusVoteButton.text = data.plusCount.label
+    plusVoteButton.isButtonSelected = data.plusCount.color != null
     val plusColor =
         data.plusCount.color?.toColorInt(plusVoteButton.context)
             ?: plusVoteButton.context.readColorAttr(android.R.attr.textColorSecondary)
@@ -152,6 +169,7 @@ internal fun TopLinkCommentLayoutBinding.bindParentCommentV3(
     plusVoteButton.setOnClick(data.plusCount.clickAction)
 
     minusVoteButton.text = data.minusCount.label
+    minusVoteButton.isButtonSelected = data.minusCount.color != null
     val minusColor =
         data.minusCount.color?.toColorInt(minusVoteButton.context)
             ?: minusVoteButton.context.readColorAttr(android.R.attr.textColorSecondary)
@@ -166,8 +184,17 @@ internal fun TopLinkCommentLayoutBinding.bindParentCommentV3(
     quoteTextView.isVisible = onQuote != null
     quoteTextView.setOnClick(onQuote)
 
-    // Message text (hidden state indicator) — hide for normal comments
-    messageTextView.isVisible = false
+    // Zwiniety watek: pokazujemy "N ukrytych komentarzy" (jak mikroblog / stary widok
+    // linku) zamiast samej strzalki - klikniecie etykiety rozwija watek.
+    val collapsedCount = parent.collapsedCount
+    if (collapsedCount != null) {
+        messageTextView.isVisible = true
+        messageTextView.text =
+            root.context.getString(R.string.collapsed_replies, collapsedCount.removePrefix("+"))
+        messageTextView.setOnClick(parent.toggleExpansionStateAction)
+    } else {
+        messageTextView.isVisible = false
+    }
 }
 
 // --- Reply comment (link_comment_layout.xml) ---
@@ -211,7 +238,7 @@ internal fun LinkCommentLayoutBinding.bindReplyCommentV3(
     BetterLinkMovementMethod.linkifyHtml(commentContentTextView)
 
     // Embed
-    bindEmbedV3(root, wykopEmbedView, comment.embed, comment.id)
+    bindEmbedV3(root, wykopEmbedView, comment.embed)
 
     // Badge
     val badgeColor =
@@ -221,8 +248,10 @@ internal fun LinkCommentLayoutBinding.bindReplyCommentV3(
         ).defaultColor
     authorBadgeStripView.setBackgroundColor(badgeColor)
 
-    // Vote buttons
+    // Vote buttons — isButtonSelected koloruje ikone (jak na mikroblogu),
+    // color != null z domeny = uzytkownik oddal ten glos.
     plusVoteButton.text = comment.plusCount.label
+    plusVoteButton.isButtonSelected = comment.plusCount.color != null
     val plusColor =
         comment.plusCount.color?.toColorInt(plusVoteButton.context)
             ?: plusVoteButton.context.readColorAttr(android.R.attr.textColorSecondary)
@@ -230,6 +259,7 @@ internal fun LinkCommentLayoutBinding.bindReplyCommentV3(
     plusVoteButton.setOnClick(comment.plusCount.clickAction)
 
     minusVoteButton.text = comment.minusCount.label
+    minusVoteButton.isButtonSelected = comment.minusCount.color != null
     val minusColor =
         comment.minusCount.color?.toColorInt(minusVoteButton.context)
             ?: minusVoteButton.context.readColorAttr(android.R.attr.textColorSecondary)
@@ -271,10 +301,12 @@ internal fun LinkCommentLayoutBinding.bindHiddenCommentV3(
     val badgeColor = data.badge.toColorInt(context = root.context).defaultColor
     authorBadgeStripView.setBackgroundColor(badgeColor)
 
-    // Hide content views
-    commentContentTextView.isVisible = false
+    // Ukryty (zablokowany / nowy uzytkownik) komentarz - jak na mikroblogu pokazujemy
+    // czytelna zachete zamiast pustego wiersza z samym nickiem. Caly wiersz odslania.
+    commentContentTextView.isVisible = true
+    commentContentTextView.text = root.context.getString(R.string.hidden_comment_reveal)
+    commentContentTextView.setTextColor(root.context.readColorAttr(R.attr.textColorGrey).defaultColor)
     dateTextView.isVisible = false
-    patronBadgeTextView.isVisible = false
     dotTextView.isVisible = false
     shareTextView.isVisible = false
     quoteTextView.isVisible = false
@@ -306,11 +338,12 @@ internal fun LinkCommentLayoutBinding.bindHiddenReplyV3(comment: LinkCommentUi.H
         ).defaultColor
     authorBadgeStripView.setBackgroundColor(badgeColor)
 
-    // Hide content views
-    commentContentTextView.isVisible = false
+    // Ukryty (zablokowany / nowy uzytkownik) komentarz - czytelna zachete jak na mikroblogu.
+    commentContentTextView.isVisible = true
+    commentContentTextView.text = root.context.getString(R.string.hidden_comment_reveal)
+    commentContentTextView.setTextColor(root.context.readColorAttr(R.attr.textColorGrey).defaultColor)
     dateTextView.isVisible = false
     collapseButtonImageView.isVisible = false
-    patronBadgeTextView.isVisible = false
     dotTextView.isVisible = false
     shareTextView.isVisible = false
     quoteTextView.isVisible = false

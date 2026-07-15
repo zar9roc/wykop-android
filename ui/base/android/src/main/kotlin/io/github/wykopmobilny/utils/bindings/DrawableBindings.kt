@@ -18,4 +18,5 @@ val Drawable.drawableRes: Int
             Drawable.Report -> R.drawable.ic_report
             Drawable.Plus -> R.drawable.ic_plus
             Drawable.Minus -> R.drawable.ic_minus
+            Drawable.Bury -> R.drawable.ic_bury
         }

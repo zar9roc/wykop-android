@@ -115,15 +115,6 @@ class LinkCommentViewHolder(
                 setTextColor(context.getGroupColor(group))
                 setOnClickListener { }
             }
-            binding.patronBadgeTextView.isVisible = badge != null
-            badge?.let {
-                @Suppress("TooGenericExceptionCaught") // Unknown badge rendering exceptions
-                try {
-                    badge?.drawBadge(binding.patronBadgeTextView)
-                } catch (exception: Exception) {
-                    Napier.w("Couldn't draw badge", exception)
-                }
-            }
             binding.dateTextView.text = linkComment.date.replace(" temu", "")
             linkComment.app?.takeIf { it.isNotEmpty() }?.let {
                 binding.dateTextView.text =

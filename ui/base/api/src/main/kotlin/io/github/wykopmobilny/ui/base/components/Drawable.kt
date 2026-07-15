@@ -12,4 +12,5 @@ enum class Drawable {
     Report,
     Plus,
     Minus,
+    Bury,
 }

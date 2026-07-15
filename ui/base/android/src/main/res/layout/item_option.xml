@@ -19,9 +19,9 @@
         android:importantForAccessibility="no"
         android:paddingVertical="4dp"
         android:scaleType="centerInside"
-        app:tint="?colorControlNormal"
+        app:tint="?android:attr/textColorPrimary"
         tools:src="@drawable/ic_comment"
-        tools:tint="?colorControlNormal"
+        tools:tint="?android:attr/textColorPrimary"
         />
 
     <TextView

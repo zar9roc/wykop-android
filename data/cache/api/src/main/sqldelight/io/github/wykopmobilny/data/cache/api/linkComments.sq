@@ -44,15 +44,20 @@ UPDATE linkCommentsEntity
 SET voteCount = voteCount + 1, voteCountPlus = voteCountPlus + 1, userVote = :userVote
 WHERE id = :id AND linkId = :linkId;
 
+-- voteCount = up + down (SUMA glosow, nie netto), minusCount = voteCount - voteCountPlus = down.
+-- Zakop dodaje glos w dol => voteCount ROSNIE o 1 (wczesniej blednie malal, przez co
+-- licznik zakopow spadal zamiast rosnac).
 voteDownOptimistic:
 UPDATE linkCommentsEntity
-SET voteCount = voteCount - 1, userVote = :userVote
+SET voteCount = voteCount + 1, userVote = :userVote
 WHERE id = :id AND linkId = :linkId;
 
+-- Cofniecie glosu: przy plusie zdejmujemy plus (voteCount-1, voteCountPlus-1), przy
+-- minusie zdejmujemy zakop (voteCount-1, voteCountPlus bez zmian).
 removeVoteOptimistic:
 UPDATE linkCommentsEntity
 SET
-  voteCount = CASE WHEN userVote = :wasUp THEN voteCount - 1 WHEN userVote = :wasDown THEN voteCount + 1 ELSE voteCount END,
+  voteCount = CASE WHEN userVote = :wasUp THEN voteCount - 1 WHEN userVote = :wasDown THEN voteCount - 1 ELSE voteCount END,
   voteCountPlus = CASE WHEN userVote = :wasUp THEN MAX(voteCountPlus - 1, 0) ELSE voteCountPlus END,
   userVote = NULL
 WHERE id = :id AND linkId = :linkId;

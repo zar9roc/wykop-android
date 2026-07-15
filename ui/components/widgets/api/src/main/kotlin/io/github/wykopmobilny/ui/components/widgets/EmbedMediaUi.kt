@@ -7,6 +7,10 @@ data class EmbedMediaUi(
     val overlay: Overlay?,
     val clickAction: () -> Unit,
     val widthToHeightRatio: Float,
+    // Docelowy URL medium (host) - potrzebny staremu WykopEmbedView do wyboru
+    // ikony dostawcy (youtube/streamable/gif...). null gdy nieznany.
+    val url: String? = null,
+    val isAnimated: Boolean = false,
 ) {
     enum class Overlay { Nsfw, Plus18 }
 

@@ -63,6 +63,9 @@ internal fun Embed.toUi(
     overlay = overlay,
     widthToHeightRatio = widthToHeightRatio,
     clickAction = clickAction,
+    // id = docelowy URL medium; WykopEmbedView wybiera po nim ikone dostawcy.
+    url = id,
+    isAnimated = type == EmbedType.AnimatedImage,
 )
 
 internal fun URL.userFriendlyDomain(includeTopLevel: Boolean = true): String {

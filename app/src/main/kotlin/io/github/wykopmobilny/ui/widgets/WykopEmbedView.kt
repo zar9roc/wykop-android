@@ -30,13 +30,22 @@ class WykopEmbedView(
         this.isVisible = false
         binding.image.onResizedListener = { mEmbed.get()?.isResize = it }
         binding.image.showResizeView = { post { binding.imageExpand.isVisible = it } }
-        binding.image.openImageListener = { handleUrl() }
+        // Zaslona 18+/nsfw odslania sie po pierwszym dotknieciu; potem klikniecie
+        // otwiera medium. Gdy ustawiono onEmbedClickOverride (ekran v3 komentarzy),
+        // otwieranie deleguje do akcji z domeny zamiast wewnetrznego handleUrl.
+        binding.image.openImageListener = {
+            if (!revealIfHidden()) {
+                val override = onEmbedClickOverride
+                if (override != null) override() else handleUrl()
+            }
+        }
     }
 
     var resized = false
     private var hiddenPreview: String? = null
     lateinit var mEmbed: WeakReference<Embed>
-    lateinit var navigator: NewNavigator
+    var navigator: NewNavigator? = null
+    var onEmbedClickOverride: (() -> Unit)? = null
     var enableYoutubePlayer: Boolean = false
     var enableEmbedPlayer: Boolean = false
 
@@ -52,7 +61,7 @@ class WykopEmbedView(
         enableEmbedPlayer: Boolean,
         showAdultContent: Boolean,
         hideNsfw: Boolean,
-        navigator: NewNavigator,
+        navigator: NewNavigator?,
         isNsfw: Boolean,
     ) {
         hiddenPreview = null
@@ -158,13 +167,20 @@ class WykopEmbedView(
         }
     }
 
-    fun handleUrl() {
+    // Odslania zaslonieta (18+/nsfw) miniature; zwraca true gdy cos odslonil.
+    private fun revealIfHidden(): Boolean {
         if (hiddenPreview != null) {
             binding.image.loadImageFromUrl(hiddenPreview.toString())
             hiddenPreview = null
             mEmbed.get()?.isRevealed = true
-            return
+            return true
         }
+        return false
+    }
+
+    fun handleUrl() {
+        if (revealIfHidden()) return
+        val navigator = navigator ?: return
         val image = mEmbed.get()!!
         when (image.type) {
             "image" -> {

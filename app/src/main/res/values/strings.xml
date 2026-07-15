@@ -180,6 +180,9 @@
     <string name="tag_archive">Archiwum</string>
     <string name="tag_archive_reset">Resetuj</string>
 
+    <string name="hidden_comment_reveal">Pokaż ukryty komentarz</string>
+    <string name="collapsed_replies">%1$s ukrytych komentarzy</string>
+
     <string name="private_message">Wiadomość prywatna</string>
     <string name="followers">%1$d obserwujących</string>
     <string name="observe_user">Obserwuj</string>
