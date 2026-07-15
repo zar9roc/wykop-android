@@ -11,11 +11,17 @@ interface TagApi {
     fun getTagEntries(
         tag: String,
         page: String?,
+        sort: String?,
+        year: Int?,
+        month: Int?,
     ): Single<TagEntries>
 
     fun getTagLinks(
         tag: String,
         page: String?,
+        sort: String?,
+        year: Int?,
+        month: Int?,
     ): Single<TagLinks>
 
     fun getTagDetails(tag: String): Single<TagMetaResponse>

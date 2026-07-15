@@ -175,6 +175,11 @@
     <string name="hits_year_toolbar">Hity roku (%1$d)</string>
     <string name="hits_archive_toolbar">Archiwum (%1$d)</string>
 
+    <string name="tag_sort_newest">Najnowsze</string>
+    <string name="tag_sort_best">Najlepsze</string>
+    <string name="tag_archive">Archiwum</string>
+    <string name="tag_archive_reset">Resetuj</string>
+
     <string name="private_message">Wiadomość prywatna</string>
     <string name="followers">%1$d obserwujących</string>
     <string name="observe_user">Obserwuj</string>

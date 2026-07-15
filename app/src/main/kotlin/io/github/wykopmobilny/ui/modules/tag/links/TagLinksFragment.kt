@@ -3,12 +3,15 @@ package io.github.wykopmobilny.ui.modules.tag.links
 import android.os.Bundle
 import android.view.View
 import io.github.wykopmobilny.base.BaseLinksFragment
+import io.github.wykopmobilny.ui.modules.tag.TagActivity
+import io.github.wykopmobilny.ui.modules.tag.TagFilterableFragment
 import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 import javax.inject.Inject
 
 class TagLinksFragment :
     BaseLinksFragment(),
-    TagLinksView {
+    TagLinksView,
+    TagFilterableFragment {
     companion object {
         const val DATA_FRAGMENT_TAG = "TAG_DATA_FRAGMENT"
         const val EXTRA_TAG = "EXTRA_TAG"
@@ -39,8 +42,30 @@ class TagLinksFragment :
         super.onViewCreated(view, savedInstanceState)
         presenter.subscribe(this)
         presenter.tag = tagString!!
+        // Zakladka moze zostac utworzona juz po ustawieniu filtra na drugiej
+        // zakladce - dociagamy aktualny stan z aktywnosci przed pierwszym ladowaniem.
+        (activity as? TagActivity)?.let {
+            presenter.sort = it.tagSort
+            presenter.year = it.tagArchiveYear
+            presenter.month = it.tagArchiveMonth
+        }
         linksAdapter.linksActionListener = presenter
         linksAdapter.loadNewDataListener = { loadDataListener(false) }
+        presenter.loadData(true)
+    }
+
+    override fun applyTagFilter(
+        sort: String,
+        year: Int?,
+        month: Int?,
+    ) {
+        presenter.sort = sort
+        presenter.year = year
+        presenter.month = month
+        // Kreciolek do czasu, az przefiltrowana lista sie zaladuje (addItems/disableLoading go chowa).
+        if (view != null) {
+            binding.swipeRefresh.isRefreshing = true
+        }
         presenter.loadData(true)
     }
 

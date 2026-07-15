@@ -18,6 +18,9 @@ class TagLinksPresenter(
     var page: String? = null
     private var pageNumber = 1
     var tag = ""
+    var sort: String? = null
+    var year: Int? = null
+    var month: Int? = null
 
     fun loadData(shouldRefresh: Boolean) {
         if (shouldRefresh) {
@@ -25,7 +28,7 @@ class TagLinksPresenter(
             pageNumber = 1
         }
         tagApi
-            .getTagLinks(tag, page)
+            .getTagLinks(tag, page, sort, year, month)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(

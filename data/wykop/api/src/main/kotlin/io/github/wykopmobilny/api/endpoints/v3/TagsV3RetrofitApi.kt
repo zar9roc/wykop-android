@@ -20,6 +20,8 @@ interface TagsV3RetrofitApi {
         @Path("tagName") tagName: String,
         @Query("page") page: String? = null,
         @Query("sort") sort: String? = null,
+        @Query("year") year: Int? = null,
+        @Query("month") month: Int? = null,
         @Query("type") type: String = "entry",
     ): WykopApiResponseV3<List<EntryResponseV3>>
 
@@ -28,6 +30,8 @@ interface TagsV3RetrofitApi {
         @Path("tagName") tagName: String,
         @Query("page") page: String? = null,
         @Query("sort") sort: String? = null,
+        @Query("year") year: Int? = null,
+        @Query("month") month: Int? = null,
         @Query("type") type: String = "link",
     ): WykopApiResponseV3<List<LinkResponseV3>>
 

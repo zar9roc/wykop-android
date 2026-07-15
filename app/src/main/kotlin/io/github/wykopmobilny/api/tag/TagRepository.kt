@@ -38,7 +38,10 @@ class TagRepository
         override fun getTagEntries(
             tag: String,
             page: String?,
-        ) = rxSingle { tagsApiV3.getTagEntries(tag, page) }
+            sort: String?,
+            year: Int?,
+            month: Int?,
+        ) = rxSingle { tagsApiV3.getTagEntries(tag, page, sort, year, month) }
             .retryWhen(userTokenRefresher)
             .map { response ->
                 TagEntries(
@@ -50,7 +53,10 @@ class TagRepository
         override fun getTagLinks(
             tag: String,
             page: String?,
-        ) = rxSingle { tagsApiV3.getTagLinks(tag, page) }
+            sort: String?,
+            year: Int?,
+            month: Int?,
+        ) = rxSingle { tagsApiV3.getTagLinks(tag, page, sort, year, month) }
             .retryWhen(userTokenRefresher)
             .map { response ->
                 TagLinks(

@@ -43,4 +43,41 @@
         app:showAsAction="never"
         />
 
+    <!-- Sortowanie - osobna sekcja (radio), Najnowsze domyslnie zaznaczone. -->
+    <group
+        android:id="@+id/group_tag_sort"
+        android:checkableBehavior="single"
+        >
+
+        <item
+            android:id="@+id/tag_sort_newest"
+            android:checked="true"
+            android:title="@string/tag_sort_newest"
+            app:showAsAction="never"
+            />
+
+        <item
+            android:id="@+id/tag_sort_best"
+            android:title="@string/tag_sort_best"
+            app:showAsAction="never"
+            />
+    </group>
+
+    <!-- Archiwum - osobna sekcja; Resetuj widoczne tylko w trybie archiwalnym. -->
+    <group android:id="@+id/group_tag_archive">
+
+        <item
+            android:id="@+id/tag_archive"
+            android:title="@string/tag_archive"
+            app:showAsAction="never"
+            />
+
+        <item
+            android:id="@+id/tag_archive_reset"
+            android:title="@string/tag_archive_reset"
+            android:visible="false"
+            app:showAsAction="never"
+            />
+    </group>
+
 </menu>
