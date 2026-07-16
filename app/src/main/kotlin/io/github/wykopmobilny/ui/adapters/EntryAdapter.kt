@@ -2,6 +2,7 @@ package io.github.wykopmobilny.ui.adapters
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import io.github.wykopmobilny.databinding.ProgressItemBinding
 import io.github.wykopmobilny.models.dataclass.Entry
 import io.github.wykopmobilny.models.dataclass.EntryComment
 import io.github.wykopmobilny.storage.api.SettingsPreferencesApi
@@ -13,6 +14,7 @@ import io.github.wykopmobilny.ui.fragments.entries.EntryActionListener
 import io.github.wykopmobilny.ui.fragments.entrycomments.EntryCommentActionListener
 import io.github.wykopmobilny.ui.fragments.entrycomments.EntryCommentViewListener
 import io.github.wykopmobilny.ui.modules.NewNavigator
+import io.github.wykopmobilny.utils.layoutInflater
 import io.github.wykopmobilny.utils.linkhandler.WykopLinkHandler
 import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 import javax.inject.Inject
@@ -25,6 +27,11 @@ class EntryAdapter
         private val navigator: NewNavigator,
         private val linkHandler: WykopLinkHandler,
     ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+        companion object {
+            // Poza zakresem typów Entry/EntryCommentViewHolder (4..11).
+            private const val TYPE_LOADING = 100
+        }
+
         lateinit var entryActionListener: EntryActionListener
         lateinit var commentActionListener: EntryCommentActionListener
         lateinit var commentViewListener: EntryCommentViewListener
@@ -32,6 +39,15 @@ class EntryAdapter
 
         var entry: Entry? = null
         var commentId: Long? = null
+
+        // Stopka z kręciołkiem: pokazywana, gdy poprzednia odpowiedź API zwróciła
+        // kolejną stronę komentarzy (są jeszcze nowsze komentarze do dociągnięcia).
+        var hasMoreComments: Boolean = false
+            set(value) {
+                if (field == value) return
+                field = value
+                notifyDataSetChanged()
+            }
 
         private val hideBlacklistedViews by lazy { settingsPreferencesApi.hideBlacklistedViews }
         private val cutLongEntries by lazy { settingsPreferencesApi.cutLongEntries }
@@ -83,18 +99,20 @@ class EntryAdapter
         }
 
         override fun getItemViewType(position: Int): Int =
-            if (position == 0) {
-                EntryViewHolder.getViewTypeForEntry(entry!!)
-            } else {
-                EntryCommentViewHolder.getViewTypeForEntryComment(filteredComments()[position - 1])
+            when {
+                position == 0 -> EntryViewHolder.getViewTypeForEntry(entry!!)
+                isFooterPosition(position) -> TYPE_LOADING
+                else -> EntryCommentViewHolder.getViewTypeForEntryComment(filteredComments()[position - 1])
             }
 
         override fun getItemCount(): Int {
             entry?.let {
-                return filteredComments().size + 1
+                return filteredComments().size + 1 + if (hasMoreComments) 1 else 0
             }
             return 0
         }
+
+        private fun isFooterPosition(position: Int): Boolean = hasMoreComments && position == filteredComments().size + 1
 
         private fun filteredComments(): List<EntryComment> =
             entry
@@ -108,6 +126,10 @@ class EntryAdapter
             viewType: Int,
         ): RecyclerView.ViewHolder =
             when (viewType) {
+                TYPE_LOADING -> {
+                    LoadingViewHolder(ProgressItemBinding.inflate(parent.layoutInflater, parent, false))
+                }
+
                 EntryCommentViewHolder.TYPE_BLOCKED,
                 EntryViewHolder.TYPE_BLOCKED,
                 -> {
@@ -142,11 +164,16 @@ class EntryAdapter
                 }
             }
 
-        fun appendComments(newComments: List<EntryComment>) {
+        fun appendComments(
+            newComments: List<EntryComment>,
+            hasMore: Boolean,
+        ) {
             val entry = entry ?: return
-            if (newComments.isEmpty()) return
-            newComments.forEach { it.entryId = entry.id }
-            entry.comments.addAll(newComments)
+            hasMoreComments = hasMore
+            if (newComments.isNotEmpty()) {
+                newComments.forEach { it.entryId = entry.id }
+                entry.comments.addAll(newComments)
+            }
             // Filtrowanie (hideBlacklistedViews) sprawia, że indeksy po filtrze nie
             // odpowiadają wprost dołożonym elementom - pełne odświeżenie jest tu pewne.
             notifyDataSetChanged()
@@ -162,4 +189,8 @@ class EntryAdapter
             entry!!.comments[position] = comment
             notifyItemChanged(position + 1)
         }
+
+        private class LoadingViewHolder(
+            binding: ProgressItemBinding,
+        ) : RecyclerView.ViewHolder(binding.root)
     }

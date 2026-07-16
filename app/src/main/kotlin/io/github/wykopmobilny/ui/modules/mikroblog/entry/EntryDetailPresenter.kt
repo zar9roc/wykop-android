@@ -114,7 +114,7 @@ class EntryDetailPresenter
                     { result ->
                         isLoadingComments = false
                         nextCommentsPage = result.nextPage?.toIntOrNull()
-                        view?.appendComments(result.filtered)
+                        view?.appendComments(result.filtered, hasMore = nextCommentsPage != null)
                     },
                     {
                         isLoadingComments = false
