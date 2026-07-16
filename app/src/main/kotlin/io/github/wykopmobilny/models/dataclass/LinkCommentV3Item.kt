@@ -28,7 +28,10 @@ class LinkCommentV3Item(
     val fullDate: Instant get() = response.createdAt
     val canVote: Boolean = true
     val favorite: Boolean = false
-    val violationUrl: String? = null
+
+    // v3 nie zwraca violation_url - adres strony komentarza; zgłoszenie idzie
+    // przez WebView z sesją (ReportWebViewActivity).
+    val violationUrl: String? get() = url
     val url: String get() = "https://www.wykop.pl/link/$linkId/#comment-$id"
 
     val date: String

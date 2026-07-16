@@ -96,6 +96,10 @@
             android:theme="@style/TransparentActivityTheme"
             />
         <activity
+            android:name=".ui.modules.report.ReportWebViewActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            />
+        <activity
             android:name=".ui.modules.settings.SettingsActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/WykopAppTheme.Dark"

@@ -14,6 +14,7 @@ import io.github.wykopmobilny.ui.modules.addlink.AddlinkActivity
 import io.github.wykopmobilny.ui.modules.embedview.EmbedViewActivity
 import io.github.wykopmobilny.ui.modules.embedview.YoutubeActivity
 import io.github.wykopmobilny.ui.modules.input.BaseInputActivity
+import io.github.wykopmobilny.ui.modules.report.ReportWebViewActivity
 import io.github.wykopmobilny.ui.modules.input.entry.add.AddEntryActivity
 import io.github.wykopmobilny.ui.modules.input.entry.comment.EditEntryCommentActivity
 import io.github.wykopmobilny.ui.modules.input.entry.edit.EditEntryActivity
@@ -117,7 +118,9 @@ class NewNavigator
             }
         }
 
-        fun openReportScreen(violationUrl: String) = context.openBrowser(violationUrl)
+        // WebView z sesją logowania zamiast przeglądarki - v3 nie ma endpointu
+        // zgłoszeń, użytkownik zgłasza przez interfejs strony (zalogowany).
+        fun openReportScreen(violationUrl: String) = context.startActivity(ReportWebViewActivity.createIntent(context, violationUrl))
 
         fun openLinkDetailsActivity(link: Link) = context.startActivity(LinkDetailsActivityV2.createIntent(context, link.id))
 

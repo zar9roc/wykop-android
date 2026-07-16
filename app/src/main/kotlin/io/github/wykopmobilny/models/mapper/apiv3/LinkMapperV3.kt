@@ -37,7 +37,9 @@ fun LinkResponseV3.filterLinkV3(owmContentFilter: OWMContentFilter) =
                 },
             userFavorite = favourite ?: false,
             app = null,
-            violationUrl = null,
+            // v3 nie zwraca violation_url - syntetyzujemy adres strony treści,
+            // zgłoszenie idzie przez WebView z sesją (ReportWebViewActivity).
+            violationUrl = "https://wykop.pl/link/$id",
             gotSelected = false,
             isBlocked = deleted ?: false,
         ),
