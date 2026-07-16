@@ -28,6 +28,9 @@
     <string name="pref_manage_blacklist">Zarządzaj czarną listą</string>
     <string name="pref_use_built_in_browser">Użyj wbudowanej przeglądarki</string>
     <string name="pref_clear_history">Wyczyść historię wyszukiwarki</string>
+    <string name="pref_export_logs">Eksportuj logi aplikacji</string>
+    <string name="pref_export_logs_summary">Udostępnij zapisane logi i raporty błędów</string>
+    <string name="export_logs_empty">Brak zapisanych logów (logi zbiera tylko wydanie release)</string>
     <string name="pref_disable_exit_confirmation">Wyłącz potwierdzenie wyjścia z aplikacji</string>
     <string name="pref_disable_edge_slide">Wyłącz nawigację wstecz gestem</string>
     <string name="link_simple_list">Prosta lista znalezisk</string>

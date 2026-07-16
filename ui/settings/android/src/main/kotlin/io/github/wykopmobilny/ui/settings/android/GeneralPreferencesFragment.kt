@@ -1,7 +1,10 @@
 package io.github.wykopmobilny.ui.settings.android
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
+import androidx.core.content.FileProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -25,6 +28,7 @@ internal class GeneralPreferencesFragment : PreferenceFragmentCompat() {
         rootKey: String?,
     ) {
         setPreferencesFromResource(R.xml.general_preferences, rootKey)
+        bindPreference("exportLogs", ::exportLogs)
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
@@ -61,6 +65,38 @@ internal class GeneralPreferencesFragment : PreferenceFragmentCompat() {
                 RefreshPeriodUi.EightHours -> R.string.preferences_notification_period_8_hours
             }.let { resources.getString(it) }
         }
+    }
+
+    // Udostepnia pliki logow przez systemowy share sheet. Lokalizacja jak
+    // w FileLogAntilog (app/initializers) - modul settings nie widzi tamtej
+    // klasy, wiec sciezka jest swiadomie zduplikowana.
+    private fun exportLogs() {
+        val context = requireContext()
+        val logDir = (context.getExternalFilesDir(null) ?: context.filesDir).resolve("crashlogs")
+        val logs =
+            listOf("log.txt", "log.1.txt")
+                .map(logDir::resolve)
+                .filter { it.exists() && it.length() > 0 }
+        if (logs.isEmpty()) {
+            Toast.makeText(context, R.string.export_logs_empty, Toast.LENGTH_LONG).show()
+            return
+        }
+        val uris =
+            logs.map { file ->
+                FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+            }
+        val intent =
+            if (uris.size == 1) {
+                Intent(Intent.ACTION_SEND).apply { putExtra(Intent.EXTRA_STREAM, uris.single()) }
+            } else {
+                Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+                    putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
+                }
+            }.apply {
+                type = "text/plain"
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+        startActivity(Intent.createChooser(intent, getString(R.string.pref_export_logs)))
     }
 
     private fun openAppearanceSettings() {

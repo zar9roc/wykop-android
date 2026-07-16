@@ -109,4 +109,12 @@
         android:title="@string/pref_clear_history"
         app:iconSpaceReserved="false"
         />
+
+    <androidx.preference.Preference
+        android:key="exportLogs"
+        android:persistent="false"
+        android:summary="@string/pref_export_logs_summary"
+        android:title="@string/pref_export_logs"
+        app:iconSpaceReserved="false"
+        />
 </androidx.preference.PreferenceScreen>

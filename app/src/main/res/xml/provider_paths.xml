@@ -13,6 +13,12 @@
         name="files"
         path="."
         />
+    <!-- Fallback dla crashlogow, gdy brak zewnetrznego magazynu (FileLogAntilog
+         pisze wtedy do filesDir). -->
+    <files-path
+        name="internal_files"
+        path="."
+        />
     <external-path
         name="external_files"
         path="."
