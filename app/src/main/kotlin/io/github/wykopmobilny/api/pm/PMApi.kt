@@ -12,6 +12,9 @@ interface PMApi {
 
     fun getConversation(user: String): Single<FullConversation>
 
+    // Czy rozmówca napisał coś nowego od ostatniego pobrania rozmowy.
+    fun hasNewerMessages(user: String): Single<Boolean>
+
     fun deleteConversation(user: String): Single<ConversationDeleteResponse>
 
     fun sendMessage(

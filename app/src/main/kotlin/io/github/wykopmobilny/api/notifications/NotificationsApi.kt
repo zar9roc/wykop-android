@@ -9,6 +9,9 @@ interface NotificationsApi {
 
     fun getHashTagNotificationCount(): Single<NotificationsCountResponse>
 
+    // Licznik nieprzeczytanych wiadomości prywatnych (pm_notification_count ze statusu).
+    fun getMessagesNotificationCount(): Single<NotificationsCountResponse>
+
     fun getHashTagNotifications(page: Int): Single<List<Notification>>
 
     fun getNotifications(page: Int): Single<List<Notification>>

@@ -12,4 +12,6 @@ interface MainNavigationView : BaseView {
     fun showNotificationsCount(notifications: Int)
 
     fun showHashNotificationsCount(hashNotifications: Int)
+
+    fun showMessagesNotificationsCount(messages: Int)
 }

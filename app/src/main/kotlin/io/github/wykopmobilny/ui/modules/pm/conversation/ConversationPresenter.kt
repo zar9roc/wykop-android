@@ -5,6 +5,8 @@ import io.github.wykopmobilny.api.pm.PMApi
 import io.github.wykopmobilny.base.BasePresenter
 import io.github.wykopmobilny.base.Schedulers
 import io.github.wykopmobilny.utils.intoComposite
+import io.reactivex.Observable
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class ConversationPresenter
@@ -14,6 +16,28 @@ class ConversationPresenter
         private val pmApi: PMApi,
     ) : BasePresenter<ConversationView>() {
         lateinit var user: String
+
+        private companion object {
+            const val NEWER_POLL_INTERVAL_S = 15L
+        }
+
+        // Nowe wiadomości rozmówcy pojawiają się na żywo: lekki odpyt
+        // /pm/conversations/{user}/newer co kilkanaście sekund, pełne pobranie
+        // tylko gdy serwer potwierdzi nowsze. Subskrypcja żyje w composite -
+        // unsubscribe() przy zamknięciu ekranu zatrzymuje polling.
+        fun startListeningForNewMessages() {
+            Observable
+                .interval(NEWER_POLL_INTERVAL_S, NEWER_POLL_INTERVAL_S, TimeUnit.SECONDS)
+                .flatMapSingle {
+                    pmApi
+                        .hasNewerMessages(user)
+                        .subscribeOn(schedulers.backgroundThread())
+                        .onErrorReturnItem(false)
+                }.observeOn(schedulers.mainThread())
+                .subscribe { hasNewer ->
+                    if (hasNewer) loadConversation()
+                }.intoComposite(compositeObservable)
+        }
 
         fun loadConversation() {
             pmApi

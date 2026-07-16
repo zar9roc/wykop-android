@@ -47,7 +47,21 @@ class ConversationsListFragment :
         presenter.subscribe(this)
 
         binding.loadingView.isVisible = true
+        skipNextResumeRefresh = true
         onRefresh()
+    }
+
+    // Powrót z pojedynczej rozmowy: cichy refresh, żeby wysłana wiadomość
+    // przeniosła rozmowę na górę listy i zaktualizowała zajawkę.
+    private var skipNextResumeRefresh = false
+
+    override fun onResume() {
+        super.onResume()
+        if (skipNextResumeRefresh) {
+            skipNextResumeRefresh = false
+        } else {
+            presenter.loadConversations()
+        }
     }
 
     override fun onDestroyView() {

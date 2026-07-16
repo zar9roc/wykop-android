@@ -49,6 +49,12 @@ class MainNavigationPresenter
                     .observeOn(schedulers.mainThread())
                     .subscribe({ view?.showHashNotificationsCount(it.count) }, { })
                     .intoComposite(compositeObservable)
+                notificationsApi
+                    .getMessagesNotificationCount()
+                    .subscribeOn(schedulers.backgroundThread())
+                    .observeOn(schedulers.mainThread())
+                    .subscribe({ view?.showMessagesNotificationsCount(it.count) }, { })
+                    .intoComposite(compositeObservable)
             }
         }
     }

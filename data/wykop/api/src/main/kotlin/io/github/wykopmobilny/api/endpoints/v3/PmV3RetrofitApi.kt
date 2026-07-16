@@ -22,6 +22,12 @@ interface PmV3RetrofitApi {
         @Path("username") username: String,
     ): WykopApiResponseV3<PmConversationMessagesResponseV3>
 
+    // data = boolean: czy w rozmowie są nowsze wiadomości niż ostatnio pobrane.
+    @GET("v3/pm/conversations/{username}/newer")
+    suspend fun getConversationNewer(
+        @Path("username") username: String,
+    ): WykopApiResponseV3<Boolean>
+
     @POST("v3/pm/conversations/{username}")
     suspend fun sendMessage(
         @Path("username") username: String,

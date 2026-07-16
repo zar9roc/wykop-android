@@ -80,6 +80,11 @@ class PMRepository
                 .compose(ErrorHandlerTransformerV3<PmConversationMessagesResponseV3>(errorBodyParser))
                 .map { it.toFullConversation() }
 
+        override fun hasNewerMessages(user: String) =
+            rxSingle { pmApiV3.getConversationNewer(user) }
+                .retryWhen(userTokenRefresher)
+                .compose(ErrorHandlerTransformerV3<Boolean>(errorBodyParser))
+
         override fun deleteConversation(user: String) =
             rxSingle {
                 val response = pmApiV3.deleteConversation(user)

@@ -14,7 +14,15 @@ class ConversationsListAdapter : RecyclerView.Adapter<ConversationViewHolder>() 
         holder: ConversationViewHolder,
         position: Int,
     ) {
-        holder.bindView(items[position])
+        holder.bindView(items[position]) {
+            // Optymistyczne odczytanie: pogrubienie znika od razu po wejściu
+            // w rozmowę, bez czekania na kolejny refresh z API.
+            val adapterPosition = holder.bindingAdapterPosition
+            if (adapterPosition != RecyclerView.NO_POSITION && items[adapterPosition].unread) {
+                items[adapterPosition] = items[adapterPosition].copy(unread = false)
+                notifyItemChanged(adapterPosition)
+            }
+        }
     }
 
     override fun getItemCount(): Int = items.size

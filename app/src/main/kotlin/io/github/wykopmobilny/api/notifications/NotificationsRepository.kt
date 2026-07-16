@@ -182,4 +182,10 @@ class NotificationsRepository
                         count = it.tagNotificationCount ?: 0,
                     )
                 }
+
+        override fun getMessagesNotificationCount() =
+            rxSingle { notificationsApiV3.getNotificationStatus() }
+                .retryWhen(userTokenRefresher)
+                .compose(ErrorHandlerTransformerV3<NotificationStatusResponseV3>(errorBodyParser))
+                .map { NotificationsCountResponse(count = it.pmNotificationCount ?: 0) }
     }

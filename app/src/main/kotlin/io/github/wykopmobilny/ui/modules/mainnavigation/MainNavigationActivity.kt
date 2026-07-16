@@ -11,6 +11,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
+import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.os.postDelayed
 import androidx.core.view.GravityCompat
@@ -413,6 +414,19 @@ class MainNavigationActivity :
     override fun showNotificationsCount(notifications: Int) {
         badgeDrawable.text = if (notifications > 0) notifications.toString() else null
         navHeader.notificationCount = notifications
+    }
+
+    // Czerwona pastylka z licznikiem nieprzeczytanych PM przy pozycji "Wiadomości"
+    // (odpowiednik badge'a na hamburgerze dla powiadomień).
+    private val messagesBadge by lazy {
+        val badge = layoutInflater.inflate(R.layout.drawer_menu_badge, binding.navigationView, false) as TextView
+        binding.navigationView.menu.findItem(R.id.messages)?.actionView = badge
+        badge
+    }
+
+    override fun showMessagesNotificationsCount(messages: Int) {
+        messagesBadge.isVisible = messages > 0
+        messagesBadge.text = messages.toString()
     }
 
     override fun showHashNotificationsCount(hashNotifications: Int) {

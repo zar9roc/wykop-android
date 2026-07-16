@@ -91,6 +91,7 @@ class ConversationActivity :
 
         presenter.subscribe(this)
         presenter.user = user
+        presenter.startListeningForNewMessages()
         binding.recyclerView.apply {
             prepareNoDivider()
             adapter = conversationAdapter

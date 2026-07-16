@@ -11,7 +11,10 @@ import io.github.wykopmobilny.utils.api.getGroupColor
 class ConversationViewHolder(
     private val binding: ConversationListItemBinding,
 ) : RecyclerView.ViewHolder(binding.root) {
-    fun bindView(conversation: Conversation) {
+    fun bindView(
+        conversation: Conversation,
+        onOpened: () -> Unit = {},
+    ) {
         // Nieprzeczytana rozmowa: pogrubiony nick + zajawka.
         val typeface = if (conversation.unread) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
         binding.authorAvatarView.setAuthor(conversation.user)
@@ -26,6 +29,9 @@ class ConversationViewHolder(
             setTypeface(typeface)
         }
         binding.entryDateTextView.text = conversation.lastUpdate
-        binding.root.setOnClickListener { it.context.startActivity(ConversationActivity.createIntent(it.context, conversation.user.nick)) }
+        binding.root.setOnClickListener {
+            onOpened()
+            it.context.startActivity(ConversationActivity.createIntent(it.context, conversation.user.nick))
+        }
     }
 }
