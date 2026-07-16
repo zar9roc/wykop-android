@@ -110,6 +110,10 @@ class GetAppearancePreferencesQuery
                     enableYoutubePlayer =
                         Setting(
                             currentValue = it.useYoutubePlayer,
+                            // Wbudowany player YT oparty jest o martwe API Google
+                            // (wymaga klucza, zwykle pada przy inicjalizacji) -
+                            // opcja wyszarzona do czasu wymiany playera.
+                            isEnabled = false,
                             onClicked = { updateUserSetting(UserSettings.useYoutubePlayer, !it.useYoutubePlayer) },
                         ),
                     enableEmbedPlayer =

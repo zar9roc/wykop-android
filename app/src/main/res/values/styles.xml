@@ -3,6 +3,11 @@
 
     <style name="Base.WykopAppTheme"
         parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Atrybuty nowego stacku UI (EmbedMediaView i drawables z ui/base) -
+             ich brak = spam "Invalid dimension resource" w logach i zerowe obramowania. -->
+        <item name="cornerRadius">16dp</item>
+        <item name="outlineWidth">1dp</item>
+        <item name="colorOutline">#BFBFBF</item>
         <item name="android:scrollbarThumbVertical">@drawable/scrollbar_gradient</item>
         <item name="textColorGrey">@color/textColorGrey</item>
         <item name="textColorLight">@color/textColorLight</item>
@@ -107,6 +112,10 @@
 
     <style name="WykopAppTheme.Dark"
         parent="Theme.MaterialComponents.NoActionBar.Bridge">
+        <!-- Atrybuty nowego stacku UI - patrz Base.WykopAppTheme. -->
+        <item name="cornerRadius">16dp</item>
+        <item name="outlineWidth">1dp</item>
+        <item name="colorOutline">#3a3a3a</item>
         <item name="bottomSheetStyle">@style/WykopBottomSheet</item>
         <item name="bottomSheetDialogTheme">@style/Theme.Wykop.BottomSheetDialog.Dark</item>
         <item name="android:scrollbarThumbVertical">@drawable/scrollbar_gradient</item>

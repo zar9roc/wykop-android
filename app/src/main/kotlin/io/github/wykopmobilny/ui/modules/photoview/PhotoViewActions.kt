@@ -6,9 +6,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
+import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
-import android.provider.MediaStore
 import android.provider.MediaStore.Images
 import android.webkit.MimeTypeMap
 import android.widget.Toast
@@ -182,15 +182,10 @@ class PhotoViewActions(
         filePath: String,
         context: Context,
     ) {
-        val values = ContentValues()
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            values.put(Images.Media.DATE_TAKEN, System.currentTimeMillis())
-        }
-        values.put(Images.Media.MIME_TYPE, getMimeType(filePath))
-        values.put(MediaStore.MediaColumns.DATA, filePath)
-
-        context.contentResolver.insert(Images.Media.EXTERNAL_CONTENT_URI, values)
+        // Rejestracja istniejącego pliku w galerii przez MediaScanner. Insert do
+        // MediaStore z kolumną _data rzuca na Androidzie 10+ "Mutation of _data
+        // is not allowed" (crash z logów 2026-07-16).
+        MediaScannerConnection.scanFile(context, arrayOf(filePath), null, null)
     }
 
     private fun getMimeType(uri: String) = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(uri))

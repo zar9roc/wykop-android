@@ -186,6 +186,29 @@ class EllipsizingTextView
         }
 
         /**
+         * Bezpieczna kopia spanow na przyciety tekst: przycina zakresy do dlugosci
+         * celu i pomija spany, ktorych nie da sie osadzic. TextUtils.copySpansFrom
+         * przenosi tez spany z flaga SPAN_PARAGRAPH (BulletSpan/QuoteSpan z tresci
+         * markdown v3), a po uceciu tekstu ich koniec laduje w srodku wiersza -
+         * setSpan rzuca wtedy "PARAGRAPH span must end at paragraph boundary"
+         * (crash w onDraw, logi 2026-07-16).
+         */
+        private fun copySpansSafely(
+            source: Spanned,
+            sourceStart: Int,
+            sourceEnd: Int,
+            dest: SpannableStringBuilder,
+        ) {
+            val start = sourceStart.coerceIn(0, source.length)
+            val end = sourceEnd.coerceIn(start, source.length)
+            source.getSpans(start, end, Any::class.java).forEach { span ->
+                val destStart = (source.getSpanStart(span) - start).coerceIn(0, dest.length)
+                val destEnd = (source.getSpanEnd(span) - start).coerceIn(destStart, dest.length)
+                runCatching { dest.setSpan(span, destStart, destEnd, source.getSpanFlags(span)) }
+            }
+        }
+
+        /**
          * A base class for an ellipsize strategy.
          */
         private abstract inner class EllipsizeStrategy {
@@ -305,14 +328,7 @@ class EllipsizingTextView
                 val dest = SpannableStringBuilder(workingText)
 
                 if (fullText is Spanned) {
-                    TextUtils.copySpansFrom(
-                        fullText,
-                        0,
-                        workingText.length - 15,
-                        null,
-                        dest,
-                        0,
-                    )
+                    copySpansSafely(fullText, 0, workingText.length - ellipsisText.length, dest)
                 }
                 return dest
             }
@@ -358,14 +374,7 @@ class EllipsizingTextView
                 val dest = SpannableStringBuilder(workingText)
 
                 if (fullText is Spanned) {
-                    TextUtils.copySpansFrom(
-                        fullText,
-                        textLength - workingText.length,
-                        textLength,
-                        null,
-                        dest,
-                        0,
-                    )
+                    copySpansSafely(fullText, textLength - workingText.length, textLength, dest)
                 }
                 return dest
             }
@@ -413,15 +422,8 @@ class EllipsizingTextView
                 val secondDest = SpannableStringBuilder(secondPart)
 
                 if (fullText is Spanned) {
-                    TextUtils.copySpansFrom(fullText, 0, firstPart.length, null, firstDest, 0)
-                    TextUtils.copySpansFrom(
-                        fullText,
-                        textLength - secondPart.length,
-                        textLength,
-                        null,
-                        secondDest,
-                        0,
-                    )
+                    copySpansSafely(fullText, 0, firstPart.length, firstDest)
+                    copySpansSafely(fullText, textLength - secondPart.length, textLength, secondDest)
                 }
                 return TextUtils.concat(firstDest, ellipsisText, secondDest)
             }

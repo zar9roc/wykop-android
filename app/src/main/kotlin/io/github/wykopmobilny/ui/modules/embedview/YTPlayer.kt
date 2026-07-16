@@ -120,14 +120,34 @@ class YTPlayer :
         super.onCreate(savedInstanceState)
         initialize()
 
+        // Pusty klucz YouTube API = IllegalArgumentException z YouTubePlayerView
+        // (crash z logów 2026-07-16). Build bez skonfigurowanego klucza otwiera
+        // wideo w aplikacji YouTube / przeglądarce zamiast wywalać apkę.
+        val apiKey = findYoutubeApiKey()
+        if (apiKey.isBlank()) {
+            openExternallyAndFinish()
+            return
+        }
+
         playerView = YouTubePlayerView(this)
-        playerView.initialize(findYoutubeApiKey(), this)
+        playerView.initialize(apiKey, this)
 
         addContentView(playerView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
 
         playerView.setBackgroundResource(android.R.color.black)
 
         StatusBarUtil.hide(this)
+    }
+
+    private fun openExternallyAndFinish() {
+        val videoUri = Uri.parse(YouTubeUrlParser.getVideoUrl(videoId!!))
+        val intent =
+            Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:$videoId"))
+                .takeIf { packageManager.queryIntentActivities(it, PackageManager.MATCH_DEFAULT_ONLY).isNotEmpty() }
+                ?: Intent(Intent.ACTION_VIEW, videoUri)
+        runCatching { startActivity(intent) }
+            .onFailure { Napier.i("Failed to open video externally", it) }
+        finish()
     }
 
     private fun initialize() {
