@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.Window
+import android.widget.NumberPicker
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.setFragmentResult
@@ -109,43 +110,66 @@ class MonthYearPickerDialog : DialogFragment() {
         binding.apply {
             when (yearSelection) {
                 currentYear -> {
-                    // For current year (2025), show only December + "Cały rok" option
                     if (currentMonth == 12) {
-                        monthPicker.displayedValues = arrayOf(getMonthString(12), getString(R.string.whole_year))
-                        monthPicker.minValue = 11
-                        monthPicker.maxValue = 12
-                        monthPicker.value = 11
+                        // Grudzien biezacego roku: tylko grudzien + "Caly rok"
                         selectedMonth = 11
+                        monthPicker.reconfigure(
+                            values = arrayOf(getMonthString(12), getString(R.string.whole_year)),
+                            minValue = 11,
+                            value = 11,
+                        )
                     } else {
-                        // For future years, show available months + "Cały rok"
+                        // Biezacy rok: dostepne miesiace + "Caly rok"
                         val months = (1..currentMonth).map { getMonthString(it) } + getString(R.string.whole_year)
-                        monthPicker.displayedValues = months.toTypedArray()
-                        monthPicker.minValue = 0
-                        monthPicker.value = currentMonth - 1
-                        monthPicker.maxValue = currentMonth
                         selectedMonth = currentMonth - 1
+                        monthPicker.reconfigure(
+                            values = months.toTypedArray(),
+                            minValue = 0,
+                            value = currentMonth - 1,
+                        )
                     }
                 }
 
                 2005 -> {
-                    // For 2005, only December is available (no "Cały rok" option)
-                    monthPicker.minValue = 11
-                    monthPicker.maxValue = 11
-                    monthPicker.value = 11
-                    monthPicker.displayedValues = arrayOf(getMonthString(12))
+                    // 2005: dostepny tylko grudzien (bez opcji "Caly rok")
                     selectedMonth = 11
+                    monthPicker.reconfigure(
+                        values = arrayOf(getMonthString(12)),
+                        minValue = 11,
+                        value = 11,
+                    )
                 }
 
                 else -> {
-                    // For all other years, show all 12 months + "Cały rok" option
+                    // Pozostale lata: 12 miesiecy + "Caly rok"; wybor miesiaca
+                    // przenosimy z poprzedniego roku (przyciety do zakresu).
                     val months = (1..12).map { getMonthString(it) } + getString(R.string.whole_year)
-                    monthPicker.displayedValues = months.toTypedArray()
-                    monthPicker.minValue = 0
-                    monthPicker.maxValue = 12
+                    selectedMonth = selectedMonth.coerceIn(0, 12)
+                    monthPicker.reconfigure(
+                        values = months.toTypedArray(),
+                        minValue = 0,
+                        value = selectedMonth,
+                    )
                 }
             }
             setTitleDate(this)
         }
+    }
+
+    // NumberPicker formatuje biezaca wartosc indeksem do displayedValues, wiec podmiana
+    // na krotsza tablice przy starym zakresie konczy sie ArrayIndexOutOfBoundsException
+    // (np. wejscie z trybu "Caly rok" i zmiana roku na biezacy). Bezpieczna kolejnosc:
+    // wyczyscic displayedValues, ustawic zakres i wartosc, dopiero potem nowa tablice.
+    private fun NumberPicker.reconfigure(
+        values: Array<String>,
+        minValue: Int,
+        value: Int,
+    ) {
+        displayedValues = null
+        this.minValue = minValue
+        maxValue = minValue + values.size - 1
+        this.value = value
+        displayedValues = values
     }
 
     private fun setTitleDate(view: YearMonthPickerBinding) {
