@@ -4,6 +4,7 @@ import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.impl.extensions.fresh
 import io.github.wykopmobilny.api.endpoints.v3.FavouritesV3RetrofitApi
 import io.github.wykopmobilny.api.endpoints.v3.LinksV3RetrofitApi
+import io.github.wykopmobilny.api.endpoints.v3.requireSuccessful
 import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
 import io.github.wykopmobilny.api.requests.v3.favourites.FavouriteRequestV3
 import io.github.wykopmobilny.api.requests.v3.links.AddRelatedRequestV3
@@ -31,11 +32,14 @@ internal class LinksRepository
                 WykopApiRequestV3(
                     FavouriteRequestV3(type = "link", sourceId = linkId),
                 )
-            if (currentlyFavorite) {
-                favouritesV3Api.removeFavourite(request)
-            } else {
-                favouritesV3Api.addFavourite(request)
-            }
+            // 204 bez body - Response<Unit> + requireSuccessful zamiast parsowania.
+            val response =
+                if (currentlyFavorite) {
+                    favouritesV3Api.removeFavourite(request)
+                } else {
+                    favouritesV3Api.addFavourite(request)
+                }
+            response.requireSuccessful()
             linkStore.fresh(linkId)
         }
 
@@ -48,11 +52,14 @@ internal class LinksRepository
                 WykopApiRequestV3(
                     FavouriteRequestV3(type = "link_comment", sourceId = commentId),
                 )
-            if (currentlyFavorite) {
-                favouritesV3Api.removeFavourite(request)
-            } else {
-                favouritesV3Api.addFavourite(request)
-            }
+            // 204 bez body - Response<Unit> + requireSuccessful zamiast parsowania.
+            val response =
+                if (currentlyFavorite) {
+                    favouritesV3Api.removeFavourite(request)
+                } else {
+                    favouritesV3Api.addFavourite(request)
+                }
+            response.requireSuccessful()
             withContext(AppDispatchers.IO) {
                 appCache.linkCommentsQueries.favorite(
                     linkId = linkId,

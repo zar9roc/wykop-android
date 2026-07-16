@@ -11,10 +11,10 @@ import io.github.wykopmobilny.api.requests.v3.media.UploadPhotoByUrlRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateCommentRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateEntryRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.VoteSurveyRequestV3
+import io.github.wykopmobilny.api.endpoints.v3.requireSuccessful
 import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
 import io.github.wykopmobilny.api.responses.v3.observed.ObservedItemV3
 import retrofit2.HttpException
-import retrofit2.Response
 import io.github.wykopmobilny.api.responses.EntryCommentResponse
 import io.github.wykopmobilny.api.responses.EntryResponse
 import io.github.wykopmobilny.api.toRequestBody
@@ -351,13 +351,15 @@ class EntriesRepository
                         sourceId = entryId,
                     ),
                 )
-            if (currentlyFavorite) {
-                favouritesApiV3.removeFavourite(request)
-            } else {
-                favouritesApiV3.addFavourite(request)
-            }
+            // 204 bez body - patrz requireSuccessful (Response<Unit> zamiast body).
+            val response =
+                if (currentlyFavorite) {
+                    favouritesApiV3.removeFavourite(request)
+                } else {
+                    favouritesApiV3.addFavourite(request)
+                }
+            response.requireSuccessful()
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
             .map { !currentlyFavorite }
 
         override fun deleteEntry(entryId: Long) =
@@ -661,11 +663,3 @@ class EntriesRepository
     }
 
 internal fun String.allowImageOnly() = ifEmpty { " " }
-
-// 204 No Content: ten Retrofit rzuca NPE przy nienullowalnym zwrocie z pustym body
-// (ignoruje '?'), a body-owe WykopApiResponseV3 nie parsuje sie z pustej odpowiedzi.
-// Response<Unit> pozwala sprawdzic status; 409 = zasob juz w docelowym stanie (np.
-// komentarz usuniety rownolegle) - traktujemy jak sukces.
-internal fun Response<Unit>.requireSuccessful() {
-    if (!isSuccessful && code() != 409) throw HttpException(this)
-}

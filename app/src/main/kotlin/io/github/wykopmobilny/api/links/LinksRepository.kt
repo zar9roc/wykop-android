@@ -4,6 +4,7 @@ import io.github.wykopmobilny.api.ErrorBodyParserV3
 import io.github.wykopmobilny.api.UserTokenRefresher
 import io.github.wykopmobilny.api.WykopImageFile
 import io.github.wykopmobilny.api.endpoints.LinksRetrofitApi
+import io.github.wykopmobilny.api.endpoints.v3.requireSuccessful
 import io.github.wykopmobilny.api.entries.allowImageOnly
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
 import io.github.wykopmobilny.api.exceptions.handleMediaUpload
@@ -354,8 +355,7 @@ class LinksRepository
             commentId: Long,
         ) = rxSingle {
             // 204 No Content - patrz requireSuccessful (Response<Unit> zamiast body).
-            val response = linksApiV3.deleteLinkComment(linkId, commentId)
-            if (!response.isSuccessful && response.code() != 409) throw HttpException(response)
+            linksApiV3.deleteLinkComment(linkId, commentId).requireSuccessful()
         }.retryWhen(userTokenRefresher)
             .map { }
 
@@ -412,13 +412,15 @@ class LinksRepository
                         sourceId = linkId,
                     ),
                 )
-            if (currentlyFavorite) {
-                favouritesApiV3.removeFavourite(request)
-            } else {
-                favouritesApiV3.addFavourite(request)
-            }
+            // 204 bez body - patrz requireSuccessful (Response<Unit> zamiast body).
+            val response =
+                if (currentlyFavorite) {
+                    favouritesApiV3.removeFavourite(request)
+                } else {
+                    favouritesApiV3.addFavourite(request)
+                }
+            response.requireSuccessful()
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
             .map { }
 
         /**
