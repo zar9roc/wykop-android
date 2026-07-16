@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -115,6 +116,16 @@ class EntryActivity :
         super.onCreate(savedInstanceState)
         setSupportActionBar(binding.toolbar.toolbar)
 
+        // Na targetSdk 36 onBackPressed() nie jest wołany (OnBackInvokedCallback) -
+        // potwierdzenie wyjścia przy niedokończonym komentarzu musi iść przez dispatcher.
+        onBackPressedDispatcher.addCallback(this) {
+            if (binding.inputToolbar.hasUserEditedContent()) {
+                exitConfirmationDialog(this@EntryActivity) { finish() }?.show()
+            } else {
+                finish()
+            }
+        }
+
         presenter.subscribe(this)
         adapter.commentId = highLightCommentId
         adapter.commentViewListener = this
@@ -172,7 +183,7 @@ class EntryActivity :
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> onBackPressed()
+            android.R.id.home -> onBackPressedDispatcher.onBackPressed()
             R.id.refresh -> onRefresh()
         }
         return true
@@ -185,6 +196,8 @@ class EntryActivity :
 
     override fun showEntry(entry: Entry) {
         adapter.entry = entry
+        // Pierwsza strona komentarzy dopiero leci - pokaż od razu kręciołek stopki.
+        adapter.hasMoreComments = true
         binding.inputToolbar.setDefaultAddressant(entry.author.nick)
         binding.inputToolbar.setIfIsCommentingPossible(entry.isCommentingPossible)
         binding.inputToolbar.show()
@@ -194,14 +207,31 @@ class EntryActivity :
         adapter.notifyDataSetChanged()
     }
 
-    override fun appendComments(comments: List<EntryComment>) {
-        adapter.appendComments(comments)
+    override fun appendComments(
+        comments: List<EntryComment>,
+        hasMore: Boolean,
+    ) {
+        adapter.appendComments(comments, hasMore)
         // Podświetlony komentarz (z powiadomienia) może być na dalszej stronie -
         // przewijamy do niego dopiero gdy pojawi się na załadowanej liście.
         if (highLightCommentId != -1L) {
             val index = adapter.entry?.comments?.indexOfFirst { it.id == highLightCommentId } ?: -1
             if (index >= 0) {
                 binding.recyclerView.scrollToPosition(index + 1)
+            }
+        }
+        // Gdy załadowana treść nie wypełnia ekranu, listener scrolla nigdy się nie
+        // odpali i nowsze komentarze z dalszych stron nie doładują się wcale.
+        // Dociągamy kolejną stronę, dopóki cała treść mieści się na ekranie.
+        if (hasMore) {
+            binding.recyclerView.post {
+                val recyclerView = binding.recyclerView
+                if (adapter.hasMoreComments &&
+                    !recyclerView.canScrollVertically(1) &&
+                    !recyclerView.canScrollVertically(-1)
+                ) {
+                    presenter.loadMoreComments()
+                }
             }
         }
     }
@@ -227,13 +257,6 @@ class EntryActivity :
         contract.launch("image/*")
     }
 
-    override fun onBackPressed() {
-        if (binding.inputToolbar.hasUserEditedContent()) {
-            exitConfirmationDialog(this) { finish() }?.show()
-        } else {
-            finish()
-        }
-    }
 
     override fun sendPhoto(
         photo: String?,
