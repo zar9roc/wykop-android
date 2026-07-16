@@ -40,20 +40,27 @@ fun View.applyStatusBarInsets() {
 }
 
 /**
- * Dosuwa content aktywnosci nad klawiature ekranowa.
+ * Dosuwa content aktywnosci nad klawiature ekranowa i belke nawigacji systemowej.
  *
  * Od targetSdk 35 (wymuszony edge-to-edge) manifestowe adjustResize jest ignorowane -
- * okno nie zmniejsza sie po otwarciu IME i klawiatura rysuje sie NA polu odpowiedzi.
- * Listener na android.R.id.content odtwarza zachowanie adjustResize: dolny padding
- * rowny insetowi IME. Gdy klawiatura jest schowana, inset wynosi 0.
+ * okno nie zmniejsza sie po otwarciu IME i klawiatura rysuje sie NA polu odpowiedzi,
+ * a belka nawigacji (gesty/3 przyciski) zaslania dolne kontrolki (InputToolbar, FAB).
+ * Listener na android.R.id.content odtwarza zachowanie sprzed edge-to-edge: dolny
+ * padding = max(IME, navigationBars), boczne = navigationBars (belka w landscape
+ * laduje z boku ekranu).
  */
 fun AppCompatActivity.applyImeInsetsToContent() {
     val content = findViewById<View>(android.R.id.content) ?: return
     ViewCompat.setOnApplyWindowInsetsListener(content) { view, windowInsets ->
         val imeBottom = windowInsets.getInsets(WindowInsetsCompat.Type.ime()).bottom
-        if (view.paddingBottom != imeBottom) {
-            view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, imeBottom)
-            DiagnosticCheckpoint.log("ImeInsets", "content paddingBottom=${imeBottom}px")
+        val navBars = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars())
+        val bottom = maxOf(imeBottom, navBars.bottom)
+        if (view.paddingBottom != bottom || view.paddingLeft != navBars.left || view.paddingRight != navBars.right) {
+            view.setPadding(navBars.left, view.paddingTop, navBars.right, bottom)
+            DiagnosticCheckpoint.log(
+                "ImeInsets",
+                "content paddingBottom=${bottom}px (ime=$imeBottom, nav=${navBars.bottom})",
+            )
         }
         windowInsets
     }

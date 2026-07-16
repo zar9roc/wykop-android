@@ -49,6 +49,9 @@ import io.github.wykopmobilny.ui.base.android.R as BaseR
 class EmbedViewActivity :
     BaseActivity(),
     EmbedView {
+    // Pelnoekranowy player - bez paddingu od belki nawigacji.
+    override val applyWindowInsetsToContent = false
+
     companion object {
         const val EXTRA_URL = "EXTRA_URL"
 

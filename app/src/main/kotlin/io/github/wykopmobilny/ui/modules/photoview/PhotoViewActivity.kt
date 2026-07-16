@@ -26,6 +26,9 @@ import javax.inject.Inject
 import io.github.wykopmobilny.ui.base.android.R as BaseR
 
 internal class PhotoViewActivity : BaseActivity() {
+    // Pelnoekranowy podglad zdjecia - bez paddingu od belki nawigacji.
+    override val applyWindowInsetsToContent = false
+
     companion object {
         const val URL_EXTRA = "URL"
         const val SHARE_REQUEST_CODE = 1

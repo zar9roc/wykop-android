@@ -38,6 +38,10 @@ abstract class BaseActivity :
     HasAndroidInjector {
     open val enableSwipeBackLayout: Boolean = false
     open val isActivityTransfluent: Boolean = false
+
+    // Pelnoekranowe widoki mediow (photo view, player) nadpisuja na false -
+    // padding od belki nawigacji robilby im letterbox zamiast fullscreenu.
+    open val applyWindowInsetsToContent: Boolean = true
     var isRunning = false
 
     @Inject
@@ -93,7 +97,9 @@ abstract class BaseActivity :
     override fun onContentChanged() {
         super.onContentChanged()
         findViewById<Toolbar>(R.id.toolbar)?.applyStatusBarInsets()
-        applyImeInsetsToContent()
+        if (applyWindowInsetsToContent) {
+            applyImeInsetsToContent()
+        }
     }
 
     override fun onResume() {
