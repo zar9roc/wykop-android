@@ -34,6 +34,7 @@ internal class GetEntryDetailsQuery
                     isLoadingNewer = state.isLoadingNewer,
                     loadOlderAction = pager::loadOlder,
                     loadNewerAction = pager::loadNewer,
+                    lastPage = state.lastPage,
                     jumpToNewestAction =
                         ((state.lastPage ?: 0) > 1).takeIf { it }?.let {
                             safeCallback { pager.jumpToNewest() }

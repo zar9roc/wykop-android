@@ -26,6 +26,8 @@ data class EntryDetailsUi(
     val isLoadingNewer: Boolean,
     val loadOlderAction: () -> Unit,
     val loadNewerAction: () -> Unit,
+    // Ostatnia strona (ceil(total/per_page)) - do komunikatu przy skoku.
+    val lastPage: Int?,
     // null = brak paginacji (jedna strona) - przycisk skoku ukryty.
     val jumpToNewestAction: (() -> Unit)?,
     val swipeRefresh: SwipeRefreshUi,

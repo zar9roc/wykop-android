@@ -24,7 +24,10 @@ import io.github.wykopmobilny.utils.usermanager.UserManagerApi
  * mapowaniu), dzięki czemu prepend/append idą przez notifyItemRangeInserted -
  * LinearLayoutManager sam kotwiczy viewport przy wstawkach nad nim.
  *
- * Pozycje: [0] = wpis, [1..n] = komentarze, [n+1] = stopka ładowania (opcjonalna).
+ * Pozycje: [wpis - tylko gdy okno sięga strony 1], [komentarze...], [stopka
+ * ładowania - opcjonalna]. Header wpisu pojawia się dopiero po dociągnięciu
+ * wszystkich starszych stron ("infinite scroll" w górę) - przy kotwicy na
+ * stronie N wpis nad komentarzami sugerowałby, że nic starszego nie ma.
  * Wskaźnik doładowywania STARSZYCH stron żyje poza listą (layout fragmentu).
  */
 internal class EntryDetailsAdapterV2(
@@ -53,33 +56,50 @@ internal class EntryDetailsAdapterV2(
     val comments = mutableListOf<EntryComment>()
 
     private var showFooterLoading = false
+    private var showHeader = true
+
+    private val headerOffset: Int get() = if (showHeader) 1 else 0
 
     fun replaceAll(
         newEntry: Entry?,
         newComments: List<EntryComment>,
         footerLoading: Boolean,
+        headerVisible: Boolean,
     ) {
         entry = newEntry
         comments.clear()
         comments.addAll(newComments)
         showFooterLoading = footerLoading
+        showHeader = headerVisible
         notifyDataSetChanged()
     }
 
     fun updateEntry(newEntry: Entry) {
         entry = newEntry
-        notifyItemChanged(0)
+        if (showHeader) {
+            notifyItemChanged(0)
+        }
+    }
+
+    fun setHeaderVisible(visible: Boolean) {
+        if (showHeader == visible) return
+        showHeader = visible
+        if (visible) {
+            notifyItemInserted(0)
+        } else {
+            notifyItemRemoved(0)
+        }
     }
 
     fun prepend(newComments: List<EntryComment>) {
         if (newComments.isEmpty()) return
         comments.addAll(0, newComments)
-        notifyItemRangeInserted(1, newComments.size)
+        notifyItemRangeInserted(headerOffset, newComments.size)
     }
 
     fun append(newComments: List<EntryComment>) {
         if (newComments.isEmpty()) return
-        val insertAt = comments.size + 1
+        val insertAt = comments.size + headerOffset
         comments.addAll(newComments)
         notifyItemRangeInserted(insertAt, newComments.size)
     }
@@ -88,9 +108,9 @@ internal class EntryDetailsAdapterV2(
         if (showFooterLoading == loading) return
         showFooterLoading = loading
         if (loading) {
-            notifyItemInserted(comments.size + 1)
+            notifyItemInserted(comments.size + headerOffset)
         } else {
-            notifyItemRemoved(comments.size + 1)
+            notifyItemRemoved(comments.size + headerOffset)
         }
     }
 
@@ -98,7 +118,7 @@ internal class EntryDetailsAdapterV2(
         val index = comments.indexOfFirst { it.id == comment.id }
         if (index >= 0) {
             comments[index] = comment
-            notifyItemChanged(index + 1)
+            notifyItemChanged(index + headerOffset)
         }
     }
 
@@ -106,20 +126,20 @@ internal class EntryDetailsAdapterV2(
         comments
             .indexOfFirst { it.id == commentId }
             .takeIf { it >= 0 }
-            ?.let { it + 1 }
+            ?.let { it + headerOffset }
 
     override fun getItemCount(): Int {
         entry ?: return 0
-        return comments.size + 1 + if (showFooterLoading) 1 else 0
+        return comments.size + headerOffset + if (showFooterLoading) 1 else 0
     }
 
-    private fun isFooterPosition(position: Int) = showFooterLoading && position == comments.size + 1
+    private fun isFooterPosition(position: Int) = showFooterLoading && position == comments.size + headerOffset
 
     override fun getItemViewType(position: Int): Int =
         when {
-            position == 0 -> EntryViewHolder.getViewTypeForEntry(entry!!)
+            showHeader && position == 0 -> EntryViewHolder.getViewTypeForEntry(entry!!)
             isFooterPosition(position) -> TYPE_LOADING
-            else -> EntryCommentViewHolder.getViewTypeForEntryComment(comments[position - 1])
+            else -> EntryCommentViewHolder.getViewTypeForEntryComment(comments[position - headerOffset])
         }
 
     override fun onCreateViewHolder(
@@ -177,7 +197,7 @@ internal class EntryDetailsAdapterV2(
 
             is EntryCommentViewHolder ->
                 holder.bindView(
-                    comment = comments[position - 1],
+                    comment = comments[position - headerOffset],
                     entryAuthor = entry?.author,
                     highlightCommentId = highlightCommentId ?: 0,
                     openSpoilersDialog = openSpoilersDialog,
@@ -188,10 +208,10 @@ internal class EntryDetailsAdapterV2(
                 )
 
             is BlockedViewHolder -> {
-                if (position == 0) {
+                if (showHeader && position == 0) {
                     holder.bindView(entry!!)
                 } else {
-                    holder.bindView(comments[position - 1])
+                    holder.bindView(comments[position - headerOffset])
                 }
             }
         }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.Toolbar
@@ -210,6 +211,11 @@ internal class EntryDetailsFragment :
 
         binding.jumpToNewestFab.setOnClickListener {
             pendingScrollToBottom = true
+            currentUi?.lastPage?.let { lastPage ->
+                Toast
+                    .makeText(requireContext(), getString(R.string.jump_to_newest_loading, lastPage), Toast.LENGTH_SHORT)
+                    .show()
+            }
             jumpToNewestAction?.invoke()
         }
 
@@ -277,6 +283,9 @@ internal class EntryDetailsFragment :
                     newEntry = mappedEntry ?: adapter.entry,
                     newComments = mapped,
                     footerLoading = ui.hasNewer,
+                    // Wpis nad komentarzami dopiero, gdy okno sięga strony 1 -
+                    // wcześniej scroll w górę dociąga starsze strony.
+                    headerVisible = !ui.hasOlder,
                 )
             }
 
@@ -293,6 +302,8 @@ internal class EntryDetailsFragment :
                     }
                 }
                 adapter.setFooterLoading(ui.hasNewer)
+                // Po prependzie, żeby header wskoczył nad świeżo dodaną stronę 1.
+                adapter.setHeaderVisible(!ui.hasOlder)
             }
         }
         renderedIds = newIds
@@ -338,6 +349,18 @@ internal class EntryDetailsFragment :
                 val recycler = this.binding?.recyclerView ?: return@post
                 if (!recycler.canScrollVertically(1) && !recycler.canScrollVertically(-1)) {
                     currentUi?.loadNewerAction?.invoke()
+                }
+            }
+        }
+        // Bufor w górę: gdy viewport jest przy szczycie okna (np. kotwica na
+        // początku strony), preładowujemy starszą stronę - inaczej użytkownik
+        // "dobija" do góry i scroll listener nie ma już eventów dy<0.
+        if (ui.hasOlder && !ui.isLoadingOlder) {
+            binding.recyclerView.post {
+                val recycler = this.binding?.recyclerView ?: return@post
+                val manager = recycler.layoutManager as? LinearLayoutManager ?: return@post
+                if (manager.findFirstVisibleItemPosition() <= LOAD_OLDER_THRESHOLD) {
+                    currentUi?.loadOlderAction?.invoke()
                 }
             }
         }
