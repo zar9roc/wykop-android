@@ -252,8 +252,19 @@ class MainNavigationActivity :
 
         if (savedInstanceState == null) {
             if (intent.hasExtra(TARGET_FRAGMENT_KEY)) {
-                when (intent.getStringExtra(TARGET_FRAGMENT_KEY)) {
+                when (val target = intent.getStringExtra(TARGET_FRAGMENT_KEY)) {
                     TARGET_NOTIFICATIONS -> openFragment(NotificationsListFragment.newInstance())
+                    else -> {
+                        // Nazwane zakładki (np. "hot"/"promoted" z syntetycznego
+                        // back-stacku deep-linków). Nieznany cel nie może zostawić
+                        // pustego ekranu - otwieramy widok domyślny.
+                        val menuItem = TAB_TO_MENU_ID[target]?.let { binding.navigationView.menu.findItem(it) }
+                        if (menuItem != null) {
+                            onNavigationItemSelected(menuItem)
+                        } else {
+                            openMainFragment()
+                        }
+                    }
                 }
             } else {
                 openMainFragment()

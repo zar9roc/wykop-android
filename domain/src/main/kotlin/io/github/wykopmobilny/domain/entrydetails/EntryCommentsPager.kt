@@ -40,8 +40,10 @@ class EntryCommentsPager
         private val isLoadingOlder = AtomicBoolean(false)
 
         /**
-         * Pierwsze ładowanie: wpis + strona-kotwica komentarzy. Gdy kotwica z deep-linka
-         * wypada poza zakres (wpis mógł stracić strony), spada na ostatnią stronę.
+         * Pierwsze ładowanie: wpis + strona-kotwica komentarzy. Kotwica pochodzi
+         * z deep-linka (/strona/NNN), a bez niej - z id komentarza (URL-e powiadomień
+         * z API v3 mają format /#comment-<id> BEZ członu strony). Kotwica poza
+         * zakresem spada na ostatnią stronę.
          */
         internal suspend fun initialLoad() {
             val currentGeneration = generation.incrementAndGet()
@@ -52,13 +54,10 @@ class EntryCommentsPager
             if (generation.get() != currentGeneration) return
             storage.update { it.copy(entry = entry) }
 
-            val anchor = key.initialPage?.coerceAtLeast(1) ?: 1
-            var response = fetchPage(anchor)
-            var loadedPage = anchor
-            if (anchor > 1 && response.data.orEmpty().isEmpty()) {
+            var (loadedPage, response) = resolveAnchor()
+            if (loadedPage > 1 && response.data.orEmpty().isEmpty()) {
                 // Kotwica poza zakresem - klamrujemy do ostatniej strony z paginacji.
-                val lastPage = lastPageOf(response) ?: 1
-                loadedPage = lastPage.coerceAtLeast(1)
+                loadedPage = (lastPageOf(response) ?: 1).coerceAtLeast(1)
                 response = fetchPage(loadedPage)
             }
             if (generation.get() != currentGeneration) return
@@ -76,6 +75,49 @@ class EntryCommentsPager
                     isLoadingNewer = false,
                 )
             }
+        }
+
+        private suspend fun resolveAnchor(): Pair<Int, WykopApiResponseV3<List<EntryCommentResponseV3>>> {
+            key.initialPage?.coerceAtLeast(1)?.let { explicit ->
+                return explicit to fetchPage(explicit)
+            }
+            val firstPage = fetchPage(1)
+            val target = key.initialCommentId ?: return 1 to firstPage
+            val lastPage = lastPageOf(firstPage) ?: return 1 to firstPage
+            if (lastPage <= 1 || firstPage.data.orEmpty().any { it.id == target }) return 1 to firstPage
+            return locateCommentPage(target, lastPage) ?: (1 to firstPage)
+        }
+
+        /**
+         * Szuka strony zawierającej komentarz o danym id. Komentarze są chronologiczne,
+         * a id globalnie rosnące, więc granice stron (pierwszy/ostatni id) pozwalają na
+         * wyszukiwanie binarne (~log2(N) requestów). Najpierw sonda ostatniej strony -
+         * powiadomienia niemal zawsze dotyczą świeżych komentarzy. Komentarz usunięty:
+         * wyszukiwanie i tak zbiega do strony, na której by leżał (kontekst rozmowy);
+         * fallback = ostatnia strona.
+         */
+        private suspend fun locateCommentPage(
+            target: Long,
+            lastPage: Int,
+        ): Pair<Int, WykopApiResponseV3<List<EntryCommentResponseV3>>>? {
+            val lastResponse = fetchPage(lastPage)
+            val lastData = lastResponse.data.orEmpty()
+            if (lastData.isEmpty() || target >= lastData.first().id) return lastPage to lastResponse
+
+            var low = 2
+            var high = lastPage - 1
+            while (low <= high) {
+                val mid = (low + high) / 2
+                val response = fetchPage(mid)
+                val data = response.data.orEmpty()
+                when {
+                    data.isEmpty() -> return lastPage to lastResponse
+                    target < data.first().id -> high = mid - 1
+                    target > data.last().id -> low = mid + 1
+                    else -> return mid to response
+                }
+            }
+            return lastPage to lastResponse
         }
 
         /** Doładowanie nowszej strony (scroll w dół). Fire-and-forget. */

@@ -200,6 +200,7 @@ internal class EntryDetailsFragment :
                     dy: Int,
                 ) {
                     triggerLazyLoads(recyclerView, dy)
+                    updateFabState()
                 }
             },
         )
@@ -210,13 +211,20 @@ internal class EntryDetailsFragment :
         binding.inputToolbar.hide()
 
         binding.jumpToNewestFab.setOnClickListener {
-            pendingScrollToBottom = true
-            currentUi?.lastPage?.let { lastPage ->
-                Toast
-                    .makeText(requireContext(), getString(R.string.jump_to_newest_loading, lastPage), Toast.LENGTH_SHORT)
-                    .show()
+            val ui = currentUi ?: return@setOnClickListener
+            if (ui.hasNewer) {
+                // Ostatniej strony nie ma w oknie - skok przez pager.
+                pendingScrollToBottom = true
+                ui.lastPage?.let { lastPage ->
+                    Toast
+                        .makeText(requireContext(), getString(R.string.jump_to_newest_loading, lastPage), Toast.LENGTH_SHORT)
+                        .show()
+                }
+                jumpToNewestAction?.invoke()
+            } else {
+                // Ostatnia strona załadowana - zwykłe przewinięcie na dół.
+                adapter?.let { binding.recyclerView.scrollToPosition(it.itemCount - 1) }
             }
-            jumpToNewestAction?.invoke()
         }
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
@@ -257,7 +265,7 @@ internal class EntryDetailsFragment :
 
         binding.loadingView.isVisible = ui.isInitialLoading
         binding.loadingOlderView.isVisible = ui.isLoadingOlder
-        binding.jumpToNewestFab.isVisible = ui.jumpToNewestAction != null
+        updateFabState()
 
         val entryResponse = ui.entry ?: return
         val mappedEntry =
@@ -362,6 +370,33 @@ internal class EntryDetailsFragment :
                 if (manager.findFirstVisibleItemPosition() <= LOAD_OLDER_THRESHOLD) {
                     currentUi?.loadOlderAction?.invoke()
                 }
+            }
+        }
+    }
+
+    /**
+     * Trzy stany FAB-a: podwójny szewron (skok - ostatnia strona poza oknem),
+     * pojedynczy szewron (przewiń na dół - ostatnia strona w oknie, ale nie jesteśmy
+     * na dole), ukryty (dół listy albo brak paginacji).
+     */
+    private fun updateFabState() {
+        val binding = binding ?: return
+        val ui = currentUi ?: return
+        val hasPagination = (ui.lastPage ?: 0) > 1
+        val atBottom = !binding.recyclerView.canScrollVertically(1)
+        when {
+            !hasPagination || ui.isInitialLoading -> binding.jumpToNewestFab.isVisible = false
+
+            ui.hasNewer -> {
+                binding.jumpToNewestFab.setImageResource(R.drawable.ic_jump_to_newest)
+                binding.jumpToNewestFab.isVisible = true
+            }
+
+            atBottom -> binding.jumpToNewestFab.isVisible = false
+
+            else -> {
+                binding.jumpToNewestFab.setImageResource(R.drawable.ic_scroll_to_bottom)
+                binding.jumpToNewestFab.isVisible = true
             }
         }
     }
