@@ -129,7 +129,10 @@ class WykopEmbedView(
                 binding.imageIcon.setBackgroundResource(R.mipmap.ic_twitch)
             }
 
-            "twitter" -> {
+            // "x" = x.com po rebrandingu Twittera (etykieta domeny po obcięciu TLD).
+            "twitter",
+            "x",
+            -> {
                 binding.imageIcon.setBackgroundResource(R.mipmap.ic_twitter)
             }
 
@@ -137,7 +140,10 @@ class WykopEmbedView(
                 binding.imageIcon.setBackgroundResource(R.mipmap.ic_instagram)
             }
 
-            "facebook" -> {
+            // "fb" = fb.watch / fb.com (oficjalne skróty Facebooka).
+            "facebook",
+            "fb",
+            -> {
                 binding.imageIcon.setBackgroundResource(R.mipmap.ic_facebook)
             }
 
