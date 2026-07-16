@@ -7,7 +7,7 @@ import io.github.wykopmobilny.ui.modules.NewNavigator
 import io.github.wykopmobilny.ui.modules.embedview.EmbedViewActivity
 import io.github.wykopmobilny.ui.modules.embedview.YouTubeUrlParser
 import io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsActivityV2
-import io.github.wykopmobilny.ui.modules.mikroblog.entry.EntryActivity
+import io.github.wykopmobilny.ui.modules.mikroblog.entry.v2.EntryActivityV2
 import io.github.wykopmobilny.ui.modules.pm.conversation.ConversationActivity
 import io.github.wykopmobilny.ui.modules.profile.ProfileActivity
 import io.github.wykopmobilny.ui.modules.tag.TagActivity
@@ -55,7 +55,14 @@ class WykopLinkHandler
                             ENTRY_MATCHER -> {
                                 val entryId = EntryLinkParser.getEntryId(url)
                                 if (entryId != null) {
-                                    EntryActivity.createIntent(context, entryId, EntryLinkParser.getEntryCommentId(url), false)
+                                    EntryActivityV2.createIntent(
+                                        context = context,
+                                        entryId = entryId,
+                                        commentId = EntryLinkParser.getEntryCommentId(url),
+                                        // Strona z URL-a (powiadomienia) - start od kotwicy
+                                        // zamiast ladowania wszystkich stron po kolei.
+                                        page = EntryLinkParser.getEntryPage(url),
+                                    )
                                 } else {
                                     null
                                 }

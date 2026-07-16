@@ -110,6 +110,11 @@
             android:theme="@style/WykopAppTheme.Dark"
             />
         <activity
+            android:name="io.github.wykopmobilny.ui.modules.mikroblog.entry.v2.EntryActivityV2"
+            android:parentActivityName="io.github.wykopmobilny.ui.modules.mainnavigation.MainNavigationActivity"
+            android:theme="@style/WykopAppTheme.Dark"
+            />
+        <activity
             android:name="io.github.wykopmobilny.ui.modules.links.relatedlinks.RelatedLinksActivity"
             android:parentActivityName="io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsActivityV2"
             android:theme="@style/WykopAppTheme.Dark"

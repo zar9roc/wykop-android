@@ -25,7 +25,7 @@ import io.github.wykopmobilny.ui.modules.links.relatedlinks.RelatedLinksActivity
 import io.github.wykopmobilny.ui.modules.links.upvoters.UpvotersActivity
 import io.github.wykopmobilny.ui.modules.loginscreen.LoginScreenActivity
 import io.github.wykopmobilny.ui.modules.mainnavigation.MainNavigationActivity
-import io.github.wykopmobilny.ui.modules.mikroblog.entry.EntryActivity
+import io.github.wykopmobilny.ui.modules.mikroblog.entry.v2.EntryActivityV2
 import io.github.wykopmobilny.ui.modules.notificationslist.NotificationsListActivity
 import io.github.wykopmobilny.ui.modules.photoview.PhotoViewActivity
 import io.github.wykopmobilny.ui.modules.pm.conversation.ConversationActivity
@@ -53,10 +53,12 @@ class NewNavigator
             )
         }
 
+        // isRevealed celowo ignorowane w V2 - stan odsłonięcia embeda i tak jest
+        // per-obiekt Embed, a mapowanie na ekranie następuje od nowa.
         fun openEntryDetailsActivity(
             entryId: Long,
-            isRevealed: Boolean,
-        ) = context.startActivity(EntryActivity.createIntent(context, entryId, null, isRevealed))
+            @Suppress("UNUSED_PARAMETER") isRevealed: Boolean,
+        ) = context.startActivity(EntryActivityV2.createIntent(context, entryId))
 
         fun openTagActivity(tag: String) = context.startActivity(TagActivity.createIntent(context, tag))
 

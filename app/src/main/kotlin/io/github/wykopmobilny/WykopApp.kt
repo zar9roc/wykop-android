@@ -31,6 +31,9 @@ import io.github.wykopmobilny.domain.startup.AppConfig
 import io.github.wykopmobilny.domain.styles.di.StylesScope
 import io.github.wykopmobilny.domain.twofactor.di.TwoFactorAuthScope
 import io.github.wykopmobilny.domain.work.di.WorkScope
+import io.github.wykopmobilny.domain.entrydetails.di.EntryDetailsComponent
+import io.github.wykopmobilny.domain.entrydetails.di.EntryDetailsKey
+import io.github.wykopmobilny.domain.entrydetails.di.EntryDetailsScope
 import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsComponent
 import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsKey
 import io.github.wykopmobilny.notification.AppNotification.Type.Notifications
@@ -313,6 +316,11 @@ open class WykopApp :
                 getOrPutScope<LinkDetailsScope>(scopeId) { domainComponent.linkDetails().create(key = scopeId) }
             }
 
+            EntryDetailsComponent::class -> {
+                scopeId as EntryDetailsKey
+                getOrPutScope<EntryDetailsScope>(scopeId) { domainComponent.entryDetails().create(key = scopeId) }
+            }
+
             ProfileDependencies::class -> {
                 scopeId as String
                 getOrPutScope<ProfileScope>(scopeId) { domainComponent.profile().create(profileId = scopeId) }
@@ -358,6 +366,7 @@ open class WykopApp :
             WorkDependencies::class -> scopes.remove(scopeKey<WorkScope>(scopeId))
             SearchDependencies::class -> scopes.remove(scopeKey<SearchScope>(scopeId))
             LinkDetailsComponent::class -> scopes.remove(scopeKey<LinkDetailsScope>(scopeId))
+            EntryDetailsComponent::class -> scopes.remove(scopeKey<EntryDetailsScope>(scopeId))
             ProfileDependencies::class -> scopes.remove(scopeKey<ProfileScope>(scopeId))
             NotificationDependencies::class -> scopes.remove(scopeKey<NotificationsScope>(scopeId))
             TwoFactorAuthDependencies::class -> scopes.remove(scopeKey<TwoFactorAuthScope>(scopeId))

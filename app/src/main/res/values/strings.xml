@@ -99,6 +99,7 @@
     <string name="delete">Usuń</string>
     <string name="report">Zgłoś</string>
     <string name="pm_message_read_indicator">%1$s · Przeczytana</string>
+    <string name="jump_to_newest">Przejdź do najnowszych</string>
     <string name="mywykop_all">Wszystko</string>
     <string name="tags">Tagi</string>
     <string name="users">Użytkownicy</string>

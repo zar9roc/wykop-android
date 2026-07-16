@@ -97,4 +97,8 @@ internal abstract class ActivityBuilder {
     // injectuje sie sam przez AndroidSupportInjection (fallback na Application).
     @ContributesAndroidInjector
     abstract fun bindLinkDetailsFragment(): io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsFragment
+
+    // Analogicznie EntryActivityV2 (ekran wpisu na nowym stacku).
+    @ContributesAndroidInjector
+    abstract fun bindEntryDetailsFragment(): io.github.wykopmobilny.ui.modules.mikroblog.entry.v2.EntryDetailsFragment
 }
