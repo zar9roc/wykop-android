@@ -1,8 +1,10 @@
 package io.github.wykopmobilny.initializers
 
 import android.content.Context
+import android.os.Build
 import io.github.aakira.napier.Antilog
 import io.github.aakira.napier.LogLevel
+import io.github.wykopmobilny.BuildConfig
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -29,6 +31,14 @@ internal class FileLogAntilog(context: Context) : Antilog() {
         get() = logDir.resolve("log.txt")
 
     private val timestampFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US)
+
+    // Nagłówek diagnostyczny doklejany przed każdym stack trace'em - przy analizie
+    // wyeksportowanych logów od razu wiadomo, która wersja aplikacji je wyprodukowała
+    // (plik przeżywa aktualizacje, więc wpisy z różnych wersji mieszają się w jednym logu).
+    private val diagnosticHeader =
+        "--- app ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}, ${BuildConfig.BUILD_TYPE}) | " +
+            "Android ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT}) | " +
+            "${Build.MANUFACTURER} ${Build.MODEL} ---"
 
     override fun performLog(
         priority: LogLevel,
@@ -70,6 +80,7 @@ internal class FileLogAntilog(context: Context) : Antilog() {
             if (!tag.isNullOrBlank()) append(" [").append(tag).append(']')
             if (!message.isNullOrBlank()) append(' ').append(message)
             if (throwable != null) {
+                append('\n').append(diagnosticHeader)
                 append('\n').append(throwable.stackTraceToString().trimEnd())
             }
             append('\n')
