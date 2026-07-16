@@ -23,14 +23,16 @@ class PMMessageViewHolder(
         enableEmbedPlayer: Boolean,
         showAdultContent: Boolean,
         hideNsfw: Boolean,
+        showReadIndicator: Boolean = false,
     ) {
         flipMessage(message.isSentFromUser)
         binding.apply {
-            date.text = message.date
-
-            message.app?.let {
-                date.text = message.date
-            }
+            date.text =
+                if (showReadIndicator) {
+                    root.context.getString(R.string.pm_message_read_indicator, message.date)
+                } else {
+                    message.date
+                }
 
             body.prepareBody(message.body, { linkHandler.handleUrl(it) }, null, openSpoilersDialog)
             embedImage.forceDisableMinimizedMode = true

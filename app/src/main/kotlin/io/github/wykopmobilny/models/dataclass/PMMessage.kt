@@ -6,4 +6,6 @@ data class PMMessage(
     val embed: Embed?,
     val isSentFromUser: Boolean,
     val app: String?,
+    // Pole "read" z API - dla własnych wiadomości oznacza odczytanie przez rozmówcę.
+    val isRead: Boolean = false,
 )

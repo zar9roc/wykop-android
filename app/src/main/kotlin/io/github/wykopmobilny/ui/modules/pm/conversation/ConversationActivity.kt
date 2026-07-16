@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.MenuItem
+import androidx.activity.addCallback
 import androidx.core.view.isVisible
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.api.WykopImageFile
@@ -15,6 +16,7 @@ import io.github.wykopmobilny.base.BaseActivity
 import io.github.wykopmobilny.databinding.ActivityConversationBinding
 import io.github.wykopmobilny.models.dataclass.Author
 import io.github.wykopmobilny.models.dataclass.FullConversation
+import io.github.wykopmobilny.models.dataclass.PMMessage
 import io.github.wykopmobilny.models.fragments.DataFragment
 import io.github.wykopmobilny.models.fragments.getDataFragmentInstance
 import io.github.wykopmobilny.ui.adapters.PMMessageAdapter
@@ -69,6 +71,17 @@ class ConversationActivity :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Na targetSdk 36 onBackPressed() nie jest wołany (OnBackInvokedCallback) -
+        // potwierdzenie wyjścia przy niedokończonej wiadomości przez dispatcher.
+        onBackPressedDispatcher.addCallback(this) {
+            if (binding.inputToolbar.hasUserEditedContent()) {
+                exitConfirmationDialog(this@ConversationActivity) { finish() }?.show()
+            } else {
+                finish()
+            }
+        }
+
         conversationDataFragment = supportFragmentManager.getDataFragmentInstance(DATA_FRAGMENT_TAG)
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -133,9 +146,16 @@ class ConversationActivity :
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> onBackPressed()
+            android.R.id.home -> onBackPressedDispatcher.onBackPressed()
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun appendMessage(message: PMMessage) {
+        // reverseLayout: indeks 0 = najnowsza wiadomość (wizualnie na dole).
+        conversationAdapter.messages.add(0, message)
+        conversationAdapter.notifyItemInserted(0)
+        binding.recyclerView.scrollToPosition(0)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -156,14 +176,6 @@ class ConversationActivity :
             ),
             BaseInputActivity.USER_ACTION_INSERT_PHOTO,
         )
-    }
-
-    override fun onBackPressed() {
-        if (binding.inputToolbar.hasUserEditedContent()) {
-            exitConfirmationDialog(this) { finish() }?.show()
-        } else {
-            finish()
-        }
     }
 
     override fun sendPhoto(

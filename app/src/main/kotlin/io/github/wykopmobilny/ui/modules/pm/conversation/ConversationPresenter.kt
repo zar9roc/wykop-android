@@ -36,9 +36,12 @@ class ConversationPresenter
                 .subscribeOn(schedulers.backgroundThread())
                 .observeOn(schedulers.mainThread())
                 .subscribe(
-                    {
+                    { sent ->
                         view?.hideInputbarProgress()
                         view?.resetInputbarState()
+                        // Wiadomość z odpowiedzi 201 pokazujemy od razu; reload
+                        // w tle uzgadnia stan (embedy, kolejność).
+                        view?.appendMessage(sent)
                         loadConversation()
                     },
                     {
@@ -58,9 +61,12 @@ class ConversationPresenter
                 .subscribeOn(schedulers.backgroundThread())
                 .observeOn(schedulers.mainThread())
                 .subscribe(
-                    {
+                    { sent ->
                         view?.hideInputbarProgress()
                         view?.resetInputbarState()
+                        // Wiadomość z odpowiedzi 201 pokazujemy od razu; reload
+                        // w tle uzgadnia stan (embedy, kolejność).
+                        view?.appendMessage(sent)
                         loadConversation()
                     },
                     {

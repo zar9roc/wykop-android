@@ -47,6 +47,9 @@ class PMMessageAdapter
             enableYoutubePlayer = enableYoutubePlayer,
             showAdultContent = showAdultContent,
             hideNsfw = hideNsfw,
+            // "Przeczytana" tylko przy najnowszej własnej odczytanej wiadomości
+            // (lista jest od najnowszych - indexOfFirst = najnowsza pasująca).
+            showReadIndicator = position == messages.indexOfFirst { it.isSentFromUser && it.isRead },
         )
 
         override fun onViewRecycled(holder: PMMessageViewHolder) {

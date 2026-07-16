@@ -20,6 +20,7 @@ import io.github.wykopmobilny.models.dataclass.FullConversation
 import io.github.wykopmobilny.models.dataclass.PMMessage
 import io.github.wykopmobilny.models.mapper.apiv3.AuthorMapperV3
 import io.github.wykopmobilny.models.mapper.apiv3.MediaMapperV3
+import io.github.wykopmobilny.utils.textview.removeHtml
 import io.github.wykopmobilny.utils.toPrettyDate
 import kotlinx.coroutines.rx2.rxSingle
 import retrofit2.HttpException
@@ -35,12 +36,22 @@ private fun PmMessageResponseV3.toPMMessage() =
         embed = media?.let { MediaMapperV3.map(it, adult = adult ?: false) },
         isSentFromUser = type == MESSAGE_TYPE_SENT,
         app = null,
+        isRead = read ?: false,
     )
 
 private fun PmConversationResponseV3.toConversation() =
     Conversation(
         user = AuthorMapperV3.map(user),
         lastUpdate = lastMessage?.createdAt?.toPrettyDate().orEmpty(),
+        unread = unread ?: false,
+        // Zajawka: treść v3 to markdown - konwersja do HTML i zdjęcie tagów
+        // daje czysty tekst jednoliniowy.
+        lastMessagePreview =
+            lastMessage
+                ?.content
+                ?.takeIf { it.isNotBlank() }
+                ?.convertWykopContentToHtml()
+                ?.removeHtml(),
     )
 
 private fun PmConversationMessagesResponseV3.toFullConversation() =
