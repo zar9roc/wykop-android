@@ -7,7 +7,7 @@ import androidx.fragment.app.FragmentActivity
 import io.github.wykopmobilny.WykopApp
 import io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsActivityV2
 import io.github.wykopmobilny.ui.modules.mainnavigation.MainNavigationActivity
-import io.github.wykopmobilny.ui.modules.mikroblog.entry.EntryActivity
+import io.github.wykopmobilny.ui.modules.mikroblog.entry.v2.EntryActivityV2
 import io.github.wykopmobilny.utils.usermanager.isUserAuthorized
 import org.json.JSONArray
 import org.json.JSONObject
@@ -211,11 +211,9 @@ object DebugStateHelper {
      */
     fun openEntry(context: Context, entryId: Long): JSONObject {
         return try {
-            val intent = EntryActivity.createIntent(
+            val intent = EntryActivityV2.createIntent(
                 context = context,
                 entryId = entryId,
-                commentId = null,
-                isRevealed = false,
             ).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }

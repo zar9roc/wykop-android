@@ -25,8 +25,6 @@ import io.github.wykopmobilny.ui.modules.links.upvoters.UpvotersModule
 import io.github.wykopmobilny.ui.modules.mainnavigation.MainNavigationActivity
 import io.github.wykopmobilny.ui.modules.mainnavigation.MainNavigationFragmentProvider
 import io.github.wykopmobilny.ui.modules.mainnavigation.MainNavigationModule
-import io.github.wykopmobilny.ui.modules.mikroblog.entry.EntryActivity
-import io.github.wykopmobilny.ui.modules.mikroblog.entry.EntryDetailModule
 import io.github.wykopmobilny.ui.modules.notificationslist.NotificationsListActivity
 import io.github.wykopmobilny.ui.modules.notificationslist.NotificationsListFragmentProvider
 import io.github.wykopmobilny.ui.modules.notificationslist.NotificationsListModule
@@ -44,9 +42,6 @@ import io.github.wykopmobilny.ui.modules.tag.TagActivityModule
 internal abstract class ActivityBuilder {
     @ContributesAndroidInjector
     abstract fun glide(): GlideModule
-
-    @ContributesAndroidInjector(modules = [EntryDetailModule::class])
-    abstract fun bindEntryDetailsActivity(): EntryActivity
 
     @ContributesAndroidInjector(modules = [MainNavigationModule::class, MainNavigationFragmentProvider::class])
     abstract fun bindMainNavigationActivity(): MainNavigationActivity
