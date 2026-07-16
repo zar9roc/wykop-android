@@ -56,17 +56,9 @@ internal class GetNotificationsRefreshWorkDetailsQuery
                     notificationsManager.cancelNotification<AppNotification.Type.Notifications>()
                 }
 
-                notifications.size -> {
-                    notificationsManager.upsertNotification(
-                        notification =
-                            AppNotification(
-                                title = Strings.Notifications.TITLE,
-                                message = Strings.Notifications.notificationContentUnbounded(unreadNotifications.size),
-                                type = AppNotification.Type.Notifications.MultipleNotifications,
-                            ),
-                    )
-                }
-
+                // Gałąź "1" musi być przed "notifications.size": gdy jedyne powiadomienie
+                // na liście jest nowe, oba wzorce pasują, a chcemy treść z deep-linkiem
+                // zamiast tekstu zbiorczego.
                 1 -> {
                     val notification = newNotifications.first()
                     notificationsManager.upsertNotification(
@@ -78,6 +70,17 @@ internal class GetNotificationsRefreshWorkDetailsQuery
                                     notification.url?.let {
                                         AppNotification.Type.Notifications.SingleMessage(interopUrl = it)
                                     } ?: AppNotification.Type.Notifications.MultipleNotifications,
+                            ),
+                    )
+                }
+
+                notifications.size -> {
+                    notificationsManager.upsertNotification(
+                        notification =
+                            AppNotification(
+                                title = Strings.Notifications.TITLE,
+                                message = Strings.Notifications.notificationContentUnbounded(unreadNotifications.size),
+                                type = AppNotification.Type.Notifications.MultipleNotifications,
                             ),
                     )
                 }
