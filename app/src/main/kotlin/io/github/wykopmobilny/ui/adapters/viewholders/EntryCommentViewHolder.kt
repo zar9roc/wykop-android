@@ -170,7 +170,8 @@ class EntryCommentViewHolder(
         // Setup vote button - always visible but disabled if deleted
         binding.voteButton.isVisible = true
         with(binding.voteButton) {
-            isEnabled = !isDeleted
+            // Wyłączony też dla własnego komentarza - głosowanie na siebie niemożliwe.
+            isEnabled = !isDeleted && comment.author.nick != userManagerApi.getUserCredentials()?.login
             isButtonSelected = comment.isVoted
             voteCount = comment.voteCount
             voteListener = {

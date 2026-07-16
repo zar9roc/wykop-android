@@ -165,7 +165,8 @@ class EntryViewHolder(
 
         // Setup vote button
         with(binding.voteButton) {
-            isEnabled = true
+            // Głosowanie na własny wpis niemożliwe - przycisk wyłączony.
+            isEnabled = entry.author.nick != userManagerApi.getUserCredentials()?.login
             isButtonSelected = entry.isVoted
             voteCount = entry.voteCount
             voteListener = {

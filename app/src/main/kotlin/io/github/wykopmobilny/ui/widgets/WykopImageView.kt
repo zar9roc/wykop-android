@@ -85,8 +85,12 @@ class WykopImageView(
     }
 
     // Autoodtwarzanie GIF-ów inline (opcja w ustawieniach, domyślnie off).
-    // GifDrawable dekoduje klatki na bieżąco do jednego bufora; AT_MOST + limit
-    // rozmiaru ekranu trzyma pamięć w ryzach (patrz pułapka CENTER_OUTSIDE/117MB).
+    // GifDrawable dekoduje klatki na bieżąco do jednego bufora. fitCenter
+    // pre-skaluje klatki do szerokości ekranu (min-scale, aspekt zachowany) -
+    // bez tego klatki zostają w rozmiarze źródła i macierz ImageView nie
+    // dopasowuje ich do szerokości. Limit boxu (szerokość x 2 wysokości ekranu)
+    // ogranicza bufor do ~9MB w najgorszym razie (pułapka CENTER_OUTSIDE/117MB
+    // brała się z max-scale, fitCenter skaluje po mniejszym wymiarze).
     // Animacja napędzana invalidacją widoku - poza ekranem koszt spada sam.
     fun loadGifFromUrl(url: String) {
         clearCurrentTarget()
@@ -97,7 +101,7 @@ class WykopImageView(
             .apply(
                 RequestOptions()
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .downsample(DownsampleStrategy.AT_MOST)
+                    .fitCenter()
                     .override(screenMetrics.widthPixels, screenMetrics.heightPixels * 2)
                     .signature(ObjectKey(url)),
             ).into(this)
