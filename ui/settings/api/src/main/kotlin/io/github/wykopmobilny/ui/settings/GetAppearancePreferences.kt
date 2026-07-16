@@ -22,6 +22,7 @@ data class AppearancePreferencesUi(
     data class MediaPlayerSectionUi(
         val enableYoutubePlayer: Setting,
         val enableEmbedPlayer: Setting,
+        val autoplayGifs: Setting,
     )
 
     data class MikroblogSectionUi(

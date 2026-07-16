@@ -6,6 +6,7 @@ import android.util.Patterns
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import io.github.wykopmobilny.R
+import io.github.wykopmobilny.WykopApp
 import io.github.wykopmobilny.databinding.WykopembedviewBinding
 import io.github.wykopmobilny.models.dataclass.Embed
 import io.github.wykopmobilny.ui.modules.NewNavigator
@@ -25,6 +26,11 @@ class WykopEmbedView(
     }
 
     private val binding = WykopembedviewBinding.inflate(layoutInflater, this)
+
+    // Ustawienie czytane per bind (jak flagi w WykopImageView) - widget nie ma DI,
+    // sięga po interop z aplikacji.
+    private val autoplayGifs: Boolean
+        get() = (context.applicationContext as WykopApp).settingsPreferencesApi.get().autoplayGifs
 
     init {
         this.isVisible = false
@@ -85,6 +91,10 @@ class WykopEmbedView(
                     // Dwa osobne placeholdery: #nsfw -> "nsfw", a tresc 18+ bez #nsfw -> "18+".
                     binding.image.loadImageFromUrl(if (isNsfw) NSFW_IMAGE_PLACEHOLDER else PLUS18_IMAGE_PLACEHOLDER)
                     hiddenPreview = preview
+                } else if (isAnimated && autoplayGifs) {
+                    // Autoodtwarzanie: zamiast statycznej miniatury ładujemy sam GIF
+                    // (ta sama transformacja URL co przy kliknięciu - "APIV2 WTF").
+                    binding.image.loadGifFromUrl(url.replace(".jpg", ".gif"))
                 } else {
                     binding.image.loadImageFromUrl(preview)
                 }

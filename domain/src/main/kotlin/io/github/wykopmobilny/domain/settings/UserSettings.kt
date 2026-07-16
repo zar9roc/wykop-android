@@ -53,6 +53,7 @@ internal object UserSettings {
 
     val useYoutubePlayer = booleanMapping(preferencesKey = "settings.media.use_youtube_player")
     val useEmbeddedPlayer = booleanMapping(preferencesKey = "settings.media.use_embedded_player")
+    val autoplayGifs = booleanMapping(preferencesKey = "settings.media.autoplay_gifs")
 
     val mikroblogScreen =
         enumMapping(

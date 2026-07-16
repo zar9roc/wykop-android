@@ -62,6 +62,14 @@
             android:title="Użyj playera dla innych mediów"
             app:iconSpaceReserved="false"
             />
+
+        <androidx.preference.CheckBoxPreference
+            android:key="autoplayGifs"
+            android:persistent="false"
+            android:summary="Animacje GIF odtwarzają się na listach (większe zużycie danych)"
+            android:title="Automatyczne odtwarzanie GIF-ów"
+            app:iconSpaceReserved="false"
+            />
     </androidx.preference.PreferenceCategory>
 
     <androidx.preference.PreferenceCategory

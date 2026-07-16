@@ -84,8 +84,30 @@ class WykopImageView(
             ).into(target)
     }
 
+    // Autoodtwarzanie GIF-ów inline (opcja w ustawieniach, domyślnie off).
+    // GifDrawable dekoduje klatki na bieżąco do jednego bufora; AT_MOST + limit
+    // rozmiaru ekranu trzyma pamięć w ryzach (patrz pułapka CENTER_OUTSIDE/117MB).
+    // Animacja napędzana invalidacją widoku - poza ekranem koszt spada sam.
+    fun loadGifFromUrl(url: String) {
+        clearCurrentTarget()
+        Glide
+            .with(context)
+            .asGif()
+            .load(url)
+            .apply(
+                RequestOptions()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .downsample(DownsampleStrategy.AT_MOST)
+                    .override(screenMetrics.widthPixels, screenMetrics.heightPixels * 2)
+                    .signature(ObjectKey(url)),
+            ).into(this)
+    }
+
     fun resetImage() {
         clearCurrentTarget()
+        // Anuluje też request GIF-a wpięty w sam widok (into(this)) - bez tego
+        // recykling wiersza zostawia ładowanie w tle.
+        Glide.with(context).clear(this)
         setImageBitmap(null)
     }
 

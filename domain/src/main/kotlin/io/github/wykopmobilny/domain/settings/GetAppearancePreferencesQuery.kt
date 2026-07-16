@@ -121,6 +121,11 @@ class GetAppearancePreferencesQuery
                             currentValue = it.useEmbeddedPlayer,
                             onClicked = { updateUserSetting(UserSettings.useEmbeddedPlayer, !it.useEmbeddedPlayer) },
                         ),
+                    autoplayGifs =
+                        Setting(
+                            currentValue = it.autoplayGifs,
+                            onClicked = { updateUserSetting(UserSettings.autoplayGifs, !it.autoplayGifs) },
+                        ),
                 )
             }
 

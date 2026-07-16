@@ -106,6 +106,8 @@ internal class InteropSettingPreferencesApi
             get() = runBlocking { getMediaPreferences().first().useYoutubePlayer }
         override val enableEmbedPlayer: Boolean
             get() = interop(UserSettings.useEmbeddedPlayer) ?: true
+        override val autoplayGifs: Boolean
+            get() = interop(UserSettings.autoplayGifs) ?: false
         override val useBuiltInBrowser: Boolean
             get() = interop(UserSettings.useEmbeddedBrowser) ?: true
         override var groupNotifications: Boolean

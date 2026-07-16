@@ -21,10 +21,14 @@ internal class GetMediaPreferences
             combine(
                 canUseYoutubePlayer(),
                 appStorage.get(UserSettings.useEmbeddedPlayer),
-            ) { useYoutubePlayer, useEmbeddedPlayer ->
+                appStorage.get(UserSettings.autoplayGifs),
+            ) { useYoutubePlayer, useEmbeddedPlayer, autoplayGifs ->
                 MediaPlayerPreferences(
                     useYoutubePlayer = useYoutubePlayer,
                     useEmbeddedPlayer = useEmbeddedPlayer ?: true,
+                    // Domyślnie wyłączone - autoodtwarzanie to większe zużycie
+                    // danych i pamięci, świadoma decyzja użytkownika.
+                    autoplayGifs = autoplayGifs ?: false,
                 )
             }
 
@@ -45,4 +49,5 @@ internal class GetMediaPreferences
 internal data class MediaPlayerPreferences(
     val useYoutubePlayer: Boolean,
     val useEmbeddedPlayer: Boolean,
+    val autoplayGifs: Boolean,
 )

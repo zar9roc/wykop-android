@@ -20,6 +20,7 @@ interface SettingsPreferencesApi {
     val hideBlacklistedViews: Boolean
     val enableYoutubePlayer: Boolean
     val enableEmbedPlayer: Boolean
+    val autoplayGifs: Boolean
     val useBuiltInBrowser: Boolean
     var groupNotifications: Boolean
     val disableExitConfirmation: Boolean
