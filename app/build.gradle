@@ -120,14 +120,42 @@ android {
 }
 
 
-// Nazwa pliku APK: nazwa aplikacji + wersja (np. OtwartyWykopMobilny3-1.3.1.apk).
+// 3-cyfrowy licznik buildow doklejany do wersji w nazwie APK (np. 1.5.0.001).
+// Wartosc trzymana w app/version_counter.txt i inkrementowana po kazdym spakowaniu
+// release'a. Mozna ja nadpisac recznie: -Pwykop.buildCounter=NN.
+def versionCounterFile = file("version_counter.txt")
+def currentBuildCounter = {
+    def override = findProperty("wykop.buildCounter")
+    if (override) {
+        return override.toString().trim().toInteger()
+    }
+    if (versionCounterFile.exists() && !versionCounterFile.text.trim().isEmpty()) {
+        return versionCounterFile.text.trim().toInteger()
+    }
+    return 1
+}()
+def buildCounterSuffix = String.format("%03d", currentBuildCounter)
+
+// Nazwa pliku APK: nazwa aplikacji + wersja + licznik (np. OtwartyWykopMobilny3-1.5.0.001.apk).
 androidComponents {
     onVariants(selector().withBuildType("release")) { variant ->
         variant.outputs.each { output ->
             output.outputFileName.set(
-                output.versionName.map { version -> "OtwartyWykopMobilny3-${version}.apk" },
+                output.versionName.map { version ->
+                    // Wersje robocze (-SNAPSHOT) i ewentualne sufiksy tna potrzeby nazwy pliku
+                    // sprowadzamy do czystego X.Y.Z, a licznik doklejamy jako czlon .NNN.
+                    def base = version.replaceAll(/-SNAPSHOT$/, "")
+                    "OtwartyWykopMobilny3-${base}.${buildCounterSuffix}.apk"
+                },
             )
         }
+    }
+}
+
+// Po spakowaniu release'a zwieksz licznik, zeby kolejny build dostal nowy numer.
+tasks.matching { it.name == "packageRelease" }.configureEach { packageTask ->
+    packageTask.doLast {
+        versionCounterFile.text = (currentBuildCounter + 1).toString()
     }
 }
 
