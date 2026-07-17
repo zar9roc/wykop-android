@@ -88,7 +88,6 @@
         <activity
             android:name=".ui.modules.pm.conversation.ConversationActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:theme="@style/TransparentActivityTheme"
             />
         <activity
             android:name=".ui.modules.report.ReportWebViewActivity"

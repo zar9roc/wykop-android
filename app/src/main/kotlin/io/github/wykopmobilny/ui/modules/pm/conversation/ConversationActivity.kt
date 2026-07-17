@@ -60,9 +60,6 @@ class ConversationActivity :
     @Inject
     lateinit var suggestionApi: SuggestApi
 
-    override val enableSwipeBackLayout = true
-    override val isActivityTransfluent = true
-
     val user by lazy { intent.getStringExtra(EXTRA_USER)!! }
     var receiver: Author? = null
 
@@ -72,14 +69,14 @@ class ConversationActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Na targetSdk 36 onBackPressed() nie jest wołany (OnBackInvokedCallback) -
-        // potwierdzenie wyjścia przy niedokończonej wiadomości przez dispatcher.
-        onBackPressedDispatcher.addCallback(this) {
-            if (binding.inputToolbar.hasUserEditedContent()) {
+        // Wstecz przechwytujemy TYLKO przy niedokończonej wiadomości (potwierdzenie);
+        // przy pustym polu obsługuje system i pokazuje predykcyjny podgląd (jak wpis).
+        val exitConfirmCallback =
+            onBackPressedDispatcher.addCallback(this, enabled = false) {
                 exitConfirmationDialog(this@ConversationActivity) { finish() }?.show()
-            } else {
-                finish()
             }
+        binding.inputToolbar.doOnContentChanged {
+            exitConfirmCallback.isEnabled = binding.inputToolbar.hasUserEditedContent()
         }
 
         conversationDataFragment = supportFragmentManager.getDataFragmentInstance(DATA_FRAGMENT_TAG)
