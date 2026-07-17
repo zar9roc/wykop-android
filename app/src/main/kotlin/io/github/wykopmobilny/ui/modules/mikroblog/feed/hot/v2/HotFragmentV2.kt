@@ -100,6 +100,7 @@ class HotFragmentV2 :
     // między emisjami stanu (jak w detalu V2); czyszczony przy przeładowaniu okna.
     private val mappedEntries = mutableMapOf<Long, Entry>()
     private var renderedIds: List<Long> = emptyList()
+    private var lastSort: MicroblogFeedSort? = null
     private var votersDialogListener: VotersDialogListener? = null
 
     override fun onAttach(context: Context) {
@@ -192,7 +193,13 @@ class HotFragmentV2 :
         } else {
             mappedEntries.keys.retainAll(newIds.toSet())
             adapter.replaceAll(mapped, ui.hasMore)
+            // Zmiana trybu (np. 24h -> najnowsze) resetuje listę - przewijamy na górę,
+            // inaczej użytkownik zostaje w połowie poprzedniej listy.
+            if (lastSort != null && lastSort != ui.sort) {
+                binding.recyclerView.post { binding.recyclerView.scrollToPosition(0) }
+            }
         }
+        lastSort = ui.sort
         renderedIds = newIds
     }
 

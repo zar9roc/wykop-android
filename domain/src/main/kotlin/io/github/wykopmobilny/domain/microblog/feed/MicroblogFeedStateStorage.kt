@@ -22,8 +22,12 @@ internal class MicroblogFeedStateStorage
 internal data class MicroblogFeedState(
     val entries: List<EntryResponseV3> = emptyList(),
     val sort: MicroblogFeedSort = MicroblogFeedSort.NEWEST,
-    // Kursor kolejnej strony (feedy v3 stronicują opaque Stringiem, nie numerem).
+    // Kursor kolejnej strony. API v3 często NIE zwraca pola `next` dla feedów, więc
+    // fallbackujemy na numer strony (jak stary HotPresenter: next ?: ++pageNumber).
     val nextPage: String? = null,
+    val pageNumber: Int = 1,
+    // Dopóki ostatnia strona zwróciła jakieś wpisy - zakładamy, że może być więcej
+    // (stop na pustej stronie). Nie polegamy na `next`, bo bywa null przy 14 stronach.
     val hasMore: Boolean = false,
     val isLoadingMore: Boolean = false,
     val loaded: Boolean = false,

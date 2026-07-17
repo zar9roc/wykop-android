@@ -52,8 +52,9 @@ class EntryFeedPager
                 it.copy(
                     entries = data,
                     sort = sort,
-                    nextPage = response.pagination?.next,
-                    hasMore = response.pagination?.next != null && data.isNotEmpty(),
+                    pageNumber = 1,
+                    nextPage = response.pagination?.next ?: "2",
+                    hasMore = data.isNotEmpty(),
                     isLoadingMore = false,
                     loaded = true,
                 )
@@ -75,10 +76,12 @@ class EntryFeedPager
                     val fresh = response.data.orEmpty()
                     storage.update { old ->
                         val known = old.entries.mapTo(HashSet()) { it.id }
+                        val loadedPage = old.pageNumber + 1
                         old.copy(
                             entries = old.entries + fresh.filterNot { it.id in known },
-                            nextPage = response.pagination?.next,
-                            hasMore = response.pagination?.next != null && fresh.isNotEmpty(),
+                            pageNumber = loadedPage,
+                            nextPage = response.pagination?.next ?: (loadedPage + 1).toString(),
+                            hasMore = fresh.isNotEmpty(),
                             isLoadingMore = false,
                         )
                     }

@@ -277,13 +277,17 @@ class EntryViewHolder(
                     )
             }
 
-            io.github.wykopmobilny.ui.widgets.bindNoteMenuItem(
-                item = entryMenuNote,
-                label = entryMenuNoteLabel,
-                nick = entry.author.nick,
-                dismissMenu = { dialog.dismiss() },
-                onChanged = { binding.authorHeaderView.refreshNoteCard(it) },
-            )
+            // Notatki wymagają zalogowania (idą do /notes) - niezalogowany nie widzi opcji.
+            entryMenuNote.isVisible = isAuthorized
+            if (isAuthorized) {
+                io.github.wykopmobilny.ui.widgets.bindNoteMenuItem(
+                    item = entryMenuNote,
+                    label = entryMenuNoteLabel,
+                    nick = entry.author.nick,
+                    dismissMenu = { dialog.dismiss() },
+                    onChanged = { binding.authorHeaderView.refreshNoteCard(it) },
+                )
+            }
 
             entryMenuCopy.setOnClickListener {
                 it.context.copyText(entry.body.stripWykopFormatting(), "entry-body")

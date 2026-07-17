@@ -315,14 +315,18 @@ class EntryCommentViewHolder(
                     )
             }
 
-            // Notatka o autorze - pierwsza pozycja; etykieta = tresc kursywa / "Dodaj notatke".
-            bindNoteMenuItem(
-                item = entryCommentMenuNote,
-                label = entryCommentMenuNoteLabel,
-                nick = comment.author.nick,
-                dismissMenu = { dialog.dismiss() },
-                onChanged = { binding.authorTextView.setNoteCard(it) },
-            )
+            // Notatka o autorze (tylko zalogowani - idzie do /notes). Pierwsza pozycja;
+            // etykieta = tresc kursywa / "Dodaj notatke".
+            entryCommentMenuNote.isVisible = isUserAuthorized
+            if (isUserAuthorized) {
+                bindNoteMenuItem(
+                    item = entryCommentMenuNote,
+                    label = entryCommentMenuNoteLabel,
+                    nick = comment.author.nick,
+                    dismissMenu = { dialog.dismiss() },
+                    onChanged = { binding.authorTextView.setNoteCard(it) },
+                )
+            }
 
             // Copy - visible for all, copies slug if deleted and available
             entryCommentMenuCopy.setOnClickListener {
