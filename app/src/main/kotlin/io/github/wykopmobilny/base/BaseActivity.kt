@@ -105,7 +105,11 @@ abstract class BaseActivity :
     private fun initTheme(style: ApplicableStyleUi) {
         updateTheme(style)
         appliedFontSize = themeSettingsPreferences.fontSize
-        if (isActivityTransfluent || enableSwipeBackLayout) {
+        // Tylko realne nakładki (media-viewery) są przezroczyste. enableSwipeBackLayout
+        // było kiedyś tłem dla slidra - po jego usunięciu NIE robi już okna
+        // przezroczystym, żeby ekran był nieprzezroczysty i system pokazywał
+        // predykcyjny podgląd poprzedniego ekranu przy cofaniu (spójnie z resztą).
+        if (isActivityTransfluent) {
             theme.applyStyle(R.style.TransparentActivityTheme, true)
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         }
