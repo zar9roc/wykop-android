@@ -62,6 +62,7 @@ class ConversationActivity :
 
     val user by lazy { intent.getStringExtra(EXTRA_USER)!! }
     var receiver: Author? = null
+    private var keyboardVisible = false
 
     lateinit var contentUri: Uri
     lateinit var conversationDataFragment: DataFragment<FullConversation>
@@ -69,14 +70,20 @@ class ConversationActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Wstecz przechwytujemy TYLKO przy niedokończonej wiadomości (potwierdzenie);
-        // przy pustym polu obsługuje system i pokazuje predykcyjny podgląd (jak wpis).
+        // Gest/przycisk wstecz przechwytujemy do potwierdzenia TYLKO gdy jest wpisany
+        // tekst ORAZ klawiatura jest zwinięta - przy widocznej klawiaturze wstecz ma
+        // ją najpierw zwinąć (system), a przy pustym polu pokazać predykcyjny podgląd.
+        // Przycisk <- na toolbarze potwierdza zawsze gdy jest tekst (patrz onOptionsItemSelected).
         val exitConfirmCallback =
-            onBackPressedDispatcher.addCallback(this, enabled = false) {
-                exitConfirmationDialog(this@ConversationActivity) { finish() }?.show()
-            }
-        binding.inputToolbar.doOnContentChanged {
-            exitConfirmCallback.isEnabled = binding.inputToolbar.hasUserEditedContent()
+            onBackPressedDispatcher.addCallback(this, enabled = false) { confirmExit() }
+        val refreshBackGuard = {
+            exitConfirmCallback.isEnabled = binding.inputToolbar.hasUserEditedContent() && !keyboardVisible
+        }
+        binding.inputToolbar.doOnContentChanged(refreshBackGuard)
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            keyboardVisible = insets.isVisible(androidx.core.view.WindowInsetsCompat.Type.ime())
+            refreshBackGuard()
+            insets
         }
 
         conversationDataFragment = supportFragmentManager.getDataFragmentInstance(DATA_FRAGMENT_TAG)
@@ -144,9 +151,20 @@ class ConversationActivity :
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> onBackPressedDispatcher.onBackPressed()
+            // Przycisk <- na toolbarze: potwierdź gdy jest wpisany tekst (niezależnie
+            // od klawiatury), inaczej zamknij.
+            android.R.id.home ->
+                if (binding.inputToolbar.hasUserEditedContent()) {
+                    confirmExit()
+                } else {
+                    finish()
+                }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun confirmExit() {
+        exitConfirmationDialog(this) { finish() }?.show()
     }
 
     override fun appendMessage(message: PMMessage) {

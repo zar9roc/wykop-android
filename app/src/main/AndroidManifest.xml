@@ -58,7 +58,6 @@
         <activity
             android:name="io.github.wykopmobilny.ui.modules.tag.TagActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:theme="@style/TransparentActivityTheme"
             />
         <activity
             android:name="io.github.wykopmobilny.ui.modules.input.entry.add.AddEntryActivity"
@@ -121,12 +120,10 @@
         <activity
             android:name=".ui.modules.links.upvoters.UpvotersActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:theme="@style/TransparentActivityTheme"
             />
         <activity
             android:name=".ui.modules.links.downvoters.DownvotersActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:theme="@style/TransparentActivityTheme"
             />
         <activity
             android:name=".ui.modules.input.link.edit.LinkCommentEditActivity"
@@ -166,7 +163,6 @@
         <activity
             android:name=".ui.modules.profile.ProfileActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:theme="@style/TransparentActivityTheme"
             android:windowSoftInputMode="stateUnchanged|adjustResize"
             />
         <activity
@@ -179,7 +175,6 @@
         <activity
             android:name=".ui.modules.notificationslist.NotificationsListActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:theme="@style/TransparentActivityTheme"
             android:windowSoftInputMode="stateUnchanged|adjustResize"
             />
         <activity
