@@ -33,75 +33,26 @@ fun colorNameToGroupId(name: String?): Int =
         else -> 0
     }
 
+// Kolory rang 0..5 pochodzą z /v3/config (NickColorPalette, z fallbackiem); pozostałe
+// (patron 999, zbanowany/usunięty 1001/1002, klient 2001) są stałe - nie ma ich w configu.
 fun getGroupColor(
     role: Int,
     isUsingDarkTheme: Boolean = true,
 ): Int =
-    when (role) {
-        0 -> Color.parseColor("#339933")
-        1 -> Color.parseColor("#ff5917")
-        2 -> if (isUsingDarkTheme) Color.parseColor("#bb1111") else Color.parseColor("#990000")
-        3 -> if (isUsingDarkTheme) Color.parseColor("#694797") else Color.parseColor("#593787")
-        4 -> Color.parseColor("#d81e04")
-        5 -> if (isUsingDarkTheme) Color.parseColor("#ffffff") else Color.parseColor("#000000")
-        999 -> Color.parseColor("#BF9B30")
-        1001 -> Color.parseColor("#999999")
-        1002 -> Color.parseColor("#999999")
-        2001 -> Color.parseColor("#3F6FA0")
-        else -> Color.BLUE
-    }
+    groupIdToColorName(role)?.let { NickColorPalette.colorInt(it, isUsingDarkTheme) }
+        ?: when (role) {
+            999 -> Color.parseColor("#BF9B30")
+            1001 -> Color.parseColor("#999999")
+            1002 -> Color.parseColor("#999999")
+            2001 -> Color.parseColor("#3F6FA0")
+            else -> Color.BLUE
+        }
 
 fun Context.getGroupColor(role: Int): Int {
     val isDark =
         (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
             android.content.res.Configuration.UI_MODE_NIGHT_YES
-    return when (role) {
-        0 -> {
-            Color.parseColor("#339933")
-        }
-
-        1 -> {
-            Color.parseColor("#ff5917")
-        }
-
-        2 -> {
-            if (isDark) Color.parseColor("#bb1111") else Color.parseColor("#990000")
-        }
-
-        3 -> {
-            if (isDark) Color.parseColor("#694797") else Color.parseColor("#593787")
-        }
-
-        4 -> {
-            Color.parseColor("#d81e04")
-        }
-
-        5 -> {
-            val tv = TypedValue()
-            theme.resolveAttribute(R.attr.adminNickColor, tv, true)
-            tv.data
-        }
-
-        999 -> {
-            Color.parseColor("#BF9B30")
-        }
-
-        1001 -> {
-            Color.parseColor("#999999")
-        }
-
-        1002 -> {
-            Color.parseColor("#999999")
-        }
-
-        2001 -> {
-            Color.parseColor("#3F6FA0")
-        }
-
-        else -> {
-            Color.BLUE
-        }
-    }
+    return getGroupColor(role, isUsingDarkTheme = isDark)
 }
 
 fun getGenderStripResource(authorSex: String): Int =

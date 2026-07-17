@@ -7,8 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withCreated
-import com.r0adkll.slidr.attachSlidr
-import com.r0adkll.slidr.model.SlidrConfig
 import io.github.wykopmobilny.styles.ApplicableStyleUi
 import io.github.wykopmobilny.styles.StylesDependencies
 import io.github.wykopmobilny.utils.applyImeInsetsToContent
@@ -33,7 +31,6 @@ internal abstract class ThemableActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState ?: intent.getBundleExtra("saved_State"))
 
         window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        val slidr = attachSlidr(SlidrConfig(edgeOnly = true))
 
         lifecycleScope.launch {
             withCreated { }
@@ -46,18 +43,6 @@ internal abstract class ThemableActivity : AppCompatActivity() {
                     .collect {
                         updateTheme(it)
                         recreate()
-                    }
-            }
-            launch {
-                shared
-                    .map { it.edgeSlidingBehaviorEnabled }
-                    .distinctUntilChanged()
-                    .collect { isEnabled ->
-                        if (isEnabled) {
-                            slidr.unlock()
-                        } else {
-                            slidr.lock()
-                        }
                     }
             }
         }

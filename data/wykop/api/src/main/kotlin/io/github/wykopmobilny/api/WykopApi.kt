@@ -53,6 +53,8 @@ interface WykopApi {
 
     fun entriesV3RetrofitApi(): EntriesV3RetrofitApi
 
+    fun configV3RetrofitApi(): io.github.wykopmobilny.api.endpoints.v3.ConfigV3RetrofitApi
+
     fun linksV3RetrofitApi(): LinksV3RetrofitApi
 
     fun hitsV3RetrofitApi(): HitsV3RetrofitApi

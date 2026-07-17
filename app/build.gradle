@@ -205,7 +205,6 @@ dependencies {
     implementation(libs.browser.core)
     implementation(libs.work.runtime)
     implementation(libs.startup.runtime)
-    implementation(libs.usefulness.slidr)
     implementation(libs.chrisbanes.photoview)
     implementation(libs.davemorrissey.subsamplingimageview)
     implementation(libs.media3.exoplayer)

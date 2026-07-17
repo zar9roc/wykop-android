@@ -66,6 +66,7 @@ import io.github.wykopmobilny.ui.search.SearchDependencies
 import io.github.wykopmobilny.ui.settings.SettingsDependencies
 import io.github.wykopmobilny.ui.twofactor.TwoFactorAuthDependencies
 import io.github.wykopmobilny.utils.ApplicationInjector
+import io.github.wykopmobilny.utils.api.NickColorPalette
 import io.github.wykopmobilny.utils.linkhandler.WykopLinkHandler
 import io.github.wykopmobilny.utils.requireDependency
 import io.github.wykopmobilny.utils.usermanager.SimpleUserManagerApi
@@ -97,6 +98,10 @@ open class WykopApp :
     AppScopes {
     companion object {
         const val WYKOP_API_URL = "https://wykop.pl/api/"
+        private const val NICK_COLORS_PREFS = "nick_colors"
+        private const val NICK_COLORS_CACHE = "colors"
+        private const val NICK_COLORS_FETCHED_AT = "fetched_at"
+        private const val NICK_COLORS_TTL_MS = 7L * 24 * 60 * 60 * 1000
     }
 
     @Inject
@@ -132,8 +137,40 @@ open class WykopApp :
     override fun onCreate() {
         super.onCreate()
         doInterop()
+        refreshNickColors()
 
         applicationScope.launch { domainComponent.initializeApp().invoke() }
+    }
+
+    // Kolory rang nicków z /v3/config: seed z cache (natychmiast), pobranie sieciowe
+    // najwyżej raz na tydzień. NickColorPalette ma wbudowany fallback, więc brak
+    // cache/sieci = wartości domyślne.
+    private fun refreshNickColors() {
+        val prefs = getSharedPreferences(NICK_COLORS_PREFS, android.content.Context.MODE_PRIVATE)
+        prefs.getString(NICK_COLORS_CACHE, null)?.let { NickColorPalette.apply(decodeNickColors(it)) }
+        applicationScope.launch {
+            val lastFetch = prefs.getLong(NICK_COLORS_FETCHED_AT, 0L)
+            if (System.currentTimeMillis() - lastFetch < NICK_COLORS_TTL_MS && lastFetch != 0L) return@launch
+            runCatching { wykopApi.configV3RetrofitApi().getConfig() }
+                .onSuccess { response ->
+                    val colors =
+                        response.data
+                            ?.colors
+                            .orEmpty()
+                            .mapNotNull { color ->
+                                val light = color.hex ?: return@mapNotNull null
+                                color.name to NickColorPalette.Hex(light = light, dark = color.hexDark ?: light)
+                            }.toMap()
+                    if (colors.isNotEmpty()) {
+                        NickColorPalette.apply(colors)
+                        prefs
+                            .edit()
+                            .putString(NICK_COLORS_CACHE, encodeNickColors(colors))
+                            .putLong(NICK_COLORS_FETCHED_AT, System.currentTimeMillis())
+                            .apply()
+                    }
+                }.onFailure { Napier.w("Failed to refresh nick colors", it) }
+        }
     }
 
     override fun applicationInjector(): AndroidInjector<out DaggerApplication> =
@@ -546,3 +583,15 @@ open class WykopApp :
         }
     }
 }
+
+// Kompaktowy zapis kolorów do prefs: "nazwa,hexLight,hexDark;..." (bez Moshi).
+private fun encodeNickColors(colors: Map<String, NickColorPalette.Hex>): String =
+    colors.entries.joinToString(";") { "${it.key},${it.value.light},${it.value.dark}" }
+
+private fun decodeNickColors(encoded: String): Map<String, NickColorPalette.Hex> =
+    encoded
+        .split(";")
+        .mapNotNull { part ->
+            val fields = part.split(",")
+            if (fields.size == 3) fields[0] to NickColorPalette.Hex(light = fields[1], dark = fields[2]) else null
+        }.toMap()

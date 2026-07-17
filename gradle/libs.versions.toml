@@ -44,7 +44,6 @@ mavencentral-store = "5.1.0-alpha08"
 mavencentral-retrofit = "3.0.0"
 mavencentral-moshi = "1.15.0"
 mavencentral-sqldelight = "2.2.1"
-mavencentral-slidr = "3.0.0"
 mavencentral-leakcanary = "2.12"
 mavencentral-markdown = "0.4.1"
 mavencentral-junit = "5.9.3"
@@ -82,7 +81,6 @@ exifinterface-core = { module = "androidx.exifinterface:exifinterface", version.
 startup-runtime = { module = "androidx.startup:startup-runtime", version.ref = "google-startup" }
 store-core = { module = "org.mobilenativefoundation.store:store5", version.ref = "mavencentral-store" }
 datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "google-datastore" }
-usefulness-slidr = { module = "com.github.usefulness:slidr", version.ref = "mavencentral-slidr" }
 chrisbanes-photoview = { module = "com.github.chrisbanes:PhotoView", version.ref = "jitpack-photoview" }
 davemorrissey-subsamplingimageview = { module = "com.davemorrissey.labs:subsampling-scale-image-view-androidx", version.ref = "jitpack-subsampling-scale-image-view" }
 leakcanary-core = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "mavencentral.leakcanary" }

@@ -7,8 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withCreated
 import androidx.appcompat.widget.Toolbar
-import com.r0adkll.slidr.attachSlidr
-import com.r0adkll.slidr.model.SlidrConfig
 import dagger.android.AndroidInjection
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
@@ -58,12 +56,6 @@ abstract class BaseActivity :
         applyStatusBarInsetsToFragmentToolbars()
         super.onCreate(savedInstanceState)
 
-        val slidr =
-            if (enableSwipeBackLayout) {
-                attachSlidr(SlidrConfig(edgeOnly = true))
-            } else {
-                null
-            }
         lifecycleScope.launch {
             withCreated { }
             val shared = getAppStyle().stateIn(this)
@@ -75,18 +67,6 @@ abstract class BaseActivity :
                     .collect {
                         updateTheme(it)
                         recreate()
-                    }
-            }
-            launch {
-                shared
-                    .map { it.edgeSlidingBehaviorEnabled }
-                    .distinctUntilChanged()
-                    .collect { isEnabled ->
-                        if (isEnabled) {
-                            slidr?.unlock()
-                        } else {
-                            slidr?.lock()
-                        }
                     }
             }
         }
