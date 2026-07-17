@@ -1,7 +1,5 @@
 package io.github.wykopmobilny.base
 
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -30,7 +28,9 @@ internal abstract class ThemableActivity : AppCompatActivity() {
         applyStatusBarInsetsToFragmentToolbars()
         super.onCreate(savedInstanceState ?: intent.getBundleExtra("saved_State"))
 
-        window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        // Bez przezroczystego okna (było potrzebne tylko slidrowi) ekrany są
+        // nieprzezroczyste - system pokazuje wtedy predykcyjny "podgląd" poprzedniego
+        // ekranu przy cofaniu (Android 13+, enableOnBackInvokedCallback w manifeście).
 
         lifecycleScope.launch {
             withCreated { }

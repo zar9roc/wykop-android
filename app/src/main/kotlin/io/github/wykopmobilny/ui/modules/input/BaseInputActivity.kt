@@ -1,6 +1,7 @@
 package io.github.wykopmobilny.ui.modules.input
 
 import android.app.Activity
+import androidx.activity.addCallback
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -117,6 +118,16 @@ abstract class BaseInputActivity<T : BaseInputPresenter> :
         binding.markupToolbar.markdownListener = this
         binding.markupToolbar.floatingImageView = binding.floatingImageView
 
+        // targetSdk 36 + enableOnBackInvokedCallback: onBackPressed() nie jest wołany,
+        // potwierdzenie wyjścia przy niezapisanej treści musi iść przez dispatcher.
+        onBackPressedDispatcher.addCallback(this) {
+            if (!binding.markupToolbar.hasUserEditedContent()) {
+                exitActivity()
+            } else {
+                exitConfirmationDialog(this@BaseInputActivity) { exitActivity() }?.show()
+            }
+        }
+
         // show focus
         binding.body.requestFocus()
         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -185,15 +196,6 @@ abstract class BaseInputActivity<T : BaseInputPresenter> :
         finish()
     }
 
-    override fun onBackPressed() {
-        if (!binding.markupToolbar.hasUserEditedContent()) {
-            exitActivity()
-        } else {
-            exitConfirmationDialog(this) {
-                exitActivity()
-            }?.show()
-        }
-    }
 
     override fun openGalleryImageChooser() {
         val intent = Intent()

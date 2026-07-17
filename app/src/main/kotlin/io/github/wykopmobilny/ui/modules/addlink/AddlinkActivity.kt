@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.api.responses.NewLinkResponse
@@ -40,6 +41,16 @@ class AddlinkActivity : BaseActivity() {
         if (savedInstanceState == null) {
             openFragment(AddlinkUrlInputFragment.newInstance(url), "url_input")
         }
+
+        // targetSdk 36: back przez dispatcher. Ostatni wpis back-stacku -> zamknij
+        // ekran; wcześniejsze -> cofnij fragment (jak dawne onBackPressed).
+        onBackPressedDispatcher.addCallback(this) {
+            if (supportFragmentManager.backStackEntryCount <= 1) {
+                finish()
+            } else {
+                supportFragmentManager.popBackStack()
+            }
+        }
     }
 
     private fun openFragment(
@@ -67,12 +78,4 @@ class AddlinkActivity : BaseActivity() {
     }
 
     fun openDetailsScreen() = openFragment(AddLinkDetailsFragment.newInstance(), "details_fragment")
-
-    override fun onBackPressed() {
-        if (supportFragmentManager.backStackEntryCount == 1) {
-            finish()
-        } else {
-            super.onBackPressed()
-        }
-    }
 }
