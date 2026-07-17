@@ -44,6 +44,7 @@ object Strings {
         const val MORE_OPTION_COPY = "Skopiuj treść"
         const val MORE_OPTION_REPORT = "Zgłoś naruszenie"
         const val MORE_OPTION_OPEN_IN_BROWSER = "Otwórz w przeglądarce"
+        const val MORE_OPTION_NOTE = "Notatka o autorze"
 
         const val COMMENTS_SORT_BEST = "Najlepsze"
         const val COMMENTS_SORT_NEW = "Najnowsze"

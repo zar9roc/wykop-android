@@ -117,6 +117,7 @@ internal fun UserInfo.toUi(onClicked: (() -> Unit)?) =
             ),
         name = profileId,
         color = color.toUi(),
+        hasNote = hasNote,
     )
 
 private fun coloredCounter(

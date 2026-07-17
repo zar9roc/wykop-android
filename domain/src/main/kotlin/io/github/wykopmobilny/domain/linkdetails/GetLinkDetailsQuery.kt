@@ -782,7 +782,19 @@ internal class GetLinkDetailsQuery
                                         OptionPickerUi(
                                             title = Strings.Link.MORE_TITLE_COMMENT,
                                             reasons =
-                                                listOf(
+                                                listOfNotNull(
+                                                    // Notatka o autorze - tylko dla zalogowanych (edycja idzie do /notes).
+                                                    OptionPickerUi
+                                                        .Option(
+                                                            label = Strings.Link.MORE_OPTION_NOTE,
+                                                            icon = Drawable.Note,
+                                                            clickAction =
+                                                                safeCallback {
+                                                                    interopRequests.request(
+                                                                        InteropRequest.EditNote(username = author.profileId),
+                                                                    )
+                                                                },
+                                                        ).takeIf { loggedUser != null },
                                                     OptionPickerUi.Option(
                                                         label = Strings.Link.MORE_OPTION_SHARE,
                                                         icon = Drawable.Share,

@@ -19,4 +19,5 @@ val Drawable.drawableRes: Int
             Drawable.Plus -> R.drawable.ic_plus
             Drawable.Minus -> R.drawable.ic_minus
             Drawable.Bury -> R.drawable.ic_bury
+            Drawable.Note -> R.drawable.ic_note
         }

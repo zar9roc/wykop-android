@@ -79,6 +79,12 @@ sealed class InteropRequest {
     data class RelatedLinks(
         val linkId: Long,
     ) : InteropRequest()
+
+    // Edycja notatki o uzytkowniku (zolta kartka). Dialog i zapis sa view-layer
+    // (WykopApp: noteDialog + NotesRepository), po zapisie odswiezamy flage w cache.
+    data class EditNote(
+        val username: String,
+    ) : InteropRequest()
 }
 
 @Singleton

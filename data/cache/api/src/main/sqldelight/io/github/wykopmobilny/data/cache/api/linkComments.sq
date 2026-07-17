@@ -22,6 +22,7 @@ CREATE TABLE linkCommentsEntity (
     violationUrl TEXT,
     deletedReason TEXT,
     slug TEXT,
+    authorHasNote INTEGER AS Boolean NOT NULL DEFAULT 0,
     FOREIGN KEY (profileId) REFERENCES profileEntity(id),
     FOREIGN KEY (parentId) REFERENCES linkCommentsEntity(id),
     FOREIGN KEY (embedId) REFERENCES embed(id)
@@ -67,6 +68,13 @@ UPDATE linkCommentsEntity
 SET
   isFavorite = :isFavorite
 WHERE id = :id AND linkId = :linkId;
+
+-- Zolta kartka notatki po edycji z menu: flip flagi dla wszystkich komentarzy
+-- danego autora w cache -> flowSourceOfTruth re-emituje i lista przerysowuje kartke.
+updateAuthorNote:
+UPDATE linkCommentsEntity
+SET authorHasNote = :authorHasNote
+WHERE profileId = :profileId;
 
 selectByLinkId:
 SELECT

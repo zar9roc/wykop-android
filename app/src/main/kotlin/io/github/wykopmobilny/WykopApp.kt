@@ -57,6 +57,7 @@ import io.github.wykopmobilny.ui.modules.photoview.PhotoViewActivity
 import io.github.wykopmobilny.ui.modules.pm.conversation.ConversationActivity
 import io.github.wykopmobilny.ui.modules.profile.ProfileActivity
 import io.github.wykopmobilny.ui.modules.tag.TagActivity
+import io.github.wykopmobilny.ui.dialogs.noteDialog
 import io.github.wykopmobilny.ui.profile.ProfileDependencies
 import io.github.wykopmobilny.ui.search.SearchDependencies
 import io.github.wykopmobilny.ui.settings.SettingsDependencies
@@ -499,7 +500,39 @@ open class WykopApp :
                             ),
                         )
                     }
+
+                    is InteropRequest.EditNote -> {
+                        editNote(context, it.username)
+                    }
                 }.run { }
+            }
+        }
+    }
+
+    // Notatka o uzytkowniku (zolta kartka) - view-layer, jak na mikroblogu: dialog +
+    // NotesRepository. Po zapisie aktualizujemy flage w cache komentarzy linku, przez
+    // co flowSourceOfTruth re-emituje i lista przerysowuje kartke na zywo.
+    private fun editNote(
+        context: Activity,
+        username: String,
+    ) {
+        val repo = notesRepository.get()
+        applicationScope.launch {
+            val content = runCatching { repo.getNote(username) }.getOrNull()
+            withContext(Dispatchers.Main) {
+                noteDialog(context, content) { newText ->
+                    applicationScope.launch {
+                        runCatching { repo.saveNote(username, newText) }
+                            .onSuccess {
+                                withContext(AppDispatchers.IO) {
+                                    applicationCache
+                                        .cache()
+                                        .linkCommentsQueries
+                                        .updateAuthorNote(authorHasNote = newText.isNotBlank(), profileId = username)
+                                }
+                            }
+                    }
+                }.show()
             }
         }
     }

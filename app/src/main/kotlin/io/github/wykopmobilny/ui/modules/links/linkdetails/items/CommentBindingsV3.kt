@@ -17,6 +17,7 @@ import io.github.wykopmobilny.models.dataclass.Embed
 import io.github.wykopmobilny.ui.components.widgets.ColorConst
 import io.github.wykopmobilny.ui.components.widgets.EmbedMediaUi
 import io.github.wykopmobilny.ui.widgets.WykopEmbedView
+import io.github.wykopmobilny.ui.widgets.setNoteCard
 import io.github.wykopmobilny.utils.bindings.setOnClick
 import io.github.wykopmobilny.utils.bindings.setOnLongClick
 import io.github.wykopmobilny.utils.textview.BetterLinkMovementMethod
@@ -136,6 +137,8 @@ internal fun TopLinkCommentLayoutBinding.bindParentCommentV3(
                 ?: nameView.context.readColorAttr(AppcompatR.attr.colorControlNormal)
         nameView.setTextColor(authorColor)
         nameView.setOnClick(data.profileAction)
+        // Zolta kartka notatki tuz za nickiem (jak na mikroblogu).
+        nameView.setNoteCard(data.author.hasNote)
     }
     val dateView = authorHeaderView.findViewById<TextView>(R.id.entryDateTextView)
     if (dateView != null) {
@@ -225,6 +228,8 @@ internal fun LinkCommentLayoutBinding.bindReplyCommentV3(
         comment.author.color?.toColorInt(authorTextView.context)
             ?: authorTextView.context.readColorAttr(AppcompatR.attr.colorControlNormal)
     authorTextView.setTextColor(authorColor)
+    // Zolta kartka notatki tuz za nickiem (jak na mikroblogu).
+    authorTextView.setNoteCard(comment.author.hasNote)
 
     // Date
     dateTextView.text = comment.app?.let { "${comment.postedAgo} via $it" } ?: comment.postedAgo

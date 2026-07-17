@@ -47,6 +47,8 @@ internal data class UserInfo(
     val rank: Int?,
     val gender: Gender?,
     val color: Color,
+    // Zalogowany user ma notatke o tym autorze (zolta kartka przy nicku).
+    val hasNote: Boolean = false,
 ) {
     enum class Gender {
         Male,

@@ -125,6 +125,7 @@ internal suspend fun persistLinkComments(
                     violationUrl = null,
                     deletedReason = comment.deleted,
                     slug = comment.slug,
+                    authorHasNote = comment.author.note ?: false,
                 ),
             )
         }
@@ -144,6 +145,7 @@ private fun SelectByLinkId.toContent() =
                 rank = rank,
                 gender = gender?.toGenderDomain(),
                 color = color.toColorDomain(),
+                hasNote = authorHasNote,
             ),
         plusCount = voteCountPlus,
         minusCount = (voteCount - voteCountPlus).absoluteValue,
