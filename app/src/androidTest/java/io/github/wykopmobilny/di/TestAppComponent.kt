@@ -5,7 +5,6 @@ import dagger.Component
 import dagger.android.support.AndroidSupportInjectionModule
 import io.github.wykopmobilny.TestApp
 import io.github.wykopmobilny.api.WykopApi
-import io.github.wykopmobilny.blacklist.api.Scraper
 import io.github.wykopmobilny.di.modules.NetworkModule
 import io.github.wykopmobilny.di.modules.RepositoryModule
 import io.github.wykopmobilny.patrons.remote.PatronsComponent
@@ -26,7 +25,6 @@ import javax.inject.Singleton
     dependencies = [
         WykopApi::class,
         PatronsComponent::class,
-        Scraper::class,
         Storages::class,
     ],
 )
@@ -38,7 +36,6 @@ internal interface TestAppComponent : AppComponent {
             @BindsInstance okHttpClient: OkHttpClient,
             wykop: WykopApi,
             patrons: PatronsComponent,
-            scraper: Scraper,
             storages: Storages,
             @BindsInstance settingsInterop: SettingsPreferencesApi,
         ): TestAppComponent

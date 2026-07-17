@@ -25,10 +25,10 @@ import io.github.wykopmobilny.utils.textview.prepareBody
 import io.github.wykopmobilny.utils.textview.stripWykopFormatting
 import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 import io.github.wykopmobilny.utils.usermanager.isUserAuthorized
-import org.threeten.bp.Instant
-import org.threeten.bp.ZoneId
-import org.threeten.bp.format.DateTimeFormatter
-import org.threeten.bp.format.FormatStyle
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 typealias EntryListener = (Entry) -> Unit
 

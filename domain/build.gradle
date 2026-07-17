@@ -7,7 +7,6 @@ plugins {
 
 dependencies {
     implementation(projects.data.github.api)
-    implementation(projects.data.scraper.api)
     implementation(projects.data.storage.api)
     implementation(projects.data.wykop.api)
     implementation(projects.data.framework.api)

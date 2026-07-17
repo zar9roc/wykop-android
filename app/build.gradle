@@ -75,6 +75,8 @@ android {
         }
         named("release") {
             minifyEnabled = true
+            // Wycina nieużywane zasoby (R8 tnie tylko kod) - patrz analiza rozmiaru APK.
+            shrinkResources = true
             signingConfig = signingConfigs.getByName("release")
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             // Testowe wydania: -Pwykop.versionSuffix=-rc1 dokleja sufiks do versionName
@@ -182,7 +184,6 @@ easylauncher {
 dependencies {
     implementation(projects.data.wykop.remote)
     implementation(projects.data.github.remote)
-    implementation(projects.data.scraper.remote)
     implementation(projects.data.storage.android)
     implementation(projects.data.framework.android)
     implementation(projects.data.cache.sqldelight)
@@ -230,7 +231,6 @@ dependencies {
     implementation("org.ocpsoft.prettytime:prettytime:4.0.6.Final")
     implementation("io.reactivex.rxjava2:rxandroid:2.1.1")
     implementation("io.reactivex.rxjava2:rxjava:2.2.21")
-    implementation("com.jakewharton.threetenabp:threetenabp:1.4.6")
     implementation(libs.retrofit.core)
 
     implementation(libs.dagger.core)

@@ -3,7 +3,6 @@ package io.github.wykopmobilny.domain.di
 import dagger.BindsInstance
 import dagger.Component
 import io.github.wykopmobilny.api.WykopApi
-import io.github.wykopmobilny.blacklist.api.Scraper
 import io.github.wykopmobilny.data.cache.api.ApplicationCache
 import io.github.wykopmobilny.domain.blacklist.di.BlacklistDomainComponent
 import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsComponent
@@ -41,7 +40,6 @@ import javax.inject.Singleton
     ],
     dependencies = [
         Storages::class,
-        Scraper::class,
         WykopApi::class,
         Framework::class,
         ApplicationCache::class,
@@ -58,7 +56,6 @@ interface DomainComponent {
             @BindsInstance clock: Clock,
             @BindsInstance appConfig: AppConfig,
             storages: Storages,
-            scraper: Scraper,
             wykop: WykopApi,
             framework: Framework,
             applicationCache: ApplicationCache,

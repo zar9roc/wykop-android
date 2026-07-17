@@ -299,11 +299,11 @@ class EntryCommentViewHolder(
                 comment.fullDate
                     .toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
                     .run {
-                        org.threeten.bp.LocalDateTime
+                        java.time.LocalDateTime
                             .of(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond)
                     }.format(
-                        org.threeten.bp.format.DateTimeFormatter
-                            .ofLocalizedDateTime(org.threeten.bp.format.FormatStyle.MEDIUM),
+                        java.time.format.DateTimeFormatter
+                            .ofLocalizedDateTime(java.time.format.FormatStyle.MEDIUM),
                     )
             date.text = dateAsString
             comment.app?.takeIf { it.isNotEmpty() }?.let {

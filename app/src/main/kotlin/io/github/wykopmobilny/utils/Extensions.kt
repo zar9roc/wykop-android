@@ -19,8 +19,8 @@ import io.github.wykopmobilny.utils.api.parseDate
 import io.github.wykopmobilny.utils.recyclerview.ViewHolderDependentItemDecorator
 import kotlinx.datetime.Instant
 import org.ocpsoft.prettytime.PrettyTime
-import org.threeten.bp.Duration
-import org.threeten.bp.format.DateTimeParseException
+import java.time.Duration
+import java.time.format.DateTimeParseException
 import java.util.Date
 import java.util.Locale
 import kotlin.time.Duration.Companion.seconds

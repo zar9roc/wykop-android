@@ -31,9 +31,9 @@ import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 import io.github.wykopmobilny.utils.usermanager.isUserAuthorized
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import org.threeten.bp.LocalDateTime
-import org.threeten.bp.format.DateTimeFormatter
-import org.threeten.bp.format.FormatStyle
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import kotlin.math.absoluteValue
 
 abstract class BaseLinkCommentViewHolder(

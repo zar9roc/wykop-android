@@ -3,10 +3,8 @@ package io.github.wykopmobilny
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.webkit.CookieManager
 import android.widget.Toast
 import androidx.core.app.ShareCompat
-import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.Lazy
 import dagger.android.AndroidInjector
 import dagger.android.support.DaggerApplication
@@ -129,7 +127,6 @@ open class WykopApp :
 
     override fun onCreate() {
         super.onCreate()
-        AndroidThreeTen.init(this)
         doInterop()
 
         applicationScope.launch { domainComponent.initializeApp().invoke() }
@@ -141,7 +138,6 @@ open class WykopApp :
             okHttpClient = okHttpClient,
             wykop = wykopApi,
             patrons = patrons,
-            scraper = scraper,
             storages = storages,
             settingsInterop = domainComponent.settingsApiInterop(),
         )
@@ -154,7 +150,6 @@ open class WykopApp :
             },
             clock = Clock.System,
             storages = storages,
-            scraper = scraper,
             wykop = wykopApi,
             framework = framework,
             applicationCache = applicationCache,
@@ -214,13 +209,6 @@ open class WykopApp :
         )
     }
 
-    protected open val scraper by lazy {
-        daggerScraper().create(
-            okHttpClient = okHttpClient,
-            baseUrl = "https://wykop.pl",
-            cookieProvider = { webPage -> CookieManager.getInstance().getCookie(webPage) },
-        )
-    }
 
     protected open val patrons by lazy {
         daggerPatrons().create(

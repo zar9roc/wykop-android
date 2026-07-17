@@ -27,7 +27,6 @@ internal class TestApp : WykopApp() {
                 okHttpClient = okHttpClient,
                 wykop = wykopApi,
                 patrons = patrons,
-                scraper = scraper,
                 storages = storages,
                 settingsInterop = domainComponent.settingsApiInterop(),
             )
@@ -52,14 +51,6 @@ internal class TestApp : WykopApp() {
         )
     }
 
-    override val scraper by lazy {
-        daggerScraper().create(
-            okHttpClient = okHttpClient,
-            baseUrl = "http://localhost:8000",
-            cookieProvider = cookieProvider::cookieForSite,
-        )
-    }
-
     public override val storages: StoragesComponent by lazy {
         DaggerStoragesComponent.factory().create(
             context = this,
@@ -74,7 +65,6 @@ internal class TestApp : WykopApp() {
             connectConfig = { ConnectConfig("http://localhost:8000/Login/Connect") },
             clock = Clock.System,
             storages = storages,
-            scraper = scraper,
             wykop = wykopApi,
             framework = framework,
             applicationCache = applicationCache,
