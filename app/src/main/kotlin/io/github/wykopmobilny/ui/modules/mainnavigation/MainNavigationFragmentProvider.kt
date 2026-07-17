@@ -32,6 +32,11 @@ abstract class MainNavigationFragmentProvider {
     @ContributesAndroidInjector(modules = [HotFragmentModule::class, EntriesFragmentProvider::class])
     abstract fun provideHotFragment(): HotFragment
 
+    // Feed Gorące na nowym stacku - deps app-wide, bez dedykowanego modułu (query
+    // idzie przez viewModelWrapperFactoryKeyed, nie Dagger fragment injection).
+    @ContributesAndroidInjector
+    abstract fun provideHotFragmentV2(): io.github.wykopmobilny.ui.modules.mikroblog.feed.hot.v2.HotFragmentV2
+
     @ContributesAndroidInjector(modules = [HashTagsNotificationsListFragmentModule::class])
     abstract fun provideHashTagsNotificationsListFragment(): HashTagsNotificationsListFragment
 

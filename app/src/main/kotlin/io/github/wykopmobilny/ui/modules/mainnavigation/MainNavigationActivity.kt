@@ -40,7 +40,7 @@ import io.github.wykopmobilny.ui.modules.favorite.FavoriteFragment
 import io.github.wykopmobilny.ui.modules.links.hits.HitsFragment
 import io.github.wykopmobilny.ui.modules.links.promoted.PromotedFragment
 import io.github.wykopmobilny.ui.modules.links.upcoming.UpcomingFragment
-import io.github.wykopmobilny.ui.modules.mikroblog.feed.hot.HotFragment
+import io.github.wykopmobilny.ui.modules.mikroblog.feed.hot.v2.HotFragmentV2
 import io.github.wykopmobilny.ui.modules.mywykop.MyWykopFragment
 import io.github.wykopmobilny.ui.modules.notificationslist.NotificationsListActivity
 import io.github.wykopmobilny.ui.modules.notificationslist.notification.NotificationsListFragment
@@ -158,7 +158,7 @@ class MainNavigationActivity :
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.nav_mikroblog -> {
-                openFragment(HotFragment.newInstance())
+                openFragment(HotFragmentV2.newInstance())
             }
 
             R.id.login -> {
@@ -384,7 +384,7 @@ class MainNavigationActivity :
     private fun openMainFragment() {
         when (settingsApi.defaultScreen) {
             "mainpage", null -> openFragment(PromotedFragment.newInstance())
-            "mikroblog" -> openFragment(HotFragment.newInstance())
+            "mikroblog" -> openFragment(HotFragmentV2.newInstance())
             "mywykop" -> openFragment(MyWykopFragment.newInstance())
             "hits" -> openFragment(HitsFragment.newInstance())
         }

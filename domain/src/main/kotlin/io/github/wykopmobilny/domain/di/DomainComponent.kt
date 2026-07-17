@@ -76,6 +76,8 @@ interface DomainComponent {
 
     fun entryDetails(): io.github.wykopmobilny.domain.entrydetails.di.EntryDetailsComponent.Factory
 
+    fun microblogFeed(): io.github.wykopmobilny.domain.microblog.feed.di.MicroblogFeedComponent.Factory
+
     fun profile(): ProfileDomainComponent.Factory
 
     fun search(): SearchDomainComponent

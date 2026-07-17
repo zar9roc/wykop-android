@@ -32,6 +32,9 @@ import io.github.wykopmobilny.domain.work.di.WorkScope
 import io.github.wykopmobilny.domain.entrydetails.di.EntryDetailsComponent
 import io.github.wykopmobilny.domain.entrydetails.di.EntryDetailsKey
 import io.github.wykopmobilny.domain.entrydetails.di.EntryDetailsScope
+import io.github.wykopmobilny.domain.microblog.feed.di.MicroblogFeedComponent
+import io.github.wykopmobilny.domain.microblog.feed.di.MicroblogFeedKey
+import io.github.wykopmobilny.domain.microblog.feed.di.MicroblogFeedScope
 import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsComponent
 import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsKey
 import io.github.wykopmobilny.notification.AppNotification.Type.Notifications
@@ -310,6 +313,11 @@ open class WykopApp :
                 getOrPutScope<EntryDetailsScope>(scopeId) { domainComponent.entryDetails().create(key = scopeId) }
             }
 
+            MicroblogFeedComponent::class -> {
+                scopeId as MicroblogFeedKey
+                getOrPutScope<MicroblogFeedScope>(scopeId) { domainComponent.microblogFeed().create(key = scopeId) }
+            }
+
             ProfileDependencies::class -> {
                 scopeId as String
                 getOrPutScope<ProfileScope>(scopeId) { domainComponent.profile().create(profileId = scopeId) }
@@ -356,6 +364,7 @@ open class WykopApp :
             SearchDependencies::class -> scopes.remove(scopeKey<SearchScope>(scopeId))
             LinkDetailsComponent::class -> scopes.remove(scopeKey<LinkDetailsScope>(scopeId))
             EntryDetailsComponent::class -> scopes.remove(scopeKey<EntryDetailsScope>(scopeId))
+            MicroblogFeedComponent::class -> scopes.remove(scopeKey<MicroblogFeedScope>(scopeId))
             ProfileDependencies::class -> scopes.remove(scopeKey<ProfileScope>(scopeId))
             NotificationDependencies::class -> scopes.remove(scopeKey<NotificationsScope>(scopeId))
             TwoFactorAuthDependencies::class -> scopes.remove(scopeKey<TwoFactorAuthScope>(scopeId))
