@@ -261,6 +261,11 @@ class InputToolbar(
 
     fun hasUserEditedContent() = textBody != defaultText && binding.markdownToolbar.hasUserEditedContent()
 
+    // Powiadamia o zmianie treści pola (do przełączania przechwytywania gestu wstecz).
+    fun doOnContentChanged(action: () -> Unit) {
+        binding.body.doOnTextChanged { _, _, _, _ -> action() }
+    }
+
     fun hide() {
         isVisible = false
     }

@@ -227,12 +227,15 @@ internal class EntryDetailsFragment :
             }
         }
 
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-            if (binding.inputToolbar.hasUserEditedContent()) {
+        // Callback przechwytuje wstecz TYLKO gdy jest niezapisana treść (wtedy pytamy
+        // o potwierdzenie). Przy pustym polu callback jest wyłączony, więc wstecz
+        // obsługuje system - i pokazuje predykcyjny podgląd poprzedniego ekranu.
+        val exitConfirmCallback =
+            requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, enabled = false) {
                 exitConfirmationDialog(requireContext()) { requireActivity().finish() }?.show()
-            } else {
-                requireActivity().finish()
             }
+        binding.inputToolbar.doOnContentChanged {
+            exitConfirmCallback.isEnabled = binding.inputToolbar.hasUserEditedContent()
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
