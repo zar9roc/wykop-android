@@ -48,13 +48,14 @@ class EntryFeedPager
             val response = fetch(sort, page = null)
             if (generation.get() != currentGeneration) return
             val data = response.data.orEmpty()
+            val info = pageInfo(response, loadedPageNumber = 1)
             storage.update {
                 it.copy(
                     entries = data,
                     sort = sort,
                     pageNumber = 1,
-                    nextPage = response.pagination?.next ?: "2",
-                    hasMore = data.isNotEmpty(),
+                    nextPage = info.nextPage,
+                    hasMore = data.isNotEmpty() && info.hasMore,
                     isLoadingMore = false,
                     loaded = true,
                 )
@@ -77,11 +78,12 @@ class EntryFeedPager
                     storage.update { old ->
                         val known = old.entries.mapTo(HashSet()) { it.id }
                         val loadedPage = old.pageNumber + 1
+                        val info = pageInfo(response, loadedPageNumber = loadedPage)
                         old.copy(
                             entries = old.entries + fresh.filterNot { it.id in known },
                             pageNumber = loadedPage,
-                            nextPage = response.pagination?.next ?: (loadedPage + 1).toString(),
-                            hasMore = fresh.isNotEmpty(),
+                            nextPage = info.nextPage,
+                            hasMore = info.hasMore,
                             isLoadingMore = false,
                         )
                     }
@@ -102,6 +104,39 @@ class EntryFeedPager
             page: String?,
         ): WykopApiResponseV3<List<EntryResponseV3>> =
             api.getEntries(page = page, sort = sort.apiSort, lastUpdate = sort.lastUpdate)
+
+        /**
+         * Dwa tryby paginacji feedu v3 (patrz docs/api_v3_samples):
+         * - zalogowany: odpowiedź niesie kursor `next` -> podążamy za nim, hasMore = next != null;
+         * - niezalogowany: brak `next`, ale jest total+per_page -> stronicujemy numerem
+         *   i znamy ostatnią stronę = ceil(total/per_page), hasMore = strona < ostatnia.
+         * Fallback (brak metadanych): kontynuuj dopóki strona niepusta.
+         */
+        private fun pageInfo(
+            response: WykopApiResponseV3<List<EntryResponseV3>>,
+            loadedPageNumber: Int,
+        ): PageInfo {
+            response.pagination?.next?.let { cursor ->
+                return PageInfo(nextPage = cursor, hasMore = true)
+            }
+            val total = response.pagination?.total
+            val perPage = response.pagination?.perPage
+            val hasMore =
+                when {
+                    total != null && perPage != null && perPage > 0 -> {
+                        val lastPage = (total + perPage - 1) / perPage
+                        loadedPageNumber < lastPage
+                    }
+
+                    else -> response.data.orEmpty().isNotEmpty()
+                }
+            return PageInfo(nextPage = (loadedPageNumber + 1).toString(), hasMore = hasMore)
+        }
+
+        private data class PageInfo(
+            val nextPage: String?,
+            val hasMore: Boolean,
+        )
     }
 
 private val MicroblogFeedSort.apiSort: EntriesSort
