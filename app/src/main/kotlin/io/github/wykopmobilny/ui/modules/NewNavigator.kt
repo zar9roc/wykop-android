@@ -12,7 +12,6 @@ import io.github.wykopmobilny.models.dataclass.Link
 import io.github.wykopmobilny.storage.api.SettingsPreferencesApi
 import io.github.wykopmobilny.ui.modules.addlink.AddlinkActivity
 import io.github.wykopmobilny.ui.modules.embedview.EmbedViewActivity
-import io.github.wykopmobilny.ui.modules.embedview.YoutubeActivity
 import io.github.wykopmobilny.ui.modules.input.BaseInputActivity
 import io.github.wykopmobilny.ui.modules.report.ReportWebViewActivity
 import io.github.wykopmobilny.ui.modules.input.entry.add.AddEntryActivity
@@ -145,7 +144,8 @@ class NewNavigator
 
         fun openEmbedActivity(url: String) = context.startActivity(EmbedViewActivity.createIntent(context, url))
 
-        fun openYoutubeActivity(url: String) = startAndReportOnError({ YoutubeActivity.createIntent(context, url) }, "YouTube")
+        // YouTube Player (zamkniete API) usuniete - filmy otwieramy zewnetrznie (przegladarka / aplikacja YouTube).
+        fun openYoutubeActivity(url: String) = openBrowser(url)
 
         fun openAddLinkActivity() = context.startActivity(AddlinkActivity.createIntent(context))
 
@@ -158,24 +158,4 @@ class NewNavigator
                 .startChooser()
         }
 
-        private fun startAndReportOnError(
-            intentCreator: () -> Intent,
-            actionName: String,
-        ) {
-            @Suppress("TooGenericExceptionCaught") // Various activity start failures possible
-            try {
-                val intent = intentCreator()
-                context.startActivity(intent)
-            } catch (ex: Exception) {
-                Napier.e("Failed to create and start '$actionName' activity", ex)
-                val message = context.getString(R.string.error_cannot_open_activity).format(actionName)
-                AlertDialog
-                    .Builder(context)
-                    .setTitle(R.string.error_occured)
-                    .setMessage(message)
-                    .setPositiveButton(R.string.close, null)
-                    .create()
-                    .show()
-            }
-        }
     }

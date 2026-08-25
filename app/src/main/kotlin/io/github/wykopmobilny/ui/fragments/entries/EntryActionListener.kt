@@ -11,6 +11,9 @@ interface EntryActionListener {
 
     fun deleteEntry(entry: Entry)
 
+    // Toggle obserwowania dyskusji we wpisie (powiadomienia o nowych komentarzach).
+    fun observeDiscussion(entry: Entry)
+
     fun voteSurvey(
         entry: Entry,
         index: Int,

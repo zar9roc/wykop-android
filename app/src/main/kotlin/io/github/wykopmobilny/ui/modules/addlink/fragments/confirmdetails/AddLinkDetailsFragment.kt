@@ -2,6 +2,7 @@ package io.github.wykopmobilny.ui.modules.addlink.fragments.confirmdetails
 
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import io.github.wykopmobilny.R
@@ -9,8 +10,6 @@ import io.github.wykopmobilny.api.responses.AddLinkPreviewImage
 import io.github.wykopmobilny.base.BaseFragment
 import io.github.wykopmobilny.databinding.AddlinkDetailsFragmentBinding
 import io.github.wykopmobilny.databinding.AddlinkPreviewImageBinding
-import io.github.wykopmobilny.models.dataclass.Link
-import io.github.wykopmobilny.ui.modules.NavigatorApi
 import io.github.wykopmobilny.ui.modules.addlink.AddlinkActivity
 import io.github.wykopmobilny.utils.api.stripImageCompression
 import io.github.wykopmobilny.utils.loadImage
@@ -26,9 +25,6 @@ class AddLinkDetailsFragment :
 
     @Inject
     lateinit var presenter: AddLinkDetailsFragmentPresenter
-
-    @Inject
-    lateinit var navigator: NavigatorApi
 
     private val binding by viewBinding(AddlinkDetailsFragmentBinding::bind)
 
@@ -56,8 +52,8 @@ class AddLinkDetailsFragment :
         super.onDestroyView()
     }
 
-    override fun openLinkScreen(link: Link) {
-        navigator.openLinkDetailsActivity(requireActivity(), link)
+    override fun onLinkPublished() {
+        Toast.makeText(requireContext(), R.string.addlink_published, Toast.LENGTH_LONG).show()
         requireActivity().finish()
     }
 

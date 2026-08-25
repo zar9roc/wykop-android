@@ -3,8 +3,12 @@ package io.github.wykopmobilny.api.endpoints.v3
 import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateCommentRequestV3
 import io.github.wykopmobilny.api.requests.v3.links.AddRelatedRequestV3
+import io.github.wykopmobilny.api.requests.v3.links.LinkDraftCreateRequestV3
+import io.github.wykopmobilny.api.requests.v3.links.LinkDraftPublishRequestV3
 import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
+import io.github.wykopmobilny.api.responses.v3.links.LinkDraftCreateResponseV3
+import io.github.wykopmobilny.api.responses.v3.links.LinkDraftResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkVoterResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.RelatedResponseV3
@@ -24,6 +28,32 @@ interface LinksV3RetrofitApi {
         @Query("type") type: String? = null,
         @Query("sort") sort: String? = null,
     ): WykopApiResponseV3<List<LinkResponseV3>>
+
+    // Dodawanie znaleziska (draft): utworzenie z URL, pobranie zescrapowanych danych,
+    // publikacja. Zastepuje martwe endpointy v1/v2 (addlink/*).
+    @POST("v3/links/draft")
+    suspend fun createLinkDraft(
+        @Body request: WykopApiRequestV3<LinkDraftCreateRequestV3>,
+    ): WykopApiResponseV3<LinkDraftCreateResponseV3>
+
+    @GET("v3/links/draft/{key}")
+    suspend fun getLinkDraft(
+        @Path("key") key: String,
+    ): WykopApiResponseV3<LinkDraftResponseV3>
+
+    // Publikacja draftu (201, puste data) - stad Response<Unit>.
+    @POST("v3/links/draft/{key}")
+    suspend fun publishLinkDraft(
+        @Path("key") key: String,
+        @Body request: WykopApiRequestV3<LinkDraftPublishRequestV3>,
+    ): Response<Unit>
+
+    // Edycja opublikowanego znaleziska (te same pola co publikacja).
+    @PUT("v3/links/{linkId}")
+    suspend fun editLink(
+        @Path("linkId") linkId: Long,
+        @Body request: WykopApiRequestV3<LinkDraftPublishRequestV3>,
+    ): Response<Unit>
 
     @Deprecated("Use getLinks(page, type = \"upcoming\", sort = sortBy) instead")
     @GET("v3/links/upcoming")

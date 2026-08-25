@@ -1,6 +1,9 @@
 package io.github.wykopmobilny.models.dataclass
 
 data class PMMessage(
+    // Identyfikator wiadomosci z API (pole "key") - uzywany jako prev_message/next_message
+    // przy dociaganiu starszych/nowszych wiadomosci.
+    val key: String?,
     val date: String,
     val body: String,
     val embed: Embed?,

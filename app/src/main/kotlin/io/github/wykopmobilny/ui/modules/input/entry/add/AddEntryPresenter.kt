@@ -13,13 +13,17 @@ class AddEntryPresenter
         private val schedulers: Schedulers,
         private val entriesApi: EntriesApi,
     ) : InputPresenter<AddEntryActivityView>() {
+        // Id ankiety utworzonej wczesniej (POST /v3/entries/survey), doklejane do wpisu przy
+        // wysylce. Ustawiane/czyszczone przez AddEntryActivity; null = brak ankiety.
+        var pendingSurveyId: String? = null
+
         override fun sendWithPhoto(
             photo: WykopImageFile,
             containsAdultContent: Boolean,
         ) {
             view?.showProgressBar = true
             entriesApi
-                .addEntry(view?.textBody!!, photo, containsAdultContent)
+                .addEntry(view?.textBody!!, photo, containsAdultContent, pendingSurveyId)
                 .subscribeOn(schedulers.backgroundThread())
                 .observeOn(schedulers.mainThread())
                 .subscribe(
@@ -37,7 +41,7 @@ class AddEntryPresenter
         ) {
             view?.showProgressBar = true
             entriesApi
-                .addEntry(view?.textBody!!, photo, containsAdultContent)
+                .addEntry(view?.textBody!!, photo, containsAdultContent, pendingSurveyId)
                 .subscribeOn(schedulers.backgroundThread())
                 .observeOn(schedulers.mainThread())
                 .subscribe(
@@ -46,6 +50,24 @@ class AddEntryPresenter
                         view?.showProgressBar = false
                         view?.showErrorDialog(it)
                     },
+                ).intoComposite(compositeObservable)
+        }
+
+        // Tworzy ankiete na serwerze; po sukcesie zapamietuje survey_id i pokazuje podglad.
+        fun createSurvey(
+            question: String,
+            answers: List<String>,
+        ) {
+            entriesApi
+                .createSurvey(question, answers)
+                .subscribeOn(schedulers.backgroundThread())
+                .observeOn(schedulers.mainThread())
+                .subscribe(
+                    { surveyId ->
+                        pendingSurveyId = surveyId
+                        view?.onSurveyCreated(question, answers)
+                    },
+                    { view?.showErrorDialog(it) },
                 ).intoComposite(compositeObservable)
         }
     }

@@ -58,6 +58,10 @@ class MicroblogEntriesPresenter(
         entriesInteractor.deleteEntry(entry).processEntrySingle(entry)
     }
 
+    override fun observeDiscussion(entry: Entry) {
+        entriesInteractor.observeDiscussion(entry).processEntrySingle(entry)
+    }
+
     override fun voteSurvey(
         entry: Entry,
         index: Int,

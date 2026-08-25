@@ -1,11 +1,13 @@
 package io.github.wykopmobilny.notification
 
-import kotlin.reflect.KClass
-
 interface NotificationsManager {
-    suspend fun upsertNotification(notification: AppNotification)
-
-    suspend fun cancelNotification(type: KClass<out AppNotification.Type>)
+    /**
+     * Publikuje PELNY aktualny stan kanalu: kazde zdarzenie jako osobne powiadomienie
+     * (tag = id zdarzenia) + podsumowanie grupy. Zdarzenia pokazane wczesniej, a nieobecne
+     * na liscie, sa anulowane; pusta lista czysci caly kanal.
+     */
+    suspend fun publish(
+        channel: AppNotification.Channel,
+        notifications: List<AppNotification>,
+    )
 }
-
-suspend inline fun <reified T : AppNotification.Type> NotificationsManager.cancelNotification() = cancelNotification(T::class)

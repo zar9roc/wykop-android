@@ -7,18 +7,27 @@ import io.github.wykopmobilny.models.dataclass.Survey
 import io.github.wykopmobilny.models.mapper.Mapper
 
 object SurveyMapperV3 : Mapper<SurveyResponseV3, Survey> {
-    override fun map(value: SurveyResponseV3) =
-        Survey(
-            value.question,
-            value.answers.map { mapAnswer(it) },
-            value.userAnswer,
+    override fun map(value: SurveyResponseV3): Survey {
+        // API nie zwraca procentow - liczymy z count/suma. userAnswer to 1-based id
+        // zaznaczonej odpowiedzi (top-level `voted`); 0 = brak glosu -> null.
+        val total = value.count ?: value.answers.sumOf { it.count }
+        return Survey(
+            question = value.question,
+            answers = value.answers.map { mapAnswer(it, total) },
+            userAnswer = value.voted?.takeIf { it > 0 },
         )
+    }
 
-    private fun mapAnswer(answer: SurveyAnswerResponseV3): Answer =
+    private fun mapAnswer(
+        answer: SurveyAnswerResponseV3,
+        total: Int,
+    ): Answer =
         Answer(
             id = answer.id,
-            answer = answer.answer,
+            answer = answer.text,
             count = answer.count,
-            percentage = answer.percentage,
+            percentage = if (total > 0) answer.count * PERCENT / total else 0.0,
         )
+
+    private const val PERCENT = 100.0
 }

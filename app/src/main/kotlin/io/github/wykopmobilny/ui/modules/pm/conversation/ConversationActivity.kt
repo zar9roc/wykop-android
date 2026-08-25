@@ -99,8 +99,16 @@ class ConversationActivity :
         binding.recyclerView.apply {
             prepareNoDivider()
             adapter = conversationAdapter
-            (layoutManager as androidx.recyclerview.widget.LinearLayoutManager).reverseLayout = true
+            val layoutManager = layoutManager as androidx.recyclerview.widget.LinearLayoutManager
+            layoutManager.reverseLayout = true
             setHasFixedSize(false)
+            // reverseLayout: koniec listy adaptera = wizualnie gora = najstarsze wiadomosci,
+            // wiec EndlessScrollListener (trigger przy koncu) dociaga STARSZE (scroll w gore).
+            addOnScrollListener(
+                io.github.wykopmobilny.ui.helpers.EndlessScrollListener(layoutManager) {
+                    presenter.loadOlderMessages()
+                },
+            )
         }
 
         if (conversationDataFragment.data == null) {
@@ -123,6 +131,7 @@ class ConversationActivity :
             subtitle =
                 if (conversation.messages.isNotEmpty()) conversation.messages.last().date else null
             binding.avatarview.setAuthor(conversation.receiver)
+            binding.avatarview.setOnline(conversation.online)
             binding.avatarview.isVisible = true
             binding.avatarview.setOnClickListener {
                 getActivityContext()!!.startActivity(
@@ -142,6 +151,23 @@ class ConversationActivity :
             notifyDataSetChanged()
         }
         binding.recyclerView.invalidate()
+        // Seed kluczy granicznych (prev/next) z aktualnie pokazanej pelnej rozmowy.
+        presenter.onConversationShown(conversation.messages)
+    }
+
+    override fun prependOlderMessages(messages: List<PMMessage>) {
+        val start = conversationAdapter.messages.size
+        // messages: od najstarszej do najnowszej; adapter (reverseLayout) trzyma od najnowszej
+        // do najstarszej, wiec starsze dodajemy odwrocone NA KONIEC (wizualnie u gory).
+        conversationAdapter.messages.addAll(messages.reversed())
+        conversationAdapter.notifyItemRangeInserted(start, messages.size)
+    }
+
+    override fun appendNewMessages(messages: List<PMMessage>) {
+        // Nowsze wiadomosci na POCZATEK listy (index 0 = najnowsza, wizualnie na dole).
+        conversationAdapter.messages.addAll(0, messages.reversed())
+        conversationAdapter.notifyItemRangeInserted(0, messages.size)
+        binding.recyclerView.scrollToPosition(0)
     }
 
     override fun onDestroy() {

@@ -1,5 +1,6 @@
 package io.github.wykopmobilny.models.mapper.apiv3
 
+import io.github.wykopmobilny.api.notes.NoteOverrideCache
 import io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3
 import io.github.wykopmobilny.models.dataclass.Author
 import io.github.wykopmobilny.models.mapper.Mapper
@@ -18,7 +19,9 @@ object AuthorMapperV3 : Mapper<UserShortResponseV3, Author> {
                 else -> colorNameToGroupId(value.color)
             },
             value.gender.orEmpty(),
-            hasNote = value.note ?: false,
+            // Override lokalny ma pierwszenstwo: API v3 nie czysci note po usunieciu,
+            // wiec gdy wiemy lokalnie o braku notatki, wymuszamy false.
+            hasNote = if (NoteOverrideCache.hasNoNote(value.username)) false else value.note ?: false,
         )
 
     private const val GROUP_ID_BANNED = 1001

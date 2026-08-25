@@ -43,6 +43,16 @@ class MarkdownToolbar(
     var remoteImageInserted: () -> Unit = {}
     var containsAdultContent = false
     var floatingImageView: FloatingImageView? = null
+
+    // Kafelek ankiety domyslnie ukryty - wlacza go tylko ekran dodawania wpisu
+    // (ankiety dotycza wpisow, nie komentarzy/PM).
+    var surveyEnabled: Boolean
+        get() = binding.insertSurvey.visibility == View.VISIBLE
+        set(value) {
+            binding.insertSurvey.visibility = if (value) View.VISIBLE else View.GONE
+        }
+
+    private val binding = MarkdownToolbarBinding.inflate(layoutInflater, this, true)
     private val markdownDialogs by lazy { MarkdownDialogs(context) }
     private val formatText: FormatDialogCallback = {
         markdownListener?.apply {
@@ -53,7 +63,7 @@ class MarkdownToolbar(
     }
 
     init {
-        val binding = MarkdownToolbarBinding.inflate(layoutInflater, this, true)
+        binding.insertSurvey.setOnClickListener { markdownListener?.onSurveyClicked() }
 
         // Create callbacks
         markdownDialogs.apply {

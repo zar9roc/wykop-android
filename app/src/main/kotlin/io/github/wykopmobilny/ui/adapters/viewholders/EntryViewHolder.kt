@@ -251,7 +251,9 @@ class EntryViewHolder(
                 surveyView.voteAnswerListener = {
                     entryActionListener.voteSurvey(entry, it)
                 }
-                surveyView.setSurvey(entry.survey!!, userManagerApi)
+                // Wlasnej ankiety nie glosujemy - chowamy radio buttony.
+                val isOwnSurvey = entry.author.nick == userManagerApi.getUserCredentials()?.login
+                surveyView.setSurvey(entry.survey!!, userManagerApi, isOwnSurvey)
             }
         }
     }
@@ -285,7 +287,13 @@ class EntryViewHolder(
                     label = entryMenuNoteLabel,
                     nick = entry.author.nick,
                     dismissMenu = { dialog.dismiss() },
-                    onChanged = { binding.authorHeaderView.refreshNoteCard(it) },
+                    onChanged = {
+                        // Aktualizujemy backing obiekt autora, nie tylko widok - inaczej
+                        // po recyklingu wiersza stary stan znacznika wraca. Konieczne tez
+                        // dlatego, ze API v3 nie czysci pola `note` po usunieciu notatki.
+                        entry.author.hasNote = it
+                        binding.authorHeaderView.refreshNoteCard(it)
+                    },
                 )
             }
 
@@ -323,6 +331,16 @@ class EntryViewHolder(
 
             entryMenuVoters.setOnClickListener {
                 entryActionListener.getVoters(entry)
+                dialog.dismiss()
+            }
+
+            // Obserwowanie dyskusji (powiadomienia o nowych komentarzach) - tylko zalogowani.
+            entryMenuObserveDiscussion.isVisible = isAuthorized
+            entryMenuObserveDiscussionLabel.setText(
+                if (entry.isObservedDiscussion) R.string.unobserve_discussion else R.string.observe_discussion,
+            )
+            entryMenuObserveDiscussion.setOnClickListener {
+                entryActionListener.observeDiscussion(entry)
                 dialog.dismiss()
             }
 

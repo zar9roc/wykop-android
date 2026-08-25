@@ -72,4 +72,12 @@
     <string name="preferences_notification_period_2_hours">2 godziny</string>
     <string name="preferences_notification_period_4_hours">4 godziny</string>
     <string name="preferences_notification_period_8_hours">8 godzin</string>
+    <string name="preferences_notification_period_1_minute">1 minuta *</string>
+    <string name="preferences_notification_period_5_minutes">5 minut *</string>
+    <string name="frequent_polling_dialog_title">Częste sprawdzanie</string>
+    <string name="frequent_polling_dialog_message">Android nie pozwala zwykłym zadaniom w tle działać częściej niż co 15 minut. Aby sprawdzać powiadomienia częściej, aplikacja uruchomi stałą usługę w tle.
+
+Wiąże się to ze stałym powiadomieniem „Sprawdzanie w tle" — możesz je ukryć, wyłączając jego kanał w systemowych ustawieniach powiadomień aplikacji (usługa będzie działać dalej).
+
+Częstsze sprawdzanie zwiększa zużycie baterii. Po restarcie telefonu usługa wznowi się przy pierwszym otwarciu aplikacji.</string>
 </resources>

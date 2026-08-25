@@ -27,9 +27,9 @@ fun TextView.prepareBody(
     html: String,
     urlClickListener: (String) -> Unit,
     clickListener: (() -> Unit)? = null,
-    @Suppress("UNUSED_PARAMETER") openSpoilersDialog: Boolean,
+    openSpoilersDialog: Boolean,
 ) {
-    text = SpannableStringBuilder(html.linkifyTagsAndMentions().toSpannable())
+    text = SpannableStringBuilder(html.linkifyTagsAndMentions().toSpannable(openSpoilersDialog))
     val method = BetterLinkMovementMethod.linkifyHtml(this)
     clickListener?.let {
         method.setOnTextClickListener {

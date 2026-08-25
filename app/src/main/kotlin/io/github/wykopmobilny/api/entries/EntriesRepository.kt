@@ -9,6 +9,7 @@ import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
 import io.github.wykopmobilny.api.requests.v3.media.UploadPhotoByUrlRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateCommentRequestV3
+import io.github.wykopmobilny.api.requests.v3.entries.CreateSurveyRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateEntryRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.VoteSurveyRequestV3
 import io.github.wykopmobilny.api.endpoints.v3.requireSuccessful
@@ -67,6 +68,15 @@ class EntriesRepository
                         .VoteResponse(null)
                 }.doOnSuccess { entryUnVoteSubject.onNext(EntryVotePublishModel(entryId, it)) }
 
+        // Obserwowanie dyskusji: 204 bez body; 409 = juz w docelowym stanie (idempotentne).
+        override fun observeDiscussion(entryId: Long) =
+            rxSingle { entriesApiV3.observeDiscussion(entryId).requireSuccessful() }
+                .retryWhen(userTokenRefresher)
+
+        override fun unobserveDiscussion(entryId: Long) =
+            rxSingle { entriesApiV3.unobserveDiscussion(entryId).requireSuccessful() }
+                .retryWhen(userTokenRefresher)
+
         override fun voteComment(
             entryId: Long,
             commentId: Long,
@@ -99,6 +109,7 @@ class EntriesRepository
             body: String,
             wykopImageFile: WykopImageFile,
             plus18: Boolean,
+            survey: String?,
         ) = rxSingle {
             val photoKey = uploadPhotoAndGetKey(wykopImageFile)
 
@@ -107,6 +118,7 @@ class EntriesRepository
                     CreateUpdateEntryRequestV3(
                         content = body,
                         photo = photoKey,
+                        survey = survey,
                         adult = plus18,
                     ),
                 ),
@@ -141,6 +153,7 @@ class EntriesRepository
             body: String,
             embed: String?,
             plus18: Boolean,
+            survey: String?,
         ) = rxSingle {
             val photoKey = uploadPhotoUrlAndGetKey(embed)
             entriesApiV3.addEntry(
@@ -148,6 +161,7 @@ class EntriesRepository
                     CreateUpdateEntryRequestV3(
                         content = body,
                         photo = photoKey,
+                        survey = survey,
                         adult = plus18,
                     ),
                 ),
@@ -177,6 +191,20 @@ class EntriesRepository
                     isCommentingPossible = null,
                 )
             }
+
+        override fun createSurvey(
+            question: String,
+            answers: List<String>,
+        ) = rxSingle {
+            entriesApiV3.createSurvey(
+                WykopApiRequestV3(CreateSurveyRequestV3(question = question, answers = answers)),
+            )
+        }.retryWhen(userTokenRefresher)
+            .compose(
+                ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.CreateSurveyResponseV3>(
+                    errorBodyParser,
+                ),
+            ).map { it.surveyId }
 
         override fun addEntryComment(
             body: String,

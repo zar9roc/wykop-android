@@ -43,6 +43,7 @@
             android:exported="true"
             android:launchMode="singleTop"
             android:theme="@style/Theme.AppCompat.DayNight"
+            android:windowSoftInputMode="stateUnchanged|adjustResize"
             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -239,13 +240,6 @@
                 android:resource="@xml/provider_paths"
                 />
         </provider>
-
-        <activity
-            android:name=".ui.modules.embedview.YTPlayer"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:screenOrientation="sensor"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
-            />
 
     </application>
 

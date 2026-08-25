@@ -81,7 +81,8 @@ internal class InteropSettingPreferencesApi
         override val cutImages: Boolean
             get() = interop(UserSettings.cutImages) ?: true
         override val openSpoilersDialog: Boolean
-            get() = interop(UserSettings.openSpoilersInDialog) ?: true
+            // Domyslnie inline; popup opcjonalnie (opt-in).
+            get() = interop(UserSettings.openSpoilersInDialog) ?: false
         override val hideLowRangeAuthors: Boolean
             get() = interop(UserSettings.hideNewUserContent) ?: false
         override val hideContentWithoutTags: Boolean

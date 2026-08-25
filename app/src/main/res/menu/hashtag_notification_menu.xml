@@ -8,14 +8,16 @@
         android:titleCondensed="Zwiń wszystkie powiadomienia"
         android:title="Zwiń wszystkie powiadomienia"
         app:showAsAction="always"
-        android:icon="@drawable/ic_collapse_dark"
+        android:icon="@drawable/ic_collapse"
+        app:iconTint="@color/icon_on_colored_surface"
         />
     <item
         android:id="@+id/expandAll"
         android:titleCondensed="Rozwiń wszystkie powiadomienia"
         android:title="Rozwiń wszystkie powiadomienia"
         app:showAsAction="always"
-        android:icon="@drawable/ic_expand_dark"
+        android:icon="@drawable/ic_expand"
+        app:iconTint="@color/icon_on_colored_surface"
         />
     <item
         android:id="@+id/groupNotifications"

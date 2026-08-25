@@ -12,14 +12,23 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface PmV3RetrofitApi {
+    // page = strona listy (paginacja); query = filtr po nicku rozmowcy (min 3 znaki).
     @GET("v3/pm/conversations")
-    suspend fun getConversations(): WykopApiResponseV3<List<PmConversationResponseV3>>
+    suspend fun getConversations(
+        @Query("page") page: Int? = null,
+        @Query("query") query: String? = null,
+    ): WykopApiResponseV3<List<PmConversationResponseV3>>
 
+    // prevMessage = key najstarszej widocznej wiadomosci (dociaga starsze);
+    // nextMessage = key najnowszej wiadomosci (dociaga tylko nowsze).
     @GET("v3/pm/conversations/{username}")
     suspend fun getConversation(
         @Path("username") username: String,
+        @Query("prev_message") prevMessage: String? = null,
+        @Query("next_message") nextMessage: String? = null,
     ): WykopApiResponseV3<PmConversationMessagesResponseV3>
 
     // data = boolean: czy w rozmowie są nowsze wiadomości niż ostatnio pobrane.

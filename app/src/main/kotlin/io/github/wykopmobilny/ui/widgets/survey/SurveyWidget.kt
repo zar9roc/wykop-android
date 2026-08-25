@@ -30,11 +30,16 @@ class SurveyWidget(
     private lateinit var surveyData: Survey
     lateinit var voteAnswerListener: (Int) -> Unit
 
+    // Wlasnej ankiety nie da sie glosowac - chowamy radio buttony.
+    private var isOwnSurvey = false
+
     fun setSurvey(
         survey: Survey,
         userManagerApi: UserManagerApi,
+        isOwnSurvey: Boolean = false,
     ) {
         isVisible = true
+        this.isOwnSurvey = isOwnSurvey
         deselectRadioExcept(-1)
         surveyData = survey
         binding.surveyQuestion.text = survey.question
@@ -48,8 +53,12 @@ class SurveyWidget(
         }
 
         survey.userAnswer?.let { selected ->
-            val answerCheck = binding.answerItems.getChildAt(selected - 1).let(SurveyAnswerItemBinding::bind)
-            answerCheck.radioButton.isChecked = true
+            // Zabezpieczenie: userAnswer poza zakresem odpowiedzi (np. niespojne dane) nie moze crashowac.
+            binding.answerItems
+                .getChildAt(selected - 1)
+                ?.let(SurveyAnswerItemBinding::bind)
+                ?.radioButton
+                ?.isChecked = true
             // Disable click
             binding.answerItems.children
                 .map(SurveyAnswerItemBinding::bind)
@@ -66,7 +75,7 @@ class SurveyWidget(
             votesCount.text = resources.getString(R.string.votePercentageCount, answerData.percentage.toInt(), answerData.count)
             llp.weight = answerData.percentage.toFloat()
             percentageView.layoutParams = llp
-            radioButton.isVisible = userManager.isUserAuthorized()
+            radioButton.isVisible = userManager.isUserAuthorized() && !isOwnSurvey
         }
         return answerView.root
     }

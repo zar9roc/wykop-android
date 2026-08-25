@@ -50,7 +50,7 @@
         android:clipToPadding="false"
         android:paddingTop="@dimen/write_comment_scroll_padding_vertical"
         android:paddingBottom="@dimen/write_comment_scroll_padding_vertical"
-        app:layout_constraintBottom_toTopOf="@id/markupToolbar"
+        app:layout_constraintBottom_toTopOf="@id/floatingImageView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
@@ -82,16 +82,59 @@
         android:paddingTop="@dimen/padding_dp_small"
         android:paddingRight="@dimen/padding_dp_large"
         android:paddingBottom="@dimen/padding_dp_tiny"
-        app:layout_constraintBottom_toTopOf="@id/floatingImageView"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         />
+
+    <!-- Podglad zalaczonej ankiety - nad przyciskami formatowania, pod zdjeciem.
+         Lancuch pionowy: tresc -> zdjecie -> ankieta -> pasek formatowania.
+         Klik w caly wiersz (poza X) wraca do edycji ankiety (listener w AddEntryActivity). -->
+    <LinearLayout
+        android:id="@+id/surveyPreview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="?attr/itemBackgroundColor"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="4dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/markupToolbar"
+        app:layout_constraintEnd_toEndOf="parent"
+        >
+
+        <TextView
+            android:id="@+id/surveyPreviewText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxWidth="220dp"
+            android:maxLines="1"
+            />
+
+        <ImageView
+            android:id="@+id/surveyPreviewRemove"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/survey_remove_answer"
+            android:padding="8dp"
+            android:src="@drawable/ic_close"
+            app:tint="?attr/inputToolbarDrawables"
+            />
+
+    </LinearLayout>
 
     <io.github.wykopmobilny.ui.widgets.FloatingImageView
         android:id="@+id/floatingImageView"
         android:layout_width="wrap_content"
         android:layout_height="@dimen/floating_image_height"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/surveyPreview"
         app:layout_constraintStart_toStartOf="parent"
         />
 

@@ -12,7 +12,6 @@ import io.github.wykopmobilny.domain.navigation.Framework
 import io.github.wykopmobilny.domain.navigation.InteropModule
 import io.github.wykopmobilny.domain.navigation.InteropRequestService
 import io.github.wykopmobilny.domain.notifications.di.NotificationsDomainComponent
-import io.github.wykopmobilny.domain.notifications.di.NotificationsGlobalModule
 import io.github.wykopmobilny.domain.profile.di.ProfileDomainComponent
 import io.github.wykopmobilny.domain.promoted.PromotedModule
 import io.github.wykopmobilny.domain.search.di.SearchDomainComponent
@@ -36,7 +35,6 @@ import javax.inject.Singleton
         InteropModule::class,
         StoresModule::class,
         PromotedModule::class,
-        NotificationsGlobalModule::class,
     ],
     dependencies = [
         Storages::class,

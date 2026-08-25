@@ -9,5 +9,7 @@ dependencies {
 
     implementation(projects.common.kotlinHelpers)
     implementation(libs.dagger.core)
+    // Awatary w powiadomieniach (Person/largeIcon) - ladowanie bitmap z CDN.
+    implementation(libs.glide.core)
     ksp(libs.dagger.compiler)
 }

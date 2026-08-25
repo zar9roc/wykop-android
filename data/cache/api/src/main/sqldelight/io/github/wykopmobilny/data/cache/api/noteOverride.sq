@@ -1,0 +1,18 @@
+-- Lokalny override statusu notatki. Obecnosc loginu = wiemy z pewnoscia, ze zalogowany
+-- user NIE ma notatki o tym autorze, mimo ze API v3 bledom nadal zwraca note=true
+-- (bug: pole note nie jest czyszczone po usunieciu notatki). Uzywane do wymuszenia
+-- ukrycia zoltej kartki. Wpis kasowany, gdy notatka faktycznie istnieje (content != "").
+CREATE TABLE noteOverrideEntity (
+    username TEXT NOT NULL PRIMARY KEY
+);
+
+put:
+INSERT OR IGNORE INTO noteOverrideEntity(username)
+VALUES (?);
+
+remove:
+DELETE FROM noteOverrideEntity
+WHERE username = ?;
+
+selectAll:
+SELECT username FROM noteOverrideEntity;

@@ -14,6 +14,9 @@ data class GeneralPreferencesUi(
         val exitConfirmation: Setting,
     ) {
         enum class RefreshPeriodUi {
+            // Okresy < 15 min: foreground service (patrz dialog wyjasniajacy przy wyborze).
+            OneMinute,
+            FiveMinutes,
             FifteenMinutes,
             ThirtyMinutes,
             OneHour,

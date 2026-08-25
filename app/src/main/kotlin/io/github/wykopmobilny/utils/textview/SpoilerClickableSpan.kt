@@ -4,15 +4,21 @@ import android.graphics.Paint
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
+import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.text.style.LineHeightSpan
 import android.text.style.TypefaceSpan
 import android.view.View
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
+import io.github.wykopmobilny.R
 
 /**
- * Klikalna zaslona spoilera - "[pokaż spoiler]" wyglada jak link, a klikniecie
- * JEDNORAZOWO podmienia zaslone na tresc (bez zwijania z powrotem).
+ * Klikalna zaslona spoilera - "[pokaż spoiler]" wyglada jak link. Klikniecie:
+ * - [openInDialog] = false (domyslnie): JEDNORAZOWO podmienia zaslone na tresc
+ *   inline (bez zwijania z powrotem);
+ * - [openInDialog] = true: pokazuje tresc w okienku (AlertDialog) - zachowanie
+ *   sterowane ustawieniem "Otwieraj spoilery w okienku".
  *
  * Tresc trzymana jest jako CharSequence ZE spanami - linki/tagi/wzmianki wewnatrz
  * spoilera pozostaja klikalne po rozwinieciu, a tekst zachowuje sie jak zwykly
@@ -21,10 +27,31 @@ import android.widget.TextView
  */
 class SpoilerClickableSpan(
     private val spoilerContent: CharSequence,
+    private val openInDialog: Boolean = false,
 ) : ClickableSpan() {
     override fun onClick(widget: View) {
         if (widget !is TextView) return
+        if (openInDialog) {
+            showInDialog(widget)
+        } else {
+            expandInline(widget)
+        }
+    }
 
+    private fun showInDialog(widget: TextView) {
+        val dialog =
+            AlertDialog
+                .Builder(widget.context)
+                .setTitle(R.string.spoiler_dialog_title)
+                .setMessage(SpannableStringBuilder(spoilerContent))
+                .setPositiveButton(android.R.string.ok, null)
+                .create()
+        dialog.show()
+        // Linki wewnatrz spoilera maja byc klikalne rowniez w okienku.
+        dialog.findViewById<TextView>(android.R.id.message)?.movementMethod = LinkMovementMethod.getInstance()
+    }
+
+    private fun expandInline(widget: TextView) {
         val spannable = SpannableStringBuilder(widget.text)
         val spanStart = spannable.getSpanStart(this)
         val spanEnd = spannable.getSpanEnd(this)

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Zielona kropka aktywnego uzytkownika. Cienka obwodka w kolorze tla ekranu odcina
+  kropke od avatara, na ktorym lezy.
+-->
+<shape
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval"
+    >
+    <solid android:color="@color/online_indicator" />
+    <stroke
+        android:width="2dp"
+        android:color="?attr/backgroundColor"
+        />
+</shape>

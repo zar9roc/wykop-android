@@ -46,7 +46,11 @@ class DrawerHeaderWidget(
     ) {
         if (isUserAuthorized && credentials != null) {
             isVisible = true
-            binding.navProfileImage.loadImage(credentials.avatarUrl)
+            binding.navProfileImage.loadImage(
+                credentials.avatarUrl,
+                // Ten sam domyslny awatar co we wpisach/komentarzach (niebieski kwadrat + ludzik).
+                placeholder = io.github.wykopmobilny.ui.base.android.R.drawable.avatar,
+            )
             binding.navProfileImage.setOnClickListener {
                 val context = getActivityContext()!!
                 context.startActivity(ProfileActivity.createIntent(context, credentials.login))

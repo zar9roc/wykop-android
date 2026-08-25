@@ -63,6 +63,9 @@ internal suspend fun persistLinkComments(
     comments: List<LinkCommentResponseV3>,
 ) = withContext(AppDispatchers.IO) {
     cache.transaction {
+        // Override lokalny (bug API v3: note nie czyszczone po usunieciu) - loginy, dla
+        // ktorych wymuszamy brak notatki. Czytamy raz na zapis, nie per-komentarz.
+        val noNoteOverrides = cache.noteOverrideQueries.selectAll().executeAsList().toHashSet()
         comments.forEach { comment ->
             cache.profileQueries.upsertV3(comment.author)
             val embedId = comment.media?.photo?.url ?: comment.media?.embed?.url
@@ -125,7 +128,7 @@ internal suspend fun persistLinkComments(
                     violationUrl = null,
                     deletedReason = comment.deleted,
                     slug = comment.slug,
-                    authorHasNote = comment.author.note ?: false,
+                    authorHasNote = if (comment.author.username in noNoteOverrides) false else comment.author.note ?: false,
                 ),
             )
         }

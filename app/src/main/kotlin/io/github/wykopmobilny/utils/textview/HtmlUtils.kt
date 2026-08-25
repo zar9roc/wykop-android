@@ -1,23 +1,17 @@
 package io.github.wykopmobilny.utils.textview
 
 import android.text.Spannable
-import android.text.Spanned
 import androidx.core.text.HtmlCompat
-import androidx.core.text.getSpans
 import androidx.core.text.toSpannable
 
-fun String.toSpannable(): Spannable =
+fun String.toSpannable(openSpoilerInDialog: Boolean = false): Spannable =
     HtmlCompat
-        .fromHtml(this, HtmlCompat.FROM_HTML_MODE_COMPACT, null, CodeTagHandler())
+        .fromHtml(this, HtmlCompat.FROM_HTML_MODE_COMPACT, null, CodeTagHandler(openSpoilerInDialog))
         .toSpannable()
         .restyleQuotes()
-        .apply {
-            // Styl spoilera dokladany PO parsowaniu - LineHeightSpan to ParagraphStyle,
-            // a Html.fromHtml wymaga od takich spanow granic akapitu (crash w trakcie).
-            getSpans<SpoilerClickableSpan>().forEach { spoiler ->
-                SpoilerClickableSpan.applyStyling(this, getSpanStart(spoiler), getSpanEnd(spoiler))
-            }
-        }
+    // Zwinieta etykieta "[pokaż spoiler]" celowo BEZ monospace/odstepow - ma wygladac
+    // jak zwykly link (np. "[pokaż całość]"). Styl monospace dokladany jest dopiero do
+    // rozwinietej TRESCI w SpoilerClickableSpan.expandInline().
 
 fun String.removeHtml() = HtmlCompat.fromHtml(this, HtmlCompat.FROM_HTML_MODE_LEGACY).toString()
 

@@ -48,6 +48,10 @@ internal data class NotificationsPreferences(
     enum class RefreshPeriod(
         val duration: Duration,
     ) {
+        // Okresy < 15 min sa poza zasiegiem WorkManagera - obsluguje je foreground
+        // service (patrz NotificationsPollingService); worker 15-min zostaje fallbackiem.
+        OneMinute(1.minutes),
+        FiveMinutes(5.minutes),
         FifteenMinutes(15.minutes),
         ThirtyMinutes(30.minutes),
         OneHour(1.hours),

@@ -72,9 +72,15 @@ class AddlinkActivity : BaseActivity() {
         return true
     }
 
-    fun openDuplicatesActivity(response: NewLinkResponse) {
+    // Draft gotowy: API v3 nie zwraca duplikatow, wiec przy pustej liscie pomijamy
+    // ekran duplikatow i przechodzimy wprost do szczegolow.
+    fun onDraftReady(response: NewLinkResponse) {
         draft = response
-        openFragment(AddLinkDuplicatesListFragment.newInstance(), "duplicates_list")
+        if (response.duplicates.isNullOrEmpty()) {
+            openDetailsScreen()
+        } else {
+            openFragment(AddLinkDuplicatesListFragment.newInstance(), "duplicates_list")
+        }
     }
 
     fun openDetailsScreen() = openFragment(AddLinkDetailsFragment.newInstance(), "details_fragment")

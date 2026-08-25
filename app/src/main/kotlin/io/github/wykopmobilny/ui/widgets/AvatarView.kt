@@ -26,4 +26,9 @@ class AvatarView(
             binding.genderStripImageView.setBackgroundResource(getGenderStripResource(sex))
         }
     }
+
+    /** Zielona kropka aktywnosci (prawy-dolny rog avatara). */
+    fun setOnline(online: Boolean) {
+        binding.onlineIndicator.visibility = if (online) android.view.View.VISIBLE else android.view.View.GONE
+    }
 }

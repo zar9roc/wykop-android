@@ -160,52 +160,52 @@
         <item name="buttonStatelist">@drawable/button_background_state_list_dark</item>
 
         <item name="drawable404">@drawable/kosmonauta_dark</item>
-        <item name="wypokDrawable">@drawable/ic_buttontoolbar_wykop_dark</item>
-        <item name="commentDrawable">@drawable/ic_buttontoolbar_comment_dark</item>
-        <item name="plusDrawable">@drawable/ic_buttontoolbar_plus_dark</item>
-        <item name="minusDrawable">@drawable/ic_buttontoolbar_minus_dark</item>
-        <item name="dotsDrawable">@drawable/ic_buttontoolbar_dots_dark</item>
-        <item name="replyDrawable">@drawable/ic_buttontoolbar_reply_dark</item>
-        <item name="quoteDrawable">@drawable/ic_buttontoolbar_quote_dark</item>
-        <item name="relatedDrawable">@drawable/ic_buttontoolbar_related_dark</item>
-        <item name="sharebtnDrawable">@drawable/ic_buttontoolbar_share_dark</item>
-        <item name="reportDrawable">@drawable/ic_buttontoolbar_report_dark</item>
+        <item name="wypokDrawable">@drawable/ic_buttontoolbar_wykop</item>
+        <item name="commentDrawable">@drawable/ic_buttontoolbar_comment</item>
+        <item name="plusDrawable">@drawable/ic_buttontoolbar_plus</item>
+        <item name="minusDrawable">@drawable/ic_buttontoolbar_minus</item>
+        <item name="dotsDrawable">@drawable/ic_buttontoolbar_dots</item>
+        <item name="replyDrawable">@drawable/ic_buttontoolbar_reply</item>
+        <item name="quoteDrawable">@drawable/ic_buttontoolbar_quote</item>
+        <item name="relatedDrawable">@drawable/ic_buttontoolbar_related</item>
+        <item name="sharebtnDrawable">@drawable/ic_buttontoolbar_share</item>
+        <item name="reportDrawable">@drawable/ic_buttontoolbar_report</item>
         <item name="favoriteDrawable">@drawable/ic_buttontoolbar_favorite_selected_dark</item>
-        <item name="favoriteOutlineDrawable">@drawable/ic_buttontoolbar_favorite_dark</item>
+        <item name="favoriteOutlineDrawable">@drawable/ic_buttontoolbar_favorite</item>
 
         <item name="surveyBar">@drawable/survey_bar_dark</item>
         <item name="surveyBarStroke">@drawable/survey_bar_stroke_dark</item>
-        <item name="closeDrawable">@drawable/ic_close_dark</item>
-        <item name="expandDrawable">@drawable/ic_expand_dark</item>
-        <item name="collapseDrawable">@drawable/ic_collapse_dark</item>
+        <item name="closeDrawable">@drawable/ic_close</item>
+        <item name="expandDrawable">@drawable/ic_expand</item>
+        <item name="collapseDrawable">@drawable/ic_collapse</item>
         <item name="digCountDrawable">@drawable/ic_frame_votes_dark</item>
-        <item name="notificationDrawable">@drawable/ic_tag_dark</item>
-        <item name="mailDrawable">@drawable/ic_mail_dark</item>
+        <item name="notificationDrawable">@drawable/ic_tag</item>
+        <item name="mailDrawable">@drawable/ic_mail</item>
         <item name="hotOutlineDrawable">@drawable/ic_hot_outline_dark</item>
 
-        <item name="markdownFormatQuote">@drawable/ic_markdowntoolbar_quote_dark</item>
-        <item name="markdownFormatBold">@drawable/ic_markdowntoolbar_bold_dark</item>
-        <item name="markdownFormatCode">@drawable/ic_markdowntoolbar_code_dark</item>
-        <item name="markdownFormatItalic">@drawable/ic_markdowntoolbar_italic_dark</item>
-        <item name="markdownInsertEmoticon">@drawable/ic_markdowntoolbar_emoticon_dark</item>
-        <item name="markdownInsertLink">@drawable/ic_markdowntoolbar_link_dark</item>
-        <item name="markdownInsertSpoiler">@drawable/ic_markdowntoolbar_spoiler_dark</item>
-        <item name="markdownInsertPhoto">@drawable/ic_markdowntoolbar_photo_dark</item>
-        <item name="markdownSend">@drawable/ic_send_dark</item>
+        <item name="markdownFormatQuote">@drawable/ic_markdowntoolbar_quote</item>
+        <item name="markdownFormatBold">@drawable/ic_markdowntoolbar_bold</item>
+        <item name="markdownFormatCode">@drawable/ic_markdowntoolbar_code</item>
+        <item name="markdownFormatItalic">@drawable/ic_markdowntoolbar_italic</item>
+        <item name="markdownInsertEmoticon">@drawable/ic_markdowntoolbar_emoticon</item>
+        <item name="markdownInsertLink">@drawable/ic_markdowntoolbar_link</item>
+        <item name="markdownInsertSpoiler">@drawable/ic_markdowntoolbar_spoiler</item>
+        <item name="markdownInsertPhoto">@drawable/ic_markdowntoolbar_photo</item>
+        <item name="markdownSend">@drawable/ic_send</item>
 
-        <item name="bottomSheetCamera">@drawable/ic_camera_dark</item>
-        <item name="bottomSheetLink">@drawable/ic_link_dark</item>
-        <item name="bottomSheetObserve">@drawable/ic_observe_dark</item>
-        <item name="bottomSheetUnobserve">@drawable/ic_unobserve_dark</item>
-        <item name="bottomSheetEdit">@drawable/ic_pen_dark</item>
+        <item name="bottomSheetCamera">@drawable/ic_camera</item>
+        <item name="bottomSheetLink">@drawable/ic_link</item>
+        <item name="bottomSheetObserve">@drawable/ic_observe</item>
+        <item name="bottomSheetUnobserve">@drawable/ic_unobserve</item>
+        <item name="bottomSheetEdit">@drawable/ic_pen</item>
         <item name="bottomSheetCopy">@drawable/ic_copy_content</item>
         <item name="bottomSheetReport">@drawable/ic_report_dark</item>
-        <item name="bottomSheetVoters">@drawable/ic_dig_list_dark</item>
-        <item name="bottomSheetDelete">@drawable/ic_delete_dark</item>
-        <item name="bottomSheetBury">@drawable/ic_bury_dark</item>
-        <item name="bottomSheetBuryList">@drawable/ic_bury_list_dark</item>
-        <item name="bottomSheetDiggerList">@drawable/ic_dig_list_dark</item>
-        <item name="bottomSheetRelated">@drawable/ic_related_dark</item>
+        <item name="bottomSheetVoters">@drawable/ic_dig_list</item>
+        <item name="bottomSheetDelete">@drawable/ic_delete</item>
+        <item name="bottomSheetBury">@drawable/ic_bury</item>
+        <item name="bottomSheetBuryList">@drawable/ic_bury_list</item>
+        <item name="bottomSheetDiggerList">@drawable/ic_dig_list</item>
+        <item name="bottomSheetRelated">@drawable/ic_related</item>
 
         <item name="textSizeTiny">@dimen/text_normal_size_tiny</item>
         <item name="textSizeSmall">@dimen/text_normal_size_small</item>
@@ -240,14 +240,14 @@
 
         <item name="hotOutlineDrawable">@drawable/ic_hot_outline_amoled</item>
 
-        <item name="markdownFormatQuote">@drawable/ic_markdowntoolbar_quote_amoled</item>
-        <item name="markdownFormatBold">@drawable/ic_markdowntoolbar_bold_amoled</item>
-        <item name="markdownFormatCode">@drawable/ic_markdowntoolbar_code_amoled</item>
-        <item name="markdownFormatItalic">@drawable/ic_markdowntoolbar_italic_amoled</item>
-        <item name="markdownInsertEmoticon">@drawable/ic_markdowntoolbar_emoticon_amoled</item>
-        <item name="markdownInsertLink">@drawable/ic_markdowntoolbar_link_amoled</item>
-        <item name="markdownInsertPhoto">@drawable/ic_markdowntoolbar_photo_amoled</item>
-        <item name="markdownInsertSpoiler">@drawable/ic_markdowntoolbar_spoiler_amoled</item>
+        <item name="markdownFormatQuote">@drawable/ic_markdowntoolbar_quote</item>
+        <item name="markdownFormatBold">@drawable/ic_markdowntoolbar_bold</item>
+        <item name="markdownFormatCode">@drawable/ic_markdowntoolbar_code</item>
+        <item name="markdownFormatItalic">@drawable/ic_markdowntoolbar_italic</item>
+        <item name="markdownInsertEmoticon">@drawable/ic_markdowntoolbar_emoticon</item>
+        <item name="markdownInsertLink">@drawable/ic_markdowntoolbar_link</item>
+        <item name="markdownInsertPhoto">@drawable/ic_markdowntoolbar_photo</item>
+        <item name="markdownInsertSpoiler">@drawable/ic_markdowntoolbar_spoiler</item>
         <item name="alertDialogTheme">@android:style/Theme.DeviceDefault.Dialog.NoActionBar</item>
     </style>
 

@@ -2,11 +2,29 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     >
 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
     <application>
         <receiver
             android:name="io.github.wykopmobilny.notification.NotificationDismissedReceiver"
             android:enabled="true"
             android:exported="true"
             />
+        <receiver
+            android:name="io.github.wykopmobilny.notification.NotificationActionReceiver"
+            android:enabled="true"
+            android:exported="false"
+            />
+        <service
+            android:name="io.github.wykopmobilny.notification.NotificationsPollingService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse"
+            >
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Frequent notifications polling - wykop.pl API has no push channel; the service polls a tiny status endpoint every minute to deliver private-message notifications promptly."
+                />
+        </service>
     </application>
 </manifest>

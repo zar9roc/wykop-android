@@ -7,4 +7,6 @@ data class Conversation(
     // wiadomości - oba pola przychodzą w tej samej odpowiedzi /pm/conversations.
     val unread: Boolean = false,
     val lastMessagePreview: String? = null,
+    // Zielony znacznik aktywnosci rozmowcy (pole "online" z obiektu user w /pm/conversations).
+    val online: Boolean = false,
 )

@@ -21,6 +21,8 @@ class Entry(
     var isBlocked: Boolean = false,
     var collapsed: Boolean = true,
     val isCommentingPossible: Boolean,
+    // Czy zalogowany obserwuje dyskusje (mutowalne - toggle z menu wpisu).
+    var isObservedDiscussion: Boolean = false,
 ) {
     override fun equals(other: Any?): Boolean =
         if (other !is Entry) {

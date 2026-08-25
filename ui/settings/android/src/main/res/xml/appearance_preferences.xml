@@ -50,13 +50,6 @@
         >
 
         <androidx.preference.CheckBoxPreference
-            android:key="enableYoutubePlayer"
-            android:persistent="false"
-            android:title="Użyj odtwarzacza YouTube"
-            app:iconSpaceReserved="false"
-            />
-
-        <androidx.preference.CheckBoxPreference
             android:key="enableEmbedPlayer"
             android:persistent="false"
             android:title="Użyj playera dla innych mediów"

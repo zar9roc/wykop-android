@@ -25,6 +25,23 @@ def findProperty(key) {
     return ext.localProperties.getProperty(key) ?: properties[key] ?: System.getenv(key) ?: System.getenv(key.replace(".", "_").toUpperCase()) ?: ""
 }
 
+// 3-cyfrowy licznik buildow doklejany do wersji w nazwie APK (np. 1.5.0.001).
+// Wartosc trzymana w app/version_counter.txt i inkrementowana po kazdym spakowaniu
+// release'a. Mozna ja nadpisac recznie: -Pwykop.buildCounter=NN.
+// Definiowany przed blokiem android{}, bo defaultConfig eksponuje go w BuildConfig.
+def versionCounterFile = file("version_counter.txt")
+def currentBuildCounter = {
+    def override = findProperty("wykop.buildCounter")
+    if (override) {
+        return override.toString().trim().toInteger()
+    }
+    if (versionCounterFile.exists() && !versionCounterFile.text.trim().isEmpty()) {
+        return versionCounterFile.text.trim().toInteger()
+    }
+    return 1
+}()
+def buildCounterSuffix = String.format("%03d", currentBuildCounter)
+
 android {
     compileSdk 36
 
@@ -38,10 +55,11 @@ android {
         testInstrumentationRunner = "io.github.wykopmobilny.DefaultTestRunner"
         buildConfigField 'String', 'APP_SECRET', "\"${findProperty("wykop.secretKey")}\""
         buildConfigField 'String', 'APP_KEY', "\"${findProperty("wykop.appKey")}\""
-        buildConfigField 'String', 'YOUTUBE_API_KEY', "\"${findProperty("wykop.youtubeKey")}\""
         // API v3 credentials
         buildConfigField 'String', 'V3_API_KEY', "\"${findProperty("wykop.v3.appKey")}\""
         buildConfigField 'String', 'V3_API_SECRET', "\"${findProperty("wykop.v3.appSecret")}\""
+        // Licznik buildu (nnn z X.Y.Z.nnn w nazwie APK) - do naglowka crashloga.
+        buildConfigField 'String', 'BUILD_COUNTER', "\"${buildCounterSuffix}\""
     }
     namespace = defaultConfig.applicationId
     testBuildType = findProperty("testBuildType") ?: "debug"
@@ -121,22 +139,6 @@ android {
 
 }
 
-
-// 3-cyfrowy licznik buildow doklejany do wersji w nazwie APK (np. 1.5.0.001).
-// Wartosc trzymana w app/version_counter.txt i inkrementowana po kazdym spakowaniu
-// release'a. Mozna ja nadpisac recznie: -Pwykop.buildCounter=NN.
-def versionCounterFile = file("version_counter.txt")
-def currentBuildCounter = {
-    def override = findProperty("wykop.buildCounter")
-    if (override) {
-        return override.toString().trim().toInteger()
-    }
-    if (versionCounterFile.exists() && !versionCounterFile.text.trim().isEmpty()) {
-        return versionCounterFile.text.trim().toInteger()
-    }
-    return 1
-}()
-def buildCounterSuffix = String.format("%03d", currentBuildCounter)
 
 // Nazwa pliku APK: nazwa aplikacji + wersja + licznik (np. OtwartyWykopMobilny3-1.5.0.001.apk).
 androidComponents {
@@ -223,7 +225,6 @@ dependencies {
     // oraz w debug (MoshiResponseLoggingInterceptor).
     implementation(libs.moshi.core)
     debugImplementation(libs.nanohttpd.core)
-    implementation(files('libs/YouTubeAndroidPlayerApi.jar'))
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
 
     //noinspection GradleDependency

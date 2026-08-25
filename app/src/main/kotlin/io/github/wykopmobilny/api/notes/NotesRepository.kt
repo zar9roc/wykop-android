@@ -10,16 +10,37 @@ class NotesRepository
     constructor(
         private val notesApi: NotesV3RetrofitApi,
     ) {
-        // Pusta tresc = brak notatki.
-        suspend fun getNote(username: String): String? =
-            notesApi.getNote(username).data?.content?.takeIf { it.isNotBlank() }
+        // Pusta tresc = brak notatki. Przy okazji synchronizujemy [NoteOverrideCache]:
+        // - content niepusty -> notatka istnieje, kasujemy override (samonaprawa, np. gdy
+        //   notatka dodana poza aplikacja);
+        // - content pusty a API zwraca user.note=true -> bezposredni dowod buga API
+        //   (flaga nie wyczyszczona po usunieciu) -> zapamietujemy override "brak notatki".
+        suspend fun getNote(username: String): String? {
+            val data = notesApi.getNote(username).data
+            val content = data?.content?.takeIf { it.isNotBlank() }
+            if (content != null) {
+                NoteOverrideCache.clearNote(username)
+            } else if (data?.user?.note == true) {
+                NoteOverrideCache.markNoNote(username)
+            } else {
+                NoteOverrideCache.clearNote(username)
+            }
+            return content
+        }
 
         // Zapis; pusta tresc usuwa notatke (znika z listy /notes). DELETE /notes/{username}
-        // zwraca 405, wiec usuwanie tez idzie przez PUT z pusta trescia.
+        // zwraca 405, wiec usuwanie tez idzie przez PUT z pusta trescia. Aktualizujemy tez
+        // override: pusta tresc -> "brak notatki", niepusta -> kasujemy override.
         suspend fun saveNote(
             username: String,
             content: String,
         ) {
-            notesApi.saveNote(username, WykopApiRequestV3(NoteRequestV3(content = content.trim())))
+            val trimmed = content.trim()
+            notesApi.saveNote(username, WykopApiRequestV3(NoteRequestV3(content = trimmed)))
+            if (trimmed.isEmpty()) {
+                NoteOverrideCache.markNoNote(username)
+            } else {
+                NoteOverrideCache.clearNote(username)
+            }
         }
     }

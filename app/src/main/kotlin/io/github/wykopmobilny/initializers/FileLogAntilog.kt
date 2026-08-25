@@ -36,7 +36,8 @@ internal class FileLogAntilog(context: Context) : Antilog() {
     // wyeksportowanych logów od razu wiadomo, która wersja aplikacji je wyprodukowała
     // (plik przeżywa aktualizacje, więc wpisy z różnych wersji mieszają się w jednym logu).
     private val diagnosticHeader =
-        "--- app ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}, ${BuildConfig.BUILD_TYPE}) | " +
+        "--- app ${BuildConfig.VERSION_NAME}.${BuildConfig.BUILD_COUNTER} " +
+            "(${BuildConfig.VERSION_CODE}, ${BuildConfig.BUILD_TYPE}) | " +
             "Android ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT}) | " +
             "${Build.MANUFACTURER} ${Build.MODEL} ---"
 

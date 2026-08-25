@@ -16,7 +16,11 @@ class Author(
     val sex: String,
     var badge: AndroidPatronBadge? = null,
     // Czy zalogowany user ma notatke o tym autorze (zolta kartka przy nicku).
-    val hasNote: Boolean = false,
+    // var, bo po edycji/usunieciu notatki z menu aktualizujemy ten obiekt autora
+    // (a nie tylko widok) - inaczej po recyklingu wiersza znacznik "zmartwychwstaje".
+    // API v3 NIE czysci pola `note` po usunieciu notatki, wiec nie mozemy polegac
+    // wylacznie na backendzie - lokalne nadpisanie jest swiadomym obejsciem tego buga.
+    var hasNote: Boolean = false,
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,

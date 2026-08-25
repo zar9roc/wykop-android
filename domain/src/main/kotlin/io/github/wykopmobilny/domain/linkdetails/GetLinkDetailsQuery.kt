@@ -667,18 +667,10 @@ internal class GetLinkDetailsQuery
                                     body.toCommentBody(
                                         textUtils = textUtils,
                                         showsSpoilersInDialog = commentPreferences.openSpoilersInDialog,
-                                        expandedSpoilers = viewState.expandedSpoilers[id].orEmpty(),
                                         showSpoilerDialog =
                                             safeCallback { content ->
                                                 val contentParsed = content()
                                                 viewStateStorage.update { it.copy(spoilerDialog = contentParsed) }
-                                            },
-                                        saveExpandedSpoiler =
-                                            safeCallback { spoilerId ->
-                                                viewStateStorage.update {
-                                                    val spoilersInComment = it.expandedSpoilers[id].orEmpty() + spoilerId
-                                                    it.copy(expandedSpoilers = it.expandedSpoilers + (id to spoilersInComment))
-                                                }
                                             },
                                         onNavigation = safeCallback { request -> interopRequests.request(request) },
                                     )

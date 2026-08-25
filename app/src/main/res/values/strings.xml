@@ -2,6 +2,18 @@
 
     <string name="app_name">Otwarty Wykop Mobilny 3</string>
 
+    <string name="spoiler_dialog_title">Spoiler</string>
+    <string name="survey_dialog_title">Nowa ankieta</string>
+    <string name="survey_question_hint">Pytanie</string>
+    <string name="survey_answer_hint">Odpowiedź</string>
+    <string name="survey_add_answer">Dodaj odpowiedź</string>
+    <string name="survey_save">Zapisz</string>
+    <string name="survey_remove_answer">Usuń odpowiedź</string>
+    <string name="survey_min_answers">Podaj pytanie i minimum 2 odpowiedzi</string>
+    <string name="survey_min_question_length">Pytanie ankiety musi mieć co najmniej 5 znaków</string>
+    <string name="survey_attached">Ankieta: %1$s</string>
+    <string name="pm_search_hint">Szukaj rozmów po nicku</string>
+
     <string name="search">Wyszukiwarka</string>
     <string name="your_profile">Twój profil</string>
     <string name="favourite">Ulubione</string>
@@ -24,7 +36,7 @@
     <string name="license">Publikacja aplikacji na licencji MIT</string>
     <string name="privacy_policy">Privacy policy/Licencja prywatności</string>
     <string name="report_bug">Zgłoś błąd pod tagiem #owmbugi</string>
-    <string name="observe_otwartywykopmobilny">Obserwuj tag #otwartywykopmobilny2</string>
+    <string name="observe_otwartywykopmobilny">Obserwuj tag #otwartywykopmobilny3</string>
     <string name="app_version">Otwarty Wykop Mobilny 3 (%1$s)</string>
 
     <string name="badges">Osiągnięcia</string>
@@ -212,6 +224,9 @@
     <string name="addlink_no_description">Brak opisu</string>
     <string name="add_link_no_title">Brak tytułu</string>
     <string name="add_link_no_tags">Brak tagów</string>
+    <string name="addlink_published">Znalezisko zostało dodane</string>
+    <string name="observe_discussion">Obserwuj dyskusję</string>
+    <string name="unobserve_discussion">Przestań obserwować dyskusję</string>
     <string name="invalid_url">Adres url jest nieprawidłowy</string>
     <string name="text_copied">Skopiowano do schowka</string>
     <string name="entry">Wpis</string>

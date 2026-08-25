@@ -40,6 +40,9 @@ private const val NOTE_CARD_PADDING_DP = 4
  * Podpina pierwsza pozycje "notatka" w menu "..." (bottom-sheet). Etykieta = tresc notatki
  * kursywa (dociagana z API) lub "Dodaj notatke" gdy brak. Klik otwiera popup edycji;
  * po zapisie/usunieciu wola [onChanged] z nowa flaga (do odswiezenia zoltej kartki).
+ *
+ * Lokalne nadpisanie flagi jest konieczne, bo API v3 nie czysci pola `note` po usunieciu
+ * notatki - bez tego znacznik zostawalby widoczny mimo braku notatki.
  */
 fun bindNoteMenuItem(
     item: View,

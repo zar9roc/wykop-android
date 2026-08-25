@@ -4,6 +4,9 @@ interface WykopTextUtils {
     suspend fun parseHtml(
         text: String,
         onLinkClicked: ((RecognizedLink) -> Unit)? = null,
+        // true = klikniety spoiler otwiera sie w okienku (RecognizedLink.Spoiler przekazuje
+        // tresc); false = rozwija sie inline. Sterowane ustawieniem "Otwieraj spoilery w okienku".
+        openSpoilerInDialog: Boolean = false,
     ): CharSequence
 
     sealed class RecognizedLink {

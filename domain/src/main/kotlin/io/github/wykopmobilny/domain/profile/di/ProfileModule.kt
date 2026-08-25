@@ -188,10 +188,11 @@ internal fun Int.toColorEntity() =
         else -> UserColorEntity.Unknown
     }
 
+// API v3 zwraca "m"/"f" (spec: enum [m, f]); stare API v2 zwracalo "male"/"female".
 internal fun String?.toGenderEntity() =
     when (this) {
-        "male" -> GenderEntity.Male
-        "female" -> GenderEntity.Female
+        "male", "m" -> GenderEntity.Male
+        "female", "f" -> GenderEntity.Female
         else -> null
     }
 

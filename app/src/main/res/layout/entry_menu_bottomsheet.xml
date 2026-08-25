@@ -63,6 +63,28 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/entry_menu_observe_discussion"
+            style="@style/BottomSheetMenuItem"
+            >
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_observe_discussion"
+                />
+
+            <TextView
+                android:id="@+id/entry_menu_observe_discussion_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="@dimen/bottomsheet_item_textview_margin_left"
+                android:text="@string/observe_discussion"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/entry_menu_voters"
             style="@style/BottomSheetMenuItem"
             >

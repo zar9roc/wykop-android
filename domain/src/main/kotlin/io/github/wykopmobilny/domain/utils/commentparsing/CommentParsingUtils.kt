@@ -1,6 +1,5 @@
 package io.github.wykopmobilny.domain.utils.commentparsing
 
-import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.domain.navigation.InteropRequest
 import io.github.wykopmobilny.domain.navigation.WykopTextUtils
 import io.github.wykopmobilny.domain.navigation.WykopTextUtils.RecognizedLink
@@ -11,9 +10,7 @@ import kotlinx.coroutines.withContext
 
 internal suspend fun String?.toCommentBody(
     textUtils: WykopTextUtils,
-    expandedSpoilers: Set<ExpandedSpoiler>,
     showsSpoilersInDialog: Boolean,
-    saveExpandedSpoiler: (ExpandedSpoiler) -> Unit,
     showSpoilerDialog: (suspend () -> CharSequence) -> Unit,
     onNavigation: (InteropRequest) -> Unit,
 ): CharSequence? =
@@ -24,6 +21,7 @@ internal suspend fun String?.toCommentBody(
         // tworzy klikalne spany tylko z tagow <a>, wiec najpierw budujemy HTML.
         textUtils.parseHtml(
             text = this@toCommentBody.convertWykopContentToHtml().linkifyTagsAndMentions(),
+            openSpoilerInDialog = showsSpoilersInDialog,
             onLinkClicked = { link ->
                 when (link) {
                     is RecognizedLink.Profile -> {
@@ -35,7 +33,9 @@ internal suspend fun String?.toCommentBody(
                     }
 
                     is RecognizedLink.Spoiler -> {
-                        Napier.w("Unexpected spoiler link: ${link.id}")
+                        // Tryb okienka: link.id niesie tresc spoilera - pokazujemy ja w InfoDialogUi.
+                        // Tryb inline obsluguje sam span (SpoilerSpan), nie trafia tu.
+                        showSpoilerDialog { link.id }
                     }
 
                     is RecognizedLink.Other -> {
@@ -50,5 +50,3 @@ internal suspend fun String.copyableText(textUtils: WykopTextUtils) =
     withContext(AppDispatchers.Default) {
         textUtils.parseHtml(this@copyableText).toString()
     }
-
-internal typealias ExpandedSpoiler = String

@@ -22,6 +22,7 @@ import io.github.wykopmobilny.api.entries.EntriesApi
 import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.databinding.DialogVotersBinding
 import io.github.wykopmobilny.databinding.FragmentHotV2Binding
+import io.github.wykopmobilny.base.BaseNavigationView
 import io.github.wykopmobilny.base.Schedulers
 import io.github.wykopmobilny.domain.microblog.feed.di.MicroblogFeedComponent
 import io.github.wykopmobilny.domain.microblog.feed.di.MicroblogFeedKey
@@ -60,6 +61,7 @@ import javax.inject.Inject
  */
 class HotFragmentV2 :
     Fragment(R.layout.fragment_hot_v2),
+    BaseNavigationView,
     EntryActionListener {
     @Inject
     lateinit var entriesInteractor: EntriesInteractor
@@ -243,6 +245,8 @@ class HotFragmentV2 :
     override fun markFavorite(entry: Entry) = entriesInteractor.markFavorite(entry).process(entry)
 
     override fun deleteEntry(entry: Entry) = entriesInteractor.deleteEntry(entry).process(entry)
+
+    override fun observeDiscussion(entry: Entry) = entriesInteractor.observeDiscussion(entry).process(entry)
 
     override fun voteSurvey(
         entry: Entry,

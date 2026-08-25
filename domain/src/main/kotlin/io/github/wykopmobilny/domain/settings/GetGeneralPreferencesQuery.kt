@@ -133,6 +133,8 @@ class GetGeneralPreferencesQuery
 
 private fun RefreshPeriod.toUi() =
     when (this) {
+        RefreshPeriod.OneMinute -> RefreshPeriodUi.OneMinute
+        RefreshPeriod.FiveMinutes -> RefreshPeriodUi.FiveMinutes
         RefreshPeriod.FifteenMinutes -> RefreshPeriodUi.FifteenMinutes
         RefreshPeriod.ThirtyMinutes -> RefreshPeriodUi.ThirtyMinutes
         RefreshPeriod.OneHour -> RefreshPeriodUi.OneHour
@@ -143,6 +145,8 @@ private fun RefreshPeriod.toUi() =
 
 private fun RefreshPeriodUi.toDomain() =
     when (this) {
+        RefreshPeriodUi.OneMinute -> RefreshPeriod.OneMinute
+        RefreshPeriodUi.FiveMinutes -> RefreshPeriod.FiveMinutes
         RefreshPeriodUi.FifteenMinutes -> RefreshPeriod.FifteenMinutes
         RefreshPeriodUi.ThirtyMinutes -> RefreshPeriod.ThirtyMinutes
         RefreshPeriodUi.OneHour -> RefreshPeriod.OneHour

@@ -32,12 +32,24 @@ internal class AndroidWykopTextUtils
         override suspend fun parseHtml(
             text: String,
             onLinkClicked: ((RecognizedLink) -> Unit)?,
+            openSpoilerInDialog: Boolean,
         ): CharSequence =
             withContext(AppDispatchers.Default) {
                 val parsed =
                     HtmlCompat
-                        .fromHtml(text, HtmlCompat.FROM_HTML_MODE_COMPACT, null, CodeTagHandler())
-                        .toSpannable()
+                        .fromHtml(
+                            text,
+                            HtmlCompat.FROM_HTML_MODE_COMPACT,
+                            null,
+                            CodeTagHandler(
+                                openSpoilerInDialog = openSpoilerInDialog,
+                                // Tryb okienka: routujemy tresc do domeny jako RecognizedLink.Spoiler,
+                                // ktora pokaze ja w InfoDialogUi.
+                                onSpoilerDialog = { content ->
+                                    onLinkClicked?.invoke(RecognizedLink.Spoiler(content.toString()))
+                                },
+                            ),
+                        ).toSpannable()
                         .restyleQuotes()
 
                 if (onLinkClicked == null) {
@@ -125,29 +137,68 @@ private class WykopQuoteSpan : LeadingMarginSpan {
     }
 }
 
-private class CodeTagHandler : Html.TagHandler {
+private class CodeTagHandler(
+    private val openSpoilerInDialog: Boolean = false,
+    private val onSpoilerDialog: (CharSequence) -> Unit = {},
+) : Html.TagHandler {
     override fun handleTag(
         opening: Boolean,
         tag: String,
         output: Editable,
         reader: XMLReader,
     ) {
-        if (tag.equals("code", true)) {
-            val len = output.length
-            if (opening) {
-                output.setSpan(TypefaceSpan("monospace"), len, len, Spannable.SPAN_MARK_MARK)
-            } else {
-                val obj = findClosing<CharacterStyle>(output)
-                obj?.let {
-                    val where = output.getSpanStart(obj)
+        when {
+            tag.equals("code", true) -> handleCodeTag(opening, output)
+            tag.equals("spoiler", true) -> handleSpoilerTag(opening, output)
+        }
+    }
 
-                    if (obj is TypefaceSpan) {
-                        output.setSpan(TypefaceSpan("monospace"), where, len, 0)
-                    }
+    private fun handleCodeTag(
+        opening: Boolean,
+        output: Editable,
+    ) {
+        val len = output.length
+        if (opening) {
+            output.setSpan(TypefaceSpan("monospace"), len, len, Spannable.SPAN_MARK_MARK)
+        } else {
+            val obj = findClosing<CharacterStyle>(output)
+            obj?.let {
+                val where = output.getSpanStart(obj)
+
+                if (obj is TypefaceSpan) {
+                    output.setSpan(TypefaceSpan("monospace"), where, len, 0)
                 }
             }
         }
     }
+
+    // <spoiler> nie jest znanym tagiem Html.fromHtml - bez tej obslugi tresc spoilera
+    // pokazywalaby sie jawnie. Zamieniamy ja na klikalna zaslone [pokaż spoiler].
+    private fun handleSpoilerTag(
+        opening: Boolean,
+        output: Editable,
+    ) {
+        val len = output.length
+        if (opening) {
+            output.setSpan(SpoilerMarker(), len, len, Spannable.SPAN_MARK_MARK)
+        } else {
+            val marker = findClosing<SpoilerMarker>(output) as? SpoilerMarker ?: return
+            val start = output.getSpanStart(marker)
+            // Tresc ZE spanami - linki wewnatrz spoilera pozostaja klikalne po rozwinieciu.
+            val spoilerContent = output.subSequence(start, len)
+            output.replace(start, len, SPOILER_COLLAPSED_TEXT)
+            val newEnd = start + SPOILER_COLLAPSED_TEXT.length
+            output.setSpan(
+                SpoilerSpan(spoilerContent, openSpoilerInDialog, onSpoilerDialog),
+                start,
+                newEnd,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
+            )
+            output.removeSpan(marker)
+        }
+    }
+
+    private class SpoilerMarker
 
     private inline fun <reified T : Any> findClosing(text: Editable): Any? {
         val spans = text.getSpans<T>()

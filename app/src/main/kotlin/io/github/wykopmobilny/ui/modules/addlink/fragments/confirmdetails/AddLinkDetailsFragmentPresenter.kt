@@ -42,8 +42,13 @@ class AddLinkDetailsFragmentPresenter(
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
-                { view?.openLinkScreen(it) },
-                { view?.showErrorDialog(it) },
+                // v3 publikuje bez zwracania obiektu Link (201, puste data) - po sukcesie
+                // po prostu zamykamy ekran dodawania.
+                { view?.onLinkPublished() },
+                {
+                    view?.showLinkUploading(false)
+                    view?.showErrorDialog(it)
+                },
             ).intoComposite(compositeObservable)
     }
 }

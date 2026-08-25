@@ -71,6 +71,8 @@ WHERE id = :id AND linkId = :linkId;
 
 -- Zolta kartka notatki po edycji z menu: flip flagi dla wszystkich komentarzy
 -- danego autora w cache -> flowSourceOfTruth re-emituje i lista przerysowuje kartke.
+-- Konieczne, bo API v3 nie czysci pola `note` po usunieciu notatki (nie mozna polegac
+-- na kolejnym pobraniu, ktore nadal zwroci note=true).
 updateAuthorNote:
 UPDATE linkCommentsEntity
 SET authorHasNote = :authorHasNote

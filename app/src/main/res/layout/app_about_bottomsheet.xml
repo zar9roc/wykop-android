@@ -44,20 +44,6 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/app_patrons"
-        style="@style/BottomSheetMenuItem"
-        >
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/app_patrons_textview"
-            android:layout_gravity="center"
-            android:text="Patroni"
-            />
-    </LinearLayout>
-
-    <LinearLayout
         android:id="@+id/app_observe_tag"
         style="@style/BottomSheetMenuItem"
         >
@@ -95,20 +81,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/license"
-            />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/privacyPolicy"
-        style="@style/BottomSheetMenuItem"
-        >
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/privacy_policy"
             />
 
     </LinearLayout>

@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <color name="online_indicator">#4CAF50</color>
+
+    <!-- Ikony na powierzchniach o stalym ciemnym/kolorowym tle (app bar = colorPrimaryDark,
+         FAB = colorAccent) - zawsze biale we wszystkich motywach. Uzywac jako app:iconTint
+         (menu) / app:tint (FAB) zamiast osobnych wariantow drawable _dark. -->
+    <color name="icon_on_colored_surface">#ffffffff</color>
+
     <color name="windowBackground">#ffffff</color>
     <color name="windowBackground.Dark">#2c2c2c</color>
     <color name="windowBackground.Amoled">#000000</color>

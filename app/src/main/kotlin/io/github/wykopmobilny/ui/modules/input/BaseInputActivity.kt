@@ -121,7 +121,7 @@ abstract class BaseInputActivity<T : BaseInputPresenter> :
         // targetSdk 36 + enableOnBackInvokedCallback: onBackPressed() nie jest wołany,
         // potwierdzenie wyjścia przy niezapisanej treści musi iść przez dispatcher.
         onBackPressedDispatcher.addCallback(this) {
-            if (!binding.markupToolbar.hasUserEditedContent()) {
+            if (!hasUnsavedContent()) {
                 exitActivity()
             } else {
                 exitConfirmationDialog(this@BaseInputActivity) { exitActivity() }?.show()
@@ -190,6 +190,10 @@ abstract class BaseInputActivity<T : BaseInputPresenter> :
             binding.contentView.isVisible = !value
             binding.markupToolbar.isVisible = !value
         }
+
+    // Guard wyjscia: czy sa niezapisane zmiany wymagajace potwierdzenia. Bazowo tresc/zdjecie
+    // (MarkdownToolbar); podklasy dokladaja swoje zalaczniki (np. AddEntry - ankieta).
+    protected open fun hasUnsavedContent(): Boolean = binding.markupToolbar.hasUserEditedContent()
 
     override fun exitActivity() {
         setResult(Activity.RESULT_OK)

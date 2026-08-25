@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="channel_group_notifications">Powiadomienia</string>
-    <string name="channel_name_general">Ogólne</string>
+    <string name="channel_name_to_me">Do mnie</string>
+    <string name="channel_name_pm">Wiadomości prywatne</string>
+    <string name="channel_name_tags">Obserwowane tagi</string>
+    <string name="channel_name_discussions">Obserwowane dyskusje</string>
+    <string name="summary_more_notifications">i inne powiadomienia</string>
+    <string name="action_mark_read">Oznacz jako przeczytane</string>
+    <string name="action_mark_all_read">Oznacz wszystkie jako przeczytane</string>
+    <string name="action_reply">Odpowiedz</string>
+    <string name="reply_failed">Nie udało się wysłać odpowiedzi</string>
+    <string name="conversation_me">Ja</string>
+    <string name="pm_public_content">Nowa wiadomość prywatna</string>
+    <string name="channel_name_polling_service">Sprawdzanie w tle</string>
+    <string name="polling_service_title">Częste sprawdzanie powiadomień</string>
+    <string name="polling_service_content">Możesz ukryć to powiadomienie w ustawieniach systemowych</string>
 </resources>

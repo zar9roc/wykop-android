@@ -103,28 +103,24 @@ fun ImageView.loadImage(
     url: String,
     renderParams: String? = null,
     signature: Int? = null,
+    @androidx.annotation.DrawableRes placeholder: Int? = null,
 ) {
-    // Nie ładuj pustych URL - pozostaw widok w obecnym stanie (placeholder lub poprzedni obraz)
+    // Pusty URL: pokaż placeholder (np. brak awatara), inaczej zostaw widok bez zmian.
     if (url.isBlank()) {
+        placeholder?.let { setImageResource(it) }
         return
     }
 
     val finalUrl = url.withImageParams(renderParams)
 
-    if (signature == null) {
-        Glide
-            .with(context)
-            .load(finalUrl)
-            .into(this)
-    } else {
-        Glide
-            .with(context)
-            .load(finalUrl)
-            .apply(
-                RequestOptions()
-                    .signature(ObjectKey(signature)),
-            ).into(this)
+    var request = Glide.with(context).load(finalUrl)
+    if (placeholder != null) {
+        request = request.placeholder(placeholder).error(placeholder)
     }
+    if (signature != null) {
+        request = request.apply(RequestOptions().signature(ObjectKey(signature)))
+    }
+    request.into(this)
 }
 
 /**

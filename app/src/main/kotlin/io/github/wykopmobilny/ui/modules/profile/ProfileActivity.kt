@@ -97,7 +97,11 @@ class ProfileActivity :
         binding.pager.adapter = pagerAdapter
         patronsApi.getBadgeFor(profileResponse.username)?.drawBadge(binding.patronBadgeTextView)
         binding.tabLayout.setupWithViewPager(binding.pager)
-        binding.profilePicture.loadImage(profileResponse.avatar.orEmpty())
+        binding.profilePicture.loadImage(
+            profileResponse.avatar.orEmpty(),
+            // Ten sam domyslny awatar co we wpisach/komentarzach (niebieski kwadrat + ludzik).
+            placeholder = io.github.wykopmobilny.ui.base.android.R.drawable.avatar,
+        )
         val signupAt =
             runCatching {
                 // member_since format: "2011-10-15 15:15:12" (with space)

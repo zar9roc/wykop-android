@@ -449,6 +449,8 @@ internal class EntryDetailsFragment :
 
     override fun deleteEntry(entry: Entry) = entriesInteractor.deleteEntry(entry).processEntrySingle(entry)
 
+    override fun observeDiscussion(entry: Entry) = entriesInteractor.observeDiscussion(entry).processEntrySingle(entry)
+
     override fun voteSurvey(
         entry: Entry,
         index: Int,

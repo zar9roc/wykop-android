@@ -62,7 +62,18 @@
         style="@style/MarkdownButton"
         android:layout_weight="1"
         android:src="?attr/markdownInsertPhoto"
+        />
+
+    <!-- Jeden monochromatyczny wektor tintowany kolorem ikon z motywu (dzien/noc/amoled)
+         zamiast trzech osobnych wariantow drawable. -->
+    <ImageView
+        android:id="@+id/insert_survey"
+        style="@style/MarkdownButton"
+        android:layout_weight="1"
+        android:src="@drawable/ic_markdowntoolbar_survey"
+        android:visibility="gone"
         app:layout_constraintRight_toRightOf="parent"
+        app:tint="?attr/inputToolbarDrawables"
         />
 
 </LinearLayout>

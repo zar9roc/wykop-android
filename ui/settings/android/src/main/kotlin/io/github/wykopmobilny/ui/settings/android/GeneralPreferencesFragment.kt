@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.preference.PreferenceFragmentCompat
 import io.github.wykopmobilny.ui.settings.GeneralPreferencesUi.NotificationsUi.RefreshPeriodUi
+import io.github.wykopmobilny.ui.settings.ListSetting
 import io.github.wykopmobilny.ui.settings.GetGeneralPreferences
 import io.github.wykopmobilny.ui.settings.SettingsDependencies
 import io.github.wykopmobilny.utils.requireDependency
@@ -46,7 +47,7 @@ internal class GeneralPreferencesFragment : PreferenceFragmentCompat() {
                     bindPreference("clearhistory", it.filtering.clearSearchHistory)
                     bindList(
                         key = "notificationsSchedulerDelay",
-                        setting = it.notifications.notificationRefreshPeriod,
+                        setting = withFrequentPollingDialog(it.notifications.notificationRefreshPeriod),
                         mapping = refreshPeriodMapping,
                     )
                 }
@@ -54,9 +55,32 @@ internal class GeneralPreferencesFragment : PreferenceFragmentCompat() {
         }
     }
 
+    // Okresy < 15 min (foreground service): wybor pokazuje dialog wyjasniajacy.
+    private val frequentPeriods = setOf(RefreshPeriodUi.OneMinute, RefreshPeriodUi.FiveMinutes)
+
+    private fun withFrequentPollingDialog(setting: ListSetting<RefreshPeriodUi>) =
+        ListSetting(
+            values = setting.values,
+            currentValue = setting.currentValue,
+            isEnabled = setting.isEnabled,
+            onSelected = { period ->
+                if (period in frequentPeriods && setting.currentValue !in frequentPeriods) {
+                    androidx.appcompat.app.AlertDialog
+                        .Builder(requireContext())
+                        .setTitle(R.string.frequent_polling_dialog_title)
+                        .setMessage(R.string.frequent_polling_dialog_message)
+                        .setPositiveButton(android.R.string.ok, null)
+                        .show()
+                }
+                setting.onSelected(period)
+            },
+        )
+
     private val refreshPeriodMapping by lazy {
         RefreshPeriodUi.entries.associateWith { period ->
             when (period) {
+                RefreshPeriodUi.OneMinute -> R.string.preferences_notification_period_1_minute
+                RefreshPeriodUi.FiveMinutes -> R.string.preferences_notification_period_5_minutes
                 RefreshPeriodUi.FifteenMinutes -> R.string.preferences_notification_period_15_minutes
                 RefreshPeriodUi.ThirtyMinutes -> R.string.preferences_notification_period_30_minutes
                 RefreshPeriodUi.OneHour -> R.string.preferences_notification_period_1_hour

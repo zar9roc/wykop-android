@@ -10,6 +10,7 @@ import dagger.android.AndroidInjector
 import dagger.android.support.DaggerApplication
 import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.api.ApiSignInterceptor
+import io.github.wykopmobilny.api.notes.NoteOverrideCache
 import io.github.wykopmobilny.debug.FlipperInterceptorFactory
 import io.github.wykopmobilny.data.cache.sqldelight.DaggerApplicationCacheComponent
 import io.github.wykopmobilny.di.DaggerAppComponent
@@ -37,7 +38,6 @@ import io.github.wykopmobilny.domain.microblog.feed.di.MicroblogFeedKey
 import io.github.wykopmobilny.domain.microblog.feed.di.MicroblogFeedScope
 import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsComponent
 import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsKey
-import io.github.wykopmobilny.notification.AppNotification.Type.Notifications
 import io.github.wykopmobilny.notification.NotificationDependencies
 import io.github.wykopmobilny.notification.di.DaggerNotificationsComponent
 import io.github.wykopmobilny.storage.android.DaggerStoragesComponent
@@ -50,7 +50,6 @@ import io.github.wykopmobilny.ui.login.LoginDependencies
 import io.github.wykopmobilny.ui.modules.NewNavigator
 import io.github.wykopmobilny.ui.modules.blacklist.BlacklistActivity
 import io.github.wykopmobilny.ui.modules.embedview.EmbedViewActivity
-import io.github.wykopmobilny.ui.modules.embedview.YoutubeActivity
 import io.github.wykopmobilny.ui.modules.input.entry.add.AddEntryActivity
 import io.github.wykopmobilny.ui.modules.links.downvoters.DownvotersActivity
 import io.github.wykopmobilny.ui.modules.links.upvoters.UpvotersActivity
@@ -138,8 +137,24 @@ open class WykopApp :
         super.onCreate()
         doInterop()
         refreshNickColors()
+        // Override statusu notatek (obejscie buga API v3 - patrz NoteOverrideCache).
+        NoteOverrideCache.init(applicationCache)
 
         applicationScope.launch { domainComponent.initializeApp().invoke() }
+
+        // Czeste sprawdzanie powiadomien (foreground service dla okresow < 15 min z
+        // "Czestotliwosci sprawdzania"). Zmiana w ustawieniach dziala od reki; start moze
+        // sie nie powiesc przy zimnym starcie procesu w tle (Android 12+) - wtedy serwis
+        // wstanie przy nastepnym uruchomieniu z UI.
+        applicationScope.launch {
+            domainComponent.notifications().frequentPollingInterval().invoke().collect { interval ->
+                if (interval != null) {
+                    io.github.wykopmobilny.notification.NotificationsPollingService.start(this@WykopApp)
+                } else {
+                    io.github.wykopmobilny.notification.NotificationsPollingService.stop(this@WykopApp)
+                }
+            }
+        }
     }
 
     // Kolory rang nicków z /v3/config: seed z cache (natychmiast), pobranie sieciowe
@@ -205,7 +220,6 @@ open class WykopApp :
             override val blacklistRefreshInterval: Duration = 7.days
             override val blacklistFlexInterval: Duration = 1.days
             override val notificationsEnabled: Boolean = false
-            override val youtubeKey: String = BuildConfig.YOUTUBE_API_KEY
             override val v3ApiKey: String = BuildConfig.V3_API_KEY
             override val v3ApiSecret: String = BuildConfig.V3_API_SECRET
         }
@@ -213,18 +227,14 @@ open class WykopApp :
     protected open val notifications by lazy {
         DaggerNotificationsComponent.factory().create(
             context = this,
-            interopIntentHandler = { type ->
-                when (type) {
-                    is Notifications.SingleMessage -> {
-                        WykopLinkHandler.getLinkIntent(type.interopUrl, this)
-                            ?: MainNavigationActivity
-                                .getIntent(this)
-                                .also { Napier.e("Invalid deeplink for url=${type.interopUrl}") }
-                    }
-
-                    Notifications.MultipleNotifications -> {
-                        Intent(applicationContext, NotificationsListActivity::class.java)
-                    }
+            interopIntentHandler = { interopUrl ->
+                if (interopUrl != null) {
+                    WykopLinkHandler.getLinkIntent(interopUrl, this)
+                        ?: MainNavigationActivity
+                            .getIntent(this)
+                            .also { Napier.e("Invalid deeplink for url=$interopUrl") }
+                } else {
+                    Intent(applicationContext, NotificationsListActivity::class.java)
                 }
             },
             dependencies =
@@ -232,6 +242,16 @@ open class WykopApp :
                     val lazyDependencies by lazy { requireDependency<NotificationDependencies>() }
 
                     override fun handleNotificationDismissed() = lazyDependencies.handleNotificationDismissed()
+
+                    override fun markNotificationRead() = lazyDependencies.markNotificationRead()
+
+                    override fun markChannelRead() = lazyDependencies.markChannelRead()
+
+                    override fun sendPrivateMessageReply() = lazyDependencies.sendPrivateMessageReply()
+
+                    override fun refreshNotifications() = lazyDependencies.refreshNotifications()
+
+                    override fun frequentPollingInterval() = lazyDependencies.frequentPollingInterval()
                 },
         )
     }
@@ -527,7 +547,8 @@ open class WykopApp :
                     }
 
                     is InteropRequest.OpenYoutube -> {
-                        context.startActivity(YoutubeActivity.createIntent(context, it.url))
+                        // YouTube Player (zamkniete API) usuniete - otwieramy zewnetrznie.
+                        NewNavigator(context, settingsPreferencesApi.get()).openBrowser(it.url)
                     }
 
                     is InteropRequest.ShowGif -> {
@@ -557,7 +578,8 @@ open class WykopApp :
 
     // Notatka o uzytkowniku (zolta kartka) - view-layer, jak na mikroblogu: dialog +
     // NotesRepository. Po zapisie aktualizujemy flage w cache komentarzy linku, przez
-    // co flowSourceOfTruth re-emituje i lista przerysowuje kartke na zywo.
+    // co flowSourceOfTruth re-emituje i lista przerysowuje kartke na zywo. Lokalne
+    // nadpisanie jest konieczne, bo API v3 nie czysci pola `note` po usunieciu notatki.
     private fun editNote(
         context: Activity,
         username: String,

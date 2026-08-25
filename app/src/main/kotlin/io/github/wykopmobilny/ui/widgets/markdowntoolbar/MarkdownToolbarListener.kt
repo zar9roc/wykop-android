@@ -15,4 +15,8 @@ interface MarkdownToolbarListener {
     fun openGalleryImageChooser()
 
     fun openCamera(uri: Uri)
+
+    // Klik kafelka ankiety - obsluguje ekran dodawania wpisu (dialog + POST). Domyslnie
+    // no-op, bo pozostale wejscia (komentarze/PM) nie wspieraja ankiet.
+    fun onSurveyClicked() {}
 }

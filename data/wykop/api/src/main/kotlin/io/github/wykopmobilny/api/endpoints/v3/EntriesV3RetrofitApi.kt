@@ -1,10 +1,12 @@
 package io.github.wykopmobilny.api.endpoints.v3
 
 import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
+import io.github.wykopmobilny.api.requests.v3.entries.CreateSurveyRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateCommentRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateEntryRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.VoteSurveyRequestV3
 import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
+import io.github.wykopmobilny.api.responses.v3.entries.CreateSurveyResponseV3
 import io.github.wykopmobilny.api.responses.v3.entries.EntryCommentResponseV3
 import io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3
 import io.github.wykopmobilny.api.responses.v3.user.UserShortResponseV3
@@ -86,6 +88,12 @@ interface EntriesV3RetrofitApi {
         @Body request: WykopApiRequestV3<CreateUpdateEntryRequestV3>,
     ): WykopApiResponseV3<EntryResponseV3>
 
+    // Tworzy ankiete (pytanie + odpowiedzi), zwraca survey_id do doklejenia do wpisu.
+    @POST("v3/entries/survey")
+    suspend fun createSurvey(
+        @Body request: WykopApiRequestV3<CreateSurveyRequestV3>,
+    ): WykopApiResponseV3<CreateSurveyResponseV3>
+
     @PUT("v3/entries/{entryId}")
     suspend fun editEntry(
         @Path("entryId") entryId: Long,
@@ -104,6 +112,17 @@ interface EntriesV3RetrofitApi {
 
     @DELETE("v3/entries/{entryId}/votes")
     suspend fun unvoteEntry(
+        @Path("entryId") entryId: Long,
+    ): Response<Unit>
+
+    // Obserwowanie dyskusji we wpisie (powiadomienia o nowych komentarzach) - 204 bez body.
+    @POST("v3/entries/{entryId}/observed-discussions")
+    suspend fun observeDiscussion(
+        @Path("entryId") entryId: Long,
+    ): Response<Unit>
+
+    @DELETE("v3/entries/{entryId}/observed-discussions")
+    suspend fun unobserveDiscussion(
         @Path("entryId") entryId: Long,
     ): Response<Unit>
 

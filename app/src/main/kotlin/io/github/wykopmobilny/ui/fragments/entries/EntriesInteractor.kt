@@ -36,6 +36,21 @@ class EntriesInteractor
                     entry
                 }
 
+        // Toggle obserwowania dyskusji - kierunek wg aktualnego stanu, flaga aktualizowana
+        // po sukcesie (optymistycznie w obiekcie backing, jak pozostale akcje).
+        fun observeDiscussion(entry: Entry): Single<Entry> {
+            val call =
+                if (entry.isObservedDiscussion) {
+                    entriesApi.unobserveDiscussion(entry.id)
+                } else {
+                    entriesApi.observeDiscussion(entry.id)
+                }
+            return call.map {
+                entry.isObservedDiscussion = !entry.isObservedDiscussion
+                entry
+            }
+        }
+
         fun deleteEntry(entry: Entry): Single<Entry> =
             entriesApi
                 .deleteEntry(entry.id)
@@ -52,8 +67,25 @@ class EntriesInteractor
         ): Single<Entry> =
             entriesApi
                 .voteSurvey(entry.id, index)
-                .map {
-                    entry.survey = it
+                .map { voted ->
+                    // Glos (201) nie zwraca body. NIE podmieniamy ankiety na pusta (crashowalo
+                    // render: getChildAt na pustej liscie odpowiedzi) - zachowujemy istniejaca,
+                    // optymistycznie dodajemy glos wybranej odpowiedzi i przeliczamy procenty.
+                    entry.survey =
+                        entry.survey?.let { current ->
+                            val updatedAnswers =
+                                current.answers.mapIndexed { i, answer ->
+                                    if (i == index - 1) answer.copy(count = answer.count + 1) else answer
+                                }
+                            val total = updatedAnswers.sumOf { it.count }
+                            current.copy(
+                                answers =
+                                    updatedAnswers.map { answer ->
+                                        answer.copy(percentage = if (total > 0) answer.count * 100.0 / total else 0.0)
+                                    },
+                                userAnswer = index,
+                            )
+                        } ?: voted
                     entry
                 }
     }

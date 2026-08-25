@@ -18,6 +18,7 @@ class ConversationViewHolder(
         // Nieprzeczytana rozmowa: pogrubiony nick + zajawka.
         val typeface = if (conversation.unread) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
         binding.authorAvatarView.setAuthor(conversation.user)
+        binding.authorAvatarView.setOnline(conversation.online)
         binding.userNameTextView.apply {
             text = conversation.user.nick
             setTextColor(context.getGroupColor(conversation.user.group))

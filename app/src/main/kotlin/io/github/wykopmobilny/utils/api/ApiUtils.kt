@@ -55,10 +55,12 @@ fun Context.getGroupColor(role: Int): Int {
     return getGroupColor(role, isUsingDarkTheme = isDark)
 }
 
+// API v3 zwraca "m"/"f" (spec: enum [m, f]); stare API v2 zwracalo "male"/"female".
+// Akceptujemy oba warianty, zeby pasek plci dzialal na obu sciezkach.
 fun getGenderStripResource(authorSex: String): Int =
     when (authorSex) {
-        "male" -> R.drawable.strip_male
-        "female" -> R.drawable.strip_female
+        "male", "m" -> R.drawable.strip_male
+        "female", "f" -> R.drawable.strip_female
         else -> 0
     }
 

@@ -18,14 +18,33 @@
         tools:background="#e1e1e1"
         />
 
+    <!--
+      Stala wysokosc (nie wrap_content): sciezka v3 ustawia pasek przez
+      setBackgroundColor (ColorDrawable bez wysokosci intrinsic), wiec przy
+      wrap_content pasek kolapsowal do 0dp i byl niewidoczny. 3dp odpowiada
+      wysokosci vectorow strip_male/strip_female (1dp odstep + 2dp kolor).
+    -->
     <ImageView
         android:id="@+id/genderStripImageView"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="3dp"
         app:layout_constraintTop_toBottomOf="@id/avatarImageView"
         app:layout_constraintLeft_toLeftOf="@id/avatarImageView"
         app:layout_constraintRight_toRightOf="@id/avatarImageView"
         tools:background="@drawable/strip_male"
+        />
+
+    <!-- Zielona kropka aktywnego uzytkownika (prawy-dolny rog avatara). Domyslnie ukryta;
+         wlaczana przez AvatarView.setOnline(). -->
+    <View
+        android:id="@+id/onlineIndicator"
+        android:layout_width="11dp"
+        android:layout_height="11dp"
+        android:background="@drawable/bg_online_indicator"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/avatarImageView"
+        app:layout_constraintRight_toRightOf="@id/avatarImageView"
+        tools:visibility="visible"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

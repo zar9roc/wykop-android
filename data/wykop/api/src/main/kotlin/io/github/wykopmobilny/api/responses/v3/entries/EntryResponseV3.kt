@@ -27,5 +27,6 @@ data class EntryResponseV3(
     @field:Json(name = "actions") val actions: ActionsResponseV3?,
     @field:Json(name = "deleted") val deleted: Boolean?,
     @field:Json(name = "archive") val archive: Boolean?,
-    @field:Json(name = "survey") val survey: SurveyResponseV3?,
+    // Czy zalogowany obserwuje dyskusje w tym wpisie (powiadomienia o nowych komentarzach).
+    @field:Json(name = "observed_discussion") val observedDiscussion: Boolean? = null,
 )

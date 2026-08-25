@@ -16,7 +16,8 @@ fun EntryResponseV3.filterEntryV3(owmContentFilter: OWMContentFilter) =
             fullDate = createdAt,
             isVoted = (voted ?: 0) > 0,
             isFavorite = favourite ?: false,
-            survey = survey?.let(SurveyMapperV3::map),
+            // Ankieta jest zagniezdzona w media (media.survey), nie na top-level wpisu.
+            survey = media?.survey?.let(SurveyMapperV3::map),
             embed = media?.let { MediaMapperV3.map(it, adult = adult ?: false) },
             voteCount = votes.up - votes.down,
             commentsCount = comments.count,
@@ -33,6 +34,7 @@ fun EntryResponseV3.filterEntryV3(owmContentFilter: OWMContentFilter) =
             isBlocked = deleted ?: false,
             collapsed = true,
             isCommentingPossible = true,
+            isObservedDiscussion = observedDiscussion ?: false,
         ),
     )
 

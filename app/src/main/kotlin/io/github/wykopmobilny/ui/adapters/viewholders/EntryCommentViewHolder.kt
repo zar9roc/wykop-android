@@ -324,7 +324,13 @@ class EntryCommentViewHolder(
                     label = entryCommentMenuNoteLabel,
                     nick = comment.author.nick,
                     dismissMenu = { dialog.dismiss() },
-                    onChanged = { binding.authorTextView.setNoteCard(it) },
+                    onChanged = {
+                        // Aktualizujemy backing obiekt autora, nie tylko widok - inaczej
+                        // po recyklingu wiersza stary stan znacznika wraca. Konieczne tez
+                        // dlatego, ze API v3 nie czysci pola `note` po usunieciu notatki.
+                        comment.author.hasNote = it
+                        binding.authorTextView.setNoteCard(it)
+                    },
                 )
             }
 

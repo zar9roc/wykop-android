@@ -15,7 +15,8 @@
     <item
         android:id="@+id/copyUrl"
         android:title="@string/copy_entry_url"
-        android:icon="@drawable/ic_link_dark"
+        android:icon="@drawable/ic_link"
+        app:iconTint="@color/icon_on_colored_surface"
         app:showAsAction="always"
         android:visible="false"
         />

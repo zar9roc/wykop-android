@@ -19,6 +19,11 @@ interface EntriesApi {
 
     fun unvoteEntry(entryId: Long): Single<VoteResponse>
 
+    // Obserwowanie dyskusji we wpisie (powiadomienia o nowych komentarzach).
+    fun observeDiscussion(entryId: Long): Single<Unit>
+
+    fun unobserveDiscussion(entryId: Long): Single<Unit>
+
     fun voteComment(
         entryId: Long,
         commentId: Long,
@@ -33,13 +38,21 @@ interface EntriesApi {
         body: String,
         wykopImageFile: WykopImageFile,
         plus18: Boolean,
+        survey: String? = null,
     ): Single<EntryResponse>
 
     fun addEntry(
         body: String,
         embed: String?,
         plus18: Boolean,
+        survey: String? = null,
     ): Single<EntryResponse>
+
+    // Tworzy ankiete (POST /v3/entries/survey), zwraca survey_id do doklejenia do wpisu.
+    fun createSurvey(
+        question: String,
+        answers: List<String>,
+    ): Single<String>
 
     fun addEntryComment(
         body: String,

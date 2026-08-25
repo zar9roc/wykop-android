@@ -31,6 +31,7 @@ private const val MESSAGE_TYPE_SENT = 0
 
 private fun PmMessageResponseV3.toPMMessage() =
     PMMessage(
+        key = key,
         date = createdAt?.toPrettyDate().orEmpty(),
         body = content.orEmpty().convertWykopContentToHtml(),
         embed = media?.let { MediaMapperV3.map(it, adult = adult ?: false) },
@@ -52,12 +53,14 @@ private fun PmConversationResponseV3.toConversation() =
                 ?.takeIf { it.isNotBlank() }
                 ?.convertWykopContentToHtml()
                 ?.removeHtml(),
+        online = user.online ?: false,
     )
 
 private fun PmConversationMessagesResponseV3.toFullConversation() =
     FullConversation(
         messages = messages.orEmpty().map { it.toPMMessage() },
         receiver = AuthorMapperV3.map(user),
+        online = user.online ?: false,
     )
 
 class PMRepository
@@ -68,17 +71,22 @@ class PMRepository
         private val userTokenRefresher: UserTokenRefresher,
         private val errorBodyParser: ErrorBodyParserV3,
     ) : PMApi {
-        override fun getConversations() =
-            rxSingle { pmApiV3.getConversations() }
-                .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<PmConversationResponseV3>>(errorBodyParser))
-                .map { it.map { response -> response.toConversation() } }
+        override fun getConversations(
+            page: Int,
+            query: String?,
+        ) = rxSingle { pmApiV3.getConversations(page = page, query = query) }
+            .retryWhen(userTokenRefresher)
+            .compose(ErrorHandlerTransformerV3<List<PmConversationResponseV3>>(errorBodyParser))
+            .map { it.map { response -> response.toConversation() } }
 
-        override fun getConversation(user: String) =
-            rxSingle { pmApiV3.getConversation(user) }
-                .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<PmConversationMessagesResponseV3>(errorBodyParser))
-                .map { it.toFullConversation() }
+        override fun getConversation(
+            user: String,
+            prevMessage: String?,
+            nextMessage: String?,
+        ) = rxSingle { pmApiV3.getConversation(user, prevMessage = prevMessage, nextMessage = nextMessage) }
+            .retryWhen(userTokenRefresher)
+            .compose(ErrorHandlerTransformerV3<PmConversationMessagesResponseV3>(errorBodyParser))
+            .map { it.toFullConversation() }
 
         override fun hasNewerMessages(user: String) =
             rxSingle { pmApiV3.getConversationNewer(user) }

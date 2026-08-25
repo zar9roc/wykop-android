@@ -1,8 +1,11 @@
 package io.github.wykopmobilny.ui.modules.mainnavigation
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -10,6 +13,8 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.activity.addCallback
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.appcompat.app.ActionBarDrawerToggle
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
@@ -23,15 +28,12 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.internal.NavigationMenuView
 import com.google.android.material.navigation.NavigationView
 import io.github.wykopmobilny.R
-import io.github.wykopmobilny.api.patrons.PatronsApi
 import io.github.wykopmobilny.base.BaseActivity
 import io.github.wykopmobilny.base.BaseNavigationView
 import io.github.wykopmobilny.data.storage.api.AppStorage
 import io.github.wykopmobilny.databinding.ActivityNavigationBinding
 import io.github.wykopmobilny.databinding.AppAboutBottomsheetBinding
 import io.github.wykopmobilny.databinding.DrawerHeaderViewLayoutBinding
-import io.github.wykopmobilny.databinding.PatronListItemBinding
-import io.github.wykopmobilny.databinding.PatronsBottomsheetBinding
 import io.github.wykopmobilny.storage.api.SettingsPreferencesApi
 import io.github.wykopmobilny.kotlin.AppDispatchers
 import io.github.wykopmobilny.ui.dialogs.confirmationDialog
@@ -106,9 +108,6 @@ class MainNavigationActivity :
             return intent
         }
     }
-
-    @Inject
-    lateinit var patronsApi: PatronsApi
 
     @Inject
     lateinit var appStorage: AppStorage
@@ -229,6 +228,21 @@ class MainNavigationActivity :
         return true
     }
 
+    // Android 13+ wymaga runtime zgody na wyswietlanie powiadomien - bez niej systemowe
+    // powiadomienia (worker CheckNotifications) sa po cichu ignorowane.
+    private val requestNotificationsPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* wynik nieistotny - brak zgody = brak powiadomien */ }
+
+    private fun ensureNotificationsPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        val granted =
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                PackageManager.PERMISSION_GRANTED
+        if (!granted) {
+            requestNotificationsPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setSupportActionBar(binding.toolbar.toolbar)
@@ -236,6 +250,8 @@ class MainNavigationActivity :
         if (!presenter.isSubscribed) {
             presenter.subscribe(this)
         }
+
+        ensureNotificationsPermission()
 
         Handler(Looper.getMainLooper()).postDelayed(333) {
             presenter.startListeningForNotifications()
@@ -484,7 +500,7 @@ class MainNavigationActivity :
             val versionName = packageManager.getPackageInfo(packageName, 0).versionName
             appVersionTextview.text = getString(R.string.app_version, versionName)
             appVersion.setOnClickListener {
-                openBrowser("https://github.com/otwarty-wykop-mobilny/wykop-android")
+                openBrowser("https://github.com/zar9roc/wykop-android")
                 dialog.dismiss()
             }
 
@@ -494,22 +510,12 @@ class MainNavigationActivity :
             }
 
             appObserveTag.setOnClickListener {
-                navigator.openTagActivity("otwartywykopmobilny2")
+                navigator.openTagActivity("otwartywykopmobilny3")
                 dialog.dismiss()
-            }
-
-            appPatrons.setOnClickListener {
-                dialog.dismiss()
-                showAppPatronsDialog()
             }
 
             license.setOnClickListener {
-                openBrowser("https://github.com/otwarty-wykop-mobilny/wykop-android/blob/master/LICENSE")
-                dialog.dismiss()
-            }
-
-            privacyPolicy.setOnClickListener {
-                openBrowser("https://sites.google.com/view/otwarty-wykop-mobilny-v2")
+                openBrowser("https://github.com/zar9roc/wykop-android/blob/master/LICENSE")
                 dialog.dismiss()
             }
         }
@@ -521,30 +527,6 @@ class MainNavigationActivity :
         dialog.show()
     }
 
-    private fun showAppPatronsDialog() {
-        val patronsDialog = BottomSheetDialog(this)
-        val badgesDialogView2 = PatronsBottomsheetBinding.inflate(layoutInflater)
-        patronsDialog.setContentView(badgesDialogView2.root)
-
-        for (badge in patronsApi.patrons.filter { patron -> patron.listMention }) {
-            val item = PatronListItemBinding.inflate(layoutInflater)
-            item.root.setOnClickListener {
-                patronsDialog.dismiss()
-                linkHandler.handleUrl("https://wykop.pl/ludzie/" + badge.username)
-            }
-            item.nickname.text = badge.username
-            item.tierTextView.text =
-                when (badge.tier) {
-                    "patron50" -> "Patron próg \"Białkowy\""
-                    "patron25" -> "Patron próg \"Bordowy\""
-                    "patron10" -> "Patron próg \"Pomaranczowy\""
-                    "patron5" -> "Patron próg \"Zielony\""
-                    else -> "Patron"
-                }
-            badgesDialogView2.patronsList.addView(item.root)
-        }
-        patronsDialog.show()
-    }
 
     override fun forceRefreshNotifications() {
         presenter.checkNotifications(true)

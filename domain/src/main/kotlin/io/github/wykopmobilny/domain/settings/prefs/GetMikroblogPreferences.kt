@@ -20,7 +20,8 @@ internal class GetMikroblogPreferences
                 MikroblogPreferences(
                     defaultScreen = defaultScreen ?: MikroblogScreen.Newest,
                     cutLongEntries = cutLongEntries ?: true,
-                    openSpoilersInDialog = openSpoilersInDialog ?: true,
+                    // Domyslnie spoilery rozwijaja sie inline; popup jest opcja (opt-in).
+                    openSpoilersInDialog = openSpoilersInDialog ?: false,
                 )
             }
     }

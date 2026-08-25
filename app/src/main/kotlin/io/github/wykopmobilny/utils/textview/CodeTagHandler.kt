@@ -8,7 +8,9 @@ import android.text.style.CharacterStyle
 import android.text.style.TypefaceSpan
 import org.xml.sax.XMLReader
 
-class CodeTagHandler : Html.TagHandler {
+class CodeTagHandler(
+    private val openSpoilerInDialog: Boolean = false,
+) : Html.TagHandler {
     override fun handleTag(
         opening: Boolean,
         tag: String?,
@@ -61,7 +63,7 @@ class CodeTagHandler : Html.TagHandler {
                 val spoilerContent = output.subSequence(start, len)
 
                 // Create the clickable span
-                val spoilerSpan = SpoilerClickableSpan(spoilerContent)
+                val spoilerSpan = SpoilerClickableSpan(spoilerContent, openSpoilerInDialog)
 
                 // Replace content with collapsed text
                 output.replace(start, len, SpoilerClickableSpan.COLLAPSED_TEXT)
