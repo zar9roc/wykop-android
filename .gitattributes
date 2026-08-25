@@ -1,0 +1,16 @@
+# Wszystkie pliki tekstowe trzymamy w repo z LF i tak je wypisujemy na dysk.
+# Bez tego edytory na Windowsie zapisują CRLF i cały plik pokazuje się jako zmieniony.
+* text=auto eol=lf
+
+# Skrypty, które muszą mieć konkretne końce linii
+*.sh    text eol=lf
+gradlew text eol=lf
+*.bat   text eol=crlf
+
+# Binaria — nigdy nie konwertować
+*.png       binary
+*.jpg       binary
+*.xcf       binary
+*.jar       binary
+*.keystore  binary
+*.db        binary
