@@ -4,8 +4,9 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 // Realna odpowiedz API v3 (zweryfikowana na zywo): ankieta ma `count` (suma glosow) i
-// top-level `voted` (id odpowiedzi zaznaczonej przez usera, 0 = brak); odpowiedz ma `text`
-// (nie `answer`) i `voted` (0/1), a NIE ma `percentage` - liczymy je z count/total w mapperze.
+// top-level `voted` - UWAGA: to flaga "czy user glosowal" (1/0), NIE id odpowiedzi
+// (spec: "1=glosowal, 0=nie"); ktora odpowiedz wybrano, mowi per-answer `voted` (0/1).
+// Odpowiedz ma `text` (nie `answer`) i NIE ma `percentage` - liczymy z count/total w mapperze.
 @JsonClass(generateAdapter = true)
 data class SurveyResponseV3(
     @field:Json(name = "question") val question: String,

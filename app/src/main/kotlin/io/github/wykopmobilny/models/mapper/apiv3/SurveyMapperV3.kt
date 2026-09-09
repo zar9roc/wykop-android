@@ -8,13 +8,16 @@ import io.github.wykopmobilny.models.mapper.Mapper
 
 object SurveyMapperV3 : Mapper<SurveyResponseV3, Survey> {
     override fun map(value: SurveyResponseV3): Survey {
-        // API nie zwraca procentow - liczymy z count/suma. userAnswer to 1-based id
-        // zaznaczonej odpowiedzi (top-level `voted`); 0 = brak glosu -> null.
+        // API nie zwraca procentow - liczymy z count/suma.
+        // Top-level `voted` to flaga "czy glosowal" (1/0), NIE id odpowiedzi - uzycie go
+        // jako pozycji pokazywalo kazdy glos jako pierwsza opcje. Zaznaczona odpowiedz
+        // wskazuje per-answer `voted` (0/1); userAnswer = jej pozycja 1-based.
         val total = value.count ?: value.answers.sumOf { it.count }
+        val votedIndex = value.answers.indexOfFirst { (it.voted ?: 0) > 0 }
         return Survey(
             question = value.question,
             answers = value.answers.map { mapAnswer(it, total) },
-            userAnswer = value.voted?.takeIf { it > 0 },
+            userAnswer = votedIndex.takeIf { it >= 0 }?.plus(1),
         )
     }
 

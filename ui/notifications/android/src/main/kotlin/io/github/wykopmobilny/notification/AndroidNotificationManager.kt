@@ -371,7 +371,10 @@ internal class AndroidNotificationManager
                 .setNumber(notifications.size)
                 // Podsumowanie odswieza sie przy kazdym przebiegu workera - brzeczy tylko raz.
                 .setOnlyAlertOnce(true)
-                .setAutoCancel(true)
+                // BEZ autoCancel: skasowanie podsumowania po kliknieciu kasuje w systemie
+                // CALA grupe - znikaly wszystkie nieprzeczytane powiadomienia. Podsumowanie
+                // sprzata cancelStale/cancelSummaryIfGroupEmpty, gdy zdarzenia znikna.
+                .setAutoCancel(false)
                 .apply {
                     if (channel == AppNotification.Channel.PRIVATE_MESSAGES) {
                         setVisibility(NotificationCompat.VISIBILITY_PRIVATE)

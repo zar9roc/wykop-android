@@ -68,8 +68,19 @@ class CodeTagHandler(
                 // Replace content with collapsed text
                 output.replace(start, len, SpoilerClickableSpan.COLLAPSED_TEXT)
 
-                // Apply the clickable span
                 val newEnd = start + SpoilerClickableSpan.COLLAPSED_TEXT.length
+
+                // replace() nie usuwa spanow z podmienianego zakresu - np. URLSpan linku
+                // z wnetrza spoilera zostaje sklejony na zaslonie "[pokaż spoiler]".
+                // Klikniecie trafialo wtedy w link (spany zwracane sa w kolejnosci dodania)
+                // zamiast rozwijac spoiler - zdejmujemy wszystkie pozostalosci z zaslony.
+                output
+                    .getSpans(start, newEnd, Any::class.java)
+                    .filter { output.getSpanFlags(it) != Spannable.SPAN_MARK_MARK }
+                    .filter { output.getSpanStart(it) >= start && output.getSpanEnd(it) <= newEnd }
+                    .forEach(output::removeSpan)
+
+                // Apply the clickable span
                 output.setSpan(spoilerSpan, start, newEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 
                 // Remove the marker
