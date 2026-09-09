@@ -188,6 +188,24 @@
                 tools:text="powód bana"
                 />
 
+            <TextView
+                android:id="@+id/noteTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="start"
+                android:paddingStart="16dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="16dp"
+                android:textColor="@color/note_card"
+                android:textSize="13sp"
+                android:textStyle="italic"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/banTextView"
+                tools:text="treść notatki"
+                />
+
             <View
                 android:id="@+id/lineTop"
                 android:layout_width="match_parent"
@@ -196,7 +214,7 @@
                 android:background="?attr/lineColor"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/banTextView"
+                app:layout_constraintTop_toBottomOf="@id/noteTextView"
                 />
 
             <androidx.constraintlayout.widget.ConstraintLayout

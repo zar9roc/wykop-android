@@ -23,6 +23,7 @@ typealias AddRelatedDialogCallback = (String, String) -> Unit
 fun noteDialog(
     context: Context,
     initialContent: String?,
+    onDelete: (() -> Unit)? = null,
     onSave: (String) -> Unit,
 ): AlertDialog {
     val binding = DialogNoteBinding.inflate(context.layoutInflater)
@@ -37,6 +38,11 @@ fun noteDialog(
     binding.noteCancel.setOnClickListener { dialog.dismiss() }
     binding.noteSave.setOnClickListener {
         onSave(binding.noteEditText.text.toString())
+        dialog.dismiss()
+    }
+    binding.noteDelete.isVisible = hasNote && onDelete != null
+    binding.noteDelete.setOnClickListener {
+        onDelete?.invoke()
         dialog.dismiss()
     }
     return dialog

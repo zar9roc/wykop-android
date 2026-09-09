@@ -6,10 +6,13 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.BuildConfig
 import io.github.wykopmobilny.R
+import io.github.wykopmobilny.api.notes.NoteOverrideCache
+import io.github.wykopmobilny.api.notes.NotesRepository
 import io.github.wykopmobilny.api.patrons.PatronsApi
 import io.github.wykopmobilny.api.patrons.getBadgeFor
 import io.github.wykopmobilny.api.responses.ObserveStateResponse
@@ -23,6 +26,7 @@ import io.github.wykopmobilny.domain.profile.toPrettyString
 import io.github.wykopmobilny.models.dataclass.drawBadge
 import io.github.wykopmobilny.models.fragments.DataFragment
 import io.github.wykopmobilny.models.fragments.getDataFragmentInstance
+import io.github.wykopmobilny.ui.dialogs.noteDialog
 import io.github.wykopmobilny.ui.modules.NewNavigator
 import io.github.wykopmobilny.utils.api.colorNameToGroupId
 import io.github.wykopmobilny.utils.api.getGenderStripResource
@@ -37,7 +41,9 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.periodUntil
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 import io.github.wykopmobilny.ui.base.android.R as BaseR
+import io.github.wykopmobilny.ui.profile.android.R as ProfileR
 
 class ProfileActivity :
     BaseActivity(),
@@ -54,11 +60,15 @@ class ProfileActivity :
     @Inject
     lateinit var patronsApi: PatronsApi
 
+    @Inject
+    lateinit var notesRepository: NotesRepository
+
     private val binding by viewBinding(ActivityProfileBinding::inflate)
 
     val username by lazy { intent.getStringExtra(EXTRA_USERNAME)!! }
     override val enableSwipeBackLayout: Boolean = true
     private var observeStateResponse: ObserveStateResponse? = null
+    private var currentNote: String? = null
     private lateinit var badgesDialogListener: (List<BadgeResponseV3>) -> Unit
     private val pagerAdapter by lazy { ProfilePagerAdapter(resources, supportFragmentManager) }
 
@@ -147,10 +157,22 @@ class ProfileActivity :
             binding.genderStripImageView.setBackgroundResource(getGenderStripResource(sex))
         }
 
-        profileResponse.banned?.apply {
-            if (reason != null && expired != null) {
-                binding.banTextView.isVisible = true
-                binding.banTextView.text = "Użytkownik zbanowany do $expired za $reason"
+        val banReason = profileResponse.banned?.reason
+        val banExpired = profileResponse.banned?.expired
+        if (profileResponse.banned != null || profileResponse.status == "banned") {
+            binding.banTextView.isVisible = true
+            binding.banTextView.text =
+                when {
+                    banReason == null && banExpired == null -> getString(ProfileR.string.banned_no_info)
+                    banReason == null -> getString(ProfileR.string.banned_date_only, banExpired)
+                    banExpired == null -> getString(ProfileR.string.banned_reason_only, banReason)
+                    else -> getString(ProfileR.string.banned_date_and_reason, banExpired, banReason)
+                }
+        }
+        val hasNote = profileResponse.note == true && !NoteOverrideCache.hasNoNote(profileResponse.username)
+        if (userManagerApi.isUserAuthorized() && hasNote) {
+            lifecycleScope.launch {
+                applyNote(runCatching { notesRepository.getNote(profileResponse.username) }.getOrNull())
             }
         }
         binding.backgroundImg.isVisible = true
@@ -165,6 +187,10 @@ class ProfileActivity :
         if (userManagerApi.isUserAuthorized() && userManagerApi.getUserCredentials()!!.login != username) {
             menu.findItem(R.id.pw).isVisible = true
             menu.findItem(R.id.report).isVisible = true
+            menu.findItem(R.id.note).apply {
+                isVisible = true
+                setTitle(if (currentNote == null) R.string.note_menu_add else R.string.note_edit_title)
+            }
             observeStateResponse?.apply {
                 menu.apply {
                     findItem(R.id.unobserve_profile).isVisible = isObserved
@@ -182,6 +208,25 @@ class ProfileActivity :
         invalidateOptionsMenu()
     }
 
+    private fun showNoteDialog() {
+        noteDialog(this, currentNote, onSave = { saveNote(it) }, onDelete = { saveNote("") }).show()
+    }
+
+    private fun saveNote(content: String) {
+        lifecycleScope.launch {
+            runCatching { notesRepository.saveNote(username, content) }
+                .onSuccess { applyNote(content.trim().takeIf { it.isNotBlank() }) }
+                .onFailure { showErrorDialog(it) }
+        }
+    }
+
+    private fun applyNote(note: String?) {
+        currentNote = note?.takeIf { it.isNotBlank() }
+        binding.noteTextView.text = currentNote
+        binding.noteTextView.isVisible = currentNote != null
+        invalidateOptionsMenu()
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.pw -> dataFragment.data?.let { navigator.openConversationListActivity(it.username) }
@@ -190,6 +235,7 @@ class ProfileActivity :
             R.id.observe_profile -> presenter.markObserved()
             R.id.unobserve_profile -> presenter.markUnobserved()
             R.id.badges -> showBadgesDialog()
+            R.id.note -> showNoteDialog()
             R.id.report -> Napier.w("Report functionality not available in API v3")
             android.R.id.home -> finish()
             else -> return super.onOptionsItemSelected(item)

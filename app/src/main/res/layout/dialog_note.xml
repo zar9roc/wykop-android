@@ -56,6 +56,15 @@
             android:text="@string/note_cancel"
             />
 
+        <Button
+            android:id="@+id/noteDelete"
+            style="?attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/note_delete"
+            android:visibility="gone"
+            />
+
         <View
             android:layout_width="0dp"
             android:layout_height="1dp"

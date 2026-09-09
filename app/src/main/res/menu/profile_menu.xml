@@ -42,6 +42,13 @@
 
     <item
         android:visible="false"
+        android:id="@+id/note"
+        android:title="@string/note_menu_add"
+        app:showAsAction="never"
+        />
+
+    <item
+        android:visible="false"
         android:id="@+id/report"
         android:title="@string/report"
         app:showAsAction="never"
