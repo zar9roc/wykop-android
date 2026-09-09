@@ -51,7 +51,14 @@ abstract class BaseInputActivity<T : BaseInputPresenter> :
 
     override var textBody: String
         get() =
-            if ((binding.markupToolbar.photoUrl != null || binding.markupToolbar.photo != null) && binding.body.text.isEmpty()) {
+            if (
+                (
+                    binding.markupToolbar.photoUrl != null ||
+                        binding.markupToolbar.photo != null ||
+                        binding.markupToolbar.embedUrl != null
+                ) &&
+                binding.body.text.isEmpty()
+            ) {
                 ZERO_WIDTH_SPACE
             } else {
                 binding.body.text.toString()
@@ -96,19 +103,22 @@ abstract class BaseInputActivity<T : BaseInputPresenter> :
         super.onCreate(savedInstanceState)
         setSupportActionBar(binding.toolbar.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        var initialSelection: Int? = null
         intent.apply {
             getStringExtra(EXTRA_RECEIVER)?.apply {
                 textBody += "$this: "
-                selectionStart = this.length + 2
+                initialSelection = this.length + 2
             }
 
             getStringExtra(EXTRA_BODY)?.apply {
                 // @TODO Replace it with some regex or parser, its way too hacky now
                 textBody += stripWykopFormatting()
-                selectionStart =
+                initialSelection =
                     if (!startsWith("#")) {
                         textBody.length
                     } else {
+                        // Tresc od tagu (wpis z widoku tagu): tag linijke nizej,
+                        // kursor na poczatku (0,0) - user pisze NAD tagiem.
                         textBody = "\n$textBody"
                         0
                     }
@@ -130,6 +140,10 @@ abstract class BaseInputActivity<T : BaseInputPresenter> :
 
         // show focus
         binding.body.requestFocus()
+        // Kursor ustawiany PO requestFocus: przy braku layoutu (jestesmy w onCreate)
+        // ArrowKeyMovementMethod.onTakeFocus przeskakuje na koniec tekstu, kasujac
+        // wczesniejsze setSelection (kursor mial byc np. na 0,0 nad tagiem).
+        initialSelection?.let { selectionStart = it }
         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.showSoftInput(binding.body, InputMethodManager.SHOW_IMPLICIT)
     }
@@ -148,10 +162,11 @@ abstract class BaseInputActivity<T : BaseInputPresenter> :
         when (item.itemId) {
             R.id.send -> {
                 val typedInputStream = binding.markupToolbar.getWykopImageFile()
+                val embedUrl = binding.markupToolbar.embedUrl
                 if (typedInputStream != null) {
-                    presenter.sendWithPhoto(typedInputStream, binding.markupToolbar.containsAdultContent)
+                    presenter.sendWithPhoto(typedInputStream, binding.markupToolbar.containsAdultContent, embedUrl)
                 } else {
-                    presenter.sendWithPhotoUrl(binding.markupToolbar.photoUrl, binding.markupToolbar.containsAdultContent)
+                    presenter.sendWithPhotoUrl(binding.markupToolbar.photoUrl, binding.markupToolbar.containsAdultContent, embedUrl)
                 }
             }
 

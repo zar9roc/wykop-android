@@ -39,6 +39,7 @@ interface EntriesApi {
         wykopImageFile: WykopImageFile,
         plus18: Boolean,
         survey: String? = null,
+        embedUrl: String? = null,
     ): Single<EntryResponse>
 
     fun addEntry(
@@ -46,6 +47,7 @@ interface EntriesApi {
         embed: String?,
         plus18: Boolean,
         survey: String? = null,
+        embedUrl: String? = null,
     ): Single<EntryResponse>
 
     // Tworzy ankiete (POST /v3/entries/survey), zwraca survey_id do doklejenia do wpisu.
@@ -59,6 +61,7 @@ interface EntriesApi {
         entryId: Long,
         embed: String?,
         plus18: Boolean,
+        embedUrl: String? = null,
     ): Single<EntryCommentResponse>
 
     fun addEntryComment(
@@ -66,6 +69,7 @@ interface EntriesApi {
         entryId: Long,
         wykopImageFile: WykopImageFile,
         plus18: Boolean,
+        embedUrl: String? = null,
     ): Single<EntryCommentResponse>
 
     fun markFavorite(
@@ -80,6 +84,7 @@ interface EntriesApi {
         entryId: Long,
         embed: String?,
         plus18: Boolean,
+        embedUrl: String? = null,
     ): Single<EntryCommentResponse>
 
     fun editEntry(
@@ -87,6 +92,7 @@ interface EntriesApi {
         entryId: Long,
         wykopImageFile: WykopImageFile,
         plus18: Boolean,
+        embedUrl: String? = null,
     ): Single<EntryCommentResponse>
 
     fun editEntryComment(
@@ -95,6 +101,7 @@ interface EntriesApi {
         commentId: Long,
         embed: String?,
         plus18: Boolean,
+        embedUrl: String? = null,
     ): Single<EntryCommentResponse>
 
     fun editEntryComment(
@@ -103,6 +110,7 @@ interface EntriesApi {
         commentId: Long,
         wykopImageFile: WykopImageFile,
         plus18: Boolean,
+        embedUrl: String? = null,
     ): Single<EntryCommentResponse>
 
     fun deleteEntryComment(

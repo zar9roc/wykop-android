@@ -20,10 +20,11 @@ class AddEntryPresenter
         override fun sendWithPhoto(
             photo: WykopImageFile,
             containsAdultContent: Boolean,
+            embedUrl: String?,
         ) {
             view?.showProgressBar = true
             entriesApi
-                .addEntry(view?.textBody!!, photo, containsAdultContent, pendingSurveyId)
+                .addEntry(view?.textBody!!, photo, containsAdultContent, pendingSurveyId, embedUrl)
                 .subscribeOn(schedulers.backgroundThread())
                 .observeOn(schedulers.mainThread())
                 .subscribe(
@@ -38,10 +39,11 @@ class AddEntryPresenter
         override fun sendWithPhotoUrl(
             photo: String?,
             containsAdultContent: Boolean,
+            embedUrl: String?,
         ) {
             view?.showProgressBar = true
             entriesApi
-                .addEntry(view?.textBody!!, photo, containsAdultContent, pendingSurveyId)
+                .addEntry(view?.textBody!!, photo, containsAdultContent, pendingSurveyId, embedUrl)
                 .subscribeOn(schedulers.backgroundThread())
                 .observeOn(schedulers.mainThread())
                 .subscribe(

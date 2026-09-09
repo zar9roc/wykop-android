@@ -224,13 +224,15 @@ class ConversationActivity :
         photo: String?,
         body: String,
         containsAdultContent: Boolean,
-    ) = presenter.sendMessage(body, photo, containsAdultContent)
+        embedUrl: String?,
+    ) = presenter.sendMessage(body, photo, containsAdultContent, embedUrl)
 
     override fun sendPhoto(
         photo: WykopImageFile,
         body: String,
         containsAdultContent: Boolean,
-    ) = presenter.sendMessage(body, photo, containsAdultContent)
+        embedUrl: String?,
+    ) = presenter.sendMessage(body, photo, containsAdultContent, embedUrl)
 
     override fun onActivityResult(
         requestCode: Int,

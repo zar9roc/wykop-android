@@ -31,6 +31,7 @@ interface PMApi {
         user: String,
         embed: String?,
         plus18: Boolean,
+        embedUrl: String? = null,
     ): Single<PMMessage>
 
     fun sendMessage(
@@ -38,5 +39,6 @@ interface PMApi {
         user: String,
         plus18: Boolean,
         embed: WykopImageFile,
+        embedUrl: String? = null,
     ): Single<PMMessage>
 }

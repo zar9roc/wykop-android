@@ -267,16 +267,18 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
                     photo: WykopImageFile,
                     body: String,
                     containsAdultContent: Boolean,
+                    embedUrl: String?,
                 ) = sendComment(body, containsAdultContent) {
-                    linksApi.commentAdd(body, containsAdultContent, photo, linkId)
+                    linksApi.commentAdd(body, containsAdultContent, photo, linkId, embedUrl)
                 }
 
                 override fun sendPhoto(
                     photo: String?,
                     body: String,
                     containsAdultContent: Boolean,
+                    embedUrl: String?,
                 ) = sendComment(body, containsAdultContent) {
-                    linksApi.commentAdd(body, photo, containsAdultContent, linkId)
+                    linksApi.commentAdd(body, photo, containsAdultContent, linkId, embedUrl)
                 }
 
                 override fun openGalleryImageChooser() {

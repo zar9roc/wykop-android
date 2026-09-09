@@ -502,9 +502,10 @@ internal class EntryDetailsFragment :
         photo: String?,
         body: String,
         containsAdultContent: Boolean,
+        embedUrl: String?,
     ) {
         entriesApi
-            .addEntryComment(body, entryId, photo, containsAdultContent)
+            .addEntryComment(body, entryId, photo, containsAdultContent, embedUrl)
             .handleCommentSent()
     }
 
@@ -512,9 +513,10 @@ internal class EntryDetailsFragment :
         photo: WykopImageFile,
         body: String,
         containsAdultContent: Boolean,
+        embedUrl: String?,
     ) {
         entriesApi
-            .addEntryComment(body, entryId, photo, containsAdultContent)
+            .addEntryComment(body, entryId, photo, containsAdultContent, embedUrl)
             .handleCommentSent()
     }
 

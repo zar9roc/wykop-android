@@ -118,9 +118,10 @@ class ConversationPresenter
             body: String,
             photo: String?,
             containsAdultContent: Boolean,
+            embedUrl: String? = null,
         ) {
             pmApi
-                .sendMessage(body, user, photo, containsAdultContent)
+                .sendMessage(body, user, photo, containsAdultContent, embedUrl)
                 .subscribeOn(schedulers.backgroundThread())
                 .observeOn(schedulers.mainThread())
                 .subscribe(
@@ -136,9 +137,10 @@ class ConversationPresenter
             body: String,
             photo: WykopImageFile,
             containsAdultContent: Boolean,
+            embedUrl: String? = null,
         ) {
             pmApi
-                .sendMessage(body, user, containsAdultContent, photo)
+                .sendMessage(body, user, containsAdultContent, photo, embedUrl)
                 .subscribeOn(schedulers.backgroundThread())
                 .observeOn(schedulers.mainThread())
                 .subscribe(

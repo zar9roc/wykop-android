@@ -68,6 +68,7 @@ interface LinksApi {
         inputStream: WykopImageFile,
         linkId: Long,
         linkComment: Long,
+        embedUrl: String? = null,
     ): Single<LinkCommentV3Item>
 
     fun relatedAdd(
@@ -83,6 +84,7 @@ interface LinksApi {
         plus18: Boolean,
         linkId: Long,
         linkComment: Long,
+        embedUrl: String? = null,
     ): Single<LinkCommentV3Item>
 
     fun commentAdd(
@@ -90,6 +92,7 @@ interface LinksApi {
         plus18: Boolean,
         inputStream: WykopImageFile,
         linkId: Long,
+        embedUrl: String? = null,
     ): Single<LinkCommentV3Item>
 
     fun commentAdd(
@@ -97,6 +100,7 @@ interface LinksApi {
         embed: String?,
         plus18: Boolean,
         linkId: Long,
+        embedUrl: String? = null,
     ): Single<LinkCommentV3Item>
 
     fun commentEdit(

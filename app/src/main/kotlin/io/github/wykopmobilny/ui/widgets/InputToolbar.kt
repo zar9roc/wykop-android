@@ -32,12 +32,14 @@ interface InputToolbarListener {
         photo: WykopImageFile,
         body: String,
         containsAdultContent: Boolean,
+        embedUrl: String? = null,
     )
 
     fun sendPhoto(
         photo: String?,
         body: String,
         containsAdultContent: Boolean,
+        embedUrl: String? = null,
     )
 
     fun openGalleryImageChooser()
@@ -110,7 +112,13 @@ class InputToolbar(
         )
         binding.body.threshold = 3
         binding.body.doOnTextChanged { _, _, _, _ ->
-            if ((textBody.length > 2 || binding.markdownToolbar.photo != null || binding.markdownToolbar.photoUrl != null)) {
+            if ((
+                    textBody.length > 2 ||
+                        binding.markdownToolbar.photo != null ||
+                        binding.markdownToolbar.photoUrl != null ||
+                        binding.markdownToolbar.embedUrl != null
+                )
+            ) {
                 if (!binding.send.isEnabled) {
                     enableSendButton()
                 }
@@ -121,6 +129,7 @@ class InputToolbar(
         binding.send.setOnClickListener {
             showProgress(true)
             val wykopImageFile = binding.markdownToolbar.getWykopImageFile()
+            val embedUrl = binding.markdownToolbar.embedUrl
             if (wykopImageFile != null) {
                 inputToolbarListener?.sendPhoto(
                     wykopImageFile,
@@ -133,6 +142,7 @@ class InputToolbar(
                         ZERO_WIDTH_SPACE
                     },
                     binding.markdownToolbar.containsAdultContent,
+                    embedUrl,
                 )
             } else {
                 inputToolbarListener?.sendPhoto(
@@ -146,6 +156,7 @@ class InputToolbar(
                         ZERO_WIDTH_SPACE
                     },
                     binding.markdownToolbar.containsAdultContent,
+                    embedUrl,
                 )
             }
         }
@@ -206,6 +217,10 @@ class InputToolbar(
     }
 
     fun resetState() {
+        // Po udanej wysylce spinner musi zniknac, a przycisk wyslania wrocic -
+        // bez tego przycisk zostawal "w toku" na zawsze (np. komentarz pod linkiem).
+        showProgress(false)
+
         getActivityContext()?.currentFocus?.apply {
             val imm = getActivityContext()?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
             imm?.hideSoftInputFromWindow(windowToken, 0)
@@ -216,6 +231,7 @@ class InputToolbar(
         binding.markdownToolbar.apply {
             photo = null
             photoUrl = null
+            embedUrl = null
             containsAdultContent = false
         }
 

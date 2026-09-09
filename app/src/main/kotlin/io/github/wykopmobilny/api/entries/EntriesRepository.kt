@@ -7,7 +7,7 @@ import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
 import io.github.wykopmobilny.api.exceptions.handleMediaUpload
 import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
-import io.github.wykopmobilny.api.requests.v3.media.UploadPhotoByUrlRequestV3
+import io.github.wykopmobilny.api.resolveAttachments
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateCommentRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateSurveyRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateEntryRequestV3
@@ -110,14 +110,16 @@ class EntriesRepository
             wykopImageFile: WykopImageFile,
             plus18: Boolean,
             survey: String?,
+            embedUrl: String?,
         ) = rxSingle {
-            val photoKey = uploadPhotoAndGetKey(wykopImageFile)
+            val media = mediaApiV3.resolveAttachments(photoKey = uploadPhotoAndGetKey(wykopImageFile), embedUrl = embedUrl)
 
             entriesApiV3.addEntry(
                 WykopApiRequestV3(
                     CreateUpdateEntryRequestV3(
                         content = body,
-                        photo = photoKey,
+                        photo = media.photoKey,
+                        embed = media.embedKey,
                         survey = survey,
                         adult = plus18,
                     ),
@@ -154,13 +156,17 @@ class EntriesRepository
             embed: String?,
             plus18: Boolean,
             survey: String?,
+            embedUrl: String?,
         ) = rxSingle {
-            val photoKey = uploadPhotoUrlAndGetKey(embed)
+            // "embed" (historyczna nazwa) = URL z inputu obrazka - moze byc zdjeciem
+            // albo linkiem medialnym; embedUrl = dedykowany slot na link (YouTube itp.).
+            val media = mediaApiV3.resolveAttachments(photoUrl = embed, embedUrl = embedUrl)
             entriesApiV3.addEntry(
                 WykopApiRequestV3(
                     CreateUpdateEntryRequestV3(
                         content = body,
-                        photo = photoKey,
+                        photo = media.photoKey,
+                        embed = media.embedKey,
                         survey = survey,
                         adult = plus18,
                     ),
@@ -211,15 +217,17 @@ class EntriesRepository
             entryId: Long,
             wykopImageFile: WykopImageFile,
             plus18: Boolean,
+            embedUrl: String?,
         ) = rxSingle {
-            val photoKey = uploadPhotoAndGetKey(wykopImageFile)
+            val media = mediaApiV3.resolveAttachments(photoKey = uploadPhotoAndGetKey(wykopImageFile), embedUrl = embedUrl)
 
             entriesApiV3.addEntryComment(
                 entryId,
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body,
-                        photo = photoKey,
+                        photo = media.photoKey,
+                        embed = media.embedKey,
                         adult = plus18,
                     ),
                 ),
@@ -252,14 +260,16 @@ class EntriesRepository
             entryId: Long,
             embed: String?,
             plus18: Boolean,
+            embedUrl: String?,
         ) = rxSingle {
-            val photoKey = uploadPhotoUrlAndGetKey(embed)
+            val media = mediaApiV3.resolveAttachments(photoUrl = embed, embedUrl = embedUrl)
             entriesApiV3.addEntryComment(
                 entryId,
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body,
-                        photo = photoKey,
+                        photo = media.photoKey,
+                        embed = media.embedKey,
                         adult = plus18,
                     ),
                 ),
@@ -292,14 +302,16 @@ class EntriesRepository
             entryId: Long,
             embed: String?,
             plus18: Boolean,
+            embedUrl: String?,
         ) = rxSingle {
-            val photoKey = uploadPhotoUrlAndGetKey(embed)
+            val media = mediaApiV3.resolveAttachments(photoUrl = embed, embedUrl = embedUrl)
             entriesApiV3.editEntry(
                 entryId,
                 WykopApiRequestV3(
                     CreateUpdateEntryRequestV3(
                         content = body,
-                        photo = photoKey,
+                        photo = media.photoKey,
+                        embed = media.embedKey,
                         adult = plus18,
                     ),
                 ),
@@ -332,15 +344,17 @@ class EntriesRepository
             entryId: Long,
             wykopImageFile: WykopImageFile,
             plus18: Boolean,
+            embedUrl: String?,
         ) = rxSingle {
-            val photoKey = uploadPhotoAndGetKey(wykopImageFile)
+            val media = mediaApiV3.resolveAttachments(photoKey = uploadPhotoAndGetKey(wykopImageFile), embedUrl = embedUrl)
 
             entriesApiV3.editEntry(
                 entryId,
                 WykopApiRequestV3(
                     CreateUpdateEntryRequestV3(
                         content = body,
-                        photo = photoKey,
+                        photo = media.photoKey,
+                        embed = media.embedKey,
                         adult = plus18,
                     ),
                 ),
@@ -423,15 +437,17 @@ class EntriesRepository
             commentId: Long,
             embed: String?,
             plus18: Boolean,
+            embedUrl: String?,
         ) = rxSingle {
-            val photoKey = uploadPhotoUrlAndGetKey(embed)
+            val media = mediaApiV3.resolveAttachments(photoUrl = embed, embedUrl = embedUrl)
             entriesApiV3.editEntryComment(
                 entryId,
                 commentId,
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body,
-                        photo = photoKey,
+                        photo = media.photoKey,
+                        embed = media.embedKey,
                         adult = plus18,
                     ),
                 ),
@@ -465,8 +481,9 @@ class EntriesRepository
             commentId: Long,
             wykopImageFile: WykopImageFile,
             plus18: Boolean,
+            embedUrl: String?,
         ) = rxSingle {
-            val photoKey = uploadPhotoAndGetKey(wykopImageFile)
+            val media = mediaApiV3.resolveAttachments(photoKey = uploadPhotoAndGetKey(wykopImageFile), embedUrl = embedUrl)
 
             entriesApiV3.editEntryComment(
                 entryId,
@@ -474,7 +491,8 @@ class EntriesRepository
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body,
-                        photo = photoKey,
+                        photo = media.photoKey,
+                        embed = media.embedKey,
                         adult = plus18,
                     ),
                 ),
@@ -680,14 +698,6 @@ class EntriesRepository
             return uploadedPhoto.key
         }
 
-        // Obraz z URL: v3 nie przyjmuje adresu jako "embed" (to pole na embedy wideo) -
-        // trzeba wgrac go przez /media/photos i wyslac zwrocony klucz jako "photo".
-        private suspend fun uploadPhotoUrlAndGetKey(url: String?): String? {
-            val photoUrl = url?.takeIf { it.isNotBlank() } ?: return null
-            return handleMediaUpload {
-                mediaApiV3.uploadPhotoByUrl(WykopApiRequestV3(UploadPhotoByUrlRequestV3(url = photoUrl)))
-            }.key
-        }
     }
 
 internal fun String.allowImageOnly() = ifEmpty { " " }

@@ -9,6 +9,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.api.WykopImageFile
+import io.github.wykopmobilny.api.looksLikeDirectImageUrl
 import io.github.wykopmobilny.databinding.ImagechooserBottomsheetBinding
 import io.github.wykopmobilny.databinding.MarkdownToolbarBinding
 import io.github.wykopmobilny.ui.dialogs.FormatDialogCallback
@@ -29,7 +30,20 @@ class MarkdownToolbar(
                 remoteImageInserted()
                 floatingImageView?.loadPhotoUrl(value)
             } else {
-                floatingImageView?.removeImage()
+                floatingImageView?.clearPhoto()
+            }
+        }
+
+    // Link do serwisu medialnego (YouTube itp.) - osobny slot obok zdjecia,
+    // wysylany jako pole "embed" (klucz z POST /media/embed).
+    var embedUrl: String?
+        get() = floatingImageView?.embedUrl
+        set(value) {
+            if (value != null) {
+                remoteImageInserted()
+                floatingImageView?.loadEmbedUrl(value)
+            } else {
+                floatingImageView?.clearEmbed()
             }
         }
 
@@ -88,6 +102,7 @@ class MarkdownToolbar(
         (
             photo != null ||
                 !floatingImageView?.photoUrl.isNullOrEmpty() ||
+                !floatingImageView?.embedUrl.isNullOrEmpty() ||
                 (markdownListener != null && markdownListener?.textBody!!.isNotEmpty())
         )
 
@@ -151,9 +166,15 @@ class MarkdownToolbar(
     }
 
     private fun insertImageFromUrl(url: String) {
-        if (url.isNotBlank()) {
-            remoteImageInserted()
-            floatingImageView?.loadPhotoUrl(url)
+        val trimmed = url.trim()
+        if (trimmed.isBlank()) return
+        remoteImageInserted()
+        // Bezposredni obrazek -> slot zdjecia (POST /media/photos); kazdy inny adres
+        // (YouTube, streamable...) -> slot embedu (POST /media/embed przy wysylce).
+        if (trimmed.looksLikeDirectImageUrl()) {
+            floatingImageView?.loadPhotoUrl(trimmed)
+        } else {
+            floatingImageView?.loadEmbedUrl(trimmed)
         }
     }
 }

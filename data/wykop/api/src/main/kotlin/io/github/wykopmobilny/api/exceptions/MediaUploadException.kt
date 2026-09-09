@@ -50,10 +50,10 @@ sealed interface MediaUploadException {
  * - Other errors → [MediaUploadException.Unknown]
  *
  * @param block suspend function that performs the upload
- * @return [PhotoResponseV3] on success
+ * @return unwrapped `data` on success (e.g. [PhotoResponseV3] or embed info)
  * @throws MediaUploadException on upload failure
  */
-suspend fun handleMediaUpload(block: suspend () -> WykopApiResponseV3<PhotoResponseV3>): PhotoResponseV3 {
+suspend fun <T : Any> handleMediaUpload(block: suspend () -> WykopApiResponseV3<T>): T {
     try {
         val response = block()
         return response.data ?: throw MediaUploadException.Unknown(

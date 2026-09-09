@@ -76,7 +76,7 @@
     <string name="insert_emoticon">Wstaw emotikonę</string>
 
     <string name="insert_photo_galery">Dodaj zdjęcie z galerii</string>
-    <string name="insert_photo_url">Dodaj zdjęcie z adresu URL</string>
+    <string name="insert_photo_url">Dodaj zdjęcie lub link (np. YouTube) z adresu URL</string>
     <string name="mark_nsfw">Oznacz jako 18+</string>
 
     <string name="send">Wyślij</string>

@@ -1,8 +1,10 @@
 package io.github.wykopmobilny.api.endpoints.v3
 
 import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
+import io.github.wykopmobilny.api.requests.v3.media.CreateEmbedRequestV3
 import io.github.wykopmobilny.api.requests.v3.media.UploadPhotoByUrlRequestV3
 import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
+import io.github.wykopmobilny.api.responses.v3.media.EmbedInfoResponseV3
 import io.github.wykopmobilny.api.responses.v3.media.PhotoResponseV3
 import okhttp3.MultipartBody
 import retrofit2.http.Body
@@ -27,4 +29,11 @@ interface MediaV3RetrofitApi {
         @Body request: WykopApiRequestV3<UploadPhotoByUrlRequestV3>,
         @Query("type") type: String = "comments",
     ): WykopApiResponseV3<PhotoResponseV3>
+
+    // Link do wspieranego serwisu (YouTube itp.) - serwer zwraca klucz embedu,
+    // wysylany potem w polu "embed" wpisu/komentarza/wiadomosci.
+    @POST("v3/media/embed")
+    suspend fun createEmbed(
+        @Body request: WykopApiRequestV3<CreateEmbedRequestV3>,
+    ): WykopApiResponseV3<EmbedInfoResponseV3>
 }

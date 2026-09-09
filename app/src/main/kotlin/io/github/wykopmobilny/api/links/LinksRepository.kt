@@ -10,8 +10,8 @@ import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
 import io.github.wykopmobilny.api.exceptions.handleMediaUpload
 import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
-import io.github.wykopmobilny.api.requests.v3.media.UploadPhotoByUrlRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateCommentRequestV3
+import io.github.wykopmobilny.api.resolveAttachments
 import io.github.wykopmobilny.api.requests.v3.links.AddRelatedRequestV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
 import retrofit2.HttpException
@@ -209,14 +209,18 @@ class LinksRepository
             embed: String?,
             plus18: Boolean,
             linkId: Long,
+            embedUrl: String?,
         ) = rxSingle {
-            val photoKey = uploadPhotoUrlAndGetKey(embed)
+            // "embed" (historyczna nazwa) = URL z inputu obrazka - zdjecie albo link
+            // medialny; embedUrl = dedykowany slot na link (YouTube itp.).
+            val media = mediaApiV3.resolveAttachments(photoUrl = embed, embedUrl = embedUrl)
             linksApiV3.addLinkComment(
                 linkId,
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body,
-                        photo = photoKey,
+                        photo = media.photoKey,
+                        embed = media.embedKey,
                         adult = plus18,
                     ),
                 ),
@@ -255,15 +259,17 @@ class LinksRepository
             plus18: Boolean,
             inputStream: WykopImageFile,
             linkId: Long,
+            embedUrl: String?,
         ) = rxSingle {
-            val photoKey = uploadPhotoAndGetKey(inputStream)
+            val media = mediaApiV3.resolveAttachments(photoKey = uploadPhotoAndGetKey(inputStream), embedUrl = embedUrl)
 
             linksApiV3.addLinkComment(
                 linkId,
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body.allowImageOnly(),
-                        photo = photoKey,
+                        photo = media.photoKey,
+                        embed = media.embedKey,
                         adult = plus18,
                     ),
                 ),
@@ -284,14 +290,16 @@ class LinksRepository
             plus18: Boolean,
             linkId: Long,
             linkComment: Long,
+            embedUrl: String?,
         ) = rxSingle {
-            val photoKey = uploadPhotoUrlAndGetKey(embed)
+            val media = mediaApiV3.resolveAttachments(photoUrl = embed, embedUrl = embedUrl)
             linksApiV3.addLinkComment(
                 linkId,
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body,
-                        photo = photoKey,
+                        photo = media.photoKey,
+                        embed = media.embedKey,
                         adult = plus18,
                     ),
                 ),
@@ -312,15 +320,17 @@ class LinksRepository
             inputStream: WykopImageFile,
             linkId: Long,
             linkComment: Long,
+            embedUrl: String?,
         ) = rxSingle {
-            val photoKey = uploadPhotoAndGetKey(inputStream)
+            val media = mediaApiV3.resolveAttachments(photoKey = uploadPhotoAndGetKey(inputStream), embedUrl = embedUrl)
 
             linksApiV3.addLinkComment(
                 linkId,
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body.allowImageOnly(),
-                        photo = photoKey,
+                        photo = media.photoKey,
+                        embed = media.embedKey,
                         adult = plus18,
                     ),
                 ),
@@ -435,11 +445,4 @@ class LinksRepository
             return uploadedPhoto.key
         }
 
-        // Obraz z URL: wgrywany przez /media/photos, klucz idzie w polu "photo".
-        private suspend fun uploadPhotoUrlAndGetKey(url: String?): String? {
-            val photoUrl = url?.takeIf { it.isNotBlank() } ?: return null
-            return handleMediaUpload {
-                mediaApiV3.uploadPhotoByUrl(WykopApiRequestV3(UploadPhotoByUrlRequestV3(url = photoUrl)))
-            }.key
-        }
     }

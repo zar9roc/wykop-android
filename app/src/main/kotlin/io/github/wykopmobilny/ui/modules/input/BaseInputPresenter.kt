@@ -7,11 +7,13 @@ interface BaseInputPresenter {
     fun sendWithPhoto(
         photo: WykopImageFile,
         containsAdultContent: Boolean,
+        embedUrl: String? = null,
     )
 
     fun sendWithPhotoUrl(
         photo: String?,
         containsAdultContent: Boolean,
+        embedUrl: String? = null,
     )
 }
 

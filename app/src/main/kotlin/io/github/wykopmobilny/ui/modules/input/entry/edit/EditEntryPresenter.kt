@@ -13,6 +13,7 @@ class EditEntryPresenter(
     override fun sendWithPhoto(
         photo: WykopImageFile,
         containsAdultContent: Boolean,
+        embedUrl: String?,
     ) {
         view?.showProgressBar = true
         val body = view?.textBody ?: return
@@ -24,6 +25,7 @@ class EditEntryPresenter(
                 entryId = entryId,
                 wykopImageFile = photo,
                 plus18 = containsAdultContent,
+                embedUrl = embedUrl,
             ).subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
@@ -38,6 +40,7 @@ class EditEntryPresenter(
     override fun sendWithPhotoUrl(
         photo: String?,
         containsAdultContent: Boolean,
+        embedUrl: String?,
     ) {
         view?.showProgressBar = true
         val body = view?.textBody ?: return
@@ -49,6 +52,7 @@ class EditEntryPresenter(
                 entryId = entryId,
                 embed = photo,
                 plus18 = containsAdultContent,
+                embedUrl = embedUrl,
             ).subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(

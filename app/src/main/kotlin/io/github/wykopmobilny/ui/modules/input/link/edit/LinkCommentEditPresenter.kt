@@ -32,10 +32,12 @@ class LinkCommentEditPresenter(
     override fun sendWithPhoto(
         photo: WykopImageFile,
         containsAdultContent: Boolean,
+        embedUrl: String?,
     ) = editLinkComment()
 
     override fun sendWithPhotoUrl(
         photo: String?,
         containsAdultContent: Boolean,
+        embedUrl: String?,
     ) = editLinkComment()
 }
