@@ -18,7 +18,7 @@ class MicroblogFragment : BaseFragment(R.layout.profile_subtab_layout) {
 
     override fun setUserVisibleHint(isVisibleToUser: Boolean) {
         if (isVisibleToUser && binding.pager.adapter != pagerAdapter) {
-            binding.pager.offscreenPageLimit = 1
+            binding.pager.offscreenPageLimit = 2
             binding.pager.adapter = pagerAdapter
             binding.tabLayout.setupWithViewPager(binding.pager)
         }

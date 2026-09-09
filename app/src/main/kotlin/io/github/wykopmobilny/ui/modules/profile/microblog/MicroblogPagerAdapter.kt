@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentManager
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.ui.modules.profile.microblog.comments.MicroblogCommentsFragment
 import io.github.wykopmobilny.ui.modules.profile.microblog.entries.MicroblogEntriesFragment
+import io.github.wykopmobilny.ui.modules.profile.microblog.voted.MicroblogVotedEntriesFragment
 
 class MicroblogPagerAdapter(
     private val resources: Resources,
@@ -16,13 +17,13 @@ class MicroblogPagerAdapter(
     val registeredFragments = SparseArray<Fragment>()
 
     override fun getItem(position: Int): Fragment =
-        if (position == 0) {
-            MicroblogEntriesFragment.newInstance()
-        } else {
-            MicroblogCommentsFragment.newInstance()
+        when (position) {
+            0 -> MicroblogEntriesFragment.newInstance()
+            1 -> MicroblogCommentsFragment.newInstance()
+            else -> MicroblogVotedEntriesFragment.newInstance()
         }
 
-    override fun getCount() = 2
+    override fun getCount() = 3
 
     override fun instantiateItem(
         container: ViewGroup,
@@ -43,9 +44,9 @@ class MicroblogPagerAdapter(
     }
 
     override fun getPageTitle(position: Int) =
-        if (position == 0) {
-            R.string.entries
-        } else {
-            R.string.commented
+        when (position) {
+            0 -> R.string.entries
+            1 -> R.string.commented
+            else -> R.string.entries_voted
         }.let(resources::getString)
 }

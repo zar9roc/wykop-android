@@ -32,6 +32,7 @@
     <string name="buried">Zakopywane</string>
     <string name="digged">Wykopywane</string>
     <string name="entries">Wpisy</string>
+    <string name="entries_voted">Plusowane</string>
 
     <string name="license">Publikacja aplikacji na licencji MIT</string>
     <string name="privacy_policy">Privacy policy/Licencja prywatności</string>

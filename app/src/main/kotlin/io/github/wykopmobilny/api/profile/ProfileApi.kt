@@ -47,6 +47,12 @@ interface ProfileApi {
         page: Int,
     ): Single<FilteredData<Entry>>
 
+    // Wpisy zaplusowane przez uzytkownika (GET /profile/users/{username}/entries/voted).
+    fun getEntriesVoted(
+        username: String,
+        page: Int,
+    ): Single<FilteredData<Entry>>
+
     fun getEntriesComments(
         username: String,
         page: Int,

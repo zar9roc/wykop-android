@@ -10,11 +10,18 @@ import io.github.wykopmobilny.ui.fragments.entries.EntryActionListener
 import io.github.wykopmobilny.utils.intoComposite
 import io.reactivex.Single
 
+// Zrodlo danych zakladki: wpisy dodane albo zaplusowane przez uzytkownika.
+enum class MicroblogEntriesSource {
+    ADDED,
+    VOTED,
+}
+
 class MicroblogEntriesPresenter(
     val schedulers: Schedulers,
     val profileApi: ProfileApi,
     val entriesApi: EntriesApi,
     val entriesInteractor: EntriesInteractor,
+    private val source: MicroblogEntriesSource = MicroblogEntriesSource.ADDED,
 ) : BasePresenter<MicroblogEntriesView>(),
     EntryActionListener {
     var page = 1
@@ -22,8 +29,12 @@ class MicroblogEntriesPresenter(
 
     fun loadData(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
-        profileApi
-            .getEntries(username, page)
+        val entries =
+            when (source) {
+                MicroblogEntriesSource.ADDED -> profileApi.getEntries(username, page)
+                MicroblogEntriesSource.VOTED -> profileApi.getEntriesVoted(username, page)
+            }
+        entries
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(

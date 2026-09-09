@@ -82,6 +82,14 @@ class ProfileRepository
             .compose(ErrorHandlerTransformerV3<List<EntryResponseV3>>(errorBodyParser))
             .map { it.filterEntriesV3(owmContentFilter = owmContentFilter) }
 
+        override fun getEntriesVoted(
+            username: String,
+            page: Int,
+        ) = rxSingle { profileApiV3.getUserEntriesVoted(username, page) }
+            .retryWhen(userTokenRefresher)
+            .compose(ErrorHandlerTransformerV3<List<EntryResponseV3>>(errorBodyParser))
+            .map { it.filterEntriesV3(owmContentFilter = owmContentFilter) }
+
         override fun getEntriesComments(
             username: String,
             page: Int,

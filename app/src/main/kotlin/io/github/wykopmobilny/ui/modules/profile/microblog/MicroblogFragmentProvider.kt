@@ -6,6 +6,8 @@ import io.github.wykopmobilny.ui.modules.profile.microblog.comments.MicroblogCom
 import io.github.wykopmobilny.ui.modules.profile.microblog.comments.MicroblogCommentsModule
 import io.github.wykopmobilny.ui.modules.profile.microblog.entries.MicroblogEntriesFragment
 import io.github.wykopmobilny.ui.modules.profile.microblog.entries.MicroblogEntriesModule
+import io.github.wykopmobilny.ui.modules.profile.microblog.voted.MicroblogVotedEntriesFragment
+import io.github.wykopmobilny.ui.modules.profile.microblog.voted.MicroblogVotedEntriesModule
 
 @Module
 abstract class MicroblogFragmentProvider {
@@ -14,4 +16,7 @@ abstract class MicroblogFragmentProvider {
 
     @ContributesAndroidInjector(modules = [MicroblogCommentsModule::class])
     abstract fun provideCommentsFragment(): MicroblogCommentsFragment
+
+    @ContributesAndroidInjector(modules = [MicroblogVotedEntriesModule::class])
+    abstract fun provideVotedEntriesFragment(): MicroblogVotedEntriesFragment
 }
