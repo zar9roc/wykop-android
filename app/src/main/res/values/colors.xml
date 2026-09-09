@@ -43,6 +43,8 @@
     <color name="itemBackground">#ffffff</color>
     <color name="itemBackground.Dark">#2c2c2c</color>
     <color name="itemBackground.Amoled">#000000</color>
+    <!-- Tlo dialogow w motywie amoled - nie czysta czern, zeby dialog odcinal sie od tla. -->
+    <color name="dialogBackground.Amoled">#121212</color>
 
     <color name="itemBackgroundSelected">#f5f5f5</color>
     <color name="itemBackgroundSelected.Dark">#252525</color>

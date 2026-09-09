@@ -100,7 +100,37 @@
         <item name="textSizeHuge">@dimen/text_normal_size_huge</item>
         <item name="alertDialogTheme">@android:style/Theme.DeviceDefault.Light.Dialog.NoActionBar
         </item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Wykop.MaterialAlertDialog</item>
         <item name="bottomSheetDialogTheme">@style/Theme.Wykop.BottomSheetDialog.Light</item>
+    </style>
+
+    <!-- Dialogi MaterialAlertDialogBuilder (m.in. generyczny blad nowego stacku).
+         Bez tych overlayow kolory braly sie z motywu aktywnosci: w ciemnym
+         colorPrimary=#292929 dawal niewidoczne przyciski na ciemnym tle,
+         a jasny motyw (AppCompat) w ogole nie definiuje colorSurface/colorOnSurface. -->
+    <style name="ThemeOverlay.Wykop.MaterialAlertDialog"
+        parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorSurface">@color/itemBackground</item>
+        <item name="colorOnSurface">@color/textColor</item>
+        <item name="colorPrimary">@color/colorAccent</item>
+        <item name="android:textColorPrimary">@color/textColor</item>
+        <item name="android:textColorSecondary">@color/textColorLight</item>
+    </style>
+
+    <style name="ThemeOverlay.Wykop.MaterialAlertDialog.Dark">
+        <item name="colorSurface">@color/itemBackground.Dark</item>
+        <item name="colorOnSurface">@color/textColor.Dark</item>
+        <item name="colorPrimary">@color/colorAccent.Dark</item>
+        <item name="android:textColorPrimary">@color/textColor.Dark</item>
+        <item name="android:textColorSecondary">@color/textColorLight.Dark</item>
+    </style>
+
+    <style name="ThemeOverlay.Wykop.MaterialAlertDialog.Amoled"
+        parent="ThemeOverlay.Wykop.MaterialAlertDialog.Dark">
+        <!-- Nie czysta czern - dialog musi odcinac sie od amoledowego tla. -->
+        <item name="colorSurface">@color/dialogBackground.Amoled</item>
+        <item name="android:textColorPrimary">@color/textColor.Amoled</item>
+        <item name="android:textColorSecondary">@color/textColorLight.Amoled</item>
     </style>
 
 
@@ -213,6 +243,7 @@
         <item name="textSizeLarge">@dimen/text_normal_size_large</item>
         <item name="textSizeHuge">@dimen/text_normal_size_huge</item>
         <item name="alertDialogTheme">@android:style/Theme.DeviceDefault.Dialog.NoActionBar</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Wykop.MaterialAlertDialog.Dark</item>
     </style>
 
     <style name="WykopAppTheme.Amoled"
@@ -249,6 +280,7 @@
         <item name="markdownInsertPhoto">@drawable/ic_markdowntoolbar_photo</item>
         <item name="markdownInsertSpoiler">@drawable/ic_markdowntoolbar_spoiler</item>
         <item name="alertDialogTheme">@android:style/Theme.DeviceDefault.Dialog.NoActionBar</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Wykop.MaterialAlertDialog.Amoled</item>
     </style>
 
     <style name="NavigationDrawerStyle"
