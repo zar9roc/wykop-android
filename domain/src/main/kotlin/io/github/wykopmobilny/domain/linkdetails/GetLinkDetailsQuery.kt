@@ -701,12 +701,18 @@ internal class GetLinkDetailsQuery
                             color = if (userAction == UserVote.Up) ColorConst.CounterUpvoted else null,
                             label = plusCount.toString(),
                             icon = Drawable.Plus,
+                            // Niezalogowany nie moze glosowac - null wylacza reakcje na dotyk
+                            // (setOnClick(null) -> isClickable=false), liczniki dalej widoczne.
                             clickAction =
-                                safeCallback {
-                                    if (userAction == UserVote.Up) {
-                                        linksRepository.removeCommentVote(linkId = link.id, commentId = id)
-                                    } else {
-                                        linksRepository.commentVoteUp(linkId = link.id, commentId = id)
+                                if (loggedUser == null) {
+                                    null
+                                } else {
+                                    safeCallback {
+                                        if (userAction == UserVote.Up) {
+                                            linksRepository.removeCommentVote(linkId = link.id, commentId = id)
+                                        } else {
+                                            linksRepository.commentVoteUp(linkId = link.id, commentId = id)
+                                        }
                                     }
                                 },
                         ),
@@ -716,11 +722,15 @@ internal class GetLinkDetailsQuery
                             label = minusCount.toString(),
                             icon = Drawable.Minus,
                             clickAction =
-                                safeCallback {
-                                    if (userAction == UserVote.Down) {
-                                        linksRepository.removeCommentVote(linkId = link.id, commentId = id)
-                                    } else {
-                                        linksRepository.commentVoteDown(linkId = link.id, commentId = id)
+                                if (loggedUser == null) {
+                                    null
+                                } else {
+                                    safeCallback {
+                                        if (userAction == UserVote.Down) {
+                                            linksRepository.removeCommentVote(linkId = link.id, commentId = id)
+                                        } else {
+                                            linksRepository.commentVoteDown(linkId = link.id, commentId = id)
+                                        }
                                     }
                                 },
                         ),

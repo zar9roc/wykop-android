@@ -7,9 +7,12 @@ import io.github.wykopmobilny.api.responses.v3.entries.EntryCommentResponseV3
 import io.github.wykopmobilny.domain.api.ApiClient
 import io.github.wykopmobilny.domain.entrydetails.di.EntryDetailsKey
 import io.github.wykopmobilny.domain.entrydetails.di.EntryDetailsScope
+import io.github.wykopmobilny.domain.errorhandling.KnownError
 import io.github.wykopmobilny.domain.utils.safeKeyed
 import io.github.wykopmobilny.kotlin.AppScopes
 import kotlinx.coroutines.CancellationException
+import retrofit2.HttpException
+import java.net.HttpURLConnection.HTTP_NOT_FOUND
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
@@ -50,7 +53,18 @@ class EntryCommentsPager
             isLoadingNewer.set(false)
             isLoadingOlder.set(false)
 
-            val entry = apiClient.mutation { api.getEntry(key.entryId) }
+            val entry =
+                try {
+                    apiClient.mutation { api.getEntry(key.entryId) }
+                } catch (failure: HttpException) {
+                    // Usuniety/nieistniejacy wpis = 404 - czytelny komunikat
+                    // zamiast surowego "HTTP 404".
+                    if (failure.code() == HTTP_NOT_FOUND) {
+                        throw KnownError.ContentNotFound("Ten wpis został usunięty lub nie istnieje.")
+                    } else {
+                        throw failure
+                    }
+                }
             if (generation.get() != currentGeneration) return
             storage.update { it.copy(entry = entry) }
 

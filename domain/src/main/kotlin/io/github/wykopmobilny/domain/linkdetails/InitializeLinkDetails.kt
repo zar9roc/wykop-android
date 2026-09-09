@@ -3,6 +3,7 @@ package io.github.wykopmobilny.domain.linkdetails
 import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.impl.extensions.fresh
 import io.github.wykopmobilny.domain.di.ScopeInitializer
+import io.github.wykopmobilny.domain.errorhandling.KnownError
 import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsScope
 import io.github.wykopmobilny.domain.profile.LinkInfo
 import io.github.wykopmobilny.domain.utils.safeKeyed
@@ -11,6 +12,8 @@ import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsKey
 import io.github.wykopmobilny.kotlin.AppScopes
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.net.HttpURLConnection.HTTP_NOT_FOUND
 import javax.inject.Inject
 
 internal class InitializeLinkDetails
@@ -32,9 +35,19 @@ internal class InitializeLinkDetails
             val link =
                 withResource(
                     refresh = {
-                        coroutineScope {
-                            launch { commentsStore.fresh(key = key.linkId) }
-                            linkStore.fresh(key = key.linkId)
+                        try {
+                            coroutineScope {
+                                launch { commentsStore.fresh(key = key.linkId) }
+                                linkStore.fresh(key = key.linkId)
+                            }
+                        } catch (failure: HttpException) {
+                            // Usuniete/nieistniejace znalezisko = 404 - czytelny komunikat
+                            // zamiast surowego "HTTP 404".
+                            if (failure.code() == HTTP_NOT_FOUND) {
+                                throw KnownError.ContentNotFound("To znalezisko zostało usunięte lub nie istnieje.")
+                            } else {
+                                throw failure
+                            }
                         }
                     },
                     update = { resource -> viewStateStorage.update { it.copy(generalResource = resource) } },
