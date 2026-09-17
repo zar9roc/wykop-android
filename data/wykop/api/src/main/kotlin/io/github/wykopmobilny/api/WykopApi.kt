@@ -67,6 +67,8 @@ interface WykopApi {
 
     fun profileV3RetrofitApi(): ProfileV3RetrofitApi
 
+    fun reportsV3RetrofitApi(): io.github.wykopmobilny.api.endpoints.v3.ReportsV3RetrofitApi
+
     fun tagsV3RetrofitApi(): TagsV3RetrofitApi
 
     fun blacklistV3RetrofitApi(): BlacklistV3RetrofitApi

@@ -14,6 +14,7 @@ import io.github.wykopmobilny.models.dataclass.Entry
 import io.github.wykopmobilny.ui.dialogs.confirmationDialog
 import io.github.wykopmobilny.ui.fragments.entries.EntryActionListener
 import io.github.wykopmobilny.ui.modules.NewNavigator
+import io.github.wykopmobilny.ui.modules.report.ReportType
 import io.github.wykopmobilny.ui.widgets.WykopEmbedView
 import io.github.wykopmobilny.ui.widgets.survey.SurveyWidget
 import io.github.wykopmobilny.utils.copyText
@@ -323,9 +324,9 @@ class EntryViewHolder(
                 dialog.dismiss()
             }
 
-            entryMenuReport.isVisible = isAuthorized && entry.violationUrl != null
+            entryMenuReport.isVisible = isAuthorized
             entryMenuReport.setOnClickListener {
-                navigator.openReportScreen(entry.violationUrl.let(::checkNotNull))
+                navigator.openReportScreen(ReportType.Entry, entry.id)
                 dialog.dismiss()
             }
 

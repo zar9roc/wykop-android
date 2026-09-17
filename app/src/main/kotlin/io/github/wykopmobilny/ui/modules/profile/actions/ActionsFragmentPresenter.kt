@@ -22,19 +22,27 @@ class ActionsFragmentPresenter(
 ) : BasePresenter<ActionsView>(),
     LinkActionListener,
     EntryActionListener {
+    var page = 1
     lateinit var username: String
 
-    fun getActions() {
+    fun getActions(shouldRefresh: Boolean) {
+        if (shouldRefresh) page = 1
         profileApi
-            .getActions(username)
+            .getActions(username, page)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
-                {
-                    view?.addItems(it, true)
-                    view?.disableLoading()
-                    if (it.isEmpty()) {
-                        view?.showSearchEmptyView = true
+                { items ->
+                    if (items.isNotEmpty()) {
+                        page++
+                        view?.addItems(items, shouldRefresh)
+                    } else {
+                        // Koniec listy - zdejmujemy stopke ladowania, zeby scroll
+                        // nie prosil w kolko o kolejna strone.
+                        view?.disableLoading()
+                        if (shouldRefresh) {
+                            view?.showSearchEmptyView = true
+                        }
                     }
                 },
                 { view?.showErrorDialog(it) },

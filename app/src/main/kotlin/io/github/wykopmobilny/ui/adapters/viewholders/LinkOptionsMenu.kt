@@ -14,8 +14,11 @@ import io.github.wykopmobilny.models.dataclass.Author
 import io.github.wykopmobilny.models.dataclass.Link
 import io.github.wykopmobilny.ui.fragments.link.LinkInteractor
 import io.github.wykopmobilny.ui.modules.NewNavigator
+import io.github.wykopmobilny.ui.modules.report.ReportType
 import io.github.wykopmobilny.utils.getActivityContext
 import io.github.wykopmobilny.utils.loadImage
+import io.github.wykopmobilny.utils.usermanager.UserManagerApi
+import io.github.wykopmobilny.utils.usermanager.isUserAuthorized
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -33,6 +36,7 @@ internal fun openLinkOptionsMenu(
     link: Link,
     navigator: NewNavigator,
     linksApi: LinksApi,
+    userManagerApi: UserManagerApi,
     onBury: ((Link, Int) -> Unit)? = null,
 ) {
     val activityContext = anchor.getActivityContext()!!
@@ -78,9 +82,10 @@ internal fun openLinkOptionsMenu(
             dialog.dismiss()
         }
 
-        linkReport.isVisible = link.violationUrl != null
+        // Zgloszenie wymaga sesji uzytkownika (endpoint: ROLE_USER).
+        linkReport.isVisible = userManagerApi.isUserAuthorized()
         linkReport.setOnClickListener {
-            navigator.openReportScreen(link.violationUrl.let(::checkNotNull))
+            navigator.openReportScreen(ReportType.Link, link.id)
             dialog.dismiss()
         }
 

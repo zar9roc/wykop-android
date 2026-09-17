@@ -26,12 +26,8 @@ object EntryCommentMapperV3 {
                 embed = value.media?.let { MediaMapperV3.map(it, adult = value.adult ?: false) },
                 voteCount = value.votes.up - value.votes.down,
                 app = value.device,
-                // v3 nie zwraca violation_url - syntetyzujemy adres strony treści
-                // (kotwica = id komentarza, jak w URL-ach powiadomień).
-                violationUrl =
-                    resolvedEntryId
-                        .takeIf { it != 0L }
-                        ?.let { "https://wykop.pl/wpis/$it#${value.id}" },
+                // Zgłoszenia idą przez POST /v3/reports/reports (ReportWebViewActivity).
+                violationUrl = null,
                 isNsfw = value.content?.lowercase()?.contains("#nsfw") ?: false,
                 isBlocked = !value.deleted.isNullOrEmpty(),
                 deletedReason = value.deleted,

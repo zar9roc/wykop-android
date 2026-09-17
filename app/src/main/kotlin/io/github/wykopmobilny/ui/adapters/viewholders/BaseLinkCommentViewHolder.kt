@@ -19,6 +19,7 @@ import io.github.wykopmobilny.ui.dialogs.confirmationDialog
 import io.github.wykopmobilny.ui.fragments.linkcomments.LinkCommentActionListener
 import io.github.wykopmobilny.ui.fragments.linkcomments.LinkCommentViewListener
 import io.github.wykopmobilny.ui.modules.NewNavigator
+import io.github.wykopmobilny.ui.modules.report.ReportType
 import io.github.wykopmobilny.ui.widgets.WykopEmbedView
 import io.github.wykopmobilny.ui.widgets.buttons.MinusVoteButton
 import io.github.wykopmobilny.ui.widgets.buttons.PlusVoteButton
@@ -370,9 +371,9 @@ abstract class BaseLinkCommentViewHolder(
                 dialog.dismiss()
             }
 
-            commentMenuReport.isVisible = !isDeleted && userManagerApi.isUserAuthorized() && comment.violationUrl != null
+            commentMenuReport.isVisible = !isDeleted && userManagerApi.isUserAuthorized()
             commentMenuReport.setOnClickListener {
-                navigator.openReportScreen(comment.violationUrl.let(::checkNotNull))
+                navigator.openReportScreen(ReportType.LinkComment, comment.id, parentId = comment.linkId)
                 dialog.dismiss()
             }
 

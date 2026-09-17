@@ -8,24 +8,37 @@ import android.webkit.CookieManager
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.addCallback
+import androidx.lifecycle.lifecycleScope
+import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.R
+import io.github.wykopmobilny.WykopApp
+import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
+import io.github.wykopmobilny.api.requests.v3.reports.CreateReportRequestV3
 import io.github.wykopmobilny.base.ThemableActivity
+import io.github.wykopmobilny.ui.dialogs.showExceptionDialog
+import kotlinx.coroutines.launch
 
 /**
- * Zgłaszanie treści: API v3 nie ma endpointu zgłoszeń (v2 dawało violation_url
- * z serwerowym hashem), więc otwieramy stronę treści na wykop.pl we WebView.
- * WebView współdzieli CookieManager z ekranem logowania - użytkownik ma sesję
- * i może dokończyć zgłoszenie przez interfejs strony.
+ * Zgłaszanie treści. Adres formularza (z serwerowym hashem) wydaje dopiero
+ * POST /v3/reports/reports - tak samo robi frontend wykop.pl, który przechodzi
+ * pod zwrócone `data.url`. Sam formularz jest webowy, więc ładujemy go we
+ * WebView współdzielącym CookieManager z ekranem logowania (użytkownik ma sesję).
  */
 internal class ReportWebViewActivity : ThemableActivity() {
     companion object {
-        private const val EXTRA_URL = "EXTRA_URL"
+        private const val EXTRA_TYPE = "EXTRA_TYPE"
+        private const val EXTRA_ID = "EXTRA_ID"
+        private const val EXTRA_PARENT_ID = "EXTRA_PARENT_ID"
 
         fun createIntent(
             context: Context,
-            url: String,
+            type: ReportType,
+            id: Long,
+            parentId: Long? = null,
         ) = Intent(context, ReportWebViewActivity::class.java).apply {
-            putExtra(EXTRA_URL, url)
+            putExtra(EXTRA_TYPE, type.apiValue)
+            putExtra(EXTRA_ID, id)
+            parentId?.let { putExtra(EXTRA_PARENT_ID, it) }
         }
     }
 
@@ -40,7 +53,10 @@ internal class ReportWebViewActivity : ThemableActivity() {
             setDisplayHomeAsUpEnabled(true)
         }
 
-        val url = intent.getStringExtra(EXTRA_URL) ?: return finish()
+        val type = intent.getStringExtra(EXTRA_TYPE) ?: return finish()
+        val id = intent.getLongExtra(EXTRA_ID, -1L).takeIf { it > 0 } ?: return finish()
+        val parentId = intent.getLongExtra(EXTRA_PARENT_ID, -1L).takeIf { it > 0 }
+
         val webView = findViewById<WebView>(R.id.webView)
         CookieManager.getInstance().setAcceptCookie(true)
         webView.settings.apply {
@@ -60,7 +76,32 @@ internal class ReportWebViewActivity : ThemableActivity() {
             }
         }
 
-        webView.loadUrl(url)
+        loadReportForm(webView, type, id, parentId)
+    }
+
+    private fun loadReportForm(
+        webView: WebView,
+        type: String,
+        id: Long,
+        parentId: Long?,
+    ) = lifecycleScope.launch {
+        val reportsApi = (application as WykopApp).wykopApi.reportsV3RetrofitApi()
+        val url =
+            runCatching {
+                reportsApi
+                    .createReport(WykopApiRequestV3(CreateReportRequestV3(type = type, id = id, parentId = parentId)))
+                    .data
+                    ?.url
+            }.onFailure { failure ->
+                Napier.w("Nie udalo sie utworzyc zgloszenia", failure)
+                showExceptionDialog(failure)
+            }.getOrNull()
+
+        if (url == null) {
+            finish()
+        } else {
+            webView.loadUrl(url)
+        }
     }
 
     override fun onOptionsItemSelected(item: android.view.MenuItem): Boolean {
@@ -70,4 +111,17 @@ internal class ReportWebViewActivity : ThemableActivity() {
         }
         return super.onOptionsItemSelected(item)
     }
+}
+
+/**
+ * Rodzaje zgłaszanych treści wspierane przez /v3/reports/reports. Komentarze
+ * wymagają dodatkowo `parent_id` - id wpisu/znaleziska, pod którym stoją.
+ */
+enum class ReportType(
+    val apiValue: String,
+) {
+    Entry("entry"),
+    EntryComment("entry_comment"),
+    Link("link"),
+    LinkComment("link_comment"),
 }

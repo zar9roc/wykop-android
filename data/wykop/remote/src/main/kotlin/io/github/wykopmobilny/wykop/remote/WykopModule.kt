@@ -113,6 +113,10 @@ internal class WykopModule {
 
     @Reusable
     @Provides
+    fun reportsV3RetrofitApi(retrofit: Retrofit) = retrofit.create<io.github.wykopmobilny.api.endpoints.v3.ReportsV3RetrofitApi>()
+
+    @Reusable
+    @Provides
     fun tagsV3RetrofitApi(retrofit: Retrofit) = retrofit.create<TagsV3RetrofitApi>()
 
     @Reusable

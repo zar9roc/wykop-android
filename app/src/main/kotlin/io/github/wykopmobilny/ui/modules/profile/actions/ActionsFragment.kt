@@ -20,7 +20,7 @@ class ActionsFragment :
     @Inject
     lateinit var presenter: ActionsFragmentPresenter
 
-    override var loadDataListener: (Boolean) -> Unit = { presenter.getActions() }
+    override var loadDataListener: (Boolean) -> Unit = { presenter.getActions(it) }
     private val username by lazy { (activity as ProfileActivity).username }
 
     override fun onViewCreated(

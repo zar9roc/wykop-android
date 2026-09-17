@@ -13,6 +13,7 @@ import io.github.wykopmobilny.storage.api.SettingsPreferencesApi
 import io.github.wykopmobilny.ui.modules.addlink.AddlinkActivity
 import io.github.wykopmobilny.ui.modules.embedview.EmbedViewActivity
 import io.github.wykopmobilny.ui.modules.input.BaseInputActivity
+import io.github.wykopmobilny.ui.modules.report.ReportType
 import io.github.wykopmobilny.ui.modules.report.ReportWebViewActivity
 import io.github.wykopmobilny.ui.modules.input.entry.add.AddEntryActivity
 import io.github.wykopmobilny.ui.modules.input.entry.comment.EditEntryCommentActivity
@@ -153,7 +154,13 @@ class NewNavigator
 
         // WebView z sesją logowania zamiast przeglądarki - v3 nie ma endpointu
         // zgłoszeń, użytkownik zgłasza przez interfejs strony (zalogowany).
-        fun openReportScreen(violationUrl: String) = context.startActivity(ReportWebViewActivity.createIntent(context, violationUrl))
+        // Adres formularza wydaje dopiero POST /v3/reports/reports - ekran zgloszenia
+        // sam go pobiera, tu przekazujemy tylko co zglaszamy.
+        fun openReportScreen(
+            type: ReportType,
+            id: Long,
+            parentId: Long? = null,
+        ) = context.startActivity(ReportWebViewActivity.createIntent(context, type, id, parentId))
 
         fun openLinkDetailsActivity(link: Link) = context.startActivity(LinkDetailsActivityV2.createIntent(context, link.id))
 

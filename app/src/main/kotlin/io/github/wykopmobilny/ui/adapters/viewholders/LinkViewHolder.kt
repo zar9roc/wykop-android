@@ -211,6 +211,7 @@ class LinkViewHolder(
                 link = link,
                 navigator = navigator,
                 linksApi = linksApi,
+                userManagerApi = userManagerApi,
                 onBury = if (userManagerApi.isUserAuthorized()) linkActionListener::bury else null,
             )
         }

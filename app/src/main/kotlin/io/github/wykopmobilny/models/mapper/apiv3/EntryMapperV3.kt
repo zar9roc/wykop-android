@@ -27,9 +27,9 @@ fun EntryResponseV3.filterEntryV3(owmContentFilter: OWMContentFilter) =
                     .map { EntryCommentMapperV3.map(it, owmContentFilter, entryId = id) }
                     .toMutableList(),
             app = device,
-            // v3 nie zwraca violation_url - syntetyzujemy adres strony treści,
-            // zgłoszenie idzie przez WebView z sesją (ReportWebViewActivity).
-            violationUrl = "https://wykop.pl/wpis/$id",
+            // Zgłoszenia idą przez POST /v3/reports/reports (ReportWebViewActivity),
+            // więc syntetyczny adres treści nie jest już potrzebny.
+            violationUrl = null,
             isNsfw = content?.lowercase()?.contains("#nsfw") == true,
             isBlocked = deleted ?: false,
             collapsed = true,

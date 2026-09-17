@@ -21,6 +21,7 @@ import io.github.wykopmobilny.ui.dialogs.confirmationDialog
 import io.github.wykopmobilny.ui.fragments.entrycomments.EntryCommentActionListener
 import io.github.wykopmobilny.ui.fragments.entrycomments.EntryCommentViewListener
 import io.github.wykopmobilny.ui.modules.NewNavigator
+import io.github.wykopmobilny.ui.modules.report.ReportType
 import io.github.wykopmobilny.ui.widgets.WykopEmbedView
 import io.github.wykopmobilny.ui.widgets.bindNoteMenuItem
 import io.github.wykopmobilny.ui.widgets.setNoteCard
@@ -364,9 +365,9 @@ class EntryCommentViewHolder(
                 dialog.dismiss()
             }
 
-            entryCommentMenuReport.isVisible = !isDeleted && isUserAuthorized && comment.violationUrl != null
+            entryCommentMenuReport.isVisible = !isDeleted && isUserAuthorized
             entryCommentMenuReport.setOnClickListener {
-                navigator.openReportScreen(comment.violationUrl.let(::checkNotNull))
+                navigator.openReportScreen(ReportType.EntryComment, comment.id, parentId = comment.entryId)
                 dialog.dismiss()
             }
 

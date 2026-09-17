@@ -9,6 +9,13 @@ dependencies {
     api(libs.retrofit.core)
     implementation(libs.moshi.core)
     ksp(libs.moshi.compiler)
+
+    testImplementation(libs.junit.api)
+    testRuntimeOnly(libs.junit.engine)
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
 }
 
 // Detekt task removed - plugin not installed

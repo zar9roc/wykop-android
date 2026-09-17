@@ -15,7 +15,10 @@ import io.reactivex.Single
 interface ProfileApi {
     fun getIndex(username: String): Single<UserFullResponseV3>
 
-    fun getActions(username: String): Single<List<EntryLink>>
+    fun getActions(
+        username: String,
+        page: Int,
+    ): Single<List<EntryLink>>
 
     fun getAdded(
         username: String,

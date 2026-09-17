@@ -56,8 +56,11 @@ class ProfileRepository
                 response.data.orEmpty().filterLinksV3(owmContentFilter, response.pagination)
             }
 
-        override fun getActions(username: String): Single<List<EntryLink>> =
-            rxSingle { profileApiV3.getUserActions(username) }
+        override fun getActions(
+            username: String,
+            page: Int,
+        ): Single<List<EntryLink>> =
+            rxSingle { profileApiV3.getUserActions(username, page) }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<List<ObservedItemV3>>(errorBodyParser))
                 .map { items ->
