@@ -244,13 +244,20 @@ internal class GetLinkDetailsQuery
                                                                                                     label = reason.label,
                                                                                                     clickAction =
                                                                                                         safeCallback {
-                                                                                                            linksRepository.voteDown(link.id, reason)
+                                                                                                            linksRepository.voteDown(
+                                                                                                                link.id,
+                                                                                                                reason,
+                                                                                                            )
                                                                                                         },
                                                                                                 )
                                                                                             },
                                                                                         dismissAction =
                                                                                             safeCallback {
-                                                                                                viewStateStorage.update { it.copy(picker = null) }
+                                                                                                viewStateStorage.update {
+                                                                                                    it.copy(
+                                                                                                        picker = null,
+                                                                                                    )
+                                                                                                }
                                                                                             },
                                                                                     ),
                                                                             )
@@ -385,7 +392,7 @@ internal class GetLinkDetailsQuery
                         } else if (!relatedLinks.isNullOrEmpty()) {
                             val addLinkAction = safeCallback { TODO() }
                             RelatedLinksSectionUi.WithData(
-                                links = relatedLinks.map { related -> related.toUi(linkId = link.id) },
+                                links = relatedLinks.map { related -> related.toUi(linkId = link.id, canReport = loggedUser != null) },
                                 addLinkAction = addLinkAction,
                             )
                         } else {
@@ -462,42 +469,54 @@ internal class GetLinkDetailsQuery
                 )
             }
 
-        private fun RelatedLink.toUi(linkId: Long) =
-            RelatedLinkUi(
-                author = author?.toUi(onClicked = null),
-                upvotesCount =
-                    TwoActionsCounterUi(
-                        count = voteCount,
-                        color =
-                            when (userVote) {
-                                UserVote.Up -> ColorConst.CounterUpvoted
-                                UserVote.Down -> ColorConst.CounterDownvoted
-                                null -> null
-                            },
-                        upvoteAction =
-                            when (userVote) {
-                                UserVote.Up -> null
+        private fun RelatedLink.toUi(
+            linkId: Long,
+            canReport: Boolean,
+        ) = RelatedLinkUi(
+            author = author?.toUi(onClicked = null),
+            upvotesCount =
+                TwoActionsCounterUi(
+                    count = voteCount,
+                    color =
+                        when (userVote) {
+                            UserVote.Up -> ColorConst.CounterUpvoted
+                            UserVote.Down -> ColorConst.CounterDownvoted
+                            null -> null
+                        },
+                    upvoteAction =
+                        when (userVote) {
+                            UserVote.Up -> null
 
-                                UserVote.Down,
-                                null,
-                                -> safeCallback { linksRepository.relatedVoteUp(linkId = linkId, relatedId = id) }
-                            },
-                        downvoteAction =
-                            when (userVote) {
-                                UserVote.Down -> null
+                            UserVote.Down,
+                            null,
+                            -> safeCallback { linksRepository.relatedVoteUp(linkId = linkId, relatedId = id) }
+                        },
+                    downvoteAction =
+                        when (userVote) {
+                            UserVote.Down -> null
 
-                                UserVote.Up,
-                                null,
-                                -> safeCallback { linksRepository.relatedVoteDown(linkId = linkId, relatedId = id) }
-                            },
-                    ),
-                title = title,
-                domain = url.takeIf { it.isNotEmpty() }?.let { URL(it).host.removePrefix("www.") }.orEmpty(),
-                url = url,
-                previewImageUrl = previewImageUrl,
-                clickAction = safeCallback { interopRequests.request(InteropRequest.WebBrowser(url)) },
-                shareAction = safeCallback { interopRequests.request(InteropRequest.Share(url)) },
-            )
+                            UserVote.Up,
+                            null,
+                            -> safeCallback { linksRepository.relatedVoteDown(linkId = linkId, relatedId = id) }
+                        },
+                ),
+            title = title,
+            domain = url.takeIf { it.isNotEmpty() }?.let { URL(it).host.removePrefix("www.") }.orEmpty(),
+            url = url,
+            previewImageUrl = previewImageUrl,
+            clickAction = safeCallback { interopRequests.request(InteropRequest.WebBrowser(url)) },
+            shareAction = safeCallback { interopRequests.request(InteropRequest.Share(url)) },
+            reportAction =
+                if (canReport) {
+                    safeCallback {
+                        interopRequests.request(
+                            InteropRequest.Report(type = "link_related", id = id.toString(), parentId = linkId),
+                        )
+                    }
+                } else {
+                    null
+                },
+        )
 
         private fun commentsFlow() =
             combine(

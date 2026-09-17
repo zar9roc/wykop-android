@@ -42,6 +42,16 @@ sealed class InteropRequest {
         val force: Boolean = false,
     ) : InteropRequest()
 
+    /**
+     * Zgłoszenie treści - ekran zgłoszenia pobiera adres formularza z
+     * POST /v3/reports/reports. `id` jest tekstem, bo profil identyfikuje username.
+     */
+    data class Report(
+        val type: String,
+        val id: String,
+        val parentId: Long? = null,
+    ) : InteropRequest()
+
     data class UpvotersList(
         val linkId: Long,
     ) : InteropRequest()

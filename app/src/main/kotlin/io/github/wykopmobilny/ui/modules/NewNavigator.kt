@@ -160,7 +160,10 @@ class NewNavigator
             type: ReportType,
             id: Long,
             parentId: Long? = null,
-        ) = context.startActivity(ReportWebViewActivity.createIntent(context, type, id, parentId))
+        ) = context.startActivity(ReportWebViewActivity.createIntent(context, type, id.toString(), parentId))
+
+        fun openProfileReportScreen(username: String) =
+            context.startActivity(ReportWebViewActivity.createIntent(context, ReportType.Profile, username))
 
         fun openLinkDetailsActivity(link: Link) = context.startActivity(LinkDetailsActivityV2.createIntent(context, link.id))
 

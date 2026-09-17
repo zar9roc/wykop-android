@@ -33,67 +33,81 @@ internal class GetRelatedLinksQuery
         private val relatedLinksStore: Store<Long, List<RelatedLink>>,
         private val linksRepository: LinksRepository,
         private val interopRequests: InteropRequestsProvider,
+        private val userInfoStorage: io.github.wykopmobilny.storage.api.UserInfoStorage,
         private val appScopes: AppScopes,
     ) : GetRelatedLinks,
         RefreshRelatedLinks,
         AddRelatedLink {
         override fun invoke(): Flow<List<RelatedLinkUi>> =
-            relatedLinksStore
-                .stream(StoreReadRequest.cached(key = key.linkId, refresh = false))
-                .map { response ->
-                    response.dataOrNull().orEmpty().map { it.toUi(linkId = key.linkId) }
-                }
+            kotlinx.coroutines.flow.combine(
+                relatedLinksStore.stream(StoreReadRequest.cached(key = key.linkId, refresh = false)),
+                userInfoStorage.loggedUser,
+            ) { response, loggedUser ->
+                response.dataOrNull().orEmpty().map { it.toUi(linkId = key.linkId, canReport = loggedUser != null) }
+            }
 
-        private fun RelatedLink.toUi(linkId: Long) =
-            RelatedLinkUi(
-                author = author?.toUi(onClicked = null),
-                upvotesCount =
-                    TwoActionsCounterUi(
-                        count = voteCount,
-                        color =
-                            when (userVote) {
-                                UserVote.Up -> ColorConst.CounterUpvoted
-                                UserVote.Down -> ColorConst.CounterDownvoted
-                                null -> null
-                            },
-                        upvoteAction =
-                            when (userVote) {
-                                UserVote.Up -> {
-                                    safeCallback {
-                                        linksRepository.removeRelatedVote(linkId = linkId, relatedId = id)
-                                    }
+        private fun RelatedLink.toUi(
+            linkId: Long,
+            canReport: Boolean,
+        ) = RelatedLinkUi(
+            author = author?.toUi(onClicked = null),
+            upvotesCount =
+                TwoActionsCounterUi(
+                    count = voteCount,
+                    color =
+                        when (userVote) {
+                            UserVote.Up -> ColorConst.CounterUpvoted
+                            UserVote.Down -> ColorConst.CounterDownvoted
+                            null -> null
+                        },
+                    upvoteAction =
+                        when (userVote) {
+                            UserVote.Up -> {
+                                safeCallback {
+                                    linksRepository.removeRelatedVote(linkId = linkId, relatedId = id)
                                 }
+                            }
 
-                                UserVote.Down, null -> {
-                                    safeCallback {
-                                        linksRepository.relatedVoteUp(linkId = linkId, relatedId = id)
-                                    }
+                            UserVote.Down, null -> {
+                                safeCallback {
+                                    linksRepository.relatedVoteUp(linkId = linkId, relatedId = id)
                                 }
-                            },
-                        downvoteAction =
-                            when (userVote) {
-                                UserVote.Down -> {
-                                    safeCallback {
-                                        linksRepository.removeRelatedVote(linkId = linkId, relatedId = id)
-                                    }
+                            }
+                        },
+                    downvoteAction =
+                        when (userVote) {
+                            UserVote.Down -> {
+                                safeCallback {
+                                    linksRepository.removeRelatedVote(linkId = linkId, relatedId = id)
                                 }
+                            }
 
-                                UserVote.Up, null -> {
-                                    safeCallback {
-                                        linksRepository.relatedVoteDown(linkId = linkId, relatedId = id)
-                                    }
+                            UserVote.Up, null -> {
+                                safeCallback {
+                                    linksRepository.relatedVoteDown(linkId = linkId, relatedId = id)
                                 }
-                            },
-                    ),
-                title = title,
-                domain = url.takeIf { it.isNotEmpty() }?.let { URL(it).host.removePrefix("www.") }.orEmpty(),
-                url = url,
-                previewImageUrl = previewImageUrl,
-                // WebBrowser bez force przechodzi przez WykopLinkHandler - adresy
-                // wykop.pl (w tym /komentarz/) otwieraja sie natywnie.
-                clickAction = safeCallback { interopRequests.request(InteropRequest.WebBrowser(url)) },
-                shareAction = safeCallback { interopRequests.request(InteropRequest.Share(url)) },
-            )
+                            }
+                        },
+                ),
+            title = title,
+            domain = url.takeIf { it.isNotEmpty() }?.let { URL(it).host.removePrefix("www.") }.orEmpty(),
+            url = url,
+            previewImageUrl = previewImageUrl,
+            // WebBrowser bez force przechodzi przez WykopLinkHandler - adresy
+            // wykop.pl (w tym /komentarz/) otwieraja sie natywnie.
+            clickAction = safeCallback { interopRequests.request(InteropRequest.WebBrowser(url)) },
+            shareAction = safeCallback { interopRequests.request(InteropRequest.Share(url)) },
+            reportAction =
+                if (canReport) {
+                    safeCallback {
+                        interopRequests.request(
+                            InteropRequest.Report(type = "link_related", id = id.toString(), parentId = linkId),
+                        )
+                    }
+                } else {
+                    null
+                },
+        )
 
         private fun safeCallback(function: suspend CoroutineScope.() -> Unit): () -> Unit =
             {
@@ -110,7 +124,10 @@ internal class GetRelatedLinksQuery
             }
         }
 
-        override fun add(url: String, title: String) {
+        override fun add(
+            url: String,
+            title: String,
+        ) {
             appScopes.safeKeyed<LinkDetailsScope>(id = key) {
                 runCatching {
                     linksRepository.addRelated(

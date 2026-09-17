@@ -125,8 +125,10 @@ internal class RelatedLinksAdapter : ListAdapter<RelatedLinkUi, RelatedLinksAdap
                 link.shareAction()
             }
 
-            // Report button - hidden for related links
-            binding.reportTextView.isVisible = false
+            // Zgloszenie powiazanego (type=link_related) - tylko dla zalogowanych,
+            // dla reszty domena nie daje akcji.
+            binding.reportTextView.isVisible = link.reportAction != null
+            binding.reportTextView.setOnClickListener { link.reportAction?.invoke() }
 
             // Main click action
             binding.root.setOnClickListener {

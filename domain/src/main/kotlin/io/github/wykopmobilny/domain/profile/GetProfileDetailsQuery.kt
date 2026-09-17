@@ -156,7 +156,8 @@ internal class GetProfileDetailsQuery
         private fun reportOption() =
             ContextMenuOptionUi(
                 label = Strings.Profile.REPORT,
-                onClick = safeCallback { TODO() },
+                // Profil identyfikuje username - endpoint zgloszen przyjmuje go jako `id`.
+                onClick = safeCallback { interopRequests.request(InteropRequest.Report(type = "profile", id = profileId)) },
             )
 
         private fun safeCallback(function: suspend CoroutineScope.() -> Unit): () -> Unit =

@@ -58,6 +58,8 @@ import io.github.wykopmobilny.ui.modules.notificationslist.NotificationsListActi
 import io.github.wykopmobilny.ui.modules.photoview.PhotoViewActivity
 import io.github.wykopmobilny.ui.modules.pm.conversation.ConversationActivity
 import io.github.wykopmobilny.ui.modules.profile.ProfileActivity
+import io.github.wykopmobilny.ui.modules.report.ReportType
+import io.github.wykopmobilny.ui.modules.report.ReportWebViewActivity
 import io.github.wykopmobilny.ui.modules.tag.TagActivity
 import io.github.wykopmobilny.ui.dialogs.noteDialog
 import io.github.wykopmobilny.ui.profile.ProfileDependencies
@@ -532,6 +534,11 @@ open class WykopApp :
 
                     is InteropRequest.Profile -> {
                         context.startActivity(ProfileActivity.createIntent(context, it.profileId))
+                    }
+
+                    is InteropRequest.Report -> {
+                        val type = ReportType.entries.first { type -> type.apiValue == it.type }
+                        context.startActivity(ReportWebViewActivity.createIntent(context, type, it.id, it.parentId))
                     }
 
                     is InteropRequest.Tag -> {

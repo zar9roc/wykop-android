@@ -13,6 +13,7 @@ import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.WykopApp
 import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
+import io.github.wykopmobilny.api.requests.v3.reports.CreateProfileReportRequestV3
 import io.github.wykopmobilny.api.requests.v3.reports.CreateReportRequestV3
 import io.github.wykopmobilny.base.ThemableActivity
 import io.github.wykopmobilny.ui.dialogs.showExceptionDialog
@@ -33,7 +34,7 @@ internal class ReportWebViewActivity : ThemableActivity() {
         fun createIntent(
             context: Context,
             type: ReportType,
-            id: Long,
+            id: String,
             parentId: Long? = null,
         ) = Intent(context, ReportWebViewActivity::class.java).apply {
             putExtra(EXTRA_TYPE, type.apiValue)
@@ -54,7 +55,7 @@ internal class ReportWebViewActivity : ThemableActivity() {
         }
 
         val type = intent.getStringExtra(EXTRA_TYPE) ?: return finish()
-        val id = intent.getLongExtra(EXTRA_ID, -1L).takeIf { it > 0 } ?: return finish()
+        val id = intent.getStringExtra(EXTRA_ID)?.takeIf { it.isNotBlank() } ?: return finish()
         val parentId = intent.getLongExtra(EXTRA_PARENT_ID, -1L).takeIf { it > 0 }
 
         val webView = findViewById<WebView>(R.id.webView)
@@ -82,16 +83,22 @@ internal class ReportWebViewActivity : ThemableActivity() {
     private fun loadReportForm(
         webView: WebView,
         type: String,
-        id: Long,
+        id: String,
         parentId: Long?,
     ) = lifecycleScope.launch {
         val reportsApi = (application as WykopApp).wykopApi.reportsV3RetrofitApi()
         val url =
             runCatching {
-                reportsApi
-                    .createReport(WykopApiRequestV3(CreateReportRequestV3(type = type, id = id, parentId = parentId)))
-                    .data
-                    ?.url
+                // Profil nie ma id liczbowego - identyfikuje go username, stad osobne body.
+                if (type == ReportType.Profile.apiValue) {
+                    reportsApi.createProfileReport(WykopApiRequestV3(CreateProfileReportRequestV3(username = id)))
+                } else {
+                    reportsApi.createReport(
+                        WykopApiRequestV3(
+                            CreateReportRequestV3(type = type, id = id.toLong(), parentId = parentId),
+                        ),
+                    )
+                }.data?.url
             }.onFailure { failure ->
                 Napier.w("Nie udalo sie utworzyc zgloszenia", failure)
                 showExceptionDialog(failure)
@@ -124,4 +131,10 @@ enum class ReportType(
     EntryComment("entry_comment"),
     Link("link"),
     LinkComment("link_comment"),
+
+    /** Powiązane znalezisko: id = powiązania, parent_id = znaleziska. */
+    LinkRelated("link_related"),
+
+    /** Profil: id to `username` (API v3 nie ma numerycznego id użytkownika). */
+    Profile("profile"),
 }

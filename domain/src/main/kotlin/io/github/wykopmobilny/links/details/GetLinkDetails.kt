@@ -80,6 +80,8 @@ data class RelatedLinkUi(
     val previewImageUrl: String?,
     val clickAction: () -> Unit,
     val shareAction: () -> Unit,
+    // null = niezalogowany (zgloszenie wymaga sesji).
+    val reportAction: (() -> Unit)? = null,
 )
 
 data class CommentsSectionUi(
