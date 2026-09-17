@@ -11,6 +11,7 @@ interface SettingsPreferencesApi {
     val hideNsfw: Boolean
     val showMinifiedImages: Boolean
     val cutLongEntries: Boolean
+    val showTopComments: Boolean
     val cutImages: Boolean
     val openSpoilersDialog: Boolean
     val hideLowRangeAuthors: Boolean

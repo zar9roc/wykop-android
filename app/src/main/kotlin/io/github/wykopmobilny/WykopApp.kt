@@ -198,6 +198,11 @@ open class WykopApp :
             settingsInterop = domainComponent.settingsApiInterop(),
         )
 
+    // Swiezy goscinny token JWT (POST /v3/auth) - wolane po wylogowaniu przez
+    // GuestSessionRefresher (provider w AppModule), zeby tryb goscia nie zostal
+    // na przeterminowanym tokenie ze startu procesu.
+    internal open suspend fun refreshGuestSession() = domainComponent.authenticateApp().invoke()
+
     protected open val domainComponent: DomainComponent by lazy {
         daggerDomain().create(
             appScopes = this,
@@ -220,8 +225,29 @@ open class WykopApp :
             override val blacklistRefreshInterval: Duration = 7.days
             override val blacklistFlexInterval: Duration = 1.days
             override val notificationsEnabled: Boolean = false
-            override val v3ApiKey: String = BuildConfig.V3_API_KEY
-            override val v3ApiSecret: String = BuildConfig.V3_API_SECRET
+
+            // Wlasny klucz API z ustawien zaawansowanych; puste pole = klucz wbudowany.
+            // Getter czytany przy kazdym uzyciu (POST /v3/auth), wiec zmiana ustawienia
+            // dziala bez restartu. Nadpisanie tylko przy KOMPLETNEJ parze klucz+sekret.
+            override val v3ApiKey: String
+                get() = customApiCredentials()?.first ?: BuildConfig.V3_API_KEY
+            override val v3ApiSecret: String
+                get() = customApiCredentials()?.second ?: BuildConfig.V3_API_SECRET
+
+            private fun customApiCredentials(): Pair<String, String>? {
+                val key = readPreference("settings.advanced.api_key")?.takeIf { it.isNotBlank() } ?: return null
+                val secret = readPreference("settings.advanced.api_secret")?.takeIf { it.isNotBlank() } ?: return null
+                return key to secret
+            }
+
+            private fun readPreference(key: String) =
+                runCatching {
+                    storages
+                        .storage()
+                        .preferencesQueries
+                        .getPreference(key)
+                        .executeAsOneOrNull()
+                }.getOrNull()
         }
 
     protected open val notifications by lazy {

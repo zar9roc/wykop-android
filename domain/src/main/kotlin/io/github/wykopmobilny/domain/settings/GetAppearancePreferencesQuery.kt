@@ -148,6 +148,11 @@ class GetAppearancePreferencesQuery
                             currentValue = it.openSpoilersInDialog,
                             onClicked = { updateUserSetting(UserSettings.openSpoilersInDialog, !it.openSpoilersInDialog) },
                         ),
+                    showTopComments =
+                        Setting(
+                            currentValue = it.showTopComments,
+                            onClicked = { updateUserSetting(UserSettings.showTopComments, !it.showTopComments) },
+                        ),
                 )
             }
 

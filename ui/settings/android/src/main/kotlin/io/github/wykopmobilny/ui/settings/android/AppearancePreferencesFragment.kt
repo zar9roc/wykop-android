@@ -43,6 +43,7 @@ internal class AppearancePreferencesFragment : PreferenceFragmentCompat() {
                     bindList("hotEntriesScreen", it.mikroblogSection.mikroblogScreen, defaultMikroblogScreenMapping)
                     bindCheckbox("cutLongEntries", it.mikroblogSection.cutLongEntries)
                     bindCheckbox("openSpoilersDialog", it.mikroblogSection.openSpoilersInDialog)
+                    bindCheckbox("showTopComments", it.mikroblogSection.showTopComments)
                     bindCheckbox("linkSimpleList", it.linksSection.useSimpleList)
                     bindCheckbox("linkShowImage", it.linksSection.showLinkThumbnail)
                     bindList("linkImagePosition", it.linksSection.imagePosition, imagePositionMapping)

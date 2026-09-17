@@ -90,6 +90,14 @@
             app:iconSpaceReserved="false"
             />
 
+        <androidx.preference.CheckBoxPreference
+            android:key="showTopComments"
+            android:persistent="false"
+            android:summary="@string/show_top_comments_summary"
+            android:title="@string/show_top_comments"
+            app:iconSpaceReserved="false"
+            />
+
     </androidx.preference.PreferenceCategory>
 
     <androidx.preference.PreferenceCategory

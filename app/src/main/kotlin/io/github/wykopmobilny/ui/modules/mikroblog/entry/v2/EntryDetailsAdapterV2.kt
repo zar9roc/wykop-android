@@ -39,7 +39,7 @@ internal class EntryDetailsAdapterV2(
     private val commentActionListener: EntryCommentActionListener,
     private val commentViewListener: EntryCommentViewListener,
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    private val replyListener: EntryListener = { commentViewListener.addReply(it.author) }
+    private val replyListener: EntryListener = { commentViewListener.addReplyToAuthor(it.author) }
 
     private val cutLongEntries by lazy { settingsPreferencesApi.cutLongEntries }
     private val openSpoilersDialog by lazy { settingsPreferencesApi.openSpoilersDialog }

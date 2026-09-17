@@ -32,6 +32,7 @@ internal class AppearancePreferencesFragmentTest : BaseScreenshotTest() {
                             useEmbeddedBrowser = stubSetting(value = true),
                             clearSearchHistory = { },
                         ),
+                    advanced = stubAdvanced(),
                 )
             },
         )
@@ -60,9 +61,20 @@ internal class AppearancePreferencesFragmentTest : BaseScreenshotTest() {
                             useEmbeddedBrowser = stubSetting(value = false),
                             clearSearchHistory = { },
                         ),
+                    advanced = stubAdvanced(),
                 )
             },
         )
         record(size = unboundedHeight())
     }
+
+    private fun stubAdvanced() =
+        GeneralPreferencesUi.AdvancedUi(
+            apiKey =
+                GeneralPreferencesUi.AdvancedUi.ApiKeyUi(
+                    currentKey = null,
+                    testCredentials = { _, _ -> true },
+                    saveAction = { _, _ -> },
+                ),
+        )
 }

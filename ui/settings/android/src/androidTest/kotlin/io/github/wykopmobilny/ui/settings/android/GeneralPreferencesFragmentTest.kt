@@ -36,6 +36,7 @@ internal class GeneralPreferencesFragmentTest : BaseScreenshotTest() {
                             mikroblogScreen = stubListSetting(value = MikroblogScreenUi.TwelveHours),
                             cutLongEntries = stubSetting(value = true),
                             openSpoilersInDialog = stubSetting(value = true),
+                            showTopComments = stubSetting(value = true),
                         ),
                     linksSection =
                         AppearancePreferencesUi.LinksSectionUi(

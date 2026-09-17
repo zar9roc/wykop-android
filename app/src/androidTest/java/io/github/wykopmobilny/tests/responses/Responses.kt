@@ -17,6 +17,9 @@ fun MockWebServerRule.notificationsCountEmpty() = enqueue("/notifications/Count"
 
 fun MockWebServerRule.hashtagsCountEmpty() = enqueue("/notifications/HashTagsCount") { jsonResponse("hashtagscount_empty.json") }
 
+// Goscinny token aplikacyjny (POST /v3/auth) - pobierany na starcie i po wylogowaniu.
+fun MockWebServerRule.guestAuth() = enqueue("/v3/auth") { jsonResponse("v3_auth.json") }
+
 fun MockWebServerRule.githubPatronsEmpty() =
     enqueue("/otwarty-wykop-mobilny/owm-patrons/master/patrons.json") { jsonResponse("githubpatrons_empty.json") }
 

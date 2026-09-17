@@ -32,7 +32,7 @@ class LinksAdapter
         private val linkShowImage by lazy { settingsPreferencesApi.linkShowImage }
         private val linkImagePosition by lazy { settingsPreferencesApi.linkImagePosition }
         private val linkShowAuthor by lazy { settingsPreferencesApi.linkShowAuthor }
-        private val hideBlacklistedViews by lazy { settingsPreferencesApi.linkShowAuthor }
+        private val hideBlacklistedViews by lazy { settingsPreferencesApi.hideBlacklistedViews }
 
         override fun getViewType(position: Int): Int =
             if (linkSimpleList) {

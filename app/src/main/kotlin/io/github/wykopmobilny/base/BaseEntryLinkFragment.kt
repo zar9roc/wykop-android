@@ -36,7 +36,7 @@ open class BaseEntryLinkFragment :
         set(value) {
             binding.empty.searchEmptyView.isVisible = value
             if (value) {
-                entriesAdapter.addData(emptyList(), true)
+                entriesAdapter.addEntryLinks(emptyList(), true)
                 entriesAdapter.disableLoading()
             }
         }
@@ -71,7 +71,7 @@ open class BaseEntryLinkFragment :
         binding.loadingView.isVisible = false
         // Pusta pierwsza strona: addItems() nie zostanie wywolane - chowamy loader
         // i pokazujemy pusty stan zamiast wiecznego kreciolka.
-        showSearchEmptyView = entriesAdapter.data.isEmpty()
+        showSearchEmptyView = entriesAdapter.items.isEmpty()
     }
 
     /**
@@ -83,7 +83,7 @@ open class BaseEntryLinkFragment :
         items: List<EntryLink>,
         shouldRefresh: Boolean,
     ) {
-        entriesAdapter.addData(items, shouldRefresh)
+        entriesAdapter.addEntryLinks(items, shouldRefresh)
         binding.swipeRefresh.isRefreshing = false
         binding.loadingView.isVisible = false
 

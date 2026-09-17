@@ -18,7 +18,7 @@ import io.github.wykopmobilny.api.responses.v3.links.RelatedResponseV3
 import io.github.wykopmobilny.api.responses.v3.profile.BadgeResponseV3
 import io.github.wykopmobilny.api.responses.v3.user.UserFullResponseV3
 import io.github.wykopmobilny.data.storage.api.AppStorage
-import io.github.wykopmobilny.models.dataclass.EntryComment
+import io.github.wykopmobilny.models.dataclass.EntryListRow
 import io.github.wykopmobilny.models.dataclass.EntryLink
 import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
 import io.github.wykopmobilny.models.dataclass.Related
@@ -26,6 +26,7 @@ import io.github.wykopmobilny.models.mapper.apiv3.EntryCommentMapperV3
 import io.github.wykopmobilny.models.mapper.apiv3.LinkCommentMapperV3
 import io.github.wykopmobilny.models.mapper.apiv3.RelatedMapperV3
 import io.github.wykopmobilny.models.mapper.apiv3.filterEntriesV3
+import io.github.wykopmobilny.models.mapper.apiv3.filterEntryV3
 import io.github.wykopmobilny.models.mapper.apiv3.filterLinksV3
 import io.github.wykopmobilny.models.mapper.apiv3.toEntryLink
 import io.reactivex.Single
@@ -93,15 +94,24 @@ class ProfileRepository
         override fun getEntriesComments(
             username: String,
             page: Int,
-        ): Single<List<EntryComment>> =
+        ): Single<List<EntryListRow>> =
             rxSingle { profileApiV3.getUserEntriesCommented(username, page) }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<List<EntryResponseV3>>(errorBodyParser))
                 .map { entries ->
-                    entries.flatMap { entry ->
-                        entry.comments.items
-                            .orEmpty()
-                            .map { comment -> EntryCommentMapperV3.map(comment, owmContentFilter, entryId = entry.id) }
+                    // Endpoint oddaje WPISY z komentarzami uzytkownika w srodku, wiec lista
+                    // jest mieszana: wpis, a zaraz pod nim jego komentarz(e) - bez
+                    // dodatkowych zapytan.
+                    entries.flatMap { response ->
+                        // comments.items renderujemy jako osobne wiersze, wiec zdejmujemy je
+                        // z wpisu - inaczej podglad "najlepszych komentarzy" dublowalby tresc.
+                        val entry = response.filterEntryV3(owmContentFilter).also { it.comments.clear() }
+                        val comments =
+                            response.comments.items
+                                .orEmpty()
+                                .map { comment -> EntryCommentMapperV3.map(comment, owmContentFilter, entryId = response.id) }
+                        listOf(EntryListRow.EntryRow(entry)) +
+                            comments.map(EntryListRow::CommentRow)
                     }
                 }
 

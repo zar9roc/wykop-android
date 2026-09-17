@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withCreated
+import io.github.wykopmobilny.WykopApp
 import io.github.wykopmobilny.styles.ApplicableStyleUi
 import io.github.wykopmobilny.styles.StylesDependencies
 import io.github.wykopmobilny.utils.applyImeInsetsToContent
@@ -21,6 +22,12 @@ import kotlinx.coroutines.runBlocking
 import io.github.wykopmobilny.ui.base.android.R as BaseR
 
 internal abstract class ThemableActivity : AppCompatActivity() {
+    private val settingsPreferences
+        get() = (application as WykopApp).settingsPreferencesApi.get()
+
+    // Ustawienia wygladu zastosowane przy tworzeniu ekranu (do wykrycia zmiany w onResume).
+    private var appliedAppearance: AppearanceSnapshot? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val getAppStyle = requireDependency<StylesDependencies>().getAppStyle()
         val initialStyle = runBlocking { getAppStyle().first() }.style
@@ -56,6 +63,16 @@ internal abstract class ThemableActivity : AppCompatActivity() {
         applyImeInsetsToContent()
     }
 
+    // Ekrany nowego stacku pomijaly nakladke z rozmiarem czcionki (robil ja tylko
+    // BaseActivity), wiec ustawienie nie dzialalo tu wcale. Sprawdzamy tez zmiane
+    // ustawien wygladu po powrocie - tak samo jak stary stack.
+    override fun onResume() {
+        super.onResume()
+        if (appliedAppearance != settingsPreferences.appearanceSnapshot()) {
+            recreate()
+        }
+    }
+
     private fun updateTheme(theme: ApplicableStyleUi) {
         val themeRes =
             when (theme) {
@@ -64,5 +81,9 @@ internal abstract class ThemableActivity : AppCompatActivity() {
                 ApplicableStyleUi.DarkAmoled -> io.github.wykopmobilny.R.style.WykopAppTheme_Amoled
             }
         setTheme(themeRes)
+        val appearance = settingsPreferences.appearanceSnapshot()
+        // getTheme() - parametr `theme` przyslania tu wlasciwosc Activity.
+        getTheme().applyFontSize(appearance.fontSize)
+        appliedAppearance = appearance
     }
 }

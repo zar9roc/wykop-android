@@ -99,8 +99,9 @@ internal fun LinkDetailsHeaderLayoutBinding.bindHeaderV3(
         favoriteButton.isFavorite = header.favoriteButton.isToggled
         favoriteButton.setOnClickListener { header.favoriteButton.clickAction?.invoke() }
 
-        // Related count
-        relatedCountTextView.isVisible = relatedCount > 0
+        // Related count - przycisk widoczny zawsze (takze przy 0): ekran powiazanych
+        // pozwala dodac pierwszy link, wiec wejscie musi byc dostepne i bez powiazanych.
+        relatedCountTextView.isVisible = true
         relatedCountTextView.text = relatedCount.toString()
         relatedCountTextView.setOnClick(header.relatedCountAction)
 

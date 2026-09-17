@@ -29,6 +29,7 @@ data class AppearancePreferencesUi(
         val mikroblogScreen: ListSetting<MikroblogScreenUi>,
         val cutLongEntries: Setting,
         val openSpoilersInDialog: Setting,
+        val showTopComments: Setting,
     )
 
     data class LinksSectionUi(

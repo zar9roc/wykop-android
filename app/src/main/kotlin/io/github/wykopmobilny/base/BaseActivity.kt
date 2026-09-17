@@ -85,10 +85,12 @@ abstract class BaseActivity :
     override fun onResume() {
         isRunning = true
         super.onResume()
-        // Rozmiar czcionki jest wpinany w motyw przy tworzeniu Activity (initTheme),
-        // wiec zmiana w ustawieniach nie odswieza otwartych ekranow. Po powrocie na
-        // widok porownujemy zapamietany rozmiar i przy zmianie odtwarzamy Activity.
-        if (appliedFontSize != themeSettingsPreferences.fontSize) {
+        // Ustawienia wygladu sa zapiekane przy tworzeniu ekranu (motyw + cache w
+        // adapterach), wiec zmiana w ustawieniach nie odswieza otwartych ekranow.
+        // Po powrocie porownujemy migawke i przy roznicy odtwarzamy Activity -
+        // wczesniej sprawdzany byl tylko rozmiar czcionki, przez co np. zmiana
+        // wygladu listy znalezisk dzialala dopiero po ubiciu aplikacji.
+        if (appliedAppearance != themeSettingsPreferences.appearanceSnapshot()) {
             recreate()
         }
     }
@@ -98,13 +100,13 @@ abstract class BaseActivity :
         super.onPause()
     }
 
-    // Rozmiar czcionki zastosowany przy ostatnim initTheme (do wykrycia zmiany w onResume).
-    private var appliedFontSize: String? = null
+    // Ustawienia wygladu zastosowane przy ostatnim initTheme (do wykrycia zmiany w onResume).
+    private var appliedAppearance: AppearanceSnapshot? = null
 
     // This function initializes activity theme based on settings
     private fun initTheme(style: ApplicableStyleUi) {
         updateTheme(style)
-        appliedFontSize = themeSettingsPreferences.fontSize
+        appliedAppearance = themeSettingsPreferences.appearanceSnapshot()
         // Tylko realne nakładki (media-viewery) są przezroczyste. enableSwipeBackLayout
         // było kiedyś tłem dla slidra - po jego usunięciu NIE robi już okna
         // przezroczystym, żeby ekran był nieprzezroczysty i system pokazywał
@@ -114,19 +116,7 @@ abstract class BaseActivity :
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         }
 
-        when (themeSettingsPreferences.fontSize) {
-            "tiny" -> theme.applyStyle(R.style.TextSizeTiny, true)
-
-            "small" -> theme.applyStyle(R.style.TextSizeSmall, true)
-
-            "large" -> theme.applyStyle(R.style.TextSizeLarge, true)
-
-            "huge" -> theme.applyStyle(R.style.TextSizeHuge, true)
-
-            "normal",
-            null,
-            -> theme.applyStyle(R.style.TextSizeNormal, true)
-        }
+        theme.applyFontSize(themeSettingsPreferences.fontSize)
     }
 
     private fun updateTheme(newTheme: ApplicableStyleUi) {

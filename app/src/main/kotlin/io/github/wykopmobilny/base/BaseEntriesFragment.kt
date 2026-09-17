@@ -82,7 +82,7 @@ open class BaseEntriesFragment :
         response: VoteResponse,
         isVoted: Boolean,
     ) {
-        entriesAdapter.data.firstOrNull { it.id == entryId }?.apply {
+        entriesAdapter.entries.firstOrNull { it.id == entryId }?.apply {
             response.voteCount?.let { this.voteCount = it }
             this.isVoted = isVoted
             entriesAdapter.updateEntry(this)
@@ -100,7 +100,7 @@ open class BaseEntriesFragment :
         binding.loadingView.isVisible = false
         // Pusta pierwsza strona: addItems() nie zostanie wywolane - chowamy loader
         // i pokazujemy pusty stan zamiast wiecznego kreciolka.
-        showSearchEmptyView = entriesAdapter.data.isEmpty()
+        showSearchEmptyView = entriesAdapter.entries.isEmpty()
     }
 
     /**
@@ -112,7 +112,7 @@ open class BaseEntriesFragment :
         items: List<Entry>,
         shouldRefresh: Boolean,
     ) {
-        entriesAdapter.addData(items, shouldRefresh)
+        entriesAdapter.addEntries(items, shouldRefresh)
         binding.swipeRefresh.isRefreshing = false
         binding.loadingView.isVisible = false
 

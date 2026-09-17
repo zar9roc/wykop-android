@@ -59,6 +59,38 @@ class NewNavigator
             @Suppress("UNUSED_PARAMETER") isRevealed: Boolean,
         ) = context.startActivity(EntryActivityV2.createIntent(context, entryId))
 
+        // Wejscie w konkretny komentarz (podglad najlepszych komentarzy na liscie) -
+        // ekran wpisu zakotwicza sie na nim i przewija, jak przy deep-linku z powiadomien.
+        fun openEntryDetailsActivity(
+            entryId: Long,
+            commentId: Long,
+        ) = context.startActivity(EntryActivityV2.createIntent(context, entryId, commentId = commentId))
+
+        // "Odpowiedz" pod komentarzem na liscie - ekran wpisu z gotowym adresatem w polu.
+        fun openEntryDetailsAndReply(
+            entryId: Long,
+            commentId: Long,
+            replyToAuthor: String,
+        ) = context.startActivity(
+            EntryActivityV2.createIntent(context, entryId, commentId = commentId, replyToAuthor = replyToAuthor),
+        )
+
+        // "Cytuj" pod komentarzem na liscie - ekran wpisu z wklejonym cytatem w polu.
+        fun openEntryDetailsAndQuote(
+            entryId: Long,
+            commentId: Long,
+            quoteAuthor: String,
+            quoteBody: String,
+        ) = context.startActivity(
+            EntryActivityV2.createIntent(
+                context,
+                entryId,
+                commentId = commentId,
+                quoteAuthor = quoteAuthor,
+                quoteBody = quoteBody,
+            ),
+        )
+
         fun openTagActivity(tag: String) = context.startActivity(TagActivity.createIntent(context, tag))
 
         fun openConversationListActivity(user: String) = context.startActivity(ConversationActivity.createIntent(context, user))

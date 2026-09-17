@@ -8,7 +8,12 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.appcompat.app.AlertDialog
+import androidx.core.widget.doAfterTextChanged
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import io.github.wykopmobilny.ui.settings.android.databinding.DialogCustomApiKeyBinding
+import io.github.wykopmobilny.ui.settings.GeneralPreferencesUi
 import io.github.wykopmobilny.ui.settings.GeneralPreferencesUi.NotificationsUi.RefreshPeriodUi
 import io.github.wykopmobilny.ui.settings.ListSetting
 import io.github.wykopmobilny.ui.settings.GetGeneralPreferences
@@ -50,9 +55,106 @@ internal class GeneralPreferencesFragment : PreferenceFragmentCompat() {
                         setting = withFrequentPollingDialog(it.notifications.notificationRefreshPeriod),
                         mapping = refreshPeriodMapping,
                     )
+                    bindApiKey("customApiKey", it.advanced.apiKey)
                 }
             }
         }
+    }
+
+    private fun bindApiKey(
+        key: String,
+        setting: GeneralPreferencesUi.AdvancedUi.ApiKeyUi,
+    ) {
+        val pref = findPreference<Preference>(key) ?: return
+        pref.setSummary(
+            if (setting.currentKey.isNullOrBlank()) {
+                R.string.custom_api_key_summary_builtin
+            } else {
+                R.string.custom_api_key_summary_custom
+            },
+        )
+        pref.setOnPreferenceClickListener {
+            showApiKeyDialog(setting)
+            true
+        }
+    }
+
+    /**
+     * Okienko wlasnego klucza API: pola klucz+sekret, przycisk testu i 3 akcje
+     * (Anuluj / Domyślne / Zapisz). Zapis wymaga pozytywnego testu wpisanej pary;
+     * kazda zmiana w polach uniewaznia test. Puste pola = powrot do klucza
+     * wbudowanego - wtedy zapis bez testu.
+     */
+    private fun showApiKeyDialog(setting: GeneralPreferencesUi.AdvancedUi.ApiKeyUi) {
+        val binding = DialogCustomApiKeyBinding.inflate(layoutInflater)
+        binding.apiKeyInput.setText(setting.currentKey.orEmpty())
+        // Sekret nigdy nie jest prefillowany - raz zapisany jest nie do odzyskania
+        // z UI; zmiana klucza wymaga wpisania go od nowa.
+
+        val dialog =
+            AlertDialog
+                .Builder(requireContext())
+                .setTitle(R.string.pref_custom_api_key)
+                .setView(binding.root)
+                .setPositiveButton(R.string.custom_api_key_save, null)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setNeutralButton(R.string.custom_api_key_use_defaults) { _, _ -> setting.saveAction(null, null) }
+                .create()
+
+        dialog.setOnShowListener {
+            val saveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            // Para, ktora przeszla test - zapis wlasnego klucza dozwolony tylko dla niej.
+            var validatedPair: Pair<String, String>? = null
+
+            fun currentInput(): Pair<String, String> {
+                val key =
+                    binding.apiKeyInput.text
+                        .toString()
+                        .trim()
+                val secret =
+                    binding.apiSecretInput.text
+                        .toString()
+                        .trim()
+                return key to secret
+            }
+
+            fun refreshButtons() {
+                val input = currentInput()
+                val bothBlank = input.first.isBlank() && input.second.isBlank()
+                binding.testButton.isEnabled = input.first.isNotBlank() && input.second.isNotBlank()
+                saveButton.isEnabled = bothBlank || input == validatedPair
+            }
+
+            val onEdited: (android.text.Editable?) -> Unit = {
+                binding.testStatus.text = ""
+                refreshButtons()
+            }
+            binding.apiKeyInput.doAfterTextChanged(onEdited)
+            binding.apiSecretInput.doAfterTextChanged(onEdited)
+
+            binding.testButton.setOnClickListener {
+                val input = currentInput()
+                binding.testButton.isEnabled = false
+                binding.testStatus.setText(R.string.custom_api_key_testing)
+                lifecycleScope.launch {
+                    val isValid = setting.testCredentials(input.first, input.second)
+                    if (isValid) validatedPair = input
+                    binding.testStatus.setText(
+                        if (isValid) R.string.custom_api_key_valid else R.string.custom_api_key_invalid,
+                    )
+                    refreshButtons()
+                }
+            }
+
+            saveButton.setOnClickListener {
+                val input = currentInput()
+                setting.saveAction(input.first.takeIf { it.isNotBlank() }, input.second.takeIf { it.isNotBlank() })
+                dialog.dismiss()
+            }
+
+            refreshButtons()
+        }
+        dialog.show()
     }
 
     // Okresy < 15 min (foreground service): wybor pokazuje dialog wyjasniajacy.

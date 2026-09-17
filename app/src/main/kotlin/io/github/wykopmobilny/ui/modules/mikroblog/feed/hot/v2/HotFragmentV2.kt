@@ -32,6 +32,7 @@ import io.github.wykopmobilny.models.dataclass.Entry
 import io.github.wykopmobilny.ui.dialogs.VotersDialogListener
 import io.github.wykopmobilny.ui.dialogs.createVotersDialogListener
 import io.github.wykopmobilny.ui.fragments.entries.EntriesInteractor
+import io.github.wykopmobilny.ui.fragments.entrycomments.EntryCommentInteractor
 import io.github.wykopmobilny.ui.fragments.entries.EntryActionListener
 import io.github.wykopmobilny.ui.modules.NavigatorApi
 import io.github.wykopmobilny.ui.modules.NewNavigator
@@ -65,6 +66,9 @@ class HotFragmentV2 :
     EntryActionListener {
     @Inject
     lateinit var entriesInteractor: EntriesInteractor
+
+    @Inject
+    lateinit var entryCommentInteractor: EntryCommentInteractor
 
     @Inject
     lateinit var entriesApi: EntriesApi
@@ -136,6 +140,7 @@ class HotFragmentV2 :
                 navigator = navigator,
                 linkHandler = linkHandler,
                 entryActionListener = this,
+                entryCommentInteractor = entryCommentInteractor,
             ).also { this.adapter = it }
         binding.recyclerView.prepare()
         binding.recyclerView.adapter = adapter

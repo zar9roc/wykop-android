@@ -165,7 +165,7 @@ class EntryCommentViewHolder(
         // Only show reply view in entry details
         binding.replyTextView.isVisible = isUserAuthorized && commentViewListener != null
         binding.replyTextView.isEnabled = !isDeleted
-        binding.replyTextView.setOnClickListener { commentViewListener?.addReply(comment.author) }
+        binding.replyTextView.setOnClickListener { commentViewListener?.addReply(comment) }
 
         // Setup vote button - always visible but disabled if deleted
         binding.voteButton.isVisible = true

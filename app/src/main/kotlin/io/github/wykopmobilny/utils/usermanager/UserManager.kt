@@ -23,6 +23,14 @@ import javax.inject.Singleton
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
+/**
+ * Odswieza goscinny (aplikacyjny) token JWT. Implementacja deleguje do domeny
+ * (POST /v3/auth) - patrz provider w AppModule.
+ */
+fun interface GuestSessionRefresher {
+    suspend fun refresh()
+}
+
 data class UserCredentials(
     val login: String,
     val avatarUrl: String,
@@ -58,6 +66,7 @@ class UserManager
         private val userInfoStorage: UserInfoStorage,
         private val jwtTokenStorage: JwtTokenStorage,
         private val appScopes: AppScopes,
+        private val guestSessionRefresher: GuestSessionRefresher,
     ) : UserManagerApi {
         private val userInfo =
             userInfoStorage.loggedUser
@@ -68,6 +77,10 @@ class UserManager
             jwtTokenStorage.updateJwtToken(null)
             clearWebViewSession()
             userInfo.first { it == null }
+            // Po wylogowaniu API v3 dziala w trybie goscia na tokenie aplikacyjnym -
+            // ten ze startu procesu mogl juz wygasnac, wiec pobieramy swiezy.
+            // Bledy sieci polykane w implementacji - wylogowanie nie moze na nich polec.
+            guestSessionRefresher.refresh()
         }
 
         // Sesja wykop.pl zyje tez w cookies/localStorage WebView z ekranu logowania -

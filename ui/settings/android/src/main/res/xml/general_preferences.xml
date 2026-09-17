@@ -117,4 +117,18 @@
         android:title="@string/pref_export_logs"
         app:iconSpaceReserved="false"
         />
+
+    <androidx.preference.PreferenceCategory
+        android:title="@string/pref_category_advanced"
+        app:iconSpaceReserved="false"
+        >
+
+        <androidx.preference.Preference
+            android:key="customApiKey"
+            android:persistent="false"
+            android:title="@string/pref_custom_api_key"
+            app:iconSpaceReserved="false"
+            />
+
+    </androidx.preference.PreferenceCategory>
 </androidx.preference.PreferenceScreen>

@@ -78,6 +78,8 @@ internal class InteropSettingPreferencesApi
             get() = interop(UserSettings.showMinifiedImages) ?: false
         override val cutLongEntries: Boolean
             get() = interop(UserSettings.cutLongEntries) ?: true
+        override val showTopComments: Boolean
+            get() = interop(UserSettings.showTopComments) ?: false
         override val cutImages: Boolean
             get() = interop(UserSettings.cutImages) ?: true
         override val openSpoilersDialog: Boolean

@@ -60,6 +60,13 @@ internal fun durationMapping(preferencesKey: String) =
         reverseMapping = { it.inWholeMilliseconds.toString() },
     )
 
+internal fun stringMapping(preferencesKey: String) =
+    UserSetting(
+        preferencesKey = preferencesKey,
+        mapping = { it },
+        reverseMapping = { it },
+    )
+
 internal fun longMapping(preferencesKey: String) =
     UserSetting(
         preferencesKey = preferencesKey,

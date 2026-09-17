@@ -5,7 +5,7 @@ import io.github.wykopmobilny.api.responses.ObserveStateResponse
 import io.github.wykopmobilny.api.responses.v3.profile.BadgeResponseV3
 import io.github.wykopmobilny.api.responses.v3.user.UserFullResponseV3
 import io.github.wykopmobilny.models.dataclass.Entry
-import io.github.wykopmobilny.models.dataclass.EntryComment
+import io.github.wykopmobilny.models.dataclass.EntryListRow
 import io.github.wykopmobilny.models.dataclass.EntryLink
 import io.github.wykopmobilny.models.dataclass.Link
 import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
@@ -53,10 +53,12 @@ interface ProfileApi {
         page: Int,
     ): Single<FilteredData<Entry>>
 
+    // Mieszana lista: wpis-rodzic + komentarz(e) uzytkownika pod nim. Oba pochodza
+    // z tej samej odpowiedzi API, wiec kontekst nie kosztuje dodatkowego zapytania.
     fun getEntriesComments(
         username: String,
         page: Int,
-    ): Single<List<EntryComment>>
+    ): Single<List<EntryListRow>>
 
     fun getRelated(
         username: String,

@@ -30,6 +30,8 @@ class ActionsFragment :
         super.onViewCreated(view, savedInstanceState)
         presenter.subscribe(this)
         presenter.username = username
+        // Na profilu podglad najlepszych komentarzy jest zawsze wlaczony (bez ustawienia).
+        entriesAdapter.forceShowTopComments = true
         entriesAdapter.entryActionListener = presenter
         entriesAdapter.linkActionListener = presenter
         entriesAdapter.loadNewDataListener = { loadDataListener(false) }

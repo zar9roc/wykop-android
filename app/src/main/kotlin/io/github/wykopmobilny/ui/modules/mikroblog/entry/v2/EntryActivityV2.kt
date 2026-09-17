@@ -25,6 +25,17 @@ internal class EntryActivityV2 : ThemableActivity() {
     private val page: Int?
         get() = intent.getIntExtra(EXTRA_PAGE, -1).takeIf { it > 0 }
 
+    // Wejscie z listy przez "Odpowiedz"/"Cytuj" - ekran ma od razu ustawic tresc
+    // w polu odpowiedzi i dac na nie fokus.
+    private val replyToAuthor: String?
+        get() = intent.getStringExtra(EXTRA_REPLY_TO)
+
+    private val quoteAuthor: String?
+        get() = intent.getStringExtra(EXTRA_QUOTE_AUTHOR)
+
+    private val quoteBody: String?
+        get() = intent.getStringExtra(EXTRA_QUOTE_BODY)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) {
@@ -32,7 +43,14 @@ internal class EntryActivityV2 : ThemableActivity() {
                 .beginTransaction()
                 .replace(
                     binding.fragmentContainer.id,
-                    EntryDetailsFragment.newInstance(entryId = entryId, commentId = commentId, page = page),
+                    EntryDetailsFragment.newInstance(
+                        entryId = entryId,
+                        commentId = commentId,
+                        page = page,
+                        replyToAuthor = replyToAuthor,
+                        quoteAuthor = quoteAuthor,
+                        quoteBody = quoteBody,
+                    ),
                 ).commit()
         }
     }
@@ -59,16 +77,25 @@ internal class EntryActivityV2 : ThemableActivity() {
         private const val EXTRA_ENTRY_ID = "EXTRA_ENTRY_ID"
         private const val EXTRA_COMMENT_ID = "EXTRA_COMMENT_ID"
         private const val EXTRA_PAGE = "EXTRA_PAGE"
+        private const val EXTRA_REPLY_TO = "EXTRA_REPLY_TO"
+        private const val EXTRA_QUOTE_AUTHOR = "EXTRA_QUOTE_AUTHOR"
+        private const val EXTRA_QUOTE_BODY = "EXTRA_QUOTE_BODY"
 
         fun createIntent(
             context: Context,
             entryId: Long,
             commentId: Long? = null,
             page: Int? = null,
+            replyToAuthor: String? = null,
+            quoteAuthor: String? = null,
+            quoteBody: String? = null,
         ) = Intent(context, EntryActivityV2::class.java).apply {
             putExtra(EXTRA_ENTRY_ID, entryId)
             commentId?.let { putExtra(EXTRA_COMMENT_ID, it) }
             page?.let { putExtra(EXTRA_PAGE, it) }
+            replyToAuthor?.let { putExtra(EXTRA_REPLY_TO, it) }
+            quoteAuthor?.let { putExtra(EXTRA_QUOTE_AUTHOR, it) }
+            quoteBody?.let { putExtra(EXTRA_QUOTE_BODY, it) }
         }
     }
 }

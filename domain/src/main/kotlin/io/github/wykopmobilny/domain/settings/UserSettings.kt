@@ -51,6 +51,10 @@ internal object UserSettings {
     val hideBlacklistedContent = booleanMapping(preferencesKey = "settings.filtering.hide_blacklisted_content")
     val useEmbeddedBrowser = booleanMapping(preferencesKey = "settings.filtering.use_embedded_browser")
 
+    // Wlasny klucz API v3 (zaawansowane) - blank/brak = klucz wbudowany w aplikacje.
+    val customApiKey = stringMapping(preferencesKey = "settings.advanced.api_key")
+    val customApiSecret = stringMapping(preferencesKey = "settings.advanced.api_secret")
+
     val useYoutubePlayer = booleanMapping(preferencesKey = "settings.media.use_youtube_player")
     val useEmbeddedPlayer = booleanMapping(preferencesKey = "settings.media.use_embedded_player")
     val autoplayGifs = booleanMapping(preferencesKey = "settings.media.autoplay_gifs")
@@ -68,6 +72,10 @@ internal object UserSettings {
                 ),
         )
     val cutLongEntries = booleanMapping(preferencesKey = "settings.mikroblog.cut_long_entries")
+
+    // Podglad najwyzej ocenianych komentarzy pod wpisem na listach (API zwraca je
+    // razem z wpisem, wiec nic nie dociagamy).
+    val showTopComments = booleanMapping(preferencesKey = "settings.mikroblog.show_top_comments")
     val openSpoilersInDialog = booleanMapping(preferencesKey = "settings.mikroblog.open_spoilers_in_dialog")
 
     val imagePosition =

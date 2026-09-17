@@ -42,6 +42,24 @@ class WykopContentFormattingTest {
     }
 
     @Test
+    fun `tag and mention need whitespace or text start before them`() {
+        // W srodku slowa nie linkujemy - najczestsza ofiara byly adresy e-mail.
+        assertEquals("napisz na jan@example.com", "napisz na jan@example.com".linkifyTagsAndMentions())
+        assertEquals("piszemy w C#", "piszemy w C#".linkifyTagsAndMentions())
+        assertEquals("foo#bar", "foo#bar".linkifyTagsAndMentions())
+        assertEquals("foo@bar", "foo@bar".linkifyTagsAndMentions())
+    }
+
+    @Test
+    fun `tag at line start is linkified after html break`() {
+        // Tresc jest juz HTML-em - tagi na koncu wpisu stoja zaraz po "<br>".
+        assertEquals(
+            """tresc<br>#<a href="#heheszki">heheszki</a>""",
+            "tresc<br>#heheszki".linkifyTagsAndMentions(),
+        )
+    }
+
+    @Test
     fun `html entities are not treated as tags`() {
         assertEquals("&#39;", "&#39;".linkifyTagsAndMentions())
     }

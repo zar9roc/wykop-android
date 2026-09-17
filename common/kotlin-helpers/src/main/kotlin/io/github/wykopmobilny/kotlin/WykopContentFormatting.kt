@@ -110,11 +110,17 @@ fun String.linkifyTagsAndMentions(): String {
 // Loginy moga zawierac myslniki takze na brzegach (realny przyklad:
 // @-SCHlZOFRENlCYZM-), wiec wzmianka to @ + dowolny ciag [litera/cyfra/_/-].
 // Tagi nadal tylko \w (myslnik konczy tag).
+//
+// (?<![^\s>]) = przed # / @ musi byc bialy znak, koniec znacznika HTML albo poczatek
+// tekstu. Bez tego linkowalo sie wszystko w srodku slowa - m.in. adresy e-mail
+// (jan@example.com) i fragmenty typu C#. Znacznik ">" jest tu potrzebny, bo linkujemy
+// juz HTML: tagi na poczatku linii stoja po "<br>". Warunek zastepuje tez dawne
+// (?<!&) - encje ("&#39;") nie sa poprzedzone bialym znakiem, wiec nie lapia sie.
 private val linkableRegex =
     Regex(
         "(https?://[^\\s<>\"]+)" +
-            "|(?<!&)(#)(\\w+)" +
-            "|(@)([\\w-]+)",
+            "|(?<![^\\s>])(#)(\\w+)" +
+            "|(?<![^\\s>])(@)([\\w-]+)",
     )
 
 // Znaki interpunkcyjne po URL-u ("zobacz https://x.pl/a.") nie sa jego czescia.

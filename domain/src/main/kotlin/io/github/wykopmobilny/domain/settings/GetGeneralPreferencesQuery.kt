@@ -1,5 +1,9 @@
 package io.github.wykopmobilny.domain.settings
 
+import io.github.aakira.napier.Napier
+import io.github.wykopmobilny.api.endpoints.v3.AuthV3RetrofitApi
+import io.github.wykopmobilny.api.requests.v3.auth.AuthRequestV3
+import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
 import io.github.wykopmobilny.data.storage.api.AppStorage
 import io.github.wykopmobilny.domain.navigation.InteropRequest
 import io.github.wykopmobilny.domain.navigation.InteropRequestsProvider
@@ -7,6 +11,7 @@ import io.github.wykopmobilny.domain.settings.di.SettingsScope
 import io.github.wykopmobilny.domain.settings.prefs.GetFilteringPreferences
 import io.github.wykopmobilny.domain.settings.prefs.GetNotificationPreferences
 import io.github.wykopmobilny.domain.settings.prefs.NotificationsPreferences.RefreshPeriod
+import io.github.wykopmobilny.domain.startup.AuthenticateApp
 import io.github.wykopmobilny.domain.utils.safe
 import io.github.wykopmobilny.storage.api.UserInfoStorage
 import io.github.wykopmobilny.kotlin.AppDispatchers
@@ -20,6 +25,8 @@ import io.github.wykopmobilny.ui.settings.Setting
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import retrofit2.HttpException
+import java.io.IOException
 import javax.inject.Inject
 
 class GetGeneralPreferencesQuery
@@ -31,17 +38,69 @@ class GetGeneralPreferencesQuery
         private val interopRequests: InteropRequestsProvider,
         private val appScopes: AppScopes,
         private val appStorage: AppStorage,
+        private val authenticateApp: AuthenticateApp,
+        private val authV3Api: AuthV3RetrofitApi,
     ) : GetGeneralPreferences {
         override fun invoke() =
             combine(
                 notificationsFlow(),
                 filteringFlow(),
-            ) { notifications, filtering ->
+                advancedFlow(),
+            ) { notifications, filtering, advanced ->
                 GeneralPreferencesUi(
                     notifications = notifications,
                     filtering = filtering,
+                    advanced = advanced,
                 )
             }
+
+        // Sekret celowo NIE trafia do UI - jest write-only (nie do odzyskania z ustawien).
+        private fun advancedFlow() =
+            appStorage
+                .get(UserSettings.customApiKey)
+                .map { apiKey ->
+                    GeneralPreferencesUi.AdvancedUi(
+                        apiKey =
+                            GeneralPreferencesUi.AdvancedUi.ApiKeyUi(
+                                currentKey = apiKey,
+                                testCredentials = ::testApiCredentials,
+                                saveAction = ::saveApiCredentials,
+                            ),
+                    )
+                }
+
+        // Proba autoryzacji podana para na serwerze (POST /v3/auth). Wynik NIE jest
+        // zapisywany - to tylko walidacja przed zapisem; goscinny token odswieza
+        // dopiero saveApiCredentials.
+        private suspend fun testApiCredentials(
+            key: String,
+            secret: String,
+        ): Boolean =
+            try {
+                authV3Api
+                    .authenticate(WykopApiRequestV3(data = AuthRequestV3(key = key, secret = secret)))
+                    .data
+                    ?.token != null
+            } catch (e: HttpException) {
+                Napier.i("Custom API key test failed with HTTP ${e.code()}", e)
+                false
+            } catch (e: IOException) {
+                Napier.i("Custom API key test failed due to network error", e)
+                false
+            }
+
+        // Zapis klucza+sekretu (null = powrot do wbudowanych) + od razu swiezy goscinny
+        // token na nowych danych - bez tego zmiana dzialalaby dopiero od restartu.
+        private fun saveApiCredentials(
+            key: String?,
+            secret: String?,
+        ) {
+            appScopes.safe<SettingsScope> {
+                appStorage.update(UserSettings.customApiKey, key?.trim()?.takeIf { it.isNotBlank() })
+                appStorage.update(UserSettings.customApiSecret, secret?.trim()?.takeIf { it.isNotBlank() })
+                authenticateApp()
+            }
+        }
 
         private fun notificationsFlow() =
             getNotificationPreferences()

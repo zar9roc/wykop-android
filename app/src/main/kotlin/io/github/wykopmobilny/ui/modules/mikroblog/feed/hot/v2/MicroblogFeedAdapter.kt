@@ -4,10 +4,19 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import io.github.wykopmobilny.databinding.ProgressItemBinding
 import io.github.wykopmobilny.models.dataclass.Entry
+import io.github.wykopmobilny.models.dataclass.EntryComment
+import io.github.wykopmobilny.models.dataclass.EntryListRow
+import io.github.wykopmobilny.models.dataclass.toRows
 import io.github.wykopmobilny.storage.api.SettingsPreferencesApi
-import io.github.wykopmobilny.ui.adapters.viewholders.BlockedViewHolder
+import io.github.wykopmobilny.ui.adapters.TopCommentsActionListener
+import io.github.wykopmobilny.ui.adapters.TopCommentsViewListener
+import io.github.wykopmobilny.ui.adapters.bindEntryOrCommentHolder
+import io.github.wykopmobilny.ui.adapters.constructEntryOrCommentViewHolder
+import io.github.wykopmobilny.ui.adapters.viewholders.EntryCommentViewHolder
 import io.github.wykopmobilny.ui.adapters.viewholders.EntryViewHolder
 import io.github.wykopmobilny.ui.fragments.entries.EntryActionListener
+import io.github.wykopmobilny.ui.fragments.entrycomments.EntryCommentInteractor
+import io.reactivex.disposables.CompositeDisposable
 import io.github.wykopmobilny.ui.modules.NewNavigator
 import io.github.wykopmobilny.utils.layoutInflater
 import io.github.wykopmobilny.utils.linkhandler.WykopLinkHandler
@@ -26,6 +35,7 @@ internal class MicroblogFeedAdapter(
     private val navigator: NewNavigator,
     private val linkHandler: WykopLinkHandler,
     private val entryActionListener: EntryActionListener,
+    entryCommentInteractor: EntryCommentInteractor,
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val cutLongEntries by lazy { settingsPreferencesApi.cutLongEntries }
     private val openSpoilersDialog by lazy { settingsPreferencesApi.openSpoilersDialog }
@@ -33,95 +43,118 @@ internal class MicroblogFeedAdapter(
     private val enableEmbedPlayer by lazy { settingsPreferencesApi.enableEmbedPlayer }
     private val showAdultContent by lazy { settingsPreferencesApi.showAdultContent }
     private val hideNsfw by lazy { settingsPreferencesApi.hideNsfw }
+    private val showTopComments by lazy { settingsPreferencesApi.showTopComments }
 
-    private val entries = mutableListOf<Entry>()
+    // Lista wierszy: wpis, a pod nim (gdy wlaczone) jego komentarze jako osobne
+    // wiersze - renderowane szablonem odpowiedzi, jak na ekranie wpisu.
+    private val rows = mutableListOf<EntryListRow>()
     private var showFooterLoading = false
+
+    private val disposables = CompositeDisposable()
+    private val commentActionListener =
+        TopCommentsActionListener(entryCommentInteractor, navigator, disposables, ::updateComment)
+    private val commentViewListener = TopCommentsViewListener(navigator)
 
     fun replaceAll(
         newEntries: List<Entry>,
         footerLoading: Boolean,
     ) {
-        entries.clear()
-        entries.addAll(newEntries)
+        rows.clear()
+        rows.addAll(newEntries.flatMap { it.toRows(includeComments = showTopComments) })
         showFooterLoading = footerLoading
         notifyDataSetChanged()
     }
 
     fun append(newEntries: List<Entry>) {
         if (newEntries.isEmpty()) return
-        val insertAt = entries.size
-        entries.addAll(newEntries)
-        notifyItemRangeInserted(insertAt, newEntries.size)
+        val newRows = newEntries.flatMap { it.toRows(includeComments = showTopComments) }
+        val insertAt = rows.size
+        rows.addAll(newRows)
+        notifyItemRangeInserted(insertAt, newRows.size)
     }
 
     fun setFooterLoading(loading: Boolean) {
         if (showFooterLoading == loading) return
         showFooterLoading = loading
         if (loading) {
-            notifyItemInserted(entries.size)
+            notifyItemInserted(rows.size)
         } else {
-            notifyItemRemoved(entries.size)
+            notifyItemRemoved(rows.size)
         }
     }
 
     fun updateEntry(entry: Entry) {
-        val index = entries.indexOfFirst { it.id == entry.id }
+        val index = rows.indexOfFirst { it is EntryListRow.EntryRow && it.entry.id == entry.id }
         if (index >= 0) {
-            entries[index] = entry
+            rows[index] = EntryListRow.EntryRow(entry)
             notifyItemChanged(index)
         }
     }
 
-    private fun isFooterPosition(position: Int) = showFooterLoading && position == entries.size
+    private fun updateComment(comment: EntryComment) {
+        val index = rows.indexOfFirst { it is EntryListRow.CommentRow && it.comment.id == comment.id }
+        if (index >= 0) {
+            rows[index] = EntryListRow.CommentRow(comment)
+            notifyItemChanged(index)
+        }
+    }
 
-    override fun getItemCount(): Int = entries.size + if (showFooterLoading) 1 else 0
+    private fun isFooterPosition(position: Int) = showFooterLoading && position == rows.size
+
+    override fun getItemCount(): Int = rows.size + if (showFooterLoading) 1 else 0
 
     override fun getItemViewType(position: Int): Int =
         if (isFooterPosition(position)) {
             TYPE_LOADING
         } else {
-            EntryViewHolder.getViewTypeForEntry(entries[position])
+            when (val row = rows[position]) {
+                is EntryListRow.EntryRow -> EntryViewHolder.getViewTypeForEntry(row.entry)
+                is EntryListRow.CommentRow -> EntryCommentViewHolder.getViewTypeForEntryComment(row.comment)
+                is EntryListRow.LinkRow -> error("Feed mikrobloga nie zawiera znalezisk")
+            }
         }
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
     ): RecyclerView.ViewHolder =
-        when (viewType) {
-            TYPE_LOADING -> LoadingViewHolder(ProgressItemBinding.inflate(parent.layoutInflater, parent, false))
-
-            EntryViewHolder.TYPE_BLOCKED -> BlockedViewHolder.inflateView(parent, ::notifyItemChanged)
-
-            else ->
-                EntryViewHolder.inflateView(
-                    parent = parent,
-                    viewType = viewType,
-                    userManagerApi = userManagerApi,
-                    navigator = navigator,
-                    linkHandler = linkHandler,
-                    entryActionListener = entryActionListener,
-                    replyListener = null,
-                )
+        if (viewType == TYPE_LOADING) {
+            LoadingViewHolder(ProgressItemBinding.inflate(parent.layoutInflater, parent, false))
+        } else {
+            constructEntryOrCommentViewHolder(
+                parent = parent,
+                viewType = viewType,
+                userManagerApi = userManagerApi,
+                navigator = navigator,
+                linkHandler = linkHandler,
+                entryActionListener = entryActionListener,
+                replyListener = null,
+                commentActionListener = commentActionListener,
+                commentViewListener = commentViewListener,
+                onBlockedRevealed = ::notifyItemChanged,
+            )
         }
 
     override fun onBindViewHolder(
         holder: RecyclerView.ViewHolder,
         position: Int,
     ) {
-        when (holder) {
-            is EntryViewHolder ->
-                holder.bindView(
-                    entry = entries[position],
-                    cutLongEntries = cutLongEntries,
-                    openSpoilersDialog = openSpoilersDialog,
-                    enableYoutubePlayer = enableYoutubePlayer,
-                    enableEmbedPlayer = enableEmbedPlayer,
-                    showAdultContent = showAdultContent,
-                    hideNsfw = hideNsfw,
-                )
+        if (isFooterPosition(position)) return
+        bindEntryOrCommentHolder(
+            holder = holder,
+            row = rows[position],
+            cutLongEntries = cutLongEntries,
+            openSpoilersDialog = openSpoilersDialog,
+            enableYoutubePlayer = enableYoutubePlayer,
+            enableEmbedPlayer = enableEmbedPlayer,
+            showAdultContent = showAdultContent,
+            hideNsfw = hideNsfw,
+        )
+    }
 
-            is BlockedViewHolder -> holder.bindView(entries[position])
-        }
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        disposables.clear()
+        super.onDetachedFromRecyclerView(recyclerView)
     }
 
     private class LoadingViewHolder(

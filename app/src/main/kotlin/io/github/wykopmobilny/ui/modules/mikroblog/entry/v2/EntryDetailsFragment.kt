@@ -54,6 +54,7 @@ import io.github.wykopmobilny.utils.intoComposite
 import io.github.wykopmobilny.utils.linkhandler.WykopLinkHandler
 import io.github.wykopmobilny.utils.longArgument
 import io.github.wykopmobilny.utils.longArgumentNullable
+import io.github.wykopmobilny.utils.stringArgumentNullable
 import io.github.wykopmobilny.utils.prepare
 import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 import io.github.wykopmobilny.utils.viewModelWrapperFactoryKeyed
@@ -106,6 +107,12 @@ internal class EntryDetailsFragment :
     private var entryId by longArgument("entryId")
     private var commentId by longArgumentNullable("commentId")
     private var page by longArgumentNullable("page")
+
+    // Wejscie z listy przez "Odpowiedz"/"Cytuj" - tresc wstawiana w pole odpowiedzi
+    // przy pierwszej konfiguracji paska (potem czyszczone, zeby nie wracalo po obrocie).
+    private var replyToAuthor by stringArgumentNullable("replyToAuthor")
+    private var quoteAuthor by stringArgumentNullable("quoteAuthor")
+    private var quoteBody by stringArgumentNullable("quoteBody")
 
     private val key
         get() =
@@ -427,9 +434,29 @@ internal class EntryDetailsFragment :
         if (!inputToolbarConfigured) {
             inputToolbarConfigured = true
             binding.inputToolbar.setDefaultAddressant(entry.author.nick)
+            applyPendingReply(binding.inputToolbar)
         }
         binding.inputToolbar.setIfIsCommentingPossible(entry.isCommentingPossible)
         binding.inputToolbar.show()
+    }
+
+    /**
+     * Ekran otwarty z listy przyciskiem "Odpowiedz"/"Cytuj" pod komentarzem - pasek
+     * odpowiedzi dostaje gotowa tresc i fokus (addAddressant/addQuoteText same
+     * pokazuja klawiature). Argumenty czyscimy, zeby nie wrocily przy odtworzeniu.
+     */
+    private fun applyPendingReply(inputToolbar: InputToolbar) {
+        val quotedAuthor = quoteAuthor
+        val quotedBody = quoteBody
+        val repliedAuthor = replyToAuthor
+        when {
+            quotedAuthor != null && quotedBody != null -> inputToolbar.addQuoteText(quotedBody, quotedAuthor)
+            repliedAuthor != null -> inputToolbar.addAddressant(repliedAuthor)
+            else -> return
+        }
+        replyToAuthor = null
+        quoteAuthor = null
+        quoteBody = null
     }
 
     /** Wołane przez EntryActivityV2 po powrocie z edycji wpisu/komentarza. */
@@ -488,7 +515,11 @@ internal class EntryDetailsFragment :
             ).intoComposite(disposables)
     }
 
-    override fun addReply(author: Author) {
+    override fun addReply(comment: EntryComment) {
+        binding?.inputToolbar?.addAddressant(comment.author.nick)
+    }
+
+    override fun addReplyToAuthor(author: Author) {
         binding?.inputToolbar?.addAddressant(author.nick)
     }
 
@@ -600,10 +631,16 @@ internal class EntryDetailsFragment :
             entryId: Long,
             commentId: Long?,
             page: Int?,
+            replyToAuthor: String? = null,
+            quoteAuthor: String? = null,
+            quoteBody: String? = null,
         ) = EntryDetailsFragment().apply {
             this.entryId = entryId
             this.commentId = commentId
             this.page = page?.toLong()
+            this.replyToAuthor = replyToAuthor
+            this.quoteAuthor = quoteAuthor
+            this.quoteBody = quoteBody
         }
     }
 }

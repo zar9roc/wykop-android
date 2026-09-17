@@ -17,6 +17,7 @@ import io.github.wykopmobilny.domain.promoted.PromotedModule
 import io.github.wykopmobilny.domain.search.di.SearchDomainComponent
 import io.github.wykopmobilny.domain.settings.di.SettingsDomainComponent
 import io.github.wykopmobilny.domain.startup.AppConfig
+import io.github.wykopmobilny.domain.startup.AuthenticateApp
 import io.github.wykopmobilny.domain.startup.InitializeApp
 import io.github.wykopmobilny.domain.styles.di.StylesDomainComponent
 import io.github.wykopmobilny.domain.twofactor.di.TwoFactorAuthDomainComponent
@@ -91,4 +92,7 @@ interface DomainComponent {
     fun twoFactor(): TwoFactorAuthDomainComponent
 
     fun initializeApp(): InitializeApp
+
+    // Goscinny token JWT (POST /v3/auth) - do ponownego pobrania po wylogowaniu.
+    fun authenticateApp(): AuthenticateApp
 }
