@@ -60,6 +60,12 @@
     <color name="separatorColor.Dark">#1a1a1a</color>
     <color name="separatorColor.Amoled">#101010</color>
 
+    <!-- Separator sekcji: wyrazniejszy niz lineColor, oddziela wpis z komentarzami
+         od nastepnej sekcji listy. -->
+    <color name="sectionSeparator">#ecf0f1</color>
+    <color name="sectionSeparator.Dark">#121214</color>
+    <color name="sectionSeparator.Amoled">#000000</color>
+
     <color name="lineColor">#efefef</color>
     <color name="lineColor.Dark">#393939</color>
     <color name="lineColor.Amoled">#121212</color>

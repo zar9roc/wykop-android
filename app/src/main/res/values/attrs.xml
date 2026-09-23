@@ -20,6 +20,10 @@
     <attr name="adminNickColor" format="reference" />
     <attr name="usersMessageSubtextDirected" format="reference" />
     <attr name="lineColor" format="reference" />
+
+    <!-- Separator miedzy sekcjami listy (wpis + jego komentarze). Ten sam
+         ksztalt we wszystkich motywach - rozni sie tylko kolorem. -->
+    <attr name="sectionSeparatorColor" format="reference|color" />
     <attr name="separatorColor" format="reference" />
     <attr name="expandImageGradient" format="reference" />
     <attr name="materialSearchStyle" format="reference" />

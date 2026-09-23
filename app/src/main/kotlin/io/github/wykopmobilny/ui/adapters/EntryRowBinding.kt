@@ -7,6 +7,7 @@ import io.github.wykopmobilny.ui.adapters.viewholders.BlockedViewHolder
 import io.github.wykopmobilny.ui.adapters.viewholders.EntryCommentViewHolder
 import io.github.wykopmobilny.ui.adapters.viewholders.EntryListener
 import io.github.wykopmobilny.ui.adapters.viewholders.EntryViewHolder
+import io.github.wykopmobilny.ui.adapters.viewholders.RecyclableViewHolder
 import io.github.wykopmobilny.ui.fragments.entries.EntryActionListener
 import io.github.wykopmobilny.ui.fragments.entrycomments.EntryCommentActionListener
 import io.github.wykopmobilny.ui.fragments.entrycomments.EntryCommentViewListener
@@ -58,6 +59,30 @@ fun constructEntryOrCommentViewHolder(
                 replyListener = replyListener,
             )
     }
+
+/**
+ * Czy wiersz zamyka sekcje (wpis + jego komentarze). Sekcja zaczyna sie wpisem albo
+ * znaleziskiem, wiec konczy ja wiersz, po ktorym nastepuje kolejny taki poczatek.
+ * Ostatni wiersz strony nie dostaje separatora - pod nim jest stopka ladowania.
+ */
+fun isSectionEnd(
+    rows: List<EntryListRow?>,
+    position: Int,
+): Boolean =
+    when (rows.getOrNull(position + 1)) {
+        is EntryListRow.EntryRow, is EntryListRow.LinkRow -> true
+        else -> false
+    }
+
+/** Ustawia tag separatora - wywolywane przy kazdym bindzie (viewholdery sa recyklowane). */
+fun RecyclerView.ViewHolder.markSectionEnd(isSectionEnd: Boolean) {
+    itemView.tag =
+        if (isSectionEnd) {
+            RecyclableViewHolder.SEPARATOR_SECTION
+        } else {
+            RecyclableViewHolder.SEPARATOR_SMALL
+        }
+}
 
 fun bindEntryOrCommentHolder(
     holder: RecyclerView.ViewHolder,

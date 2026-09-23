@@ -212,6 +212,8 @@
     <dimen name="separator_normal">1dp</dimen>
     <dimen name="separator_large">3dp</dimen>
     <dimen name="separator_huge">6dp</dimen>
+    <!-- Delikatna przerwa miedzy sekcjami listy (wpis + jego komentarze). -->
+    <dimen name="separator_section">8dp</dimen>
 
     <dimen name="comment_reply_padding">24dp</dimen>
 

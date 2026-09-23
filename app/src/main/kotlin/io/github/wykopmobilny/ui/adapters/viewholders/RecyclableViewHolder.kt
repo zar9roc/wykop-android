@@ -10,5 +10,8 @@ abstract class RecyclableViewHolder(
     companion object {
         const val SEPARATOR_SMALL = "SEP_SMALL"
         const val SEPARATOR_NORMAL = "SEP_NORMAL"
+
+        /** Koniec sekcji listy mieszanej (wpis + jego komentarze) - grubszy separator. */
+        const val SEPARATOR_SECTION = "SEP_SECTION"
     }
 }

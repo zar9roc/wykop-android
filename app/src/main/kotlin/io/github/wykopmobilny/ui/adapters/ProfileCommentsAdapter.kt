@@ -89,7 +89,7 @@ class ProfileCommentsAdapter
             holder: RecyclerView.ViewHolder,
             position: Int,
         ) = bindEntryOrCommentHolder(
-            holder = holder,
+            holder = holder.also { it.markSectionEnd(isSectionEnd(dataset, position)) },
             row = dataset[position]!!,
             cutLongEntries = cutLongEntries,
             openSpoilersDialog = openSpoilersDialog,

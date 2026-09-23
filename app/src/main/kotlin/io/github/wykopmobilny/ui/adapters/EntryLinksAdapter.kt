@@ -160,6 +160,7 @@ class EntryLinksAdapter
             position: Int,
         ) {
             val row = dataset[position]!!
+            holder.markSectionEnd(isSectionEnd(dataset, position))
             if (row is EntryListRow.CommentRow) {
                 when (holder) {
                     is EntryCommentViewHolder ->

@@ -12,6 +12,8 @@ import io.github.wykopmobilny.ui.adapters.TopCommentsActionListener
 import io.github.wykopmobilny.ui.adapters.TopCommentsViewListener
 import io.github.wykopmobilny.ui.adapters.bindEntryOrCommentHolder
 import io.github.wykopmobilny.ui.adapters.constructEntryOrCommentViewHolder
+import io.github.wykopmobilny.ui.adapters.isSectionEnd
+import io.github.wykopmobilny.ui.adapters.markSectionEnd
 import io.github.wykopmobilny.ui.adapters.viewholders.EntryCommentViewHolder
 import io.github.wykopmobilny.ui.adapters.viewholders.EntryViewHolder
 import io.github.wykopmobilny.ui.fragments.entries.EntryActionListener
@@ -140,6 +142,7 @@ internal class MicroblogFeedAdapter(
         position: Int,
     ) {
         if (isFooterPosition(position)) return
+        holder.markSectionEnd(isSectionEnd(rows, position))
         bindEntryOrCommentHolder(
             holder = holder,
             row = rows[position],
