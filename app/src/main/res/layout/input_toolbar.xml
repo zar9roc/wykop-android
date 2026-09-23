@@ -18,6 +18,53 @@
         app:layout_constraintTop_toTopOf="parent"
         />
 
+    <!-- Pasek kontekstu odpowiedzi: widoczny tylko gdy komentarz leci do watku
+         (POST /v3/links/{linkId}/comments/{parentId}). "X" wraca do komentarza
+         glownego. Domyslnie GONE - pozostale ekrany uzywajace InputToolbar
+         nie widza zadnej zmiany. -->
+    <LinearLayout
+        android:id="@+id/replyContextBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="?attr/itemBackgroundColorSelected"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/padding_dp_normal"
+        android:paddingEnd="@dimen/padding_dp_small"
+        android:visibility="gone"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/separator"
+        tools:visibility="visible"
+        >
+
+        <TextView
+            android:id="@+id/replyContextLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingTop="@dimen/padding_dp_small"
+            android:paddingBottom="@dimen/padding_dp_small"
+            android:textColor="?attr/textColorGrey"
+            android:textSize="?attr/textSizeSmall"
+            tools:text="Odpowiadasz w wątku @nick"
+            />
+
+        <ImageView
+            android:id="@+id/replyContextClear"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/reply_context_clear"
+            android:padding="@dimen/padding_dp_mini"
+            android:src="@drawable/ic_close"
+            app:tint="?attr/textColorGrey"
+            />
+
+    </LinearLayout>
+
     <io.github.wykopmobilny.ui.widgets.WykopMultiAutoCompleteTextView
         android:id="@+id/body"
         android:layout_width="0dp"
@@ -36,7 +83,7 @@
         android:textSize="?attr/textSizeLarge"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/separator"
+        app:layout_constraintTop_toBottomOf="@id/replyContextBar"
         />
 
     <io.github.wykopmobilny.ui.widgets.markdowntoolbar.MarkdownToolbar

@@ -22,19 +22,30 @@ import io.github.wykopmobilny.ui.modules.links.linkdetails.items.bindParentComme
 import io.github.wykopmobilny.ui.modules.links.linkdetails.items.bindReplyCommentV3
 import io.github.wykopmobilny.utils.asyncDifferConfig
 
+/** Watek, do ktorego trafi odpowiedz: id i autor komentarza otwierajacego watek. */
+internal data class LinkCommentThread(
+    val parentId: Long,
+    val parentAuthor: String,
+)
+
 internal class LinkDetailsAdapterV3(
     // null = niezalogowany: przyciski Odpowiedz/Cytat ukryte.
-    private val onReplyComment: ((author: String) -> Unit)? = null,
-    private val onQuoteComment: ((author: String, body: String) -> Unit)? = null,
+    private val onReplyComment: ((author: String, thread: LinkCommentThread) -> Unit)? = null,
+    private val onQuoteComment: ((author: String, body: String, thread: LinkCommentThread) -> Unit)? = null,
 ) : ListAdapter<LinkDetailsListItem, LinkDetailsAdapterV3.BindingViewHolder>(
         asyncDifferConfig(LinkDetailsListItem.Diff),
     ) {
-    private fun replyActionFor(data: LinkCommentUi.Normal): (() -> Unit)? =
-        onReplyComment?.let { callback -> { callback(data.author.name) } }
+    private fun replyActionFor(
+        data: LinkCommentUi.Normal,
+        thread: LinkCommentThread,
+    ): (() -> Unit)? = onReplyComment?.let { callback -> { callback(data.author.name, thread) } }
 
-    private fun quoteActionFor(data: LinkCommentUi.Normal): (() -> Unit)? =
+    private fun quoteActionFor(
+        data: LinkCommentUi.Normal,
+        thread: LinkCommentThread,
+    ): (() -> Unit)? =
         onQuoteComment?.let { callback ->
-            { callback(data.author.name, data.body.content?.toString().orEmpty()) }
+            { callback(data.author.name, data.body.content?.toString().orEmpty(), thread) }
         }
 
     override fun getItemViewType(position: Int) =
@@ -90,12 +101,13 @@ internal class LinkDetailsAdapterV3(
             is LinkDetailsListItem.ParentComment -> {
                 when (val data = item.comment.data) {
                     is LinkCommentUi.Normal -> {
+                        val thread = LinkCommentThread(parentId = data.id, parentAuthor = data.author.name)
                         (holder.binding as TopLinkCommentLayoutBinding).bindParentCommentV3(
                             parent = item.comment,
                             data = data,
                             hasReplies = item.hasReplies,
-                            onReply = replyActionFor(data),
-                            onQuote = quoteActionFor(data),
+                            onReply = replyActionFor(data, thread),
+                            onQuote = quoteActionFor(data, thread),
                         )
                     }
 
@@ -114,8 +126,8 @@ internal class LinkDetailsAdapterV3(
                         (holder.binding as LinkCommentLayoutBinding).bindReplyCommentV3(
                             comment,
                             item.isLast,
-                            onReply = replyActionFor(comment),
-                            onQuote = quoteActionFor(comment),
+                            onReply = replyActionFor(comment, item.thread),
+                            onQuote = quoteActionFor(comment, item.thread),
                         )
                     }
 
@@ -156,6 +168,9 @@ internal sealed class LinkDetailsListItem {
     data class ReplyComment(
         val comment: LinkCommentUi,
         val isLast: Boolean,
+        // Watek, w ktorym stoi odpowiedz - odpowiadajac na odpowiedz nadal
+        // celujemy w komentarz otwierajacy watek (API nie ma glebszego zagniezdzenia).
+        val thread: LinkCommentThread,
     ) : LinkDetailsListItem() {
         val id = comment.commentId
     }
@@ -195,6 +210,13 @@ private val LinkCommentUi.commentId
             is LinkCommentUi.Normal -> id
         }
 
+private val LinkCommentUi.authorName
+    get() =
+        when (this) {
+            is LinkCommentUi.Hidden -> author.name
+            is LinkCommentUi.Normal -> author.name
+        }
+
 @OptIn(ExperimentalStdlibApi::class)
 internal fun LinkDetailsUi.toAdapterListV3(): List<LinkDetailsListItem> =
     buildList {
@@ -205,11 +227,17 @@ internal fun LinkDetailsUi.toAdapterListV3(): List<LinkDetailsListItem> =
         add(LinkDetailsListItem.Header(header, relatedCount))
         commentsSection.comments.forEach { (parent, replies) ->
             add(LinkDetailsListItem.ParentComment(parent, hasReplies = replies.isNotEmpty()))
+            val thread =
+                LinkCommentThread(
+                    parentId = parent.data.commentId,
+                    parentAuthor = parent.data.authorName,
+                )
             addAll(
                 replies.map { linkCommentUi ->
                     LinkDetailsListItem.ReplyComment(
                         linkCommentUi,
                         linkCommentUi.commentId == replies.last().commentId,
+                        thread,
                     )
                 },
             )

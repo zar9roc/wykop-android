@@ -75,6 +75,9 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
     private var commentsRefreshAction: (() -> Unit)? = null
     private var cameraPhotoUri: Uri? = null
 
+    // null = komentarz poleci na poziom glowny znaleziska; inaczej odpowiedz w watku.
+    private var replyThread: LinkCommentThread? = null
+
     private val galleryPicker =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let { inputToolbar?.setPhoto(it) }
@@ -269,7 +272,12 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
                     containsAdultContent: Boolean,
                     embedUrl: String?,
                 ) = sendComment(body, containsAdultContent) {
-                    linksApi.commentAdd(body, containsAdultContent, photo, linkId, embedUrl)
+                    val parentId = replyThread?.parentId
+                    if (parentId == null) {
+                        linksApi.commentAdd(body, containsAdultContent, photo, linkId, embedUrl)
+                    } else {
+                        linksApi.commentAdd(body, containsAdultContent, photo, linkId, parentId, embedUrl)
+                    }
                 }
 
                 override fun sendPhoto(
@@ -278,7 +286,12 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
                     containsAdultContent: Boolean,
                     embedUrl: String?,
                 ) = sendComment(body, containsAdultContent) {
-                    linksApi.commentAdd(body, photo, containsAdultContent, linkId, embedUrl)
+                    val parentId = replyThread?.parentId
+                    if (parentId == null) {
+                        linksApi.commentAdd(body, photo, containsAdultContent, linkId, embedUrl)
+                    } else {
+                        linksApi.commentAdd(body, photo, containsAdultContent, linkId, parentId, embedUrl)
+                    }
                 }
 
                 override fun openGalleryImageChooser() {
@@ -291,9 +304,24 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
                 }
             }
         return LinkDetailsAdapterV3(
-            onReplyComment = { author -> toolbar.addAddressant(author) },
-            onQuoteComment = { author, body -> toolbar.addQuoteText(body, author) },
+            onReplyComment = { author, thread ->
+                setReplyThread(thread)
+                toolbar.addAddressant(author)
+            },
+            onQuoteComment = { author, body, thread ->
+                setReplyThread(thread)
+                toolbar.addQuoteText(body, author)
+            },
         )
+    }
+
+    /**
+     * Ustawia watek, do ktorego poleci komentarz, i pokazuje pasek nad polem
+     * tekstowym. "X" na pasku wraca do komentarza glownego.
+     */
+    private fun setReplyThread(thread: LinkCommentThread?) {
+        replyThread = thread
+        inputToolbar?.setReplyContext(thread?.parentAuthor) { setReplyThread(null) }
     }
 
     private fun sendComment(
@@ -308,6 +336,7 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
             runCatching { request().subscribeOn(io.reactivex.schedulers.Schedulers.io()).await() }
                 .onSuccess {
                     toolbar.resetState()
+                    setReplyThread(null)
                     // Odswiezenie listy przez akcje domeny (ta sama co swipe-refresh).
                     commentsRefreshAction?.invoke()
                 }.onFailure { failure ->

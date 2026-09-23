@@ -122,6 +122,15 @@ interface LinksV3RetrofitApi {
         @Body request: WykopApiRequestV3<CreateUpdateCommentRequestV3>,
     ): WykopApiResponseV3<LinkCommentResponseV3>
 
+    // Odpowiedz w watku: POST pod /comments/{parentId} (nie /comments/{id}/comments -
+    // ta sciezka jest wylacznie do GET podkomentarzy). Tak samo robi frontend wykop.pl.
+    @POST("v3/links/{linkId}/comments/{parentId}")
+    suspend fun addLinkCommentReply(
+        @Path("linkId") linkId: Long,
+        @Path("parentId") parentId: Long,
+        @Body request: WykopApiRequestV3<CreateUpdateCommentRequestV3>,
+    ): WykopApiResponseV3<LinkCommentResponseV3>
+
     @PUT("v3/links/{linkId}/comments/{commentId}")
     suspend fun editLinkComment(
         @Path("linkId") linkId: Long,

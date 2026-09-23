@@ -275,6 +275,24 @@ class InputToolbar(
         binding.body.hint = hint
     }
 
+    /**
+     * Pokazuje pasek "Odpowiadasz w wątku @nick" nad polem tekstowym. [author]
+     * == null chowa pasek (komentarz poleci na poziom główny). [onClear] jest
+     * wołane po tapnięciu "X".
+     */
+    fun setReplyContext(
+        author: String?,
+        onClear: () -> Unit = {},
+    ) {
+        binding.replyContextBar.isVisible = author != null
+        if (author != null) {
+            binding.replyContextLabel.text = context.getString(R.string.reply_context_thread, author)
+            binding.replyContextClear.setOnClickListener { onClear() }
+        } else {
+            binding.replyContextClear.setOnClickListener(null)
+        }
+    }
+
     fun hasUserEditedContent() = textBody != defaultText && binding.markdownToolbar.hasUserEditedContent()
 
     // Powiadamia o zmianie treści pola (do przełączania przechwytywania gestu wstecz).

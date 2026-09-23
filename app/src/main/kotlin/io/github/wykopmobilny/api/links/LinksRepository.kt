@@ -293,8 +293,11 @@ class LinksRepository
             embedUrl: String?,
         ) = rxSingle {
             val media = mediaApiV3.resolveAttachments(photoUrl = embed, embedUrl = embedUrl)
-            linksApiV3.addLinkComment(
+            // linkComment = id komentarza otwierajacego watek - odpowiedz musi trafic
+            // pod niego, inaczej API tworzy kolejny komentarz glowny.
+            linksApiV3.addLinkCommentReply(
                 linkId,
+                linkComment,
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body,
@@ -324,8 +327,9 @@ class LinksRepository
         ) = rxSingle {
             val media = mediaApiV3.resolveAttachments(photoKey = uploadPhotoAndGetKey(inputStream), embedUrl = embedUrl)
 
-            linksApiV3.addLinkComment(
+            linksApiV3.addLinkCommentReply(
                 linkId,
+                linkComment,
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body.allowImageOnly(),
