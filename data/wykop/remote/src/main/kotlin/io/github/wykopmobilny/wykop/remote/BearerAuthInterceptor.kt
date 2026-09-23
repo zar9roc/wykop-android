@@ -3,6 +3,7 @@ package io.github.wykopmobilny.wykop.remote
 import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.storage.api.BearerTokenStorage
 import io.github.wykopmobilny.storage.api.JwtTokenStorage
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
@@ -26,7 +27,14 @@ internal class BearerAuthInterceptor
             // leci asynchronicznie w InitializeApp). Po tym czasie przepuszczamy zapytanie
             // bez autoryzacji (i wtedy 403 jest juz realnym bledem, nie wyscigiem).
             private const val BEARER_WAIT_TIMEOUT_MS = 10_000L
+
+            // Brak tokenu przy zerwanej sieci dotyczy kazdego zapytania - bez limitu
+            // jedna awaria potrafi wygenerowac kilkadziesiat identycznych ostrzezen.
+            private const val NO_TOKEN_LOG_INTERVAL_MS = 30_000L
         }
+
+        @Volatile
+        private var lastNoTokenLogAt = 0L
 
         override fun intercept(chain: Interceptor.Chain): Response {
             val request = chain.request()
@@ -53,15 +61,13 @@ internal class BearerAuthInterceptor
                         ?: if (jwtTokenStorage.jwtToken.first() != null) {
                             null
                         } else {
-                            withTimeoutOrNull(BEARER_WAIT_TIMEOUT_MS) {
-                                bearerTokenStorage.bearerToken.first { it != null }
-                            }
+                            awaitBearerToken()
                         }
                 }
 
             // If no token, proceed without Authorization header
             if (bearerToken == null) {
-                Napier.w("BearerAuthInterceptor - No bearer token available", tag = "BearerAuthInterceptor")
+                logMissingToken()
                 return chain.proceed(request)
             }
 
@@ -75,5 +81,31 @@ internal class BearerAuthInterceptor
                     .build()
 
             return chain.proceed(newRequest)
+        }
+
+        /**
+         * Czeka na token, ale nie dluzej niz do konca trwajacej proby /v3/auth.
+         * Gdy proba zakonczy sie porazka (brak sieci), token juz nie przyjdzie -
+         * czekanie pelnych [BEARER_WAIT_TIMEOUT_MS] blokowaloby wtedy kazde
+         * zapytanie z osobna.
+         */
+        private suspend fun awaitBearerToken(): String? {
+            val attemptsBefore = bearerTokenStorage.authAttempts.first()
+            return withTimeoutOrNull(BEARER_WAIT_TIMEOUT_MS) {
+                combine(bearerTokenStorage.bearerToken, bearerTokenStorage.authAttempts, ::Pair)
+                    .first { (token, attempts) -> token != null || attempts > attemptsBefore }
+                    .first
+            }
+        }
+
+        /** Ostrzezenie o braku tokenu najwyzej raz na [NO_TOKEN_LOG_INTERVAL_MS]. */
+        private fun logMissingToken() {
+            val now = System.currentTimeMillis()
+            if (now - lastNoTokenLogAt < NO_TOKEN_LOG_INTERVAL_MS) {
+                Napier.d("BearerAuthInterceptor - No bearer token available", tag = "BearerAuthInterceptor")
+                return
+            }
+            lastNoTokenLogAt = now
+            Napier.w("BearerAuthInterceptor - No bearer token available", tag = "BearerAuthInterceptor")
         }
     }

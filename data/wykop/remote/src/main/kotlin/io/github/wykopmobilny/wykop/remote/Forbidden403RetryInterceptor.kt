@@ -53,7 +53,8 @@ internal class Forbidden403RetryInterceptor
             // Get current JWT token
             val currentToken = tokenRefreshHelper.getCurrentToken()
             if (currentToken == null) {
-                Napier.w("Forbidden403RetryInterceptor - No JWT token available", tag = "Forbidden403RetryInterceptor")
+                // Gosc dostajacy 403 to oczekiwany stan (nie ma czego odswiezac).
+                Napier.d("Forbidden403RetryInterceptor - No JWT token available", tag = "Forbidden403RetryInterceptor")
                 return response
             }
 

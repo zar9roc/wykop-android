@@ -98,9 +98,12 @@ internal class RetrofitModule {
                         )
                     }
                 }.authenticator(tokenRefreshAuthenticator)
-                .connectTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
+                .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
                 .readTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
                 .writeTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
+                // Sufit na CALE zapytanie. Bez tego wykop.pl (trzy rekordy A) kosztuje
+                // przy braku trasy 3 x connectTimeout, zanim OkHttp w ogole sie podda.
+                .callTimeout(CALL_TIMEOUT, TimeUnit.SECONDS)
                 .build(),
         ).baseUrl(apiUrl)
         .addConverterFactory(MoshiConverterFactory.create(moshi))
@@ -115,5 +118,10 @@ internal class RetrofitModule {
     companion object {
         private const val CACHE_SIZE = 10 * 1024 * 1024L
         private const val DEFAULT_TIMEOUT = 30L
+
+        // Na polaczenie z pojedynczym adresem wystarczy mniej niz na odpowiedz -
+        // przy trzech adresach trzeba jeszcze zmiescic sie w CALL_TIMEOUT.
+        private const val CONNECT_TIMEOUT = 10L
+        private const val CALL_TIMEOUT = 45L
     }
 }

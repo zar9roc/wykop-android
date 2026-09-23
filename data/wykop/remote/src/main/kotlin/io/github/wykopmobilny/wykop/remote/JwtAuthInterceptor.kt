@@ -42,7 +42,10 @@ internal class JwtAuthInterceptor
 
             // If no token, proceed without Authorization header
             if (jwtToken == null) {
-                Napier.w("JwtAuthInterceptor - No JWT token available", tag = "JwtAuthInterceptor")
+                // Niezalogowany uzytkownik nie ma JWT - to normalna sciezka goscia,
+                // nie ostrzezenie. Jako WARNING zapychalo plik logu (setki wpisow na
+                // sesje) i wypychalo z niego realne bledy przy rotacji.
+                Napier.d("JwtAuthInterceptor - No JWT token available", tag = "JwtAuthInterceptor")
                 return chain.proceed(request)
             }
 
