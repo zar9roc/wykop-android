@@ -20,6 +20,7 @@ import io.github.wykopmobilny.ui.modules.links.linkdetails.items.bindHiddenComme
 import io.github.wykopmobilny.ui.modules.links.linkdetails.items.bindHiddenReplyV3
 import io.github.wykopmobilny.ui.modules.links.linkdetails.items.bindParentCommentV3
 import io.github.wykopmobilny.ui.modules.links.linkdetails.items.bindReplyCommentV3
+import io.github.wykopmobilny.ui.adapters.viewholders.RecyclableViewHolder
 import io.github.wykopmobilny.utils.asyncDifferConfig
 
 /** Watek, do ktorego trafi odpowiedz: id i autor komentarza otwierajacego watek. */
@@ -90,6 +91,7 @@ internal class LinkDetailsAdapterV3(
         holder: BindingViewHolder,
         position: Int,
     ) {
+        holder.itemView.tag = separatorTagFor(position)
         when (val item = getItem(position)) {
             is LinkDetailsListItem.Header -> {
                 (holder.binding as LinkDetailsHeaderLayoutBinding).bindHeaderV3(
@@ -138,6 +140,30 @@ internal class LinkDetailsAdapterV3(
             }
         }
     }
+
+    /**
+     * Sekcja listy komentarzy = watek, czyli komentarz glowny wraz ze swoimi
+     * odpowiedziami. Na jej koncu (i pod naglowkiem znaleziska) idzie delikatna
+     * przerwa z [RecyclableViewHolder.SEPARATOR_SECTION]; w srodku watku zostaje
+     * cienka kreska. Rysuje to ViewHolderDependentItemDecorator.
+     */
+    private fun separatorTagFor(position: Int): String =
+        when (val item = getItem(position)) {
+            is LinkDetailsListItem.Header -> RecyclableViewHolder.SEPARATOR_SECTION
+            is LinkDetailsListItem.ParentComment ->
+                if (item.hasReplies) {
+                    RecyclableViewHolder.SEPARATOR_SMALL
+                } else {
+                    RecyclableViewHolder.SEPARATOR_SECTION
+                }
+
+            is LinkDetailsListItem.ReplyComment ->
+                if (item.isLast) {
+                    RecyclableViewHolder.SEPARATOR_SECTION
+                } else {
+                    RecyclableViewHolder.SEPARATOR_SMALL
+                }
+        }
 
     data class BindingViewHolder(
         val binding: ViewBinding,

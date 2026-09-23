@@ -48,6 +48,7 @@ import io.github.wykopmobilny.utils.bindings.collectSnackbar
 import io.github.wykopmobilny.utils.bindings.collectSwipeRefresh
 import io.github.wykopmobilny.utils.bindings.drawableRes
 import io.github.wykopmobilny.utils.longArgument
+import io.github.wykopmobilny.utils.recyclerview.ViewHolderDependentItemDecorator
 import io.github.wykopmobilny.utils.longArgumentNullable
 import io.github.wykopmobilny.utils.viewModelWrapperFactoryKeyed
 import kotlinx.coroutines.flow.first
@@ -119,6 +120,9 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
         val adapter = setupCommentInput(binding)
         adapter.stateRestorationPolicy = StateRestorationPolicy.PREVENT_WHEN_EMPTY
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        // Separatory watkow (komentarz glowny + odpowiedzi) - ten sam dekorator co
+        // na listach mieszanych, sterowany tagiem itemView ustawianym w adapterze.
+        binding.recyclerView.addItemDecoration(ViewHolderDependentItemDecorator(requireContext()))
         binding.recyclerView.adapter = adapter
         // Leniwe ładowanie: kolejne strony wątków przy scrollu do dołu, a odpowiedzi
         // dla wątków wchodzących w viewport (dedup i priorytet obsługuje pager).
