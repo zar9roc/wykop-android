@@ -81,6 +81,9 @@ class HotFragment :
         super.onDestroyView()
     }
 
+    // Lista zyje w zagniezdzonym fragmencie - on ma adapter i snackbar.
+    override fun showLoadMoreError(e: Throwable) = entriesFragment.showLoadMoreError(e)
+
     override fun disableLoading() = entriesFragment.disableLoading()
 
     override fun showHotEntries(

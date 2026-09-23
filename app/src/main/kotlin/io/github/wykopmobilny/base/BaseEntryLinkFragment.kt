@@ -18,6 +18,7 @@ import io.github.wykopmobilny.ui.dialogs.VotersDialogListener
 import io.github.wykopmobilny.ui.dialogs.createVotersDialogListener
 import io.github.wykopmobilny.ui.fragments.entrylink.EntryLinkFragmentView
 import io.github.wykopmobilny.utils.prepare
+import io.github.wykopmobilny.utils.showLoadMoreErrorSnackbar
 import io.github.wykopmobilny.utils.viewBinding
 import javax.inject.Inject
 
@@ -65,6 +66,15 @@ open class BaseEntryLinkFragment :
     /**
      * Removes progressbar from adapter
      */
+    /**
+     * Blad doladowania kolejnej strony: zamiast modalu snackbar z "Ponow", a
+     * adapter wraca do stanu gotowego, zeby kolejny scroll mogl sprobowac znowu.
+     */
+    override fun showLoadMoreError(e: Throwable) {
+        entriesAdapter.onLoadFailed()
+        showLoadMoreErrorSnackbar(e) { loadDataListener(false) }
+    }
+
     override fun disableLoading() {
         entriesAdapter.disableLoading()
         binding.swipeRefresh.isRefreshing = false

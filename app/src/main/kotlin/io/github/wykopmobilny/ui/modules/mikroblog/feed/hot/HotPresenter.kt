@@ -29,7 +29,7 @@ class HotPresenter(
             }
         }
         val failure: (Throwable) -> Unit = {
-            view?.showErrorDialog(it)
+            if (shouldRefresh) view?.showErrorDialog(it) else view?.showLoadMoreError(it)
         }
 
         when (period) {

@@ -12,6 +12,7 @@ import io.github.wykopmobilny.models.dataclass.Link
 import io.github.wykopmobilny.ui.adapters.LinksAdapter
 import io.github.wykopmobilny.ui.fragments.links.LinksFragmentView
 import io.github.wykopmobilny.utils.prepare
+import io.github.wykopmobilny.utils.showLoadMoreErrorSnackbar
 import io.github.wykopmobilny.utils.viewBinding
 import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
@@ -110,6 +111,15 @@ open class BaseLinksFragment :
      * nigdy nie zostanie wywolane - trzeba tu schowac pelnoekranowy loader
      * i pokazac pusty stan zamiast wiecznego kreciolka.
      */
+    /**
+     * Blad doladowania kolejnej strony: zamiast modalu snackbar z "Ponow", a
+     * adapter wraca do stanu gotowego, zeby kolejny scroll mogl sprobowac znowu.
+     */
+    override fun showLoadMoreError(e: Throwable) {
+        linksAdapter.onLoadFailed()
+        showLoadMoreErrorSnackbar(e) { loadDataListener(false) }
+    }
+
     override fun disableLoading() {
         linksAdapter.disableLoading()
         binding.swipeRefresh.isRefreshing = false

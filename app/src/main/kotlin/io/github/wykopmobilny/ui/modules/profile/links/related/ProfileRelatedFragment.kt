@@ -12,6 +12,7 @@ import io.github.wykopmobilny.ui.modules.profile.ProfileActivity
 import io.github.wykopmobilny.utils.prepare
 import io.github.wykopmobilny.utils.viewBinding
 import javax.inject.Inject
+import io.github.wykopmobilny.utils.showLoadMoreErrorSnackbar
 
 class ProfileRelatedFragment :
     BaseFragment(R.layout.feed_fragment),
@@ -58,6 +59,15 @@ class ProfileRelatedFragment :
         entryList: List<Related>,
         shouldClearAdapter: Boolean,
     ) = feedAdapter.addData(entryList, shouldClearAdapter)
+
+    /**
+     * Blad doladowania kolejnej strony: zamiast modalu snackbar z "Ponow", a
+     * adapter wraca do stanu gotowego na kolejny scroll.
+     */
+    override fun showLoadMoreError(e: Throwable) {
+        feedAdapter.onLoadFailed()
+        showLoadMoreErrorSnackbar(e) { presenter.loadData(false) }
+    }
 
     override fun disableLoading() = feedAdapter.disableLoading()
 }

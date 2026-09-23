@@ -14,6 +14,7 @@ import io.github.wykopmobilny.ui.adapters.NotificationsListAdapter
 import io.github.wykopmobilny.utils.linkhandler.WykopLinkHandler
 import io.github.wykopmobilny.utils.prepare
 import io.github.wykopmobilny.utils.viewBinding
+import io.github.wykopmobilny.utils.showLoadMoreErrorSnackbar
 
 abstract class BaseNotificationsListFragment :
     BaseFragment(R.layout.activity_notifications_list),
@@ -69,6 +70,15 @@ abstract class BaseNotificationsListFragment :
     override fun showReadToast() {
         onRefresh()
         Toast.makeText(context, R.string.read_notifications, Toast.LENGTH_SHORT).show()
+    }
+
+    /**
+     * Blad doladowania kolejnej strony: snackbar z "Ponow" zamiast modalu, a
+     * adapter wraca do stanu gotowego na kolejny scroll.
+     */
+    override fun showLoadMoreError(e: Throwable) {
+        notificationAdapter.onLoadFailed()
+        showLoadMoreErrorSnackbar(e) { loadMore() }
     }
 
     override fun disableLoading() = notificationAdapter.disableLoading()

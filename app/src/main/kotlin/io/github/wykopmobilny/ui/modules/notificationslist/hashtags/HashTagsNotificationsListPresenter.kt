@@ -30,7 +30,7 @@ class HashTagsNotificationsListPresenter(
                         view?.disableLoading()
                     }
                 },
-                { view?.showErrorDialog(it) },
+                { if (shouldRefresh) view?.showErrorDialog(it) else view?.showLoadMoreError(it) },
             ).intoComposite(compositeObservable)
     }
 
@@ -66,7 +66,7 @@ class HashTagsNotificationsListPresenter(
                         page++
                     }
                 },
-                { view?.showErrorDialog(it) },
+                { if (shouldRefresh) view?.showErrorDialog(it) else view?.showLoadMoreError(it) },
             ).intoComposite(compositeObservable)
     }
 

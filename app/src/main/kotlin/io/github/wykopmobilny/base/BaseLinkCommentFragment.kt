@@ -11,6 +11,7 @@ import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
 import io.github.wykopmobilny.ui.adapters.LinkCommentAdapter
 import io.github.wykopmobilny.ui.fragments.linkcomments.LinkCommentsFragmentView
 import io.github.wykopmobilny.utils.prepare
+import io.github.wykopmobilny.utils.showLoadMoreErrorSnackbar
 import io.github.wykopmobilny.utils.viewBinding
 import javax.inject.Inject
 
@@ -55,6 +56,15 @@ open class BaseLinkCommentFragment :
     /**
      * Removes progressbar from adapter
      */
+    /**
+     * Blad doladowania kolejnej strony: zamiast modalu snackbar z "Ponow", a
+     * adapter wraca do stanu gotowego, zeby kolejny scroll mogl sprobowac znowu.
+     */
+    override fun showLoadMoreError(e: Throwable) {
+        linkCommentsAdapter.onLoadFailed()
+        showLoadMoreErrorSnackbar(e) { loadDataListener(false) }
+    }
+
     override fun disableLoading() {
         linkCommentsAdapter.disableLoading()
         binding.swipeRefresh.isRefreshing = false

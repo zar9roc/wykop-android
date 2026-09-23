@@ -40,7 +40,7 @@ class ProfileLinksPresenter(
                         }
                     }
                 },
-                { view?.showErrorDialog(it) },
+                { if (shouldRefresh) view?.showErrorDialog(it) else view?.showLoadMoreError(it) },
             ).intoComposite(compositeObservable)
     }
 
@@ -65,7 +65,7 @@ class ProfileLinksPresenter(
                         }
                     }
                 },
-                { view?.showErrorDialog(it) },
+                { if (shouldRefresh) view?.showErrorDialog(it) else view?.showLoadMoreError(it) },
             ).intoComposite(compositeObservable)
     }
 
@@ -90,7 +90,7 @@ class ProfileLinksPresenter(
                         }
                     }
                 },
-                { view?.showErrorDialog(it) },
+                { if (shouldRefresh) view?.showErrorDialog(it) else view?.showLoadMoreError(it) },
             ).intoComposite(compositeObservable)
     }
 
@@ -115,7 +115,7 @@ class ProfileLinksPresenter(
                         }
                     }
                 },
-                { view?.showErrorDialog(it) },
+                { if (shouldRefresh) view?.showErrorDialog(it) else view?.showLoadMoreError(it) },
             ).intoComposite(compositeObservable)
     }
 

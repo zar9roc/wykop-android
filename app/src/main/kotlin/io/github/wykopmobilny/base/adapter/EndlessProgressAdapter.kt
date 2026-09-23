@@ -49,6 +49,15 @@ abstract class EndlessProgressAdapter<T : RecyclerView.ViewHolder, A : Any> : Re
         }
     }
 
+    /**
+     * Nieudane doladowanie kolejnej strony. Zostawia stopke postepu i zdejmuje
+     * blokade [isLoading], zeby ponowny scroll mogl sprobowac jeszcze raz - bez
+     * tego lista zostawala zablokowana na zawsze po jednym bledzie sieci.
+     */
+    fun onLoadFailed() {
+        isLoading = false
+    }
+
     fun disableLoading() {
         if (dataset.isNotEmpty() && dataset.last() == null) {
             val size = dataset.size - 1

@@ -50,7 +50,7 @@ class MyWykopEntryLinkPresenter(
                         view?.disableLoading()
                     }
                 },
-                { view?.showErrorDialog(it) },
+                { if (shouldRefresh) view?.showErrorDialog(it) else view?.showLoadMoreError(it) },
             ).intoComposite(compositeObservable)
     }
 
@@ -72,7 +72,7 @@ class MyWykopEntryLinkPresenter(
                         view?.disableLoading()
                     }
                 },
-                { view?.showErrorDialog(it) },
+                { if (shouldRefresh) view?.showErrorDialog(it) else view?.showLoadMoreError(it) },
             ).intoComposite(compositeObservable)
     }
 
@@ -94,7 +94,7 @@ class MyWykopEntryLinkPresenter(
                         view?.disableLoading()
                     }
                 },
-                { view?.showErrorDialog(it) },
+                { if (shouldRefresh) view?.showErrorDialog(it) else view?.showLoadMoreError(it) },
             ).intoComposite(compositeObservable)
     }
 

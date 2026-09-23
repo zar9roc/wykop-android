@@ -60,6 +60,10 @@
     <string name="dialogNoVotes">¯\\_(ツ)_/¯\nBrak plusów</string>
 
     <string name="refresh">Odśwież</string>
+    <!-- Nieudane doladowanie kolejnej strony listy - komunikat nieblokujacy,
+         bo tresc juz wczytana zostaje na ekranie. -->
+    <string name="load_more_failed">Nie udało się wczytać kolejnej strony</string>
+    <string name="load_more_retry">Ponów</string>
     <string name="nav_drawer_open">Nawigacja otwarta</string>
     <string name="nav_drawer_closed">Nawigacja zamknięta</string>
     <string name="reply">Odpowiedz</string>

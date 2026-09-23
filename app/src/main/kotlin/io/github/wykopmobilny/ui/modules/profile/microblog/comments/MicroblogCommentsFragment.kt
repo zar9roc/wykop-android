@@ -21,6 +21,7 @@ import io.github.wykopmobilny.ui.modules.profile.ProfileActivity
 import io.github.wykopmobilny.utils.prepare
 import io.github.wykopmobilny.utils.viewBinding
 import javax.inject.Inject
+import io.github.wykopmobilny.utils.showLoadMoreErrorSnackbar
 
 /**
  * Zakladka "Komentarze" na profilu. Lista jest mieszana: wpis, pod ktorym padl
@@ -97,6 +98,15 @@ class MicroblogCommentsFragment :
         if (shouldRefresh) {
             (binding.recyclerView.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(0, 0)
         }
+    }
+
+    /**
+     * Blad doladowania kolejnej strony: zamiast modalu snackbar z "Ponow", a
+     * adapter wraca do stanu gotowego na kolejny scroll.
+     */
+    override fun showLoadMoreError(e: Throwable) {
+        commentsAdapter.onLoadFailed()
+        showLoadMoreErrorSnackbar(e) { loadDataListener(false) }
     }
 
     override fun disableLoading() {
