@@ -8,6 +8,7 @@ import io.github.wykopmobilny.api.exceptions.handleMediaUpload
 import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
 import io.github.wykopmobilny.api.resolveAttachments
+import io.github.wykopmobilny.api.requests.v3.entries.CreateThreadCommentRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateCommentRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateSurveyRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateEntryRequestV3
@@ -893,9 +894,9 @@ class EntriesRepository
                 parentCommentId = parentCommentId,
                 request =
                     WykopApiRequestV3(
-                        CreateUpdateCommentRequestV3(
+                        CreateThreadCommentRequestV3(
                             content = body,
-                            photo = media.photoKey,
+                            photos = listOfNotNull(media.photoKey).ifEmpty { null },
                             embed = media.embedKey,
                             adult = plus18,
                         ),
@@ -922,9 +923,9 @@ class EntriesRepository
                 parentCommentId = parentCommentId,
                 request =
                     WykopApiRequestV3(
-                        CreateUpdateCommentRequestV3(
+                        CreateThreadCommentRequestV3(
                             content = body,
-                            photo = media.photoKey,
+                            photos = listOfNotNull(media.photoKey).ifEmpty { null },
                             embed = media.embedKey,
                             adult = plus18,
                         ),

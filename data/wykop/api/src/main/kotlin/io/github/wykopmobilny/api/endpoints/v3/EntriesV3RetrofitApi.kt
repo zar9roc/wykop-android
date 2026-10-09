@@ -2,6 +2,7 @@ package io.github.wykopmobilny.api.endpoints.v3
 
 import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateSurveyRequestV3
+import io.github.wykopmobilny.api.requests.v3.entries.CreateThreadCommentRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateCommentRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateEntryRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.VoteSurveyRequestV3
@@ -108,7 +109,7 @@ interface EntriesV3RetrofitApi {
     suspend fun addThreadReply(
         @Path("entryId") entryId: Long,
         @Path("parentCommentId") parentCommentId: Long,
-        @Body request: WykopApiRequestV3<CreateUpdateCommentRequestV3>,
+        @Body request: WykopApiRequestV3<CreateThreadCommentRequestV3>,
     ): WykopApiResponseV3<ThreadAncestorResponseV3>
 
     /**
