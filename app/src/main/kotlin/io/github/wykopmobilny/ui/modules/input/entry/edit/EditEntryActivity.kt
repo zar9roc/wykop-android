@@ -7,6 +7,7 @@ import android.os.Bundle
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.api.suggest.SuggestApi
 import io.github.wykopmobilny.models.dataclass.Embed
+import io.github.wykopmobilny.ui.widgets.MAX_MICROBLOG_PHOTOS
 import io.github.wykopmobilny.ui.modules.input.BaseInputActivity
 import javax.inject.Inject
 
@@ -20,11 +21,11 @@ class EditEntryActivity :
             context: Context,
             body: String,
             entryId: Long,
-            embed: Embed?,
+            attachments: List<Embed>,
         ) = Intent(context, EditEntryActivity::class.java).apply {
             putExtra(EXTRA_BODY, body)
             putExtra(EXTRA_ENTRY_ID, entryId)
-            putExtra(EXTRA_EMBED, embed)
+            putParcelableArrayListExtra(EXTRA_ATTACHMENTS, ArrayList(attachments))
         }
     }
 
@@ -35,15 +36,19 @@ class EditEntryActivity :
     override lateinit var suggestionApi: SuggestApi
 
     override val entryId by lazy { intent.getLongExtra(EXTRA_ENTRY_ID, 0) }
-    override val embed by lazy { intent.getParcelableExtra(EXTRA_EMBED) as? Embed }
+    override val maxPhotos = MAX_MICROBLOG_PHOTOS
+
+    private val attachments: List<Embed> by lazy {
+        @Suppress("DEPRECATION")
+        intent.getParcelableArrayListExtra<Embed>(EXTRA_ATTACHMENTS).orEmpty()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         presenter.subscribe(this)
         setupSuggestions()
         supportActionBar?.setTitle(R.string.edit_entry)
-        binding.markupToolbar.containsAdultContent = embed?.plus18 == true
-        binding.markupToolbar.photoUrl = embed?.url
+        prefillAttachments(attachments)
     }
 
     override fun onDestroy() {

@@ -329,7 +329,7 @@ class EntryViewHolder(
                 navigator.openEditEntryActivity(
                     body = entry.body,
                     entryId = entry.id,
-                    embed = entry.embed,
+                    attachments = entry.attachments.ifEmpty { listOfNotNull(entry.embed) },
                 )
                 dialog.dismiss()
             }

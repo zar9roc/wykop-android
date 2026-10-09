@@ -1,6 +1,6 @@
 package io.github.wykopmobilny.ui.modules.input.link.edit
 
-import io.github.wykopmobilny.api.WykopImageFile
+import io.github.wykopmobilny.api.PhotoSource
 import io.github.wykopmobilny.api.links.LinksApi
 import io.github.wykopmobilny.base.Schedulers
 import io.github.wykopmobilny.ui.modules.input.BaseInputView
@@ -29,14 +29,8 @@ class LinkCommentEditPresenter(
             ).intoComposite(compositeObservable)
     }
 
-    override fun sendWithPhoto(
-        photo: WykopImageFile,
-        containsAdultContent: Boolean,
-        embedUrl: String?,
-    ) = editLinkComment()
-
-    override fun sendWithPhotoUrl(
-        photo: String?,
+    override fun send(
+        photos: List<PhotoSource>,
         containsAdultContent: Boolean,
         embedUrl: String?,
     ) = editLinkComment()

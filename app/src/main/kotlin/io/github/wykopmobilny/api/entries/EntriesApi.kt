@@ -1,6 +1,6 @@
 package io.github.wykopmobilny.api.entries
 
-import io.github.wykopmobilny.api.WykopImageFile
+import io.github.wykopmobilny.api.PhotoSource
 import io.github.wykopmobilny.api.responses.EntryCommentResponse
 import io.github.wykopmobilny.api.responses.EntryResponse
 import io.github.wykopmobilny.api.responses.VoteResponse
@@ -36,15 +36,7 @@ interface EntriesApi {
 
     fun addEntry(
         body: String,
-        wykopImageFile: WykopImageFile,
-        plus18: Boolean,
-        survey: String? = null,
-        embedUrl: String? = null,
-    ): Single<EntryResponse>
-
-    fun addEntry(
-        body: String,
-        embed: String?,
+        photos: List<PhotoSource>,
         plus18: Boolean,
         survey: String? = null,
         embedUrl: String? = null,
@@ -59,15 +51,7 @@ interface EntriesApi {
     fun addEntryComment(
         body: String,
         entryId: Long,
-        embed: String?,
-        plus18: Boolean,
-        embedUrl: String? = null,
-    ): Single<EntryCommentResponse>
-
-    fun addEntryComment(
-        body: String,
-        entryId: Long,
-        wykopImageFile: WykopImageFile,
+        photos: List<PhotoSource>,
         plus18: Boolean,
         embedUrl: String? = null,
     ): Single<EntryCommentResponse>
@@ -98,16 +82,7 @@ interface EntriesApi {
         body: String,
         entryId: Long,
         parentCommentId: Long,
-        embed: String?,
-        plus18: Boolean,
-        embedUrl: String? = null,
-    ): Single<Long>
-
-    fun addThreadReply(
-        body: String,
-        entryId: Long,
-        parentCommentId: Long,
-        wykopImageFile: WykopImageFile,
+        photos: List<PhotoSource>,
         plus18: Boolean,
         embedUrl: String? = null,
     ): Single<Long>
@@ -122,15 +97,7 @@ interface EntriesApi {
     fun editEntry(
         body: String,
         entryId: Long,
-        embed: String?,
-        plus18: Boolean,
-        embedUrl: String? = null,
-    ): Single<EntryCommentResponse>
-
-    fun editEntry(
-        body: String,
-        entryId: Long,
-        wykopImageFile: WykopImageFile,
+        photos: List<PhotoSource>,
         plus18: Boolean,
         embedUrl: String? = null,
     ): Single<EntryCommentResponse>
@@ -139,16 +106,7 @@ interface EntriesApi {
         body: String,
         entryId: Long,
         commentId: Long,
-        embed: String?,
-        plus18: Boolean,
-        embedUrl: String? = null,
-    ): Single<EntryCommentResponse>
-
-    fun editEntryComment(
-        body: String,
-        entryId: Long,
-        commentId: Long,
-        wykopImageFile: WykopImageFile,
+        photos: List<PhotoSource>,
         plus18: Boolean,
         embedUrl: String? = null,
     ): Single<EntryCommentResponse>

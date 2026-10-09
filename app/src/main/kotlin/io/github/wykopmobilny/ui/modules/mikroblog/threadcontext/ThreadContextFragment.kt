@@ -12,7 +12,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dagger.android.support.AndroidSupportInjection
 import io.github.wykopmobilny.R
-import io.github.wykopmobilny.api.WykopImageFile
+import io.github.wykopmobilny.api.PhotoSource
+import io.github.wykopmobilny.ui.widgets.MAX_MICROBLOG_PHOTOS
 import io.github.wykopmobilny.api.entries.EntriesApi
 import io.github.wykopmobilny.api.suggest.SuggestApi
 import io.github.wykopmobilny.base.Schedulers
@@ -113,12 +114,14 @@ internal class ThreadContextFragment :
     private var cameraPhotoUri: Uri? = null
 
     private val galleryPicker =
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-            uri?.let { binding?.inputToolbar?.setPhoto(it) }
+        // Wiele zdjec naraz (galeria mikrobloga) - nadmiar ponad limit jest pomijany.
+        registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
+            val inputToolbar = binding?.inputToolbar ?: return@registerForActivityResult
+            uris.take(inputToolbar.remainingPhotos).forEach(inputToolbar::addPhoto)
         }
     private val cameraCapture =
         registerForActivityResult(ActivityResultContracts.TakePicture()) { saved ->
-            if (saved) cameraPhotoUri?.let { binding?.inputToolbar?.setPhoto(it) }
+            if (saved) cameraPhotoUri?.let { binding?.inputToolbar?.addPhoto(it) }
         }
 
     private val navigator by lazy { NewNavigator(requireActivity(), settingsPreferencesApi) }
@@ -182,6 +185,7 @@ internal class ThreadContextFragment :
 
         binding.inputToolbar.setup(userManagerApi, suggestApi)
         binding.inputToolbar.inputToolbarListener = this
+        binding.inputToolbar.maxPhotos = MAX_MICROBLOG_PHOTOS
         binding.inputToolbar.setCustomHint(getString(R.string.reply))
         binding.inputToolbar.hide()
 
@@ -489,25 +493,14 @@ internal class ThreadContextFragment :
         binding?.inputToolbar?.addQuoteText(comment.body, comment.author.nick)
     }
 
-    override fun sendPhoto(
-        photo: String?,
+    override fun sendPhotos(
+        photos: List<PhotoSource>,
         body: String,
         containsAdultContent: Boolean,
         embedUrl: String?,
     ) {
         entriesApi
-            .addThreadReply(body, entryId, currentReplyParentId(), photo, containsAdultContent, embedUrl)
-            .handleReplySent()
-    }
-
-    override fun sendPhoto(
-        photo: WykopImageFile,
-        body: String,
-        containsAdultContent: Boolean,
-        embedUrl: String?,
-    ) {
-        entriesApi
-            .addThreadReply(body, entryId, currentReplyParentId(), photo, containsAdultContent, embedUrl)
+            .addThreadReply(body, entryId, currentReplyParentId(), photos, containsAdultContent, embedUrl)
             .handleReplySent()
     }
 

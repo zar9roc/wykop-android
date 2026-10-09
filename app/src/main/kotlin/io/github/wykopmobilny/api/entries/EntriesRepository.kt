@@ -1,6 +1,9 @@
 package io.github.wykopmobilny.api.entries
 
 import io.github.wykopmobilny.api.ErrorBodyParserV3
+import io.github.wykopmobilny.api.PhotoSource
+import io.github.wykopmobilny.api.RemoteMediaKeys
+import io.github.wykopmobilny.api.ResolvedMedia
 import io.github.wykopmobilny.api.UserTokenRefresher
 import io.github.wykopmobilny.api.WykopImageFile
 import io.github.wykopmobilny.api.errorhandler.ErrorHandlerTransformerV3
@@ -33,6 +36,9 @@ import io.github.wykopmobilny.models.mapper.apiv3.ThreadContextMapperV3
 import io.github.wykopmobilny.models.mapper.apiv3.filterEntriesV3
 import io.github.wykopmobilny.models.mapper.apiv3.filterEntryV3
 import io.reactivex.subjects.PublishSubject
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.rx2.rxSingle
 import kotlinx.datetime.Instant
 import javax.inject.Inject
@@ -115,65 +121,20 @@ class EntriesRepository
 
         override fun addEntry(
             body: String,
-            wykopImageFile: WykopImageFile,
-            plus18: Boolean,
-            survey: String?,
-            embedUrl: String?,
-        ) = rxSingle {
-            val media = mediaApiV3.resolveAttachments(photoKey = uploadPhotoAndGetKey(wykopImageFile), embedUrl = embedUrl)
-
-            entriesApiV3.addEntry(
-                WykopApiRequestV3(
-                    CreateUpdateEntryRequestV3(
-                        content = body,
-                        photo = media.photoKey,
-                        embed = media.embedKey,
-                        survey = survey,
-                        adult = plus18,
-                    ),
-                ),
-            )
-        }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3>(errorBodyParser))
-            .map { entryV3 ->
-                // Minimal mapping for API compatibility - only ID is used by callers
-                EntryResponse(
-                    id = entryV3.id,
-                    date = Instant.DISTANT_PAST,
-                    body = entryV3.content,
-                    author =
-                        io.github.wykopmobilny.api.responses
-                            .AuthorResponse("", 0, null, ""),
-                    blocked = false,
-                    favorite = false,
-                    voteCount = 0,
-                    commentsCount = 0,
-                    comments = null,
-                    status = "",
-                    embed = null,
-                    survey = null,
-                    userVote = 0,
-                    violationUrl = null,
-                    app = null,
-                    isCommentingPossible = null,
-                )
-            }
-
-        override fun addEntry(
-            body: String,
-            embed: String?,
+            photos: List<PhotoSource>,
             plus18: Boolean,
             survey: String?,
             embedUrl: String?,
         ) = rxSingle {
             // "embed" (historyczna nazwa) = URL z inputu obrazka - moze byc zdjeciem
             // albo linkiem medialnym; embedUrl = dedykowany slot na link (YouTube itp.).
-            val media = mediaApiV3.resolveAttachments(photoUrl = embed, embedUrl = embedUrl)
+            val media = resolvePhotos(photos, embedUrl)
             entriesApiV3.addEntry(
                 WykopApiRequestV3(
                     CreateUpdateEntryRequestV3(
                         content = body,
-                        photo = media.photoKey,
+                        photo = media.singlePhotoKey,
+                        photos = media.galleryPhotoKeys,
                         embed = media.embedKey,
                         survey = survey,
                         adult = plus18,
@@ -223,60 +184,18 @@ class EntriesRepository
         override fun addEntryComment(
             body: String,
             entryId: Long,
-            wykopImageFile: WykopImageFile,
+            photos: List<PhotoSource>,
             plus18: Boolean,
             embedUrl: String?,
         ) = rxSingle {
-            val media = mediaApiV3.resolveAttachments(photoKey = uploadPhotoAndGetKey(wykopImageFile), embedUrl = embedUrl)
-
+            val media = resolvePhotos(photos, embedUrl)
             entriesApiV3.addEntryComment(
                 entryId,
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body,
-                        photo = media.photoKey,
-                        embed = media.embedKey,
-                        adult = plus18,
-                    ),
-                ),
-            )
-        }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.EntryCommentResponseV3>(errorBodyParser))
-            .map { commentV3 ->
-                // Minimal mapping for API compatibility
-                EntryCommentResponse(
-                    id = commentV3.id,
-                    entryId = entryId,
-                    author =
-                        io.github.wykopmobilny.api.responses
-                            .AuthorResponse("", 0, null, ""),
-                    date = "",
-                    body = commentV3.content,
-                    blocked = false,
-                    favorite = false,
-                    voteCount = 0,
-                    status = "",
-                    userVote = 0,
-                    embed = null,
-                    app = null,
-                    violationUrl = null,
-                )
-            }
-
-        override fun addEntryComment(
-            body: String,
-            entryId: Long,
-            embed: String?,
-            plus18: Boolean,
-            embedUrl: String?,
-        ) = rxSingle {
-            val media = mediaApiV3.resolveAttachments(photoUrl = embed, embedUrl = embedUrl)
-            entriesApiV3.addEntryComment(
-                entryId,
-                WykopApiRequestV3(
-                    CreateUpdateCommentRequestV3(
-                        content = body,
-                        photo = media.photoKey,
+                        photo = media.singlePhotoKey,
+                        photos = media.galleryPhotoKeys,
                         embed = media.embedKey,
                         adult = plus18,
                     ),
@@ -308,60 +227,18 @@ class EntriesRepository
         override fun editEntry(
             body: String,
             entryId: Long,
-            embed: String?,
+            photos: List<PhotoSource>,
             plus18: Boolean,
             embedUrl: String?,
         ) = rxSingle {
-            val media = mediaApiV3.resolveAttachments(photoUrl = embed, embedUrl = embedUrl)
+            val media = resolvePhotos(photos, embedUrl)
             entriesApiV3.editEntry(
                 entryId,
                 WykopApiRequestV3(
                     CreateUpdateEntryRequestV3(
                         content = body,
-                        photo = media.photoKey,
-                        embed = media.embedKey,
-                        adult = plus18,
-                    ),
-                ),
-            )
-        }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
-            .map {
-                // API v3 returns 200 with no body, return minimal EntryCommentResponse for compatibility
-                EntryCommentResponse(
-                    id = entryId,
-                    entryId = null,
-                    author =
-                        io.github.wykopmobilny.api.responses
-                            .AuthorResponse("", 0, null, ""),
-                    date = "",
-                    body = body,
-                    blocked = false,
-                    favorite = false,
-                    voteCount = 0,
-                    status = "",
-                    userVote = 0,
-                    embed = null,
-                    app = null,
-                    violationUrl = null,
-                )
-            }
-
-        override fun editEntry(
-            body: String,
-            entryId: Long,
-            wykopImageFile: WykopImageFile,
-            plus18: Boolean,
-            embedUrl: String?,
-        ) = rxSingle {
-            val media = mediaApiV3.resolveAttachments(photoKey = uploadPhotoAndGetKey(wykopImageFile), embedUrl = embedUrl)
-
-            entriesApiV3.editEntry(
-                entryId,
-                WykopApiRequestV3(
-                    CreateUpdateEntryRequestV3(
-                        content = body,
-                        photo = media.photoKey,
+                        photo = media.singlePhotoKey,
+                        photos = media.galleryPhotoKeys,
                         embed = media.embedKey,
                         adult = plus18,
                     ),
@@ -443,63 +320,19 @@ class EntriesRepository
             body: String,
             entryId: Long,
             commentId: Long,
-            embed: String?,
+            photos: List<PhotoSource>,
             plus18: Boolean,
             embedUrl: String?,
         ) = rxSingle {
-            val media = mediaApiV3.resolveAttachments(photoUrl = embed, embedUrl = embedUrl)
+            val media = resolvePhotos(photos, embedUrl)
             entriesApiV3.editEntryComment(
                 entryId,
                 commentId,
                 WykopApiRequestV3(
                     CreateUpdateCommentRequestV3(
                         content = body,
-                        photo = media.photoKey,
-                        embed = media.embedKey,
-                        adult = plus18,
-                    ),
-                ),
-            )
-        }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
-            .map {
-                // API v3 returns 200 with no body, return minimal EntryCommentResponse for compatibility
-                EntryCommentResponse(
-                    id = commentId,
-                    entryId = entryId,
-                    author =
-                        io.github.wykopmobilny.api.responses
-                            .AuthorResponse("", 0, null, ""),
-                    date = "",
-                    body = body,
-                    blocked = false,
-                    favorite = false,
-                    voteCount = 0,
-                    status = "",
-                    userVote = 0,
-                    embed = null,
-                    app = null,
-                    violationUrl = null,
-                )
-            }
-
-        override fun editEntryComment(
-            body: String,
-            entryId: Long,
-            commentId: Long,
-            wykopImageFile: WykopImageFile,
-            plus18: Boolean,
-            embedUrl: String?,
-        ) = rxSingle {
-            val media = mediaApiV3.resolveAttachments(photoKey = uploadPhotoAndGetKey(wykopImageFile), embedUrl = embedUrl)
-
-            entriesApiV3.editEntryComment(
-                entryId,
-                commentId,
-                WykopApiRequestV3(
-                    CreateUpdateCommentRequestV3(
-                        content = body,
-                        photo = media.photoKey,
+                        photo = media.singlePhotoKey,
+                        photos = media.galleryPhotoKeys,
                         embed = media.embedKey,
                         adult = plus18,
                     ),
@@ -884,11 +717,11 @@ class EntriesRepository
             body: String,
             entryId: Long,
             parentCommentId: Long,
-            embed: String?,
+            photos: List<PhotoSource>,
             plus18: Boolean,
             embedUrl: String?,
         ) = rxSingle {
-            val media = mediaApiV3.resolveAttachments(photoUrl = embed, embedUrl = embedUrl)
+            val media = resolvePhotos(photos, embedUrl)
             entriesApiV3.addThreadReply(
                 entryId = entryId,
                 parentCommentId = parentCommentId,
@@ -896,36 +729,7 @@ class EntriesRepository
                     WykopApiRequestV3(
                         CreateThreadCommentRequestV3(
                             content = body,
-                            photos = listOfNotNull(media.photoKey).ifEmpty { null },
-                            embed = media.embedKey,
-                            adult = plus18,
-                        ),
-                    ),
-            )
-        }.retryWhen(userTokenRefresher)
-            .compose(
-                ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.ThreadAncestorResponseV3>(
-                    errorBodyParser,
-                ),
-            ).map { it.id }
-
-        override fun addThreadReply(
-            body: String,
-            entryId: Long,
-            parentCommentId: Long,
-            wykopImageFile: WykopImageFile,
-            plus18: Boolean,
-            embedUrl: String?,
-        ) = rxSingle {
-            val media = mediaApiV3.resolveAttachments(photoKey = uploadPhotoAndGetKey(wykopImageFile), embedUrl = embedUrl)
-            entriesApiV3.addThreadReply(
-                entryId = entryId,
-                parentCommentId = parentCommentId,
-                request =
-                    WykopApiRequestV3(
-                        CreateThreadCommentRequestV3(
-                            content = body,
-                            photos = listOfNotNull(media.photoKey).ifEmpty { null },
+                            photos = media.photoKeys.ifEmpty { null },
                             embed = media.embedKey,
                             adult = plus18,
                         ),
@@ -963,9 +767,31 @@ class EntriesRepository
             }
 
         /**
-         * Helper function to upload a photo and extract its key.
-         * Reduces code duplication across add/edit operations.
+         * Zdjecia (pliki i adresy) na klucze z /media/photos - rownolegle, w kolejnosci
+         * zalaczania. Adres, ktory okaze sie linkiem medialnym, trafia w embed.
          */
+        private suspend fun resolvePhotos(
+            photos: List<PhotoSource>,
+            embedUrl: String?,
+        ): ResolvedMedia =
+            coroutineScope {
+                val resolved =
+                    photos
+                        .map { source ->
+                            async {
+                                when (source) {
+                                    is PhotoSource.File -> RemoteMediaKeys(photoKey = uploadPhotoAndGetKey(source.file))
+                                    is PhotoSource.Url -> mediaApiV3.resolveAttachments(photoUrl = source.url)
+                                }
+                            }
+                        }.awaitAll()
+                val embed = mediaApiV3.resolveAttachments(embedUrl = embedUrl)
+                ResolvedMedia(
+                    photoKeys = resolved.mapNotNull { it.photoKey } + listOfNotNull(embed.photoKey),
+                    embedKey = embed.embedKey ?: resolved.firstNotNullOfOrNull { it.embedKey },
+                )
+            }
+
         private suspend fun uploadPhotoAndGetKey(wykopImageFile: WykopImageFile): String? {
             val uploadedPhoto =
                 handleMediaUpload {

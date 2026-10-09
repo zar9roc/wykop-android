@@ -1,17 +1,12 @@
 package io.github.wykopmobilny.ui.modules.input
 
-import io.github.wykopmobilny.api.WykopImageFile
+import io.github.wykopmobilny.api.PhotoSource
 import io.github.wykopmobilny.base.BasePresenter
 
 interface BaseInputPresenter {
-    fun sendWithPhoto(
-        photo: WykopImageFile,
-        containsAdultContent: Boolean,
-        embedUrl: String? = null,
-    )
-
-    fun sendWithPhotoUrl(
-        photo: String?,
+    /** [photos] w kolejnosci zalaczania; pusta lista = sama tresc (i ewentualny embed). */
+    fun send(
+        photos: List<PhotoSource>,
         containsAdultContent: Boolean,
         embedUrl: String? = null,
     )

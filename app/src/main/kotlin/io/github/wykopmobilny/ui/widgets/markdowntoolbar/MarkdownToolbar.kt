@@ -5,9 +5,11 @@ import android.net.Uri
 import android.util.AttributeSet
 import android.view.View
 import android.widget.LinearLayout
+import android.widget.Toast
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import io.github.wykopmobilny.R
+import io.github.wykopmobilny.api.PhotoSource
 import io.github.wykopmobilny.api.WykopImageFile
 import io.github.wykopmobilny.api.looksLikeDirectImageUrl
 import io.github.wykopmobilny.databinding.ImagechooserBottomsheetBinding
@@ -23,18 +25,7 @@ class MarkdownToolbar(
     context: Context,
     attrs: AttributeSet?,
 ) : LinearLayout(context, attrs) {
-    var photoUrl: String?
-        get() = floatingImageView?.photoUrl
-        set(value) {
-            if (value != null) {
-                remoteImageInserted()
-                floatingImageView?.loadPhotoUrl(value)
-            } else {
-                floatingImageView?.clearPhoto()
-            }
-        }
-
-    // Link do serwisu medialnego (YouTube itp.) - osobny slot obok zdjecia,
+    // Link do serwisu medialnego (YouTube itp.) - osobny slot obok zdjec,
     // wysylany jako pole "embed" (klucz z POST /media/embed).
     var embedUrl: String?
         get() = floatingImageView?.embedUrl
@@ -47,16 +38,41 @@ class MarkdownToolbar(
             }
         }
 
-    var photo: Uri?
-        get() = floatingImageView?.photo
-        set(value) {
-            floatingImageView?.setImage(value)
-        }
-
     var markdownListener: MarkdownToolbarListener? = null
     var remoteImageInserted: () -> Unit = {}
     var containsAdultContent = false
     var floatingImageView: FloatingImageView? = null
+        set(value) {
+            field = value
+            value?.maxPhotos = maxPhotos
+            value?.onAddPhotoClick = ::showUploadPhotoBottomsheet
+        }
+
+    /** Limit zdjec: 4 we wpisach i komentarzach mikrobloga, 1 w pozostalych miejscach. */
+    var maxPhotos: Int = 1
+        set(value) {
+            field = value
+            floatingImageView?.maxPhotos = value
+        }
+
+    val hasPhotos: Boolean
+        get() = floatingImageView?.photos?.isNotEmpty() == true
+
+    val remainingPhotos: Int
+        get() = floatingImageView?.remainingPhotos ?: maxPhotos
+
+    fun addPhoto(uri: Uri) {
+        floatingImageView?.addPhoto(FloatingImageView.Photo.Local(uri))
+    }
+
+    fun addPhotoUrl(url: String) {
+        remoteImageInserted()
+        floatingImageView?.addPhoto(FloatingImageView.Photo.Remote(url))
+    }
+
+    fun clearAttachments() {
+        floatingImageView?.removeImage()
+    }
 
     // Kafelek ankiety domyslnie ukryty - wlacza go tylko ekran dodawania wpisu
     // (ankiety dotycza wpisow, nie komentarzy/PM).
@@ -92,16 +108,27 @@ class MarkdownToolbar(
             // aparat = FileProvider w katalogu aplikacji, URL = wpisanie adresu.
             // Stary gate na WRITE_EXTERNAL_STORAGE blokowal caly wybor zdjecia,
             // bo na Androidzie 11+ system zawsze odmawia tego uprawnienia.
-            binding.insertPhoto.setOnClickListener { showUploadPhotoBottomsheet() }
+            binding.insertPhoto.setOnClickListener {
+                if (maxPhotos > 1 && remainingPhotos == 0) {
+                    Toast.makeText(context, context.getString(R.string.attachment_photo_limit, maxPhotos), Toast.LENGTH_SHORT).show()
+                } else {
+                    showUploadPhotoBottomsheet()
+                }
+            }
         }
     }
 
-    fun getWykopImageFile(): WykopImageFile? = photo?.let { WykopImageFile(it, context) }
+    fun getPhotoSources(): List<PhotoSource> =
+        floatingImageView?.photos.orEmpty().map { photo ->
+            when (photo) {
+                is FloatingImageView.Photo.Local -> PhotoSource.File(WykopImageFile(photo.uri, context))
+                is FloatingImageView.Photo.Remote -> PhotoSource.Url(photo.url)
+            }
+        }
 
     fun hasUserEditedContent(): Boolean =
         (
-            photo != null ||
-                !floatingImageView?.photoUrl.isNullOrEmpty() ||
+            hasPhotos ||
                 !floatingImageView?.embedUrl.isNullOrEmpty() ||
                 (markdownListener != null && markdownListener?.textBody!!.isNotEmpty())
         )
@@ -172,7 +199,7 @@ class MarkdownToolbar(
         // Bezposredni obrazek -> slot zdjecia (POST /media/photos); kazdy inny adres
         // (YouTube, streamable...) -> slot embedu (POST /media/embed przy wysylce).
         if (trimmed.looksLikeDirectImageUrl()) {
-            floatingImageView?.loadPhotoUrl(trimmed)
+            floatingImageView?.addPhoto(FloatingImageView.Photo.Remote(trimmed))
         } else {
             floatingImageView?.loadEmbedUrl(trimmed)
         }

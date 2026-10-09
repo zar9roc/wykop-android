@@ -12,7 +12,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import io.github.wykopmobilny.R
-import io.github.wykopmobilny.api.WykopImageFile
+import io.github.wykopmobilny.api.PhotoSource
 import io.github.wykopmobilny.api.suggest.SuggestApi
 import io.github.wykopmobilny.databinding.InputToolbarBinding
 import io.github.wykopmobilny.ui.suggestions.HashTagsSuggestionsAdapter
@@ -28,15 +28,9 @@ import io.github.wykopmobilny.utils.usermanager.isUserAuthorized
 const val ZERO_WIDTH_SPACE = "\u200B\u200B\u200B\u200B\u200B"
 
 interface InputToolbarListener {
-    fun sendPhoto(
-        photo: WykopImageFile,
-        body: String,
-        containsAdultContent: Boolean,
-        embedUrl: String? = null,
-    )
-
-    fun sendPhoto(
-        photo: String?,
+    /** [photos] w kolejnosci zalaczania; pusta lista = sama tresc (i ewentualny embed). */
+    fun sendPhotos(
+        photos: List<PhotoSource>,
         body: String,
         containsAdultContent: Boolean,
         embedUrl: String? = null,
@@ -87,6 +81,9 @@ class InputToolbar(
         binding.markdownToolbar.markdownListener = this
         binding.markdownToolbar.floatingImageView = binding.floatingImageView
         binding.markdownToolbar.remoteImageInserted = { enableSendButton() }
+        binding.floatingImageView.onAttachmentsChanged = {
+            if (canSend()) enableSendButton() else disableSendButton()
+        }
 
         // Setup listeners
         binding.body.setOnFocusChangeListener { _, focused ->
@@ -112,13 +109,7 @@ class InputToolbar(
         )
         binding.body.threshold = 3
         binding.body.doOnTextChanged { _, _, _, _ ->
-            if ((
-                    textBody.length > 2 ||
-                        binding.markdownToolbar.photo != null ||
-                        binding.markdownToolbar.photoUrl != null ||
-                        binding.markdownToolbar.embedUrl != null
-                )
-            ) {
+            if (canSend()) {
                 if (!binding.send.isEnabled) {
                     enableSendButton()
                 }
@@ -128,37 +119,12 @@ class InputToolbar(
         }
         binding.send.setOnClickListener {
             showProgress(true)
-            val wykopImageFile = binding.markdownToolbar.getWykopImageFile()
-            val embedUrl = binding.markdownToolbar.embedUrl
-            if (wykopImageFile != null) {
-                inputToolbarListener?.sendPhoto(
-                    wykopImageFile,
-                    if (binding.body.text
-                            .toString()
-                            .isNotEmpty()
-                    ) {
-                        binding.body.text.toString()
-                    } else {
-                        ZERO_WIDTH_SPACE
-                    },
-                    binding.markdownToolbar.containsAdultContent,
-                    embedUrl,
-                )
-            } else {
-                inputToolbarListener?.sendPhoto(
-                    binding.markdownToolbar.photoUrl,
-                    if (binding.body.text
-                            .toString()
-                            .isNotEmpty()
-                    ) {
-                        binding.body.text.toString()
-                    } else {
-                        ZERO_WIDTH_SPACE
-                    },
-                    binding.markdownToolbar.containsAdultContent,
-                    embedUrl,
-                )
-            }
+            inputToolbarListener?.sendPhotos(
+                binding.markdownToolbar.getPhotoSources(),
+                binding.body.text.toString().ifEmpty { ZERO_WIDTH_SPACE },
+                binding.markdownToolbar.containsAdultContent,
+                binding.markdownToolbar.embedUrl,
+            )
         }
 
         disableSendButton()
@@ -182,10 +148,23 @@ class InputToolbar(
         inputToolbarListener?.openGalleryImageChooser()
     }
 
-    fun setPhoto(photo: Uri?) {
-        enableSendButton()
-        binding.markdownToolbar.photo = photo
+    fun addPhoto(photo: Uri) {
+        binding.markdownToolbar.addPhoto(photo)
     }
+
+    /** 4 we wpisach i komentarzach mikrobloga, 1 w komentarzach znalezisk i PW. */
+    var maxPhotos: Int
+        get() = binding.markdownToolbar.maxPhotos
+        set(value) {
+            binding.markdownToolbar.maxPhotos = value
+        }
+
+    val remainingPhotos: Int
+        get() = binding.markdownToolbar.remainingPhotos
+
+    private fun hasAttachments() = binding.markdownToolbar.hasPhotos || binding.markdownToolbar.embedUrl != null
+
+    private fun canSend() = textBody.length > 2 || hasAttachments()
 
     fun setup(
         userManagerApi: UserManagerApi,
@@ -229,13 +208,11 @@ class InputToolbar(
         textBody = ""
         selectionStart = textBody.length
         binding.markdownToolbar.apply {
-            photo = null
-            photoUrl = null
-            embedUrl = null
+            clearAttachments()
             containsAdultContent = false
         }
 
-        if (textBody.length < 3 && !(binding.markdownToolbar.photo != null || binding.markdownToolbar.photoUrl != null)) disableSendButton()
+        if (!canSend()) disableSendButton()
         closeMarkdownToolbar()
         binding.body.isFocusableInTouchMode = false
         binding.body.isFocusable = false
@@ -253,7 +230,7 @@ class InputToolbar(
         defaultText = ""
         binding.body.requestFocus()
         textBody += "@$user: "
-        if (textBody.length > 2 || binding.markdownToolbar.photo != null || binding.markdownToolbar.photoUrl != null) enableSendButton()
+        if (canSend()) enableSendButton()
         selectionStart = textBody.length
         showKeyboard()
     }
@@ -267,7 +244,7 @@ class InputToolbar(
         if (textBody.isNotEmpty()) textBody += "\n\n"
         textBody += "> ${quote.removeHtml().replace("\n", "\n> ")}\n@$quoteAuthor: "
         selectionStart = textBody.length
-        if (textBody.length > 2 || binding.markdownToolbar.photo != null || binding.markdownToolbar.photoUrl != null) enableSendButton()
+        if (canSend()) enableSendButton()
         showKeyboard()
     }
 

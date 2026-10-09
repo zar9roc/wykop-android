@@ -19,7 +19,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import dagger.android.support.AndroidSupportInjection
 import io.github.wykopmobilny.R
-import io.github.wykopmobilny.api.WykopImageFile
+import io.github.wykopmobilny.api.PhotoSource
+import io.github.wykopmobilny.ui.widgets.MAX_MICROBLOG_PHOTOS
 import io.github.wykopmobilny.api.entries.EntriesApi
 import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.suggest.SuggestApi
@@ -143,12 +144,14 @@ internal class EntryDetailsFragment :
     private var cameraPhotoUri: Uri? = null
 
     private val galleryPicker =
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-            uri?.let { binding?.inputToolbar?.setPhoto(it) }
+        // Wiele zdjec naraz (galeria mikrobloga) - nadmiar ponad limit jest pomijany.
+        registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
+            val inputToolbar = binding?.inputToolbar ?: return@registerForActivityResult
+            uris.take(inputToolbar.remainingPhotos).forEach(inputToolbar::addPhoto)
         }
     private val cameraCapture =
         registerForActivityResult(ActivityResultContracts.TakePicture()) { saved ->
-            if (saved) cameraPhotoUri?.let { binding?.inputToolbar?.setPhoto(it) }
+            if (saved) cameraPhotoUri?.let { binding?.inputToolbar?.addPhoto(it) }
         }
 
     // NewNavigator/WykopLinkHandler wymagają Activity - fragment injectuje się
@@ -214,6 +217,7 @@ internal class EntryDetailsFragment :
 
         binding.inputToolbar.setup(userManagerApi, suggestApi)
         binding.inputToolbar.inputToolbarListener = this
+        binding.inputToolbar.maxPhotos = MAX_MICROBLOG_PHOTOS
         binding.inputToolbar.setCustomHint(getString(R.string.reply))
         binding.inputToolbar.hide()
 
@@ -534,25 +538,14 @@ internal class EntryDetailsFragment :
 
     // ==================== Wysyłanie komentarza (InputToolbarListener) ====================
 
-    override fun sendPhoto(
-        photo: String?,
+    override fun sendPhotos(
+        photos: List<PhotoSource>,
         body: String,
         containsAdultContent: Boolean,
         embedUrl: String?,
     ) {
         entriesApi
-            .addEntryComment(body, entryId, photo, containsAdultContent, embedUrl)
-            .handleCommentSent()
-    }
-
-    override fun sendPhoto(
-        photo: WykopImageFile,
-        body: String,
-        containsAdultContent: Boolean,
-        embedUrl: String?,
-    ) {
-        entriesApi
-            .addEntryComment(body, entryId, photo, containsAdultContent, embedUrl)
+            .addEntryComment(body, entryId, photos, containsAdultContent, embedUrl)
             .handleCommentSent()
     }
 

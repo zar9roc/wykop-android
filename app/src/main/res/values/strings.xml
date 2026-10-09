@@ -12,6 +12,11 @@
         <item quantity="many">%d zdjęć</item>
         <item quantity="other">%d zdjęcia</item>
     </plurals>
+    <string name="attachment_remove_photo">Usuń zdjęcie %1$d</string>
+    <string name="attachment_remove_embed">Usuń link</string>
+    <string name="attachment_add_photo">Dodaj zdjęcie</string>
+    <string name="attachment_counter">%1$d/%2$d</string>
+    <string name="attachment_photo_limit">Można dodać najwyżej %1$d zdjęcia</string>
     <string name="photo_view_position">%1$d / %2$d</string>
 
     <string name="update_channel_name">Aktualizacje aplikacji</string>

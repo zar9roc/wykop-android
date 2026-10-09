@@ -127,13 +127,13 @@ class NewNavigator
         fun openEditEntryActivity(
             body: String,
             entryId: Long,
-            embed: Embed?,
+            attachments: List<Embed>,
         ) = context.startActivityForResult(
             EditEntryActivity.createIntent(
                 context = context,
                 body = body,
                 entryId = entryId,
-                embed = embed,
+                attachments = attachments,
             ),
             BaseInputActivity.EDIT_ENTRY,
         )
@@ -151,9 +151,9 @@ class NewNavigator
             body: String,
             entryId: Long,
             commentId: Long,
-            embed: Embed?,
+            attachments: List<Embed>,
         ) = context.startActivityForResult(
-            EditEntryCommentActivity.createIntent(context, body, entryId, commentId, embed),
+            EditEntryCommentActivity.createIntent(context, body, entryId, commentId, attachments),
             BaseInputActivity.EDIT_ENTRY_COMMENT,
         )
 

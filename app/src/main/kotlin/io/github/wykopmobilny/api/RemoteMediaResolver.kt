@@ -20,6 +20,22 @@ internal data class RemoteMediaKeys(
     val embedKey: String? = null,
 )
 
+/**
+ * Klucze wszystkich zdjec (w kolejnosci zalaczania) i embedu. Jedno zdjecie idzie
+ * dotychczasowym polem "photo", galeria (2+) polem "photos" - pojedyncze zdjecia
+ * dzialaja tak samo jak przed wprowadzeniem galerii.
+ */
+internal data class ResolvedMedia(
+    val photoKeys: List<String>,
+    val embedKey: String?,
+) {
+    val singlePhotoKey: String?
+        get() = photoKeys.singleOrNull()
+
+    val galleryPhotoKeys: List<String>?
+        get() = photoKeys.takeIf { it.size > 1 }
+}
+
 // Konca sciezki wystarczaja do rozpoznania bezposredniego obrazka; wszystko inne
 // probujemy najpierw jako embed (serwer sam wie, ktore serwisy wspiera).
 private val directImageExtensions = listOf(".jpg", ".jpeg", ".png", ".gif", ".webp")

@@ -16,6 +16,7 @@ import io.github.wykopmobilny.R
 import io.github.wykopmobilny.api.suggest.SuggestApi
 import io.github.wykopmobilny.base.BaseActivity
 import io.github.wykopmobilny.databinding.ActivityWriteCommentBinding
+import io.github.wykopmobilny.models.dataclass.Embed
 import io.github.wykopmobilny.ui.dialogs.exitConfirmationDialog
 import io.github.wykopmobilny.ui.suggestions.HashTagsSuggestionsAdapter
 import io.github.wykopmobilny.ui.suggestions.UsersSuggestionsAdapter
@@ -33,6 +34,7 @@ abstract class BaseInputActivity<T : BaseInputPresenter> :
         const val EXTRA_RECEIVER = "EXTRA_RECEIVER"
         const val EXTRA_BODY = "EXTRA_BODY"
         const val EXTRA_EMBED = "EXTRA_EMBED"
+        const val EXTRA_ATTACHMENTS = "EXTRA_ATTACHMENTS"
         const val REQUEST_CODE = 106
         const val EDIT_ENTRY_COMMENT = 107
         const val EDIT_ENTRY = 108
@@ -42,6 +44,9 @@ abstract class BaseInputActivity<T : BaseInputPresenter> :
     }
 
     abstract var suggestionApi: SuggestApi
+
+    /** Limit zdjec: 4 dla wpisow i komentarzy mikrobloga, 1 dla komentarzy znalezisk. */
+    protected open val maxPhotos: Int = 1
     abstract var presenter: T
 
     private val usersSuggestionAdapter by lazy { UsersSuggestionsAdapter(this, suggestionApi) }
@@ -52,11 +57,7 @@ abstract class BaseInputActivity<T : BaseInputPresenter> :
     override var textBody: String
         get() =
             if (
-                (
-                    binding.markupToolbar.photoUrl != null ||
-                        binding.markupToolbar.photo != null ||
-                        binding.markupToolbar.embedUrl != null
-                ) &&
+                (binding.markupToolbar.hasPhotos || binding.markupToolbar.embedUrl != null) &&
                 binding.body.text.isEmpty()
             ) {
                 ZERO_WIDTH_SPACE
@@ -127,6 +128,7 @@ abstract class BaseInputActivity<T : BaseInputPresenter> :
 
         binding.markupToolbar.markdownListener = this
         binding.markupToolbar.floatingImageView = binding.floatingImageView
+        binding.markupToolbar.maxPhotos = maxPhotos
 
         // targetSdk 36 + enableOnBackInvokedCallback: onBackPressed() nie jest wołany,
         // potwierdzenie wyjścia przy niezapisanej treści musi iść przez dispatcher.
@@ -161,13 +163,11 @@ abstract class BaseInputActivity<T : BaseInputPresenter> :
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.send -> {
-                val typedInputStream = binding.markupToolbar.getWykopImageFile()
-                val embedUrl = binding.markupToolbar.embedUrl
-                if (typedInputStream != null) {
-                    presenter.sendWithPhoto(typedInputStream, binding.markupToolbar.containsAdultContent, embedUrl)
-                } else {
-                    presenter.sendWithPhotoUrl(binding.markupToolbar.photoUrl, binding.markupToolbar.containsAdultContent, embedUrl)
-                }
+                presenter.send(
+                    binding.markupToolbar.getPhotoSources(),
+                    binding.markupToolbar.containsAdultContent,
+                    binding.markupToolbar.embedUrl,
+                )
             }
 
             android.R.id.home -> {
@@ -186,12 +186,17 @@ abstract class BaseInputActivity<T : BaseInputPresenter> :
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
                 // Gallery chooser's callback
+                // Przy wielokrotnym wyborze adresy sa w clipData, przy pojedynczym w data.
                 USER_ACTION_INSERT_PHOTO -> {
-                    binding.markupToolbar.photo = data?.data
+                    data
+                        ?.selectedUris()
+                        .orEmpty()
+                        .take(binding.markupToolbar.remainingPhotos.coerceAtLeast(1))
+                        .forEach(binding.markupToolbar::addPhoto)
                 }
 
                 USER_ACTION_INSERT_PHOTO_CAMERA -> {
-                    binding.markupToolbar.photo = contentUri
+                    binding.markupToolbar.addPhoto(contentUri)
                 }
             }
         }
@@ -210,6 +215,21 @@ abstract class BaseInputActivity<T : BaseInputPresenter> :
     // (MarkdownToolbar); podklasy dokladaja swoje zalaczniki (np. AddEntry - ankieta).
     protected open fun hasUnsavedContent(): Boolean = binding.markupToolbar.hasUserEditedContent()
 
+    /**
+     * Edycja: istniejace zalaczniki trafiaja do paska jako adresy (przy wysylce
+     * serwer dostaje je z powrotem przez /media/photos), embed do slotu linku.
+     */
+    protected fun prefillAttachments(attachments: List<Embed>) {
+        binding.markupToolbar.containsAdultContent = attachments.any { it.plus18 }
+        attachments.forEach { attachment ->
+            if (attachment.type == "image") {
+                binding.markupToolbar.addPhotoUrl(attachment.url)
+            } else {
+                binding.markupToolbar.embedUrl = attachment.url
+            }
+        }
+    }
+
     override fun exitActivity() {
         setResult(Activity.RESULT_OK)
         finish()
@@ -220,6 +240,7 @@ abstract class BaseInputActivity<T : BaseInputPresenter> :
         val intent = Intent()
         intent.type = "image/*"
         intent.action = Intent.ACTION_GET_CONTENT
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, binding.markupToolbar.remainingPhotos > 1)
         startActivityForResult(
             Intent.createChooser(
                 intent,
@@ -235,4 +256,9 @@ abstract class BaseInputActivity<T : BaseInputPresenter> :
         intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
         startActivityForResult(intent, USER_ACTION_INSERT_PHOTO_CAMERA)
     }
+}
+
+private fun Intent.selectedUris(): List<Uri> {
+    val clip = clipData ?: return listOfNotNull(data)
+    return (0 until clip.itemCount).mapNotNull { clip.getItemAt(it).uri }
 }

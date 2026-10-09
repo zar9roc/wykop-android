@@ -10,7 +10,7 @@ import android.view.MenuItem
 import androidx.activity.addCallback
 import androidx.core.view.isVisible
 import io.github.wykopmobilny.R
-import io.github.wykopmobilny.api.WykopImageFile
+import io.github.wykopmobilny.api.PhotoSource
 import io.github.wykopmobilny.api.suggest.SuggestApi
 import io.github.wykopmobilny.base.BaseActivity
 import io.github.wykopmobilny.databinding.ActivityConversationBinding
@@ -220,19 +220,16 @@ class ConversationActivity :
         )
     }
 
-    override fun sendPhoto(
-        photo: String?,
+    // Wiadomosci prywatne przyjmuja jedno zdjecie - limit paska to 1.
+    override fun sendPhotos(
+        photos: List<PhotoSource>,
         body: String,
         containsAdultContent: Boolean,
         embedUrl: String?,
-    ) = presenter.sendMessage(body, photo, containsAdultContent, embedUrl)
-
-    override fun sendPhoto(
-        photo: WykopImageFile,
-        body: String,
-        containsAdultContent: Boolean,
-        embedUrl: String?,
-    ) = presenter.sendMessage(body, photo, containsAdultContent, embedUrl)
+    ) = when (val photo = photos.firstOrNull()) {
+        is PhotoSource.File -> presenter.sendMessage(body, photo.file, containsAdultContent, embedUrl)
+        else -> presenter.sendMessage(body, (photo as? PhotoSource.Url)?.url, containsAdultContent, embedUrl)
+    }
 
     override fun onActivityResult(
         requestCode: Int,
@@ -242,8 +239,8 @@ class ConversationActivity :
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
-                BaseInputActivity.USER_ACTION_INSERT_PHOTO -> binding.inputToolbar.setPhoto(data?.data)
-                BaseInputActivity.USER_ACTION_INSERT_PHOTO_CAMERA -> binding.inputToolbar.setPhoto(contentUri)
+                BaseInputActivity.USER_ACTION_INSERT_PHOTO -> data?.data?.let(binding.inputToolbar::addPhoto)
+                BaseInputActivity.USER_ACTION_INSERT_PHOTO_CAMERA -> binding.inputToolbar.addPhoto(contentUri)
             }
         }
     }

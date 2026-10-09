@@ -10,6 +10,7 @@ import io.github.wykopmobilny.R
 import io.github.wykopmobilny.api.suggest.SuggestApi
 import io.github.wykopmobilny.ui.dialogs.surveyDialog
 import io.github.wykopmobilny.ui.modules.NewNavigator
+import io.github.wykopmobilny.ui.widgets.MAX_MICROBLOG_PHOTOS
 import io.github.wykopmobilny.ui.modules.input.BaseInputActivity
 import javax.inject.Inject
 
@@ -35,6 +36,8 @@ class AddEntryActivity :
 
     @Inject
     lateinit var navigator: NewNavigator
+
+    override val maxPhotos = MAX_MICROBLOG_PHOTOS
 
     // Zcache'owana tresc ankiety - do prefillu przy ponownym otwarciu (edycji).
     private var surveyQuestion: String? = null
@@ -97,7 +100,7 @@ class AddEntryActivity :
             } else if (intent.type?.startsWith("image/") == true) {
                 val imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM) as? Uri
                 imageUri?.let {
-                    binding.markupToolbar.photo = imageUri
+                    binding.markupToolbar.addPhoto(imageUri)
                     Napier.d("Image uri $imageUri")
                 }
             }

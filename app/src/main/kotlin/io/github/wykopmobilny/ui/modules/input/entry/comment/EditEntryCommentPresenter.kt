@@ -1,6 +1,6 @@
 package io.github.wykopmobilny.ui.modules.input.entry.comment
 
-import io.github.wykopmobilny.api.WykopImageFile
+import io.github.wykopmobilny.api.PhotoSource
 import io.github.wykopmobilny.api.entries.EntriesApi
 import io.github.wykopmobilny.base.Schedulers
 import io.github.wykopmobilny.ui.modules.input.InputPresenter
@@ -10,8 +10,8 @@ class EditEntryCommentPresenter(
     private val schedulers: Schedulers,
     private val entriesApi: EntriesApi,
 ) : InputPresenter<EditEntryCommentView>() {
-    override fun sendWithPhoto(
-        photo: WykopImageFile,
+    override fun send(
+        photos: List<PhotoSource>,
         containsAdultContent: Boolean,
         embedUrl: String?,
     ) {
@@ -24,35 +24,7 @@ class EditEntryCommentPresenter(
                 body = body,
                 entryId = entryId,
                 commentId = commentId,
-                wykopImageFile = photo,
-                plus18 = containsAdultContent,
-                embedUrl = embedUrl,
-            ).subscribeOn(schedulers.backgroundThread())
-            .observeOn(schedulers.mainThread())
-            .subscribe(
-                { view?.exitActivity() },
-                {
-                    view?.showProgressBar = false
-                    view?.showErrorDialog(it)
-                },
-            ).intoComposite(compositeObservable)
-    }
-
-    override fun sendWithPhotoUrl(
-        photo: String?,
-        containsAdultContent: Boolean,
-        embedUrl: String?,
-    ) {
-        view?.showProgressBar = true
-        val body = view?.textBody ?: return
-        val entryId = view?.entryId ?: return
-        val commentId = view?.commentId ?: return
-        entriesApi
-            .editEntryComment(
-                body = body,
-                entryId = entryId,
-                commentId = commentId,
-                embed = photo,
+                photos = photos,
                 plus18 = containsAdultContent,
                 embedUrl = embedUrl,
             ).subscribeOn(schedulers.backgroundThread())

@@ -1,6 +1,6 @@
 package io.github.wykopmobilny.ui.modules.input.entry.add
 
-import io.github.wykopmobilny.api.WykopImageFile
+import io.github.wykopmobilny.api.PhotoSource
 import io.github.wykopmobilny.api.entries.EntriesApi
 import io.github.wykopmobilny.base.Schedulers
 import io.github.wykopmobilny.ui.modules.input.InputPresenter
@@ -17,33 +17,14 @@ class AddEntryPresenter
         // wysylce. Ustawiane/czyszczone przez AddEntryActivity; null = brak ankiety.
         var pendingSurveyId: String? = null
 
-        override fun sendWithPhoto(
-            photo: WykopImageFile,
+        override fun send(
+            photos: List<PhotoSource>,
             containsAdultContent: Boolean,
             embedUrl: String?,
         ) {
             view?.showProgressBar = true
             entriesApi
-                .addEntry(view?.textBody!!, photo, containsAdultContent, pendingSurveyId, embedUrl)
-                .subscribeOn(schedulers.backgroundThread())
-                .observeOn(schedulers.mainThread())
-                .subscribe(
-                    { view?.openEntryActivity(it.id) },
-                    {
-                        view?.showProgressBar = false
-                        view?.showErrorDialog(it)
-                    },
-                ).intoComposite(compositeObservable)
-        }
-
-        override fun sendWithPhotoUrl(
-            photo: String?,
-            containsAdultContent: Boolean,
-            embedUrl: String?,
-        ) {
-            view?.showProgressBar = true
-            entriesApi
-                .addEntry(view?.textBody!!, photo, containsAdultContent, pendingSurveyId, embedUrl)
+                .addEntry(view?.textBody!!, photos, containsAdultContent, pendingSurveyId, embedUrl)
                 .subscribeOn(schedulers.backgroundThread())
                 .observeOn(schedulers.mainThread())
                 .subscribe(

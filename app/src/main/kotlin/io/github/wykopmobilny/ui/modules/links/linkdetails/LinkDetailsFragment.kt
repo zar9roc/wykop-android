@@ -15,7 +15,7 @@ import io.github.wykopmobilny.api.links.LinksApi
 import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
 import io.github.wykopmobilny.ui.widgets.InputToolbar
 import io.github.wykopmobilny.ui.widgets.InputToolbarListener
-import io.github.wykopmobilny.api.WykopImageFile
+import io.github.wykopmobilny.api.PhotoSource
 import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 import io.github.wykopmobilny.utils.usermanager.isUserAuthorized
 import javax.inject.Inject
@@ -81,11 +81,11 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
 
     private val galleryPicker =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-            uri?.let { inputToolbar?.setPhoto(it) }
+            uri?.let { inputToolbar?.addPhoto(it) }
         }
     private val cameraCapture =
         registerForActivityResult(ActivityResultContracts.TakePicture()) { saved ->
-            if (saved) cameraPhotoUri?.let { inputToolbar?.setPhoto(it) }
+            if (saved) cameraPhotoUri?.let { inputToolbar?.addPhoto(it) }
         }
 
     var linkId by longArgument("linkId")
@@ -270,31 +270,30 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
         toolbar.setup(userManagerApi, suggestApi)
         toolbar.inputToolbarListener =
             object : InputToolbarListener {
-                override fun sendPhoto(
-                    photo: WykopImageFile,
+                // Komentarze znalezisk przyjmuja jedno zdjecie (pole "photo") - limit paska to 1.
+                override fun sendPhotos(
+                    photos: List<PhotoSource>,
                     body: String,
                     containsAdultContent: Boolean,
                     embedUrl: String?,
                 ) = sendComment(body, containsAdultContent) {
                     val parentId = replyThread?.parentId
-                    if (parentId == null) {
-                        linksApi.commentAdd(body, containsAdultContent, photo, linkId, embedUrl)
-                    } else {
-                        linksApi.commentAdd(body, containsAdultContent, photo, linkId, parentId, embedUrl)
-                    }
-                }
+                    when (val photo = photos.firstOrNull()) {
+                        is PhotoSource.File ->
+                            if (parentId == null) {
+                                linksApi.commentAdd(body, containsAdultContent, photo.file, linkId, embedUrl)
+                            } else {
+                                linksApi.commentAdd(body, containsAdultContent, photo.file, linkId, parentId, embedUrl)
+                            }
 
-                override fun sendPhoto(
-                    photo: String?,
-                    body: String,
-                    containsAdultContent: Boolean,
-                    embedUrl: String?,
-                ) = sendComment(body, containsAdultContent) {
-                    val parentId = replyThread?.parentId
-                    if (parentId == null) {
-                        linksApi.commentAdd(body, photo, containsAdultContent, linkId, embedUrl)
-                    } else {
-                        linksApi.commentAdd(body, photo, containsAdultContent, linkId, parentId, embedUrl)
+                        else -> {
+                            val photoUrl = (photo as? PhotoSource.Url)?.url
+                            if (parentId == null) {
+                                linksApi.commentAdd(body, photoUrl, containsAdultContent, linkId, embedUrl)
+                            } else {
+                                linksApi.commentAdd(body, photoUrl, containsAdultContent, linkId, parentId, embedUrl)
+                            }
+                        }
                     }
                 }
 
