@@ -108,12 +108,16 @@ class NewNavigator
 
         fun openConversationListActivity(user: String) = context.startActivity(ConversationActivity.createIntent(context, user))
 
-        fun openPhotoViewActivity(url: String) = context.startActivity(PhotoViewActivity.createIntent(context, url))
+        fun openPhotoViewActivity(
+            url: String,
+            label: String? = null,
+        ) = context.startActivity(PhotoViewActivity.createIntent(context, listOf(url), 0, listOf(label)))
 
         fun openPhotoViewActivity(
             urls: List<String>,
             index: Int,
-        ) = context.startActivity(PhotoViewActivity.createIntent(context, urls, index))
+            labels: List<String?>,
+        ) = context.startActivity(PhotoViewActivity.createIntent(context, urls, index, labels))
 
         fun openSettingsActivity() = context.startActivity(SettingsActivity.createIntent(context))
 

@@ -13,6 +13,8 @@ class Embed(
     val size: String,
     var isResize: Boolean = false,
     var isRevealed: Boolean = false,
+    // Etykieta zdjecia z API (np. nazwa pliku od autora) - tytul w przegladarce i nazwa przy zapisie.
+    val label: String? = null,
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
@@ -24,6 +26,7 @@ class Embed(
         parcel.readString()!!,
         parcel.readByte() != 0.toByte(),
         parcel.readByte() != 0.toByte(),
+        parcel.readString(),
     )
 
     override fun writeToParcel(
@@ -39,6 +42,7 @@ class Embed(
         parcel.writeString(size)
         parcel.writeByte(if (isResize) 1 else 0)
         parcel.writeByte(if (isRevealed) 1 else 0)
+        parcel.writeString(label)
     }
 
     override fun describeContents(): Int = 0

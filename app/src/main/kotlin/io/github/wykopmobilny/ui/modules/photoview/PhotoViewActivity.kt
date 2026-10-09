@@ -27,6 +27,7 @@ internal class PhotoViewActivity : BaseActivity() {
     companion object {
         const val URLS_EXTRA = "URLS"
         const val INDEX_EXTRA = "INDEX"
+        const val LABELS_EXTRA = "LABELS"
         const val SHARE_REQUEST_CODE = 1
 
         fun createIntent(
@@ -34,13 +35,17 @@ internal class PhotoViewActivity : BaseActivity() {
             imageUrl: String,
         ) = createIntent(context, listOf(imageUrl), 0)
 
+        /** [labels] rownolegle do [imageUrls]; brak etykiety = null. */
         fun createIntent(
             context: Context,
             imageUrls: List<String>,
             index: Int,
+            labels: List<String?> = emptyList(),
         ) = Intent(context, PhotoViewActivity::class.java).apply {
             putStringArrayListExtra(URLS_EXTRA, ArrayList(imageUrls))
             putExtra(INDEX_EXTRA, index)
+            // Intent nie przenosi nulli w liscie stringow - brak etykiety jako "".
+            putStringArrayListExtra(LABELS_EXTRA, ArrayList(imageUrls.indices.map { labels.getOrNull(it).orEmpty() }))
         }
     }
 
@@ -53,28 +58,31 @@ internal class PhotoViewActivity : BaseActivity() {
     override val isActivityTransfluent: Boolean = true
 
     private lateinit var urls: List<String>
+    private var labels: List<String> = emptyList()
     private val photoViewActions: PhotoViewCallbacks by lazy { PhotoViewActions(this) }
 
     /** Adres zdjecia na biezacej stronie. */
     val url: String
         get() = urls[binding.pager.currentItem]
 
+    /** Etykieta zdjecia na biezacej stronie (null gdy API jej nie podalo). */
+    private val label: String?
+        get() = labels.getOrNull(binding.pager.currentItem)?.takeIf { it.isNotBlank() }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setSupportActionBar(binding.toolbar.toolbar)
         binding.toolbar.toolbar.setBackgroundResource(BaseR.drawable.gradient_toolbar_up)
         urls = intent.getStringArrayListExtra(URLS_EXTRA)?.takeIf { it.isNotEmpty() } ?: return finish()
-        title = null
+        labels = intent.getStringArrayListExtra(LABELS_EXTRA).orEmpty()
         binding.pager.adapter = PhotoPagesAdapter(this, urls)
         binding.pager.setCurrentItem(intent.getIntExtra(INDEX_EXTRA, 0).coerceIn(urls.indices), false)
-        if (urls.size > 1) {
-            updateTitle(binding.pager.currentItem)
-            binding.pager.registerOnPageChangeCallback(
-                object : ViewPager2.OnPageChangeCallback() {
-                    override fun onPageSelected(position: Int) = updateTitle(position)
-                },
-            )
-        }
+        updateTitle()
+        binding.pager.registerOnPageChangeCallback(
+            object : ViewPager2.OnPageChangeCallback() {
+                override fun onPageSelected(position: Int) = updateTitle()
+            },
+        )
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
@@ -86,8 +94,10 @@ internal class PhotoViewActivity : BaseActivity() {
         super.onDestroy()
     }
 
-    private fun updateTitle(position: Int) {
-        title = getString(R.string.photo_view_position, position + 1, urls.size)
+    // "2 / 4 · etykieta"; pojedyncze zdjecie - sama etykieta (albo pusty tytul).
+    private fun updateTitle() {
+        val position = if (urls.size > 1) getString(R.string.photo_view_position, binding.pager.currentItem + 1, urls.size) else null
+        title = listOfNotNull(position, label).joinToString(" · ").ifEmpty { null }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -99,7 +109,7 @@ internal class PhotoViewActivity : BaseActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_share -> photoViewActions.shareImage(url)
-            R.id.action_save_image -> photoViewActions.saveImage(url)
+            R.id.action_save_image -> photoViewActions.saveImage(url, label)
             R.id.action_copy_url -> clipboardHelper.copyTextToClipboard(url, "imageUrl")
             R.id.action_open_browser -> startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
             android.R.id.home -> finish()

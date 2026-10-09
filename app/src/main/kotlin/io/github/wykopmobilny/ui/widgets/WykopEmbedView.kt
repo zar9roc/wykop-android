@@ -82,6 +82,7 @@ class WykopEmbedView(
         // dotychczasowej sciezce (przycinanie/rozwijanie, autoplay GIF).
         val showGallery = attachments.size > 1 && photos.isNotEmpty()
         binding.photoGrid.isVisible = showGallery
+        binding.gallerySeparator.isVisible = false
         binding.singleMedia.isVisible = true
         if (showGallery) {
             bindGallery(photos, isNsfw && hideNsfw, showAdultContent, isNsfw)
@@ -94,6 +95,7 @@ class WykopEmbedView(
             }
             setEmbed(video, enableYoutubePlayer, enableEmbedPlayer, showAdultContent, hideNsfw, navigator, isNsfw)
             binding.photoGrid.isVisible = true
+            binding.gallerySeparator.isVisible = true
             isVisible = true
             return
         }
@@ -141,7 +143,7 @@ class WykopEmbedView(
         binding.photoGrid.onPhotoClick = { index ->
             // APIV2 WTF - jak w handleUrl: GIF-y z CDN maja w url rozszerzenie .jpg.
             val urls = photos.map { if (it.isAnimated) it.url.replace(".jpg", ".gif") else it.url }
-            navigator?.openPhotoViewActivity(urls, index)
+            navigator?.openPhotoViewActivity(urls, index, photos.map { it.label })
         }
     }
 
@@ -244,7 +246,7 @@ class WykopEmbedView(
             "image" -> {
                 // APIV2 WTF
                 val url = if (image.isAnimated) image.url.replace(".jpg", ".gif") else image.url
-                navigator.openPhotoViewActivity(url)
+                navigator.openPhotoViewActivity(url, image.label)
             }
 
             "video" -> {

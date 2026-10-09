@@ -29,7 +29,11 @@ interface PhotoViewCallbacks {
 
     fun getDrawable(): Drawable?
 
-    fun saveImage(url: String)
+    /** Zapis do Pictures/wykopmobilny; nazwa z [label] (gdy jest), przy duplikacie z indeksem. */
+    fun saveImage(
+        url: String,
+        label: String? = null,
+    )
 }
 
 class PhotoViewActions(
@@ -97,11 +101,14 @@ class PhotoViewActions(
         return null
     }
 
-    override fun saveImage(url: String) {
+    override fun saveImage(
+        url: String,
+        label: String?,
+    ) {
         if (!checkForWriteReadPermission()) {
             return
         }
-        saveImageV2(url)
+        saveImageV2(url, label)
             .subscribeOn(WykopSchedulers().backgroundThread())
             .observeOn(WykopSchedulers().mainThread())
             .subscribe(
@@ -111,7 +118,10 @@ class PhotoViewActions(
     }
 
     @Suppress("DEPRECATION")
-    private fun saveImageV2(url: String): Completable =
+    private fun saveImageV2(
+        url: String,
+        label: String?,
+    ): Completable =
         Completable.fromAction {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 val source =
@@ -121,9 +131,13 @@ class PhotoViewActions(
                         .load(url)
                         .submit()
                         .get()
+                val fileName =
+                    uniqueFileName(savedFileName(url, label)) { candidate ->
+                        existsInMediaStore(candidate, Environment.DIRECTORY_PICTURES + File.separator + SAVED_FOLDER + File.separator)
+                    }
                 val values =
                     ContentValues().apply {
-                        put(Images.Media.DISPLAY_NAME, url.substringAfterLast('/'))
+                        put(Images.Media.DISPLAY_NAME, fileName)
                         put(Images.Media.MIME_TYPE, getMimeType(url))
                         put(Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separator + SAVED_FOLDER)
                         put(Images.Media.DATE_TAKEN, System.currentTimeMillis())
@@ -144,11 +158,27 @@ class PhotoViewActions(
                         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
                         SAVED_FOLDER,
                     )
-                val targetFile = File(directory, url.substringAfterLast('/'))
-                source.copyTo(targetFile, true)
+                val fileName = uniqueFileName(savedFileName(url, label)) { File(directory, it).exists() }
+                val targetFile = File(directory, fileName)
+                source.copyTo(targetFile, false)
                 addImageToGallery(targetFile.path, context)
             }
         }
+
+    // MediaStore widzi tu pliki zapisane przez aplikacje - to wystarczy, zeby kolejne
+    // zapisy tej samej etykiety dostawaly indeks zamiast nadpisywac/duplikowac nazwe.
+    private fun existsInMediaStore(
+        fileName: String,
+        relativePath: String,
+    ): Boolean =
+        context.contentResolver
+            .query(
+                Images.Media.EXTERNAL_CONTENT_URI,
+                arrayOf(Images.Media._ID),
+                "${Images.Media.DISPLAY_NAME} = ? AND ${Images.Media.RELATIVE_PATH} = ?",
+                arrayOf(fileName, relativePath),
+                null,
+            )?.use { it.count > 0 } ?: false
 
     private fun checkForWriteReadPermission(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -189,4 +219,43 @@ class PhotoViewActions(
     }
 
     private fun getMimeType(uri: String) = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(uri))
+}
+
+private val FORBIDDEN_FILE_NAME_CHARS = Regex("""[\\/:*?"<>|\p{Cntrl}]""")
+private const val MAX_FILE_NAME_LENGTH = 100
+
+/**
+ * Nazwa pliku do zapisu: etykieta zdjecia z rozszerzeniem z adresu, a bez etykiety
+ * nazwa pliku z CDN. Znaki niedozwolone w nazwach plikow zamieniane na "_".
+ */
+internal fun savedFileName(
+    url: String,
+    label: String?,
+): String {
+    val urlName = url.substringBefore('?').substringAfterLast('/')
+    val extension = urlName.substringAfterLast('.', "").lowercase().takeIf { it.length in 1..4 }
+    val base =
+        label
+            ?.replace(FORBIDDEN_FILE_NAME_CHARS, "_")
+            ?.trim()
+            ?.trimEnd('.')
+            ?.take(MAX_FILE_NAME_LENGTH)
+            ?.takeIf { it.isNotEmpty() }
+            ?: return urlName
+    // Etykieta czesto juz konczy sie rozszerzeniem ("zdjecie.jpg") - nie doklejamy drugiego.
+    return if (extension == null || base.endsWith(".$extension", ignoreCase = true)) base else "$base.$extension"
+}
+
+/** "nazwa.jpg", a gdy zajeta: "nazwa (2).jpg", "nazwa (3).jpg"... */
+internal fun uniqueFileName(
+    fileName: String,
+    exists: (String) -> Boolean,
+): String {
+    if (!exists(fileName)) return fileName
+    val dot = fileName.lastIndexOf('.').takeIf { it > 0 }
+    val base = dot?.let { fileName.substring(0, it) } ?: fileName
+    val extension = dot?.let { fileName.substring(it) }.orEmpty()
+    return generateSequence(2) { it + 1 }
+        .map { "$base ($it)$extension" }
+        .first { !exists(it) }
 }

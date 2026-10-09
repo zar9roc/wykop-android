@@ -56,6 +56,7 @@ object MediaMapperV3 {
             // Badge gifa pokazuje ROZMIAR PLIKU (nie wymiary) - wczesniej tu byly
             // wymiary "WxH", ktore logika obcinania w WykopEmbedView mieszala.
             size = photo.size?.let(::formatFileSize).orEmpty(),
+            label = photo.label?.trim()?.takeIf { it.isNotEmpty() },
         )
 
     private fun formatFileSize(bytes: Long): String =
