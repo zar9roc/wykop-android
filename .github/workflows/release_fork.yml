@@ -34,10 +34,21 @@ jobs:
 
       # Keystore trzymamy w sekrecie zakodowany base64 - repozytorium forka
       # nie zawiera release-local.keystore i zawierac nie powinno.
+      # Zapisujemy go POZA repozytorium: plugin wersjonujacy sprawdza
+      # "git status --porcelain" i przy brudnym drzewie traktuje build jako
+      # snapshot nastepnej wersji minor (tak zar-v1.5.1 dalo 1.6.0).
       - name: Odtworz keystore z sekretu
         run: |
-          echo "${{ secrets.WYKOP_KEYSTORE_BASE64 }}" | base64 -d > keys/release-ci.keystore
-          test -s keys/release-ci.keystore || { echo "Keystore pusty - sprawdz sekret WYKOP_KEYSTORE_BASE64"; exit 1; }
+          echo "${{ secrets.WYKOP_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/release-ci.keystore"
+          test -s "$RUNNER_TEMP/release-ci.keystore" || { echo "Keystore pusty - sprawdz sekret WYKOP_KEYSTORE_BASE64"; exit 1; }
+
+      - name: Sprawdz, czy drzewo robocze jest czyste
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --porcelain
+            echo "Brudne drzewo robocze - plugin wersjonujacy wyliczylby wersje SNAPSHOT."
+            exit 1
+          fi
 
       # Nazwy zmiennych wynikaja z helpera findProperty() w app/build.gradle:
       # szuka on klucza w local.properties, potem w properties, potem w env pod
@@ -46,7 +57,7 @@ jobs:
       # odpowiada zmiennej WYKOP_V3_APPKEY.
       - name: Zbuduj podpisany release
         env:
-          WYKOP_KEYSTORE_FILE: keys/release-ci.keystore
+          WYKOP_KEYSTORE_FILE: ${{ runner.temp }}/release-ci.keystore
           WYKOP_KEYSTORE_PASSWORD: ${{ secrets.WYKOP_KEYSTORE_PASSWORD }}
           WYKOP_KEYSTORE_KEY_NAME: ${{ secrets.WYKOP_KEYSTORE_KEY_NAME }}
           WYKOP_KEYSTORE_KEY_PASSWORD: ${{ secrets.WYKOP_KEYSTORE_KEY_PASSWORD }}
@@ -68,6 +79,12 @@ jobs:
             echo "BRAK sekretu WYKOP_V3_APPKEY - aplikacja nie zaloguje sie do API v3."
             exit 1
           fi
+          # Wersja w nazwie APK musi zgadzac sie z tagiem (zar-v1.5.1 -> 1.5.1).
+          TAG_VERSION="${GITHUB_REF_NAME#zar-v}"
+          case "$(basename "$APK")" in
+            *-"$TAG_VERSION".[0-9][0-9][0-9].apk) ;;
+            *) echo "Wersja APK nie zgadza sie z tagiem $GITHUB_REF_NAME (oczekiwano $TAG_VERSION)."; exit 1 ;;
+          esac
 
       - uses: actions/upload-artifact@v4
         with:
