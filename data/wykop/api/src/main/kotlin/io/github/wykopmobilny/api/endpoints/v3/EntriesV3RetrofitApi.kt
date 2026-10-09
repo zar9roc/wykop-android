@@ -3,8 +3,7 @@ package io.github.wykopmobilny.api.endpoints.v3
 import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateSurveyRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateThreadCommentRequestV3
-import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateCommentRequestV3
-import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateEntryRequestV3
+import io.github.wykopmobilny.api.requests.v3.entries.CreateThreadEntryRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.VoteSurveyRequestV3
 import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
 import io.github.wykopmobilny.api.responses.v3.entries.CreateSurveyResponseV3
@@ -105,6 +104,32 @@ interface EntriesV3RetrofitApi {
      * Zwykle POST /v3/entries/{id}/comments tworzy komentarz pierwszego poziomu,
      * ten endpoint podwiesza go pod wskazany komentarz.
      */
+    // Dodawanie i edycja przez /entries-threads - jedyne endpointy przyjmujace galerie
+    // "photos" (max 4); stare /entries i /entries/{id}/comments znaja tylko "photo".
+    @POST("v3/entries-threads")
+    suspend fun addThreadEntry(
+        @Body request: WykopApiRequestV3<CreateThreadEntryRequestV3>,
+    ): WykopApiResponseV3<ThreadAncestorResponseV3>
+
+    @PUT("v3/entries-threads/{entryId}")
+    suspend fun editThreadEntry(
+        @Path("entryId") entryId: Long,
+        @Body request: WykopApiRequestV3<CreateThreadEntryRequestV3>,
+    ): WykopApiResponseV3<ThreadAncestorResponseV3>
+
+    @POST("v3/entries-threads/{entryId}/comments")
+    suspend fun addThreadComment(
+        @Path("entryId") entryId: Long,
+        @Body request: WykopApiRequestV3<CreateThreadCommentRequestV3>,
+    ): WykopApiResponseV3<ThreadAncestorResponseV3>
+
+    @PUT("v3/entries-threads/{entryId}/comments/{commentId}")
+    suspend fun editThreadComment(
+        @Path("entryId") entryId: Long,
+        @Path("commentId") commentId: Long,
+        @Body request: WykopApiRequestV3<CreateThreadCommentRequestV3>,
+    ): WykopApiResponseV3<ThreadAncestorResponseV3>
+
     @POST("v3/entries-threads/{entryId}/comments/{parentCommentId}/comments")
     suspend fun addThreadReply(
         @Path("entryId") entryId: Long,
@@ -154,22 +179,12 @@ interface EntriesV3RetrofitApi {
     ): WykopApiResponseV3<List<UserShortResponseV3>>
 
     // Write operations
-    @POST("v3/entries")
-    suspend fun addEntry(
-        @Body request: WykopApiRequestV3<CreateUpdateEntryRequestV3>,
-    ): WykopApiResponseV3<EntryResponseV3>
 
     // Tworzy ankiete (pytanie + odpowiedzi), zwraca survey_id do doklejenia do wpisu.
     @POST("v3/entries/survey")
     suspend fun createSurvey(
         @Body request: WykopApiRequestV3<CreateSurveyRequestV3>,
     ): WykopApiResponseV3<CreateSurveyResponseV3>
-
-    @PUT("v3/entries/{entryId}")
-    suspend fun editEntry(
-        @Path("entryId") entryId: Long,
-        @Body request: WykopApiRequestV3<CreateUpdateEntryRequestV3>,
-    ): WykopApiResponseV3<Unit>
 
     @DELETE("v3/entries/{entryId}")
     suspend fun deleteEntry(
@@ -196,19 +211,6 @@ interface EntriesV3RetrofitApi {
     suspend fun unobserveDiscussion(
         @Path("entryId") entryId: Long,
     ): Response<Unit>
-
-    @POST("v3/entries/{entryId}/comments")
-    suspend fun addEntryComment(
-        @Path("entryId") entryId: Long,
-        @Body request: WykopApiRequestV3<CreateUpdateCommentRequestV3>,
-    ): WykopApiResponseV3<EntryCommentResponseV3>
-
-    @PUT("v3/entries/{entryId}/comments/{commentId}")
-    suspend fun editEntryComment(
-        @Path("entryId") entryId: Long,
-        @Path("commentId") commentId: Long,
-        @Body request: WykopApiRequestV3<CreateUpdateCommentRequestV3>,
-    ): WykopApiResponseV3<Unit>
 
     @DELETE("v3/entries/{entryId}/comments/{commentId}")
     suspend fun deleteEntryComment(

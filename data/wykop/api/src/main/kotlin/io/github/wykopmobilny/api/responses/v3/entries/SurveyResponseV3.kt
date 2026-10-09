@@ -9,6 +9,8 @@ import com.squareup.moshi.JsonClass
 // Odpowiedz ma `text` (nie `answer`) i NIE ma `percentage` - liczymy z count/total w mapperze.
 @JsonClass(generateAdapter = true)
 data class SurveyResponseV3(
+    // Potrzebny przy edycji wpisu - PUT /entries-threads usuwa ankiete, ktorej nie poda sie z powrotem.
+    @field:Json(name = "key") val key: String? = null,
     @field:Json(name = "question") val question: String,
     @field:Json(name = "answers") val answers: List<SurveyAnswerResponseV3>,
     @field:Json(name = "count") val count: Int?,

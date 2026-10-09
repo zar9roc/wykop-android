@@ -132,12 +132,14 @@ class NewNavigator
             body: String,
             entryId: Long,
             attachments: List<Embed>,
+            surveyKey: String?,
         ) = context.startActivityForResult(
             EditEntryActivity.createIntent(
                 context = context,
                 body = body,
                 entryId = entryId,
                 attachments = attachments,
+                surveyKey = surveyKey,
             ),
             BaseInputActivity.EDIT_ENTRY,
         )

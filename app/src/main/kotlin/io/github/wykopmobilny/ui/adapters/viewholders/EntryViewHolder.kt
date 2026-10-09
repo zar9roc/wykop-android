@@ -330,6 +330,7 @@ class EntryViewHolder(
                     body = entry.body,
                     entryId = entry.id,
                     attachments = entry.attachments.ifEmpty { listOfNotNull(entry.embed) },
+                    surveyKey = entry.survey?.key,
                 )
                 dialog.dismiss()
             }

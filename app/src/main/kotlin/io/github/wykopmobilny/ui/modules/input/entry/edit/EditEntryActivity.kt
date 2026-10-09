@@ -16,13 +16,16 @@ class EditEntryActivity :
     EditEntryView {
     companion object {
         const val EXTRA_ENTRY_ID = "ENTRY_ID"
+        const val EXTRA_SURVEY_KEY = "SURVEY_KEY"
 
         fun createIntent(
             context: Context,
             body: String,
             entryId: Long,
             attachments: List<Embed>,
+            surveyKey: String?,
         ) = Intent(context, EditEntryActivity::class.java).apply {
+            putExtra(EXTRA_SURVEY_KEY, surveyKey)
             putExtra(EXTRA_BODY, body)
             putExtra(EXTRA_ENTRY_ID, entryId)
             putParcelableArrayListExtra(EXTRA_ATTACHMENTS, ArrayList(attachments))
@@ -36,6 +39,7 @@ class EditEntryActivity :
     override lateinit var suggestionApi: SuggestApi
 
     override val entryId by lazy { intent.getLongExtra(EXTRA_ENTRY_ID, 0) }
+    override val surveyKey: String? by lazy { intent.getStringExtra(EXTRA_SURVEY_KEY) }
     override val maxPhotos = MAX_MICROBLOG_PHOTOS
 
     private val attachments: List<Embed> by lazy {

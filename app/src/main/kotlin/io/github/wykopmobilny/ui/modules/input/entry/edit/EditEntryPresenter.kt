@@ -26,6 +26,7 @@ class EditEntryPresenter(
                 photos = photos,
                 plus18 = containsAdultContent,
                 embedUrl = embedUrl,
+                survey = view?.surveyKey,
             ).subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(

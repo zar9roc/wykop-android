@@ -94,12 +94,14 @@ interface EntriesApi {
 
     fun deleteEntry(entryId: Long): Single<EntryResponse>
 
+    /** [survey] - klucz ankiety wpisu; bez niego edycja usuwa ankiete. */
     fun editEntry(
         body: String,
         entryId: Long,
         photos: List<PhotoSource>,
         plus18: Boolean,
         embedUrl: String? = null,
+        survey: String? = null,
     ): Single<EntryCommentResponse>
 
     fun editEntryComment(

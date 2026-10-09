@@ -12,9 +12,8 @@ import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.requests.v3.common.WykopApiRequestV3
 import io.github.wykopmobilny.api.resolveAttachments
 import io.github.wykopmobilny.api.requests.v3.entries.CreateThreadCommentRequestV3
-import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateCommentRequestV3
+import io.github.wykopmobilny.api.requests.v3.entries.CreateThreadEntryRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.CreateSurveyRequestV3
-import io.github.wykopmobilny.api.requests.v3.entries.CreateUpdateEntryRequestV3
 import io.github.wykopmobilny.api.requests.v3.entries.VoteSurveyRequestV3
 import io.github.wykopmobilny.api.endpoints.v3.requireSuccessful
 import io.github.wykopmobilny.api.responses.v3.common.WykopApiResponseV3
@@ -126,15 +125,12 @@ class EntriesRepository
             survey: String?,
             embedUrl: String?,
         ) = rxSingle {
-            // "embed" (historyczna nazwa) = URL z inputu obrazka - moze byc zdjeciem
-            // albo linkiem medialnym; embedUrl = dedykowany slot na link (YouTube itp.).
             val media = resolvePhotos(photos, embedUrl)
-            entriesApiV3.addEntry(
+            entriesApiV3.addThreadEntry(
                 WykopApiRequestV3(
-                    CreateUpdateEntryRequestV3(
+                    CreateThreadEntryRequestV3(
                         content = body,
-                        photo = media.singlePhotoKey,
-                        photos = media.galleryPhotoKeys,
+                        photos = media.photoKeys.ifEmpty { null },
                         embed = media.embedKey,
                         survey = survey,
                         adult = plus18,
@@ -142,13 +138,13 @@ class EntriesRepository
                 ),
             )
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3>(errorBodyParser))
+            .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.ThreadAncestorResponseV3>(errorBodyParser))
             .map { entryV3 ->
                 // Minimal mapping for API compatibility - only ID is used by callers
                 EntryResponse(
                     id = entryV3.id,
                     date = Instant.DISTANT_PAST,
-                    body = entryV3.content,
+                    body = body,
                     author =
                         io.github.wykopmobilny.api.responses
                             .AuthorResponse("", 0, null, ""),
@@ -189,20 +185,19 @@ class EntriesRepository
             embedUrl: String?,
         ) = rxSingle {
             val media = resolvePhotos(photos, embedUrl)
-            entriesApiV3.addEntryComment(
+            entriesApiV3.addThreadComment(
                 entryId,
                 WykopApiRequestV3(
-                    CreateUpdateCommentRequestV3(
+                    CreateThreadCommentRequestV3(
                         content = body,
-                        photo = media.singlePhotoKey,
-                        photos = media.galleryPhotoKeys,
+                        photos = media.photoKeys.ifEmpty { null },
                         embed = media.embedKey,
                         adult = plus18,
                     ),
                 ),
             )
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.EntryCommentResponseV3>(errorBodyParser))
+            .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.ThreadAncestorResponseV3>(errorBodyParser))
             .map { commentV3 ->
                 // Minimal mapping for API compatibility
                 EntryCommentResponse(
@@ -212,7 +207,7 @@ class EntriesRepository
                         io.github.wykopmobilny.api.responses
                             .AuthorResponse("", 0, null, ""),
                     date = "",
-                    body = commentV3.content,
+                    body = body,
                     blocked = false,
                     favorite = false,
                     voteCount = 0,
@@ -230,24 +225,26 @@ class EntriesRepository
             photos: List<PhotoSource>,
             plus18: Boolean,
             embedUrl: String?,
+            survey: String?,
         ) = rxSingle {
             val media = resolvePhotos(photos, embedUrl)
-            entriesApiV3.editEntry(
+            // PUT zastepuje wszystkie media - ankiete trzeba podac z powrotem, inaczej znika.
+            entriesApiV3.editThreadEntry(
                 entryId,
                 WykopApiRequestV3(
-                    CreateUpdateEntryRequestV3(
+                    CreateThreadEntryRequestV3(
                         content = body,
-                        photo = media.singlePhotoKey,
-                        photos = media.galleryPhotoKeys,
+                        photos = media.photoKeys.ifEmpty { null },
                         embed = media.embedKey,
+                        survey = survey,
                         adult = plus18,
                     ),
                 ),
             )
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
+            .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.ThreadAncestorResponseV3>(errorBodyParser))
             .map {
-                // API v3 returns 200 with no body, return minimal EntryCommentResponse for compatibility
+                // Wolajacy potrzebuja tylko id/tresci - minimalny EntryCommentResponse dla zgodnosci
                 EntryCommentResponse(
                     id = entryId,
                     entryId = null,
@@ -325,23 +322,22 @@ class EntriesRepository
             embedUrl: String?,
         ) = rxSingle {
             val media = resolvePhotos(photos, embedUrl)
-            entriesApiV3.editEntryComment(
+            entriesApiV3.editThreadComment(
                 entryId,
                 commentId,
                 WykopApiRequestV3(
-                    CreateUpdateCommentRequestV3(
+                    CreateThreadCommentRequestV3(
                         content = body,
-                        photo = media.singlePhotoKey,
-                        photos = media.galleryPhotoKeys,
+                        photos = media.photoKeys.ifEmpty { null },
                         embed = media.embedKey,
                         adult = plus18,
                     ),
                 ),
             )
         }.retryWhen(userTokenRefresher)
-            .compose(ErrorHandlerTransformerV3<Unit>(errorBodyParser))
+            .compose(ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.ThreadAncestorResponseV3>(errorBodyParser))
             .map {
-                // API v3 returns 200 with no body, return minimal EntryCommentResponse for compatibility
+                // Wolajacy potrzebuja tylko id/tresci - minimalny EntryCommentResponse dla zgodnosci
                 EntryCommentResponse(
                     id = commentId,
                     entryId = entryId,

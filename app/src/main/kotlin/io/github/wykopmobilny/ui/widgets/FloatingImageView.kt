@@ -3,19 +3,20 @@ package io.github.wykopmobilny.ui.widgets
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.Outline
 import android.net.Uri
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.View
+import android.view.ViewOutlineProvider
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import com.bumptech.glide.Glide
 import com.google.android.material.color.MaterialColors
-import com.google.android.material.imageview.ShapeableImageView
-import com.google.android.material.shape.ShapeAppearanceModel
 import io.github.wykopmobilny.R
 import io.github.wykopmobilny.databinding.FloatingImageViewLayoutBinding
 import io.github.wykopmobilny.ui.modules.embedview.YouTubeUrlParser
@@ -170,8 +171,11 @@ class FloatingImageView(
         val tile = FrameLayout(context)
         tile.layoutParams = LinearLayout.LayoutParams(size, size).apply { marginEnd = dp(TILE_GAP_DP) }
         val image =
-            ShapeableImageView(context).apply {
-                shapeAppearanceModel = ShapeAppearanceModel.builder().setAllCornerSizes(dp(CORNER_DP).toFloat()).build()
+            // Zaokraglenie przez obrys widoku - ShapeableImageView szukal w motywie
+            // atrybutow Material, ktorych motywy aplikacji nie maja (ostrzezenia w logu).
+            AppCompatImageView(context).apply {
+                outlineProvider = roundedOutline
+                clipToOutline = true
                 setBackgroundResource(R.drawable.bg_attachment_add)
                 importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
             }
@@ -191,6 +195,14 @@ class FloatingImageView(
         remove.updateLayoutParams<LayoutParams> { setMargins(0, dp(2), dp(2), 0) }
         return tile
     }
+
+    private val roundedOutline =
+        object : ViewOutlineProvider() {
+            override fun getOutline(
+                view: View,
+                outline: Outline,
+            ) = outline.setRoundRect(0, 0, view.width, view.height, dp(CORNER_DP).toFloat())
+        }
 
     private fun addTile(): View {
         val size = dp(TILE_DP)

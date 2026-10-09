@@ -18,6 +18,7 @@ object SurveyMapperV3 : Mapper<SurveyResponseV3, Survey> {
             question = value.question,
             answers = value.answers.map { mapAnswer(it, total) },
             userAnswer = votedIndex.takeIf { it >= 0 }?.plus(1),
+            key = value.key,
         )
     }
 

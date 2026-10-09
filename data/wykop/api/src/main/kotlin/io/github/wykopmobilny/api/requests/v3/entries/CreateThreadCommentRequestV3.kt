@@ -4,9 +4,9 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 /**
- * Komentarz w strukturze watku (/v3/entries-threads/...). W odroznieniu od
- * zwyklego komentarza zdjecia ida jako kolekcja "photos" (galeria, max 4) -
- * pojedyncze pole "photo" ten endpoint po cichu ignoruje.
+ * Komentarz przez /v3/entries-threads/... (dodanie, odpowiedz w watku, edycja).
+ * Zdjecia ida jako kolekcja "photos" (galeria, max 4) - pojedyncze pole "photo"
+ * ten endpoint po cichu ignoruje. Edycja zastepuje wszystkie media.
  */
 @JsonClass(generateAdapter = true)
 data class CreateThreadCommentRequestV3(
