@@ -2,6 +2,10 @@
 
     <string name="app_name">Otwarty Wykop Mobilny 3</string>
 
+    <string name="update_channel_name">Aktualizacje aplikacji</string>
+    <string name="update_available_title">Dostępna nowa wersja</string>
+    <string name="update_available_content">Wersja %1$s - dotknij, aby pobrać</string>
+
     <string name="spoiler_dialog_title">Spoiler</string>
     <string name="survey_dialog_title">Nowa ankieta</string>
     <string name="survey_question_hint">Pytanie</string>

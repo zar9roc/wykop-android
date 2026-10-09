@@ -253,6 +253,11 @@ dependencies {
     androidTestImplementation(libs.okhttp.mockwebserver)
 }
 
+// Testy jednostkowe w app sa na JUnit 5 - bez tego Gradle ich nie widzi.
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+}
+
 // Detekt tasks removed - plugin not installed
 
 // Theme verification task - checks if all themes used in AndroidManifest.xml are defined

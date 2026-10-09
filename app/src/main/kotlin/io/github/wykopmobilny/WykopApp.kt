@@ -144,6 +144,12 @@ open class WykopApp :
 
         applicationScope.launch { domainComponent.initializeApp().invoke() }
 
+        // Raz dziennie sprawdzenie nowego wydania forka na GitHubie. Buildy debug
+        // maja wersje -SNAPSHOT, wiec bez sensu je o tym powiadamiac.
+        if (!BuildConfig.DEBUG) {
+            io.github.wykopmobilny.update.UpdateCheckWorker.schedule(this)
+        }
+
         // Czeste sprawdzanie powiadomien (foreground service dla okresow < 15 min z
         // "Czestotliwosci sprawdzania"). Zmiana w ustawieniach dziala od reki; start moze
         // sie nie powiesc przy zimnym starcie procesu w tle (Android 12+) - wtedy serwis
