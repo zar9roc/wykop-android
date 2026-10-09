@@ -1,5 +1,8 @@
 package io.github.wykopmobilny.ui.modules.mainnavigation
 
+import io.github.wykopmobilny.ui.settings.AppUpdates
+import io.github.wykopmobilny.ui.settings.UpdateCheckFrequency
+import androidx.appcompat.app.AlertDialog
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -231,16 +234,38 @@ class MainNavigationActivity :
     // Android 13+ wymaga runtime zgody na wyswietlanie powiadomien - bez niej systemowe
     // powiadomienia (worker CheckNotifications) sa po cichu ignorowane.
     private val requestNotificationsPermission =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* wynik nieistotny - brak zgody = brak powiadomien */ }
+        // Wynik nieistotny (brak zgody = brak powiadomien) - po systemowym oknie
+        // przychodzi kolej na pytanie o aktualizacje, zeby okna nie nakladaly sie.
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { askAboutUpdateChecksOnce() }
 
     private fun ensureNotificationsPermission() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return askAboutUpdateChecksOnce()
         val granted =
             ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
                 PackageManager.PERMISSION_GRANTED
         if (!granted) {
             requestNotificationsPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            askAboutUpdateChecksOnce()
         }
+    }
+
+    /**
+     * Pierwsze uruchomienie wersji ze sprawdzaniem aktualizacji: zgoda na sprawdzanie
+     * GitHuba w tle. Bez odpowiedzi nic nie jest sprawdzane; wybor mozna zmienic
+     * w Ustawieniach -> Aktualizacje.
+     */
+    private fun askAboutUpdateChecksOnce() {
+        val updates = applicationContext as? AppUpdates ?: return
+        if (updates.isCheckFrequencyChosen || isFinishing) return
+        AlertDialog
+            .Builder(this)
+            .setTitle(R.string.update_consent_title)
+            .setMessage(R.string.update_consent_message)
+            .setPositiveButton(R.string.update_consent_yes) { _, _ -> updates.checkFrequency = UpdateCheckFrequency.Daily }
+            .setNegativeButton(R.string.update_consent_no) { _, _ -> updates.checkFrequency = UpdateCheckFrequency.Never }
+            .setCancelable(false)
+            .show()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -56,6 +56,10 @@ import io.github.wykopmobilny.ui.modules.links.upvoters.UpvotersActivity
 import io.github.wykopmobilny.ui.modules.mainnavigation.MainNavigationActivity
 import io.github.wykopmobilny.ui.modules.notificationslist.NotificationsListActivity
 import io.github.wykopmobilny.ui.modules.photoview.PhotoViewActivity
+import io.github.wykopmobilny.ui.settings.AppUpdates
+import io.github.wykopmobilny.ui.settings.UpdateCheckFrequency
+import io.github.wykopmobilny.ui.settings.UpdateCheckResult
+import io.github.wykopmobilny.update.AppUpdateChecker
 import io.github.wykopmobilny.ui.modules.pm.conversation.ConversationActivity
 import io.github.wykopmobilny.ui.modules.profile.ProfileActivity
 import io.github.wykopmobilny.ui.modules.report.ReportType
@@ -96,7 +100,8 @@ import kotlin.time.Duration.Companion.days
 open class WykopApp :
     DaggerApplication(),
     ApplicationInjector,
-    AppScopes {
+    AppScopes,
+    AppUpdates {
     companion object {
         const val WYKOP_API_URL = "https://wykop.pl/api/"
         private const val NICK_COLORS_PREFS = "nick_colors"
@@ -135,6 +140,23 @@ open class WykopApp :
                 ),
             ).build()
 
+    // Ekran ustawien (inny modul) siega po to przez applicationContext as AppUpdates.
+    private val updateChecker by lazy { AppUpdateChecker(this) }
+
+    override val installedVersion: String
+        get() = updateChecker.installedVersion
+
+    override val isCheckFrequencyChosen: Boolean
+        get() = updateChecker.isCheckFrequencyChosen
+
+    override var checkFrequency: UpdateCheckFrequency
+        get() = updateChecker.checkFrequency
+        set(value) {
+            updateChecker.checkFrequency = value
+        }
+
+    override suspend fun checkNow(): UpdateCheckResult = updateChecker.checkNow()
+
     override fun onCreate() {
         super.onCreate()
         doInterop()
@@ -144,11 +166,9 @@ open class WykopApp :
 
         applicationScope.launch { domainComponent.initializeApp().invoke() }
 
-        // Raz dziennie sprawdzenie nowego wydania forka na GitHubie. Buildy debug
-        // maja wersje -SNAPSHOT, wiec bez sensu je o tym powiadamiac.
-        if (!BuildConfig.DEBUG) {
-            io.github.wykopmobilny.update.UpdateCheckWorker.schedule(this)
-        }
+        // Sprawdzanie nowego wydania forka na GitHubie wg ustawienia "Aktualizacje" -
+        // dopiero po zgodzie z pytania przy pierwszym uruchomieniu (buildy debug pomijane).
+        updateChecker.schedule()
 
         // Czeste sprawdzanie powiadomien (foreground service dla okresow < 15 min z
         // "Czestotliwosci sprawdzania"). Zmiana w ustawieniach dziala od reki; start moze

@@ -2,6 +2,7 @@ package io.github.wykopmobilny.ui.settings.android
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.core.content.FileProvider
@@ -11,6 +12,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.doAfterTextChanged
 import androidx.preference.Preference
+import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import io.github.wykopmobilny.ui.settings.android.databinding.DialogCustomApiKeyBinding
 import io.github.wykopmobilny.ui.settings.GeneralPreferencesUi
@@ -18,6 +20,9 @@ import io.github.wykopmobilny.ui.settings.GeneralPreferencesUi.NotificationsUi.R
 import io.github.wykopmobilny.ui.settings.ListSetting
 import io.github.wykopmobilny.ui.settings.GetGeneralPreferences
 import io.github.wykopmobilny.ui.settings.SettingsDependencies
+import io.github.wykopmobilny.ui.settings.AppUpdates
+import io.github.wykopmobilny.ui.settings.UpdateCheckFrequency
+import io.github.wykopmobilny.ui.settings.UpdateCheckResult
 import io.github.wykopmobilny.utils.requireDependency
 import kotlinx.coroutines.launch
 
@@ -35,6 +40,7 @@ internal class GeneralPreferencesFragment : PreferenceFragmentCompat() {
     ) {
         setPreferencesFromResource(R.xml.general_preferences, rootKey)
         bindPreference("exportLogs", ::exportLogs)
+        bindUpdates()
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
@@ -58,6 +64,75 @@ internal class GeneralPreferencesFragment : PreferenceFragmentCompat() {
                     bindApiKey("customApiKey", it.advanced.apiKey)
                 }
             }
+        }
+    }
+
+    private val appUpdates: AppUpdates?
+        get() = context?.applicationContext as? AppUpdates
+
+    private fun bindUpdates() {
+        val updates = appUpdates
+        findPreference<PreferenceCategory>("updatesCategory")?.isVisible = updates != null
+        updates ?: return
+        bindList(
+            key = "updateCheckFrequency",
+            setting =
+                ListSetting(
+                    values = UpdateCheckFrequency.entries,
+                    currentValue = updates.checkFrequency,
+                    onSelected = { frequency ->
+                        updates.checkFrequency = frequency
+                        bindUpdates()
+                    },
+                ),
+            mapping = updateFrequencyMapping,
+        )
+        val checkNow = findPreference<Preference>("checkUpdateNow") ?: return
+        checkNow.summary = getString(R.string.pref_check_update_installed, updates.installedVersion)
+        checkNow.setOnPreferenceClickListener {
+            checkNow.isEnabled = false
+            checkNow.setSummary(R.string.pref_check_update_checking)
+            viewLifecycleOwner.lifecycleScope.launch {
+                val result = updates.checkNow()
+                checkNow.isEnabled = true
+                checkNow.summary = getString(R.string.pref_check_update_installed, updates.installedVersion)
+                showUpdateResult(result)
+            }
+            true
+        }
+    }
+
+    private fun showUpdateResult(result: UpdateCheckResult) {
+        val context = context ?: return
+        when (result) {
+            is UpdateCheckResult.Available ->
+                AlertDialog
+                    .Builder(context)
+                    .setTitle(R.string.update_available_dialog_title)
+                    .setMessage(getString(R.string.update_available_dialog_message, result.version))
+                    .setPositiveButton(R.string.update_available_dialog_open) { _, _ -> openDownloadPage(result.downloadUrl) }
+                    .setNegativeButton(R.string.update_available_dialog_later, null)
+                    .show()
+
+            UpdateCheckResult.UpToDate -> Toast.makeText(context, R.string.update_up_to_date, Toast.LENGTH_SHORT).show()
+
+            UpdateCheckResult.Failed -> Toast.makeText(context, R.string.update_check_failed, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    // Zawsze zewnetrzna przegladarka (niezaleznie od "wbudowanej") - tam pobierze sie APK.
+    private fun openDownloadPage(url: String) {
+        runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+            .onFailure { Toast.makeText(requireContext(), R.string.update_open_browser_failed, Toast.LENGTH_LONG).show() }
+    }
+
+    private val updateFrequencyMapping by lazy {
+        UpdateCheckFrequency.entries.associateWith { frequency ->
+            when (frequency) {
+                UpdateCheckFrequency.Daily -> R.string.pref_update_frequency_daily
+                UpdateCheckFrequency.Weekly -> R.string.pref_update_frequency_weekly
+                UpdateCheckFrequency.Never -> R.string.pref_update_frequency_never
+            }.let { resources.getString(it) }
         }
     }
 
