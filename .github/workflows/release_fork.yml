@@ -1,0 +1,82 @@
+# Wydania tego forka. Osobny plik od publish_release.yml (ten nalezy do upstreamu
+# i celowo go nie ruszamy, zeby merge'e z upstreamu nie konfliktowaly).
+#
+# Wyzwalacz to tag "zar-v*", ktory NIE pasuje do "v*" z publish_release.yml,
+# wiec oba workflow nigdy nie odpala sie jednoczesnie. Plugin wersjonujacy
+# i tak wyciaga z tagu sam numer semver, wiec "zar-v1.5.1" daje wersje 1.5.1.
+name: Release (fork)
+
+on:
+  push:
+    tags:
+      - 'zar-v*'
+
+# Potrzebne, zeby GITHUB_TOKEN mogl utworzyc Release i podpiac APK.
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Plugin com.starter.versioning wylicza versionName z tagow git -
+          # bez pelnej historii wyszloby 0.1.0-SNAPSHOT zamiast numeru z tagu.
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # Keystore trzymamy w sekrecie zakodowany base64 - repozytorium forka
+      # nie zawiera release-local.keystore i zawierac nie powinno.
+      - name: Odtworz keystore z sekretu
+        run: |
+          echo "${{ secrets.WYKOP_KEYSTORE_BASE64 }}" | base64 -d > keys/release-ci.keystore
+          test -s keys/release-ci.keystore || { echo "Keystore pusty - sprawdz sekret WYKOP_KEYSTORE_BASE64"; exit 1; }
+
+      # Nazwy zmiennych wynikaja z helpera findProperty() w app/build.gradle:
+      # szuka on klucza w local.properties, potem w properties, potem w env pod
+      # oryginalna nazwa, a na koncu pod nazwa z kropkami zamienionymi na
+      # podkreslniki i podniesiona do wielkich liter. Stad wykop.v3.appKey
+      # odpowiada zmiennej WYKOP_V3_APPKEY.
+      - name: Zbuduj podpisany release
+        env:
+          WYKOP_KEYSTORE_FILE: keys/release-ci.keystore
+          WYKOP_KEYSTORE_PASSWORD: ${{ secrets.WYKOP_KEYSTORE_PASSWORD }}
+          WYKOP_KEYSTORE_KEY_NAME: ${{ secrets.WYKOP_KEYSTORE_KEY_NAME }}
+          WYKOP_KEYSTORE_KEY_PASSWORD: ${{ secrets.WYKOP_KEYSTORE_KEY_PASSWORD }}
+          WYKOP_V3_APPKEY: ${{ secrets.WYKOP_V3_APPKEY }}
+          WYKOP_V3_APPSECRET: ${{ secrets.WYKOP_V3_APPSECRET }}
+          WYKOP_V3_APPKEY_RELEASE: ${{ secrets.WYKOP_V3_APPKEY_RELEASE }}
+          WYKOP_V3_APPSECRET_RELEASE: ${{ secrets.WYKOP_V3_APPSECRET_RELEASE }}
+          WYKOP_APPKEY: ${{ secrets.WYKOP_APPKEY }}
+          WYKOP_SECRETKEY: ${{ secrets.WYKOP_SECRETKEY }}
+        run: ./gradlew :app:assembleRelease
+
+      # Pusty V3_API_KEY oznacza build, ktory sie zbuduje, ale nie zaloguje do API.
+      # Lepiej wywalic sie tutaj niz wydac martwy APK.
+      - name: Sprawdz, czy klucze v3 trafily do buildu
+        run: |
+          APK=$(ls app/build/outputs/apk/release/*.apk | head -1)
+          echo "Zbudowano: $APK"
+          if [ -z "${{ secrets.WYKOP_V3_APPKEY }}" ]; then
+            echo "BRAK sekretu WYKOP_V3_APPKEY - aplikacja nie zaloguje sie do API v3."
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk-release
+          path: app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: app/build/outputs/apk/release/*.apk
+          generate_release_notes: true
+          draft: true
