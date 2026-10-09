@@ -1,0 +1,43 @@
+# CI tego forka. Osobny plik od default.yml ("Build project") - tamten nalezy
+# do upstreamu i nie dziala tutaj (wycofane actions/*@v3, Java 20, zadania
+# projectCodestyle/projectLint/screenshot usuniete razem z wtyczkami przy
+# migracji na AGP 9). W forku jest wylaczony w ustawieniach Actions, plik
+# zostaje nietkniety, zeby merge'e z upstreamu nie konfliktowaly.
+name: CI (fork)
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Plugin com.starter.versioning wylicza wersje z tagow.
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # Testy jednostkowe wszystkich modulow + build debug (bez sekretow -
+      # klucze API sa wtedy puste, do kompilacji niepotrzebne).
+      - run: ./gradlew test :app:assembleDebug --continue
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-reports
+          path: '**/build/reports/tests/'
