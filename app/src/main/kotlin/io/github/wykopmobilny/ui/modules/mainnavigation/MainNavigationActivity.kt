@@ -1,5 +1,11 @@
 package io.github.wykopmobilny.ui.modules.mainnavigation
 
+import androidx.fragment.app.FragmentManager
+import io.reactivex.disposables.CompositeDisposable
+import io.github.wykopmobilny.ui.modules.input.BaseInputActivity
+import io.github.wykopmobilny.base.WykopSchedulers
+import io.github.wykopmobilny.base.EntryEditedListener
+import io.github.wykopmobilny.api.entries.EntriesApi
 import io.github.wykopmobilny.ui.settings.AppUpdates
 import io.github.wykopmobilny.ui.settings.UpdateCheckFrequency
 import androidx.appcompat.app.AlertDialog
@@ -156,6 +162,11 @@ class MainNavigationActivity :
 
     @Inject
     lateinit var linkHandler: WykopLinkHandler
+
+    @Inject
+    lateinit var entriesApi: EntriesApi
+
+    private val editDisposables = CompositeDisposable()
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
@@ -392,6 +403,7 @@ class MainNavigationActivity :
 
     override fun onDestroy() {
         super.onDestroy()
+        editDisposables.clear()
         if (presenter.isSubscribed) presenter.unsubscribe()
     }
 
@@ -507,6 +519,9 @@ class MainNavigationActivity :
         data: Intent?,
     ) {
         super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == BaseInputActivity.EDIT_ENTRY && resultCode == RESULT_OK) {
+            data?.getLongExtra("entryId", 0L)?.takeIf { it > 0 }?.let(::refreshEditedEntry)
+        }
         if (requestCode == NewNavigator.STARTED_FROM_NOTIFICATIONS_CODE) {
             if (!presenter.isSubscribed) {
                 presenter.subscribe(this)
@@ -515,6 +530,28 @@ class MainNavigationActivity :
             presenter.checkNotifications(true)
         }
     }
+
+    /**
+     * Edycja wpisu z listy wraca tutaj (NewNavigator startuje z kontekstu aktywnosci),
+     * a nie do fragmentu - bez tego lista pokazywala stara wersje az do ponownego wejscia.
+     */
+    private fun refreshEditedEntry(entryId: Long) {
+        entriesApi
+            .getEntry(entryId)
+            .subscribeOn(WykopSchedulers().backgroundThread())
+            .observeOn(WykopSchedulers().mainThread())
+            .subscribe(
+                { entry -> supportFragmentManager.entryEditedListeners().forEach { it.onEntryEdited(entry) } },
+                { Napier.w("Failed to refresh edited entry $entryId", it) },
+            ).also { editDisposables.add(it) }
+    }
+
+    // Listy siedza tez we fragmentach-dzieciach (ViewPager profilu, tagu).
+    private fun FragmentManager.entryEditedListeners(): List<EntryEditedListener> =
+        fragments.flatMap { fragment ->
+            listOfNotNull(fragment as? EntryEditedListener) +
+                if (fragment.isAdded) fragment.childFragmentManager.entryEditedListeners() else emptyList()
+        }
 
     private fun openAboutSheet() {
         val dialog = BottomSheetDialog(this)

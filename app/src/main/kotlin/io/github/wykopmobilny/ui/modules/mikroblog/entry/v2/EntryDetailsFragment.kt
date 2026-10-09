@@ -1,5 +1,6 @@
 package io.github.wykopmobilny.ui.modules.mikroblog.entry.v2
 
+import io.github.wykopmobilny.api.responses.v3.entries.EntryCommentResponseV3
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
@@ -134,7 +135,14 @@ internal class EntryDetailsFragment :
     // Reconciliation listy: id komentarzy aktualnie w adapterze (po filtrze).
     private var renderedIds: List<Long> = emptyList()
     private var lastEntryResponse: Any? = null
-    private val mappedComments = mutableMapOf<Long, EntryComment>()
+
+    /**
+     * Zmapowany komentarz razem z odpowiedzia API, z ktorej powstal. Model niesie lokalny
+     * stan (odsloniety obrazek 18+, glos), wiec nie mapujemy go od nowa przy kazdym render();
+     * ponownie tylko gdy odpowiedz sie zmienila (edycja, odswiezenie) - inaczej edytowany
+     * komentarz zostawal na ekranie w starej wersji nawet po odswiezeniu.
+     */
+    private val mappedComments = mutableMapOf<Long, Pair<EntryCommentResponseV3, EntryComment>>()
 
     private var pendingHighlightCommentId: Long? = null
     private var pendingScrollToBottom = false
@@ -289,16 +297,26 @@ internal class EntryDetailsFragment :
                 null
             }
 
+        // Komentarze, ktore juz byly na ekranie, a przyszly z API w zmienionej wersji -
+        // wiersze do przerysowania, gdy lista jest kontynuacja dotychczasowej.
+        val changedComments = mutableListOf<EntryComment>()
         val mapped =
             ui.comments
                 .map { response ->
-                    mappedComments.getOrPut(response.id) {
-                        EntryCommentMapperV3.map(
-                            response,
-                            owmContentFilter,
-                            entryId = entryId,
-                            entryAuthorNick = entryResponse.author.username,
-                        )
+                    val cached = mappedComments[response.id]
+                    if (cached != null && cached.first == response) {
+                        cached.second
+                    } else {
+                        EntryCommentMapperV3
+                            .map(
+                                response,
+                                owmContentFilter,
+                                entryId = entryId,
+                                entryAuthorNick = entryResponse.author.username,
+                            ).also { comment ->
+                                mappedComments[response.id] = response to comment
+                                if (cached != null) changedComments += comment
+                            }
                     }
                 }.filterNot { settingsPreferencesApi.hideBlacklistedViews && it.isBlocked && it.deletedReason == null }
         val newIds = mapped.map { it.id }
@@ -318,6 +336,7 @@ internal class EntryDetailsFragment :
 
             else -> {
                 mappedEntry?.let(adapter::updateEntry)
+                changedComments.filter { it.id in oldIds }.forEach(adapter::updateComment)
                 if (newIds.size > oldIds.size) {
                     val prependCount = newIds.indexOf(oldIds.first())
                     if (prependCount > 0) {
@@ -470,7 +489,8 @@ internal class EntryDetailsFragment :
 
     /** Wołane przez EntryActivityV2 po powrocie z edycji wpisu/komentarza. */
     fun onContentEdited() {
-        mappedComments.clear()
+        // mappedComments zostaje - render() porownuje odpowiedzi API i sam przerysuje
+        // zmieniony komentarz; wyczyszczenie mapy ukryloby, ktory wiersz sie zmienil.
         lastEntryResponse = null
         refreshAction?.invoke()
     }
@@ -611,7 +631,7 @@ internal class EntryDetailsFragment :
             .observeOn(schedulers.mainThread())
             .subscribe(
                 {
-                    mappedComments[it.id] = it
+                    mappedComments[it.id]?.let { (response, _) -> mappedComments[it.id] = response to it }
                     adapter?.updateComment(it)
                 },
                 {

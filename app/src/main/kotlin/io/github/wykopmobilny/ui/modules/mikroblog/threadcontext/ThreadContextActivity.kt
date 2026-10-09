@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import io.github.wykopmobilny.base.ThemableActivity
+import io.github.wykopmobilny.ui.modules.input.BaseInputActivity
 import io.github.wykopmobilny.databinding.ActivityContainerBinding
 import io.github.wykopmobilny.utils.viewBinding
 
@@ -29,6 +30,24 @@ internal class ThreadContextActivity : ThemableActivity() {
                     binding.fragmentContainer.id,
                     ThreadContextFragment.newInstance(entryId = entryId, commentId = commentId),
                 ).commit()
+        }
+    }
+
+    // Edycja wpisu/komentarza z tego ekranu wraca tutaj (NewNavigator startuje z
+    // kontekstu aktywnosci) - bez przeladowania zostawala stara wersja.
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK &&
+            (requestCode == BaseInputActivity.EDIT_ENTRY || requestCode == BaseInputActivity.EDIT_ENTRY_COMMENT)
+        ) {
+            supportFragmentManager.fragments
+                .filterIsInstance<ThreadContextFragment>()
+                .forEach(ThreadContextFragment::onContentEdited)
         }
     }
 

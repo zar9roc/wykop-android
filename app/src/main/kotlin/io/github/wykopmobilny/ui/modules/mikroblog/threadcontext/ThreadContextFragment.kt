@@ -209,6 +209,12 @@ internal class ThreadContextFragment :
      * [replyParentId] - rodzic swiezo wyslanej odpowiedzi; jego galaz dociagamy
      * priorytetowo, bo inaczej nowego komentarza moze na ekranie jeszcze nie byc.
      */
+    /**
+     * Wolane przez ThreadContextActivity po powrocie z edycji wpisu/komentarza - watek
+     * pobierany od nowa (jak po wyslaniu odpowiedzi), lista zostaje na tym samym komentarzu.
+     */
+    fun onContentEdited() = loadContext(focusCommentId = highlightedCommentId)
+
     private fun loadContext(
         focusCommentId: Long = commentId,
         replyParentId: Long? = null,

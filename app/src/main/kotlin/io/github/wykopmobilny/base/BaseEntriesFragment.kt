@@ -25,7 +25,8 @@ import javax.inject.Inject
 open class BaseEntriesFragment :
     BaseFragment(R.layout.entries_fragment),
     EntriesFragmentView,
-    SwipeRefreshLayout.OnRefreshListener {
+    SwipeRefreshLayout.OnRefreshListener,
+    EntryEditedListener {
     @Inject
     lateinit var entriesApi: EntriesApi
 
@@ -133,6 +134,8 @@ open class BaseEntriesFragment :
     }
 
     override fun updateEntry(entry: Entry) = entriesAdapter.updateEntry(entry)
+
+    override fun onEntryEdited(entry: Entry) = updateEntry(entry)
 
     override fun showVoters(voters: List<Voter>) = votersDialogListener(voters)
 

@@ -1,5 +1,7 @@
 package io.github.wykopmobilny.ui.modules.mikroblog.feed.hot.v2
 
+import io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3
+import io.github.wykopmobilny.base.EntryEditedListener
 import android.content.Context
 import android.os.Bundle
 import android.view.Menu
@@ -63,7 +65,8 @@ import javax.inject.Inject
 class HotFragmentV2 :
     Fragment(R.layout.fragment_hot_v2),
     BaseNavigationView,
-    EntryActionListener {
+    EntryActionListener,
+    EntryEditedListener {
     @Inject
     lateinit var entriesInteractor: EntriesInteractor
 
@@ -104,7 +107,12 @@ class HotFragmentV2 :
 
     // Cache mapowanych Entry po id - mutacje (głos/ulubione) trzymają się instancji
     // między emisjami stanu (jak w detalu V2); czyszczony przy przeładowaniu okna.
-    private val mappedEntries = mutableMapOf<Long, Entry>()
+    /**
+     * Zmapowany wpis razem z odpowiedzia API, z ktorej powstal. Ponowne mapowanie tylko
+     * gdy odpowiedz sie zmienila - inaczej po odswiezeniu edytowany wpis zostawal stary
+     * (te same id = "doklejenie" zera elementow, bez przerysowania wierszy).
+     */
+    private val mappedEntries = mutableMapOf<Long, Pair<EntryResponseV3, Entry>>()
     private var renderedIds: List<Long> = emptyList()
     private var lastSort: MicroblogFeedSort? = null
     private var votersDialogListener: VotersDialogListener? = null
@@ -179,6 +187,12 @@ class HotFragmentV2 :
         super.onDestroyView()
     }
 
+    // Po edycji wpisu z tej listy (MainNavigationActivity pobiera swieza wersje).
+    override fun onEntryEdited(entry: Entry) {
+        mappedEntries[entry.id]?.let { (response, _) -> mappedEntries[entry.id] = response to entry }
+        adapter?.updateEntry(entry)
+    }
+
     private fun render(ui: MicroblogFeedUi) {
         val binding = binding ?: return
         val adapter = adapter ?: return
@@ -186,15 +200,25 @@ class HotFragmentV2 :
         binding.loadingView.isVisible = ui.isInitialLoading
         navigation.activityToolbar.setTitle(ui.sort.titleRes())
 
+        val changedEntries = mutableListOf<Entry>()
         val mapped =
             ui.entries.map { response ->
-                mappedEntries.getOrPut(response.id) { response.filterEntryV3(owmContentFilter) }
+                val cached = mappedEntries[response.id]
+                if (cached != null && cached.first == response) {
+                    cached.second
+                } else {
+                    response.filterEntryV3(owmContentFilter).also { entry ->
+                        mappedEntries[response.id] = response to entry
+                        if (cached != null) changedEntries += entry
+                    }
+                }
             }
         val newIds = mapped.map { it.id }
         // Feed tylko dokleja na końcu: gdy dotychczasowe id są prefiksem nowej listy,
         // wstawiamy ogon; w innym razie (refresh / zmiana trybu) pełne przeładowanie.
         val isAppend = renderedIds.isNotEmpty() && newIds.size >= renderedIds.size && newIds.subList(0, renderedIds.size) == renderedIds
         if (isAppend) {
+            changedEntries.filter { it.id in renderedIds }.forEach(adapter::updateEntry)
             adapter.append(mapped.subList(renderedIds.size, newIds.size))
             adapter.setFooterLoading(ui.hasMore)
         } else {
