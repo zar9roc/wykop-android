@@ -2,6 +2,18 @@
 
     <string name="app_name">Otwarty Wykop Mobilny 3</string>
 
+    <string name="gallery_gif_chip">GIF</string>
+    <string name="gallery_photo_description">Zdjęcie %1$d z %2$d</string>
+    <string name="gallery_photo_gif_description">Zdjęcie %1$d z %2$d, GIF</string>
+    <string name="gallery_hidden_description">Ukryte zdjęcia (%1$d), dotknij, aby odsłonić</string>
+    <plurals name="gallery_photo_count">
+        <item quantity="one">%d zdjęcie</item>
+        <item quantity="few">%d zdjęcia</item>
+        <item quantity="many">%d zdjęć</item>
+        <item quantity="other">%d zdjęcia</item>
+    </plurals>
+    <string name="photo_view_position">%1$d / %2$d</string>
+
     <string name="update_channel_name">Aktualizacje aplikacji</string>
     <string name="update_available_title">Dostępna nowa wersja</string>
     <string name="update_available_content">Wersja %1$s - dotknij, aby pobrać</string>

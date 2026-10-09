@@ -35,6 +35,7 @@ fun EntryResponseV3.filterEntryV3(owmContentFilter: OWMContentFilter) =
             collapsed = true,
             isCommentingPossible = true,
             isObservedDiscussion = observedDiscussion ?: false,
+            attachments = media?.let { MediaMapperV3.mapAttachments(it, adult = adult ?: false) }.orEmpty(),
         ),
     )
 

@@ -202,6 +202,7 @@ dependencies {
     implementation(projects.ui.twoFactor.android)
     implementation(projects.domain)
     implementation(libs.recyclerview.core)
+    implementation(libs.viewpager2.core)
     implementation(libs.appcompat.core)
     implementation(libs.exifinterface.core)
     implementation(libs.browser.core)

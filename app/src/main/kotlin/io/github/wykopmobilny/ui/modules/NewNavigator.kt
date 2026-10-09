@@ -110,6 +110,11 @@ class NewNavigator
 
         fun openPhotoViewActivity(url: String) = context.startActivity(PhotoViewActivity.createIntent(context, url))
 
+        fun openPhotoViewActivity(
+            urls: List<String>,
+            index: Int,
+        ) = context.startActivity(PhotoViewActivity.createIntent(context, urls, index))
+
         fun openSettingsActivity() = context.startActivity(SettingsActivity.createIntent(context))
 
         fun openLoginScreen() = context.startActivity(LoginScreenActivity.createIntent(context))

@@ -23,6 +23,9 @@ class Entry(
     val isCommentingPossible: Boolean,
     // Czy zalogowany obserwuje dyskusje (mutowalne - toggle z menu wpisu).
     var isObservedDiscussion: Boolean = false,
+    // Wszystkie zalaczniki (do 4 zdjec + embed). Gdy jest ich wiecej niz jeden,
+    // WykopEmbedView pokazuje galerie zamiast samego [embed].
+    var attachments: List<Embed> = emptyList(),
 ) {
     override fun equals(other: Any?): Boolean =
         if (other !is Entry) {

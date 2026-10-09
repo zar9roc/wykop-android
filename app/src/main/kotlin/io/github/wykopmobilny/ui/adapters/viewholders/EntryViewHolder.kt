@@ -259,6 +259,7 @@ class EntryViewHolder(
                 hideNsfw = hideNsfw,
                 navigator = navigator,
                 isNsfw = entry.isNsfw,
+                attachments = entry.attachments,
             )
         }
 

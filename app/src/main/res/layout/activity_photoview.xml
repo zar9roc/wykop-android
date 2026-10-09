@@ -7,24 +7,11 @@
     android:background="@color/windowBackgroundTransparent"
     >
 
-    <com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
-        android:id="@+id/image"
+    <!-- Strony z item_photoview_page; przy jednym zdjeciu pager ma jedna strone. -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="parent"
-        />
-
-    <!-- PhotoView (zoom/pan) zamiast ImageView - bardzo wysokie gify sa dekodowane
-         w pomniejszeniu (limit tekstury GPU), wiec bez zoomu bylyby nieczytelne. -->
-    <com.github.chrisbanes.photoview.PhotoView
-        android:id="@+id/gif"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="parent"
         />
 
     <include
@@ -35,33 +22,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        />
-
-    <ProgressBar
-        android:id="@+id/loadingView"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:indeterminate="false"
-        android:max="100"
-        android:progress="0"
-        android:visibility="visible"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
-        />
-
-    <TextView
-        android:id="@+id/progressLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:shadowColor="@android:color/black"
-        android:shadowRadius="4"
-        android:textColor="@android:color/white"
-        android:textSize="12sp"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/loadingView"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

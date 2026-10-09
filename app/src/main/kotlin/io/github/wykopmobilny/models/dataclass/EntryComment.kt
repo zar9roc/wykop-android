@@ -23,6 +23,9 @@ class EntryComment(
     // szczegolow, pierwszy element sciezki watku). Null = kontekstu nie bylo i komunikat
     // o usunieciu przez autora watku musi zdegradowac sie do wersji bez nicka.
     val entryAuthorNick: String? = null,
+    // Wszystkie zalaczniki (do 4 zdjec + embed). Gdy jest ich wiecej niz jeden,
+    // WykopEmbedView pokazuje galerie zamiast samego [embed].
+    var attachments: List<Embed> = emptyList(),
 ) {
     override fun equals(other: Any?): Boolean =
         if (other !is EntryComment) {

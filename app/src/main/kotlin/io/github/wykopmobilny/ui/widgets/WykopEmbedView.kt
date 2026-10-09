@@ -69,6 +69,7 @@ class WykopEmbedView(
         hideNsfw: Boolean,
         navigator: NewNavigator?,
         isNsfw: Boolean,
+        attachments: List<Embed> = emptyList(),
     ) {
         hiddenPreview = null
         binding.image.isVisible = true
@@ -76,6 +77,26 @@ class WykopEmbedView(
         this.enableYoutubePlayer = enableYoutubePlayer
         this.enableEmbedPlayer = enableEmbedPlayer
         this.navigator = navigator
+        val photos = attachments.filter { it.type == "image" }
+        // Galeria tylko gdy zalacznikow jest kilka - pojedyncze zdjecie zostaje na
+        // dotychczasowej sciezce (przycinanie/rozwijanie, autoplay GIF).
+        val showGallery = attachments.size > 1 && photos.isNotEmpty()
+        binding.photoGrid.isVisible = showGallery
+        binding.singleMedia.isVisible = true
+        if (showGallery) {
+            bindGallery(photos, isNsfw && hideNsfw, showAdultContent, isNsfw)
+            val video = attachments.firstOrNull { it.type != "image" }
+            if (video == null) {
+                binding.singleMedia.isVisible = false
+                binding.image.resetImage()
+                isVisible = true
+                return
+            }
+            setEmbed(video, enableYoutubePlayer, enableEmbedPlayer, showAdultContent, hideNsfw, navigator, isNsfw)
+            binding.photoGrid.isVisible = true
+            isVisible = true
+            return
+        }
         if (embed == null || !Patterns.WEB_URL.matcher(embed.url.replace("\\", "")).matches()) {
             isVisible = false
         } else {
@@ -100,6 +121,27 @@ class WykopEmbedView(
                 }
                 setEmbedIcon(embed)
             }
+        }
+    }
+
+    private fun bindGallery(
+        photos: List<Embed>,
+        hideForNsfw: Boolean,
+        showAdultContent: Boolean,
+        isNsfw: Boolean,
+    ) {
+        val hideForAdult = photos.first().plus18 && !showAdultContent
+        val hidden = !photos.first().isRevealed && (hideForNsfw || hideForAdult)
+        val placeholder = if (isNsfw) NSFW_IMAGE_PLACEHOLDER else PLUS18_IMAGE_PLACEHOLDER
+        binding.photoGrid.setPhotos(photos, hidden, placeholder)
+        binding.photoGrid.onRevealClick = {
+            photos.forEach { it.isRevealed = true }
+            binding.photoGrid.setPhotos(photos, hidden = false, placeholderUrl = placeholder)
+        }
+        binding.photoGrid.onPhotoClick = { index ->
+            // APIV2 WTF - jak w handleUrl: GIF-y z CDN maja w url rozszerzenie .jpg.
+            val urls = photos.map { if (it.isAnimated) it.url.replace(".jpg", ".gif") else it.url }
+            navigator?.openPhotoViewActivity(urls, index)
         }
     }
 

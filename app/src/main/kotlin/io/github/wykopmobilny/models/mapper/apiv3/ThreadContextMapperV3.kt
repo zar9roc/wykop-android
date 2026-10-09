@@ -52,6 +52,7 @@ object ThreadContextMapperV3 {
             collapsed = false,
             isCommentingPossible = true,
             isObservedDiscussion = value.observedDiscussion ?: false,
+            attachments = value.media?.let { MediaMapperV3.mapAttachments(it, adult = value.adult ?: false) }.orEmpty(),
         ),
     )
 
@@ -77,6 +78,7 @@ object ThreadContextMapperV3 {
             deletedReason = value.deletedReason,
             slug = value.slug,
             entryAuthorNick = entryAuthorNick,
+            attachments = value.media?.let { MediaMapperV3.mapAttachments(it, adult = value.adult ?: false) }.orEmpty(),
         ),
     )
 }

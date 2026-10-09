@@ -36,6 +36,7 @@ object EntryCommentMapperV3 {
                 deletedReason = value.deleted,
                 slug = value.slug,
                 entryAuthorNick = entryAuthorNick,
+                attachments = value.media?.let { MediaMapperV3.mapAttachments(it, adult = value.adult ?: false) }.orEmpty(),
             ),
         )
     }

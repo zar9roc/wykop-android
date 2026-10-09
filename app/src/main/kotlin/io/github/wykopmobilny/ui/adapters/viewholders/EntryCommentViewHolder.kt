@@ -244,6 +244,7 @@ class EntryCommentViewHolder(
                 hideNsfw = hideNsfw,
                 navigator = navigator,
                 isNsfw = comment.isNsfw,
+                attachments = comment.attachments,
             )
         }
 

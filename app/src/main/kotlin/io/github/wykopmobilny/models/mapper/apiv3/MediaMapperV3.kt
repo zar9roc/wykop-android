@@ -27,6 +27,19 @@ object MediaMapperV3 {
         }
     }
 
+    /**
+     * Wszystkie zalaczniki wpisu/komentarza mikrobloga: do 4 zdjec (galeria)
+     * i ewentualny embed (YouTube itp.) na koncu. [map] zostaje "glownym" medium
+     * dla miejsc, ktore pokazuja tylko jedno (PM, komentarze znalezisk).
+     */
+    fun mapAttachments(
+        value: MediaResponseV3,
+        adult: Boolean,
+    ): List<Embed> {
+        val photos = value.photos?.takeIf { it.isNotEmpty() } ?: listOfNotNull(value.photo)
+        return photos.map { mapPhoto(it, adult) } + listOfNotNull(value.embed?.let { mapEmbed(it, adult) })
+    }
+
     private fun mapPhoto(
         photo: PhotoResponseV3,
         adult: Boolean,
