@@ -24,6 +24,25 @@ class NotificationCollapseStorage
 
         fun isCollapsed(tag: String): Boolean = tag in collapsedKeys()
 
+        private fun expandedKeys(): MutableSet<String> = prefs.getStringSet(KEY_EXPANDED, emptySet()).orEmpty().toMutableSet()
+
+        /**
+         * Wiersze zbiorcze zakladki "Do mnie" sa DOMYSLNIE ZWINIETE (sam wiersz jest juz
+         * podsumowaniem grupy), wiec dla nich zapamietujemy odwrotnosc - klucze rozwiniete.
+         */
+        fun isExpanded(groupKey: String): Boolean = groupKey in expandedKeys()
+
+        fun setExpanded(
+            groupKey: String,
+            expanded: Boolean,
+        ) {
+            val keys = expandedKeys()
+            val changed = if (expanded) keys.add(groupKey) else keys.remove(groupKey)
+            if (changed) {
+                prefs.edit().putStringSet(KEY_EXPANDED, keys).apply()
+            }
+        }
+
         fun setCollapsed(
             tag: String,
             collapsed: Boolean,
@@ -38,5 +57,6 @@ class NotificationCollapseStorage
         private companion object {
             const val PREFS_NAME = "notification_collapse"
             const val KEY_COLLAPSED = "collapsed_tags"
+            const val KEY_EXPANDED = "expanded_groups"
         }
     }

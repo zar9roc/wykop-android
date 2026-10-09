@@ -157,6 +157,25 @@ internal fun NotificationEntryResponseV3.toAppNotification(): Pair<AppNotificati
             "new_comment_in_link" -> "skomentował(a) znalezisko"
             "new_link" -> "dodał(a) znalezisko"
             "new_follower" -> "obserwuje Cię"
+            // Generyczna odpowiedz na moja tresc - API nie mowi wprost czy chodzi
+            // o wpis czy znalezisko, wiec rozrozniamy po dolaczonym obiekcie.
+            "new_reply_to_my_content" ->
+                when {
+                    entry != null -> "odpowiedział(a) Ci we wpisie"
+                    link != null -> "odpowiedział(a) Ci w znalezisku"
+                    else -> "odpowiedział(a) na Twoją treść"
+                }
+
+            else -> null
+        }
+    // Typy bez autora akcji (dotycza mojej tresci).
+    val selfAction =
+        when (type) {
+            "link_in_upcoming" -> "Twoje znalezisko trafiło do wykopalisk"
+            "link_on_homepage" -> "Twoje znalezisko trafiło na stronę główną"
+            "link_was_buried" -> "Twoje znalezisko zostało zakopane"
+            "moderation_action" -> "Akcja moderacyjna dotycząca Twojej treści"
+            "new_issue_response" -> "Odpowiedź na Twoje zgłoszenie"
             else -> null
         }
     val username = user?.username
@@ -164,7 +183,10 @@ internal fun NotificationEntryResponseV3.toAppNotification(): Pair<AppNotificati
     val title =
         when {
             username != null && action != null -> "$username $action"
+            selfAction != null -> selfAction
             badge?.name != null -> "Nowa odznaka"
+            // Nieznany typ - nigdy nie pokazujemy surowej wartosci `type`.
+            username != null -> "$username — nowa aktywność"
             else -> "Powiadomienie"
         }
     val body =

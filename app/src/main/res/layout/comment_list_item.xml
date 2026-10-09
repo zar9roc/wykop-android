@@ -113,6 +113,15 @@
         app:layout_constraintTop_toBottomOf="@id/entryImageViewStub"
         />
 
+    <TextView
+        android:id="@+id/threadContextTextView"
+        style="@style/ButtonTextView"
+        android:contentDescription="@string/thread_context_title"
+        app:drawableStartCompat="?attr/threadContextDrawable"
+        app:layout_constraintLeft_toRightOf="@id/replyTextView"
+        app:layout_constraintTop_toBottomOf="@id/entryImageViewStub"
+        />
+
     <io.github.wykopmobilny.ui.widgets.buttons.PlusVoteButton
         android:id="@+id/voteButton"
         style="@style/VoteButtonTextView"

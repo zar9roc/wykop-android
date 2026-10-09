@@ -3,6 +3,7 @@ package io.github.wykopmobilny.utils.linkhandler
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.ui.modules.NewNavigator
 import io.github.wykopmobilny.ui.modules.embedview.EmbedViewActivity
 import io.github.wykopmobilny.ui.modules.embedview.YouTubeUrlParser
@@ -39,15 +40,20 @@ class WykopLinkHandler
                 url: String,
                 context: Context,
             ): Intent? {
+                if (url.isBlank()) return null
                 val parsedUrl =
                     runCatching { URI(url.replace("\\", "")) }
                         .recoverCatching { URI(url.replace("\\", "").replace("[", "").replace("]", "")) }
                         .getOrElse { return null }
+                // Adres bez hosta (np. sciezka wzgledna "/changelog") ma host == null -
+                // dotad lecial z tego NPE poza runCatching. Brak hosta = brak ekranu
+                // w aplikacji, wiec grzecznie null i caller otworzy przegladarke.
                 val domain =
                     parsedUrl.host
-                        .replace("www.", "")
-                        .substringBeforeLast(".")
-                        .substringAfterLast(".")
+                        ?.replace("www.", "")
+                        ?.substringBeforeLast(".")
+                        ?.substringAfterLast(".")
+                        ?: return null
                 return when (domain) {
                     "wykop" -> {
                         val resource = url.substringAfter("wykop.pl/")
@@ -118,10 +124,17 @@ class WykopLinkHandler
             url: String,
             refreshNotifications: Boolean = false,
         ) {
-            when (url.first()) {
-                PROFILE_PREFIX -> handleProfile(url)
-                TAG_PREFIX -> handleTag(url)
-                else -> handleLink(url, refreshNotifications)
+            // Pusty adres (powiadomienie bez celu, pusty href w tresci) - url.first()
+            // rzucalo na tym NoSuchElementException. Nie ma dokad isc, wiec nic nie robimy.
+            val target = url.trim()
+            if (target.isEmpty()) {
+                Napier.w("handleUrl called with blank url")
+                return
+            }
+            when (target.first()) {
+                PROFILE_PREFIX -> handleProfile(target)
+                TAG_PREFIX -> handleTag(target)
+                else -> handleLink(target, refreshNotifications)
             }
         }
 

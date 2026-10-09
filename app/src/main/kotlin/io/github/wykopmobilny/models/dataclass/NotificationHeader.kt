@@ -1,5 +1,10 @@
 package io.github.wykopmobilny.models.dataclass
 
+/**
+ * Naglowek-akordeon zakladki tagow. Nie pochodzi z API, wiec identyfikator
+ * budujemy z jego tresci (nazwy taga) - prefiks gwarantuje, ze nie zderzy sie
+ * z hashem prawdziwego powiadomienia ani z wierszem zbiorczym.
+ */
 class NotificationHeader(
     body: String,
     var notificationsCount: Int,
@@ -8,13 +13,4 @@ class NotificationHeader(
     // Nawigacja po kliknieciu naglowka - dla grup "Do mnie" URL wpisu/znaleziska
     // bez kotwicy komentarza. null = domyslne otwarcie TagActivity (zakladka tagow).
     val navigationUrl: String? = null,
-) : Notification(0, null, body, null, "header", "", false) {
-    override fun equals(other: Any?): Boolean =
-        if (other !is NotificationHeader) {
-            false
-        } else {
-            (other.body == body)
-        }
-
-    override fun hashCode(): Int = body.hashCode()
-}
+) : Notification("header:$body", null, body, null, "header", "", false)

@@ -12,6 +12,4 @@ interface NotificationsListView : BaseView {
     fun disableLoading()
 
     fun showReadToast()
-
-    fun showTooManyNotifications()
 }

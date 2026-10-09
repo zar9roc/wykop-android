@@ -25,6 +25,9 @@ class NotificationViewHolder(
             unreadLine.isVisible = notification.new
             unreadMark.isVisible = notification.new
             unreadDotMark.isVisible = notification.new
+            // Licznik i chevron naleza wylacznie do wiersza zbiorczego ("Do mnie").
+            groupUnreadCount.isVisible = false
+            groupCollapseButton.isVisible = false
 
             if (notification.author != null) {
                 avatarView.isVisible = true
@@ -45,16 +48,26 @@ class NotificationViewHolder(
                 avatarView.isVisible = false
             }
 
-            notificationItem.setOnClickListener {
-                if (notification.new) {
-                    updateHeader(notification.tag)
+            // Powiadomienie bez uzytecznego celu (systemowe bez adresu, nieznany typ)
+            // nie udaje klikalnego - zamiast martwego dotkniecia wiersz w ogole nie
+            // reaguje i nie pokazuje efektu dotkniecia.
+            val target = notification.url?.takeIf { it.isNotBlank() }
+            if (target == null) {
+                notificationItem.setOnClickListener(null)
+                notificationItem.isClickable = false
+            } else {
+                notificationItem.isClickable = true
+                notificationItem.setOnClickListener {
+                    if (notification.new) {
+                        updateHeader(notification.tag)
+                    }
+                    notification.new = false
+                    unreadLine.isVisible = false
+                    unreadMark.isVisible = false
+                    unreadDotMark.isVisible = false
+                    DiagnosticCheckpoint.log("NotificationClick", "url=$target")
+                    linkHandler.handleUrl(target)
                 }
-                notification.new = false
-                unreadLine.isVisible = false
-                unreadMark.isVisible = false
-                unreadDotMark.isVisible = false
-                DiagnosticCheckpoint.log("NotificationClick", "url=${notification.url}")
-                notification.url?.let { linkHandler.handleUrl(it) }
             }
         }
     }

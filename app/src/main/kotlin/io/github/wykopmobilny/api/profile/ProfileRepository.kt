@@ -112,7 +112,14 @@ class ProfileRepository
                         val comments =
                             response.comments.items
                                 .orEmpty()
-                                .map { comment -> EntryCommentMapperV3.map(comment, owmContentFilter, entryId = response.id) }
+                                .map { comment ->
+                                    EntryCommentMapperV3.map(
+                                        comment,
+                                        owmContentFilter,
+                                        entryId = response.id,
+                                        entryAuthorNick = response.author.username,
+                                    )
+                                }
                         listOf(EntryListRow.EntryRow(entry)) +
                             comments.map(EntryListRow::CommentRow)
                     }

@@ -12,6 +12,8 @@ import io.github.wykopmobilny.ui.adapters.TopCommentsActionListener
 import io.github.wykopmobilny.ui.adapters.TopCommentsViewListener
 import io.github.wykopmobilny.ui.adapters.bindEntryOrCommentHolder
 import io.github.wykopmobilny.ui.adapters.constructEntryOrCommentViewHolder
+import io.github.wykopmobilny.ui.adapters.entryQuoteListener
+import io.github.wykopmobilny.ui.adapters.entryReplyListener
 import io.github.wykopmobilny.ui.adapters.isSectionEnd
 import io.github.wykopmobilny.ui.adapters.markSectionEnd
 import io.github.wykopmobilny.ui.adapters.viewholders.EntryCommentViewHolder
@@ -28,8 +30,8 @@ import io.github.wykopmobilny.utils.usermanager.UserManagerApi
  * Adapter feedu mikrobloga (V2). Reużywa sprawdzony EntryViewHolder (renderowanie
  * jak dotąd), a paginacja/refresh idą z domeny - stąd własny prosty adapter z listą
  * + stopką ładowania, zamiast starego EndlessProgressAdapter. replyListener=null =>
- * EntryViewHolder w trybie feedu (klik wiersza otwiera szczegóły, brak przycisku
- * odpowiedzi), dokładnie jak stary EntriesAdapter.
+ * EntryViewHolder w trybie feedu (klik wiersza otwiera szczegóły), dokładnie jak stary
+ * EntriesAdapter; "Odpowiedz"/"Cytuj" wpisu idą osobnymi listenerami listy.
  */
 internal class MicroblogFeedAdapter(
     private val userManagerApi: UserManagerApi,
@@ -56,6 +58,10 @@ internal class MicroblogFeedAdapter(
     private val commentActionListener =
         TopCommentsActionListener(entryCommentInteractor, navigator, disposables, ::updateComment)
     private val commentViewListener = TopCommentsViewListener(navigator)
+
+    // "Odpowiedz"/"Cytuj" pod wpisem na liscie - przejscie na ekran wpisu z gotowym polem.
+    private val listReplyListener = entryReplyListener(navigator)
+    private val listQuoteListener = entryQuoteListener(navigator)
 
     fun replaceAll(
         newEntries: List<Entry>,
@@ -134,6 +140,8 @@ internal class MicroblogFeedAdapter(
                 commentActionListener = commentActionListener,
                 commentViewListener = commentViewListener,
                 onBlockedRevealed = ::notifyItemChanged,
+                listReplyListener = listReplyListener,
+                listQuoteListener = listQuoteListener,
             )
         }
 

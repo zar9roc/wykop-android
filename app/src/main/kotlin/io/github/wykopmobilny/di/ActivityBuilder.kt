@@ -25,6 +25,7 @@ import io.github.wykopmobilny.ui.modules.links.upvoters.UpvotersModule
 import io.github.wykopmobilny.ui.modules.mainnavigation.MainNavigationActivity
 import io.github.wykopmobilny.ui.modules.mainnavigation.MainNavigationFragmentProvider
 import io.github.wykopmobilny.ui.modules.mainnavigation.MainNavigationModule
+import io.github.wykopmobilny.ui.modules.mikroblog.threadcontext.ThreadContextFragment
 import io.github.wykopmobilny.ui.modules.notificationslist.NotificationsListActivity
 import io.github.wykopmobilny.ui.modules.notificationslist.NotificationsListFragmentProvider
 import io.github.wykopmobilny.ui.modules.notificationslist.NotificationsListModule
@@ -96,4 +97,8 @@ internal abstract class ActivityBuilder {
     // Analogicznie EntryActivityV2 (ekran wpisu na nowym stacku).
     @ContributesAndroidInjector
     abstract fun bindEntryDetailsFragment(): io.github.wykopmobilny.ui.modules.mikroblog.entry.v2.EntryDetailsFragment
+
+    // Kontekst watku komentarza - powloka (ThreadContextActivity) tez nie jest daggerowa.
+    @ContributesAndroidInjector
+    abstract fun bindThreadContextFragment(): ThreadContextFragment
 }

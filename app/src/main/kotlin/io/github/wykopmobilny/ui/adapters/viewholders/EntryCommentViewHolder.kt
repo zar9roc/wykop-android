@@ -112,6 +112,7 @@ class EntryCommentViewHolder(
         setupButtons(comment)
         setupBody(
             comment = comment,
+            entryAuthorNick = comment.entryAuthorNick ?: entryAuthor?.nick,
             openSpoilersDialog = openSpoilersDialog,
             enableYoutubePlayer = enableYoutubePlayer,
             enableEmbedPlayer = enableEmbedPlayer,
@@ -168,6 +169,17 @@ class EntryCommentViewHolder(
         binding.replyTextView.isEnabled = !isDeleted
         binding.replyTextView.setOnClickListener { commentViewListener?.addReply(comment) }
 
+        // Kontekst watku - osobny ekran ze sciezka w gore, dociagany na zadanie.
+        // Widoczny takze dla gosci i pod usunietym komentarzem: rodzice moga istniec dalej.
+        // Plaska lista nie mowi, czy komentarz jest odpowiedzia, wiec przycisk jest zawsze -
+        // dla komentarza pierwszego poziomu ekran pokaze sam wpis.
+        // entryId = 0 oznacza komentarz bez kontekstu wpisu (teoretycznie nieosiagalne -
+        // wszystkie mapowania podaja id wpisu) - wtedy zapytanie i tak skonczyloby sie 404.
+        binding.threadContextTextView.isVisible = comment.entryId > 0
+        binding.threadContextTextView.setOnClickListener {
+            navigator.openThreadContext(entryId = comment.entryId, commentId = comment.id)
+        }
+
         // Setup vote button - always visible but disabled if deleted
         binding.voteButton.isVisible = true
         with(binding.voteButton) {
@@ -194,6 +206,7 @@ class EntryCommentViewHolder(
 
     private fun setupBody(
         comment: EntryComment,
+        entryAuthorNick: String?,
         openSpoilersDialog: Boolean,
         enableYoutubePlayer: Boolean,
         enableEmbedPlayer: Boolean,
@@ -208,7 +221,7 @@ class EntryCommentViewHolder(
         binding.quoteTextView.setOnClickListener { commentViewListener?.quoteComment(comment) }
 
         if (isDeleted) {
-            setupDeletedBody(comment)
+            setupDeletedBody(comment, entryAuthorNick)
         } else if (comment.body.isNotEmpty()) {
             binding.entryContentTextView.isVisible = true
             resetContentTextViewStyle()
@@ -247,13 +260,31 @@ class EntryCommentViewHolder(
         binding.entryContentTextView.setOnClickListener(null)
     }
 
-    private fun setupDeletedBody(comment: EntryComment) {
+    /**
+     * Adnotacja zamiast tresci usunietego komentarza. Gdy znamy nick osoby, ktora
+     * usunela, dopisujemy go w nawiasie; bez niego zostaje stare, ogolne brzmienie.
+     * Moderatora API nie ujawnia, wiec tam nicka nie ma nigdy.
+     */
+    private fun setupDeletedBody(
+        comment: EntryComment,
+        entryAuthorNick: String?,
+    ) {
         val context = itemView.context
         val deletedText =
             when (comment.deletedReason) {
-                "host" -> context.getString(R.string.comment_deleted_by_host)
+                "host" ->
+                    entryAuthorNick
+                        ?.takeIf { it.isNotBlank() }
+                        ?.let { context.getString(R.string.comment_deleted_by_thread_author_nick, it) }
+                        ?: context.getString(R.string.comment_deleted_by_host)
+
                 "moderator" -> context.getString(R.string.comment_deleted_by_moderator)
-                "author" -> context.getString(R.string.comment_deleted_by_author)
+                "author" ->
+                    comment.author.nick
+                        .takeIf { it.isNotBlank() }
+                        ?.let { context.getString(R.string.comment_deleted_by_own_author_nick, it) }
+                        ?: context.getString(R.string.comment_deleted_by_author)
+
                 else -> context.getString(R.string.comment_deleted_generic)
             }
 

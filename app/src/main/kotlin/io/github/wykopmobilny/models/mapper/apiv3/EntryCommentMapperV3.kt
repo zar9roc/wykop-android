@@ -13,6 +13,9 @@ object EntryCommentMapperV3 {
         // (komentarze wpisu, profil "komentowane") API pomija parent_id
         // i bez tego entryId byloby 0 (nawigacja do wpisu = 404).
         entryId: Long? = null,
+        // Nick autora wpisu-rodzica, rowniez tylko z kontekstu - obiekt komentarza
+        // w API v3 nie niesie zadnej informacji o wpisie poza (czasem) parent_id.
+        entryAuthorNick: String? = null,
     ): EntryComment {
         val resolvedEntryId = entryId ?: value.parentId ?: 0L
         return owmContentFilter.filterEntryComment(
@@ -32,6 +35,7 @@ object EntryCommentMapperV3 {
                 isBlocked = !value.deleted.isNullOrEmpty(),
                 deletedReason = value.deleted,
                 slug = value.slug,
+                entryAuthorNick = entryAuthorNick,
             ),
         )
     }

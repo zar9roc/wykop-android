@@ -18,6 +18,11 @@ class EntryComment(
     var isBlocked: Boolean = false,
     val deletedReason: String? = null,
     val slug: String? = null,
+    // Nick autora wpisu, pod ktorym wisi komentarz. API v3 nie podaje go przy samym
+    // komentarzu, wiec wypelniamy go z kontekstu wywolania (wpis z listy, wpis ekranu
+    // szczegolow, pierwszy element sciezki watku). Null = kontekstu nie bylo i komunikat
+    // o usunieciu przez autora watku musi zdegradowac sie do wersji bez nicka.
+    val entryAuthorNick: String? = null,
 ) {
     override fun equals(other: Any?): Boolean =
         if (other !is EntryComment) {

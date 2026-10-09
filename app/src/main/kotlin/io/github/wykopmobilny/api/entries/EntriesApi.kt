@@ -72,6 +72,46 @@ interface EntriesApi {
         embedUrl: String? = null,
     ): Single<EntryCommentResponse>
 
+    /**
+     * Kontekst watku komentarza: sciezka w gore (wpis, kolejni rodzice, komentarz)
+     * i ten kawalek poddrzewa, ktory API odda od razu. Zawsze DWA zapytania, niezaleznie
+     * od glebokosci watku - brakujace galezie opisuje `pendingBranches`, a dociaga je
+     * leniwie [getThreadBranch].
+     */
+    fun getThreadContext(
+        entryId: Long,
+        commentId: Long,
+    ): Single<io.github.wykopmobilny.models.dataclass.ThreadContext>
+
+    /**
+     * Jedna strona brakujacych odpowiedzi jednej galezi watku (kursor + ekspansja).
+     * [entryAuthorNick] sluzy tylko adnotacji o komentarzu usunietym przez autora wpisu.
+     */
+    fun getThreadBranch(
+        entryId: Long,
+        branch: io.github.wykopmobilny.models.dataclass.ThreadBranchState,
+        entryAuthorNick: String?,
+    ): Single<io.github.wykopmobilny.models.dataclass.ThreadChunk>
+
+    /** Odpowiedz podwieszona pod komentarz (watek), a nie pod wpis. Zwraca id nowego komentarza. */
+    fun addThreadReply(
+        body: String,
+        entryId: Long,
+        parentCommentId: Long,
+        embed: String?,
+        plus18: Boolean,
+        embedUrl: String? = null,
+    ): Single<Long>
+
+    fun addThreadReply(
+        body: String,
+        entryId: Long,
+        parentCommentId: Long,
+        wykopImageFile: WykopImageFile,
+        plus18: Boolean,
+        embedUrl: String? = null,
+    ): Single<Long>
+
     fun markFavorite(
         entryId: Long,
         currentlyFavorite: Boolean,

@@ -65,6 +65,10 @@ class EntryLinksAdapter
             TopCommentsActionListener(entryCommentInteractor, navigator, disposables, ::updateComment)
         private val topCommentsViewListener = TopCommentsViewListener(navigator)
 
+        // "Odpowiedz"/"Cytuj" pod wpisem na liscie - przejscie na ekran wpisu z gotowym polem.
+        private val listReplyListener = entryReplyListener(navigator)
+        private val listQuoteListener = entryQuoteListener(navigator)
+
         /** Same elementy wpis/znalezisko (bez wierszy komentarzy). */
         val items: List<EntryLink>
             get() = data.filterIsInstance<EntryListRow.LinkRow>().map { it.entryLink }
@@ -144,13 +148,15 @@ class EntryLinksAdapter
 
                 else -> {
                     EntryViewHolder.inflateView(
-                        parent,
-                        viewType,
-                        userManagerApi,
-                        navigator,
-                        linkHandler,
-                        entryActionListener,
-                        null,
+                        parent = parent,
+                        viewType = viewType,
+                        userManagerApi = userManagerApi,
+                        navigator = navigator,
+                        linkHandler = linkHandler,
+                        entryActionListener = entryActionListener,
+                        replyListener = null,
+                        listReplyListener = listReplyListener,
+                        listQuoteListener = listQuoteListener,
                     )
                 }
             }

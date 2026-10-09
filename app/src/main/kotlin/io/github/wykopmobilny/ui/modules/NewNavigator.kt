@@ -1,8 +1,10 @@
 package io.github.wykopmobilny.ui.modules
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ShareCompat
 import io.github.aakira.napier.Napier
@@ -26,6 +28,7 @@ import io.github.wykopmobilny.ui.modules.links.upvoters.UpvotersActivity
 import io.github.wykopmobilny.ui.modules.loginscreen.LoginScreenActivity
 import io.github.wykopmobilny.ui.modules.mainnavigation.MainNavigationActivity
 import io.github.wykopmobilny.ui.modules.mikroblog.entry.v2.EntryActivityV2
+import io.github.wykopmobilny.ui.modules.mikroblog.threadcontext.ThreadContextActivity
 import io.github.wykopmobilny.ui.modules.notificationslist.NotificationsListActivity
 import io.github.wykopmobilny.ui.modules.photoview.PhotoViewActivity
 import io.github.wykopmobilny.ui.modules.pm.conversation.ConversationActivity
@@ -67,19 +70,28 @@ class NewNavigator
             commentId: Long,
         ) = context.startActivity(EntryActivityV2.createIntent(context, entryId, commentId = commentId))
 
-        // "Odpowiedz" pod komentarzem na liscie - ekran wpisu z gotowym adresatem w polu.
-        fun openEntryDetailsAndReply(
+        // Kontekst watku komentarza (sciezka w gore) - osobny ekran, dociagany na zadanie.
+        fun openThreadContext(
             entryId: Long,
             commentId: Long,
+        ) = context.startActivity(ThreadContextActivity.createIntent(context, entryId, commentId))
+
+        // "Odpowiedz" pod komentarzem na liscie - ekran wpisu z gotowym adresatem w polu.
+        // commentId = null (odpowiedz pod samym wpisem) otwiera ekran normalnie od gory,
+        // bez kotwicy - pole odpowiedzi i tak dostaje fokus z gotowa trescia.
+        fun openEntryDetailsAndReply(
+            entryId: Long,
+            commentId: Long?,
             replyToAuthor: String,
         ) = context.startActivity(
             EntryActivityV2.createIntent(context, entryId, commentId = commentId, replyToAuthor = replyToAuthor),
         )
 
         // "Cytuj" pod komentarzem na liscie - ekran wpisu z wklejonym cytatem w polu.
+        // commentId = null dla cytatu z samego wpisu (brak komentarza-kotwicy).
         fun openEntryDetailsAndQuote(
             entryId: Long,
-            commentId: Long,
+            commentId: Long?,
             quoteAuthor: String,
             quoteBody: String,
         ) = context.startActivity(
@@ -140,15 +152,29 @@ class NewNavigator
             BaseInputActivity.EDIT_ENTRY_COMMENT,
         )
 
+        // Ostatnia deska ratunku dla kazdego linku, ktorego nie obsluzyl zaden ekran
+        // aplikacji. Zaden caller nie moze tym ubic procesu, wiec odrzucamy adresy
+        // bez schematu (pusty tekst, sciezka wzgledna typu "/changelog") i lapiemy
+        // brak przegladarki na urzadzeniu.
         fun openBrowser(url: String) {
+            val target = url.trim()
+            val uri = if (target.isEmpty()) null else Uri.parse(target)
+            if (uri?.scheme.isNullOrBlank()) {
+                Napier.w("Cannot open browser, url without scheme: url=$url")
+                Toast.makeText(context, R.string.link_open_failed, Toast.LENGTH_SHORT).show()
+                return
+            }
             if (settingsPreferences.useBuiltInBrowser) {
-                context.openBrowser(url)
+                context.openBrowser(target)
             } else {
-                val intent =
-                    Intent(Intent.ACTION_VIEW).apply {
-                        data = Uri.parse(url)
-                    }
-                context.startActivity(intent)
+                val intent = Intent(Intent.ACTION_VIEW, uri)
+                try {
+                    context.startActivity(intent)
+                } catch (e: ActivityNotFoundException) {
+                    // Brak jakiejkolwiek przegladarki (albo aplikacji dla tego schematu).
+                    Napier.w("No activity to open url=$url", e)
+                    Toast.makeText(context, R.string.link_open_failed, Toast.LENGTH_SHORT).show()
+                }
             }
         }
 

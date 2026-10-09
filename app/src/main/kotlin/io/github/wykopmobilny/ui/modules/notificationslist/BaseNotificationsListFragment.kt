@@ -28,6 +28,34 @@ abstract class BaseNotificationsListFragment :
 
     abstract fun loadMore()
 
+    // Ekran powiadomien to ViewPager, ktory tworzy OBA fragmenty od razu. Zapytanie
+    // startuje dopiero, gdy zakladka naprawde staje sie widoczna - wejscie na ekran
+    // kosztuje jedno zapytanie (widoczna zakladka), a nie po jednym na kazda z dwoch.
+    private var initialLoadDone = false
+
+    /** Dane odtworzone po obrocie ekranu - nie wolno ich pobierac drugi raz. */
+    protected fun markInitialLoadDone() {
+        initialLoadDone = true
+    }
+
+    /**
+     * Pierwsze ladowanie zakladki - dokladnie raz, niezaleznie od tego, czy wyzwoli je
+     * [onViewCreated] (zakladka widoczna od poczatku) czy [setUserVisibleHint]
+     * (uzytkownik przelaczyl sie na nia pozniej). Powrot na zakladke nie strzela ponownie.
+     */
+    protected fun startInitialLoadIfVisible() {
+        if (initialLoadDone || !userVisibleHint || view == null) return
+        initialLoadDone = true
+        binding.loadingView.isVisible = true
+        onRefresh()
+    }
+
+    @Suppress("DEPRECATION")
+    override fun setUserVisibleHint(isVisibleToUser: Boolean) {
+        super.setUserVisibleHint(isVisibleToUser)
+        if (isVisibleToUser) startInitialLoadIfVisible()
+    }
+
     private fun onNotificationClicked(position: Int) {
         val notification = notificationAdapter.data[position]
         notification.new = false
@@ -43,7 +71,10 @@ abstract class BaseNotificationsListFragment :
         super.onViewCreated(view, savedInstanceState)
         binding.swiperefresh.setOnRefreshListener(this)
 
-        notificationAdapter.loadNewDataListener = {
+        // Stopka "pokaz starsze" - jedyny sposob na kolejna strone. NIE podpinamy
+        // loadNewDataListener (callbacku EndlessScrollListener), wiec samo scrollowanie
+        // do konca listy niczego nie wyzwala.
+        notificationAdapter.loadMoreListener = {
             loadMore()
         }
 
@@ -73,12 +104,12 @@ abstract class BaseNotificationsListFragment :
     }
 
     /**
-     * Blad doladowania kolejnej strony: snackbar z "Ponow" zamiast modalu, a
-     * adapter wraca do stanu gotowego na kolejny scroll.
+     * Blad doladowania kolejnej strony: snackbar z "Ponow" zamiast modalu, a stopka
+     * wraca do stanu klikalnego (lista zostaje taka, jaka byla - nic nie znika).
      */
     override fun showLoadMoreError(e: Throwable) {
-        notificationAdapter.onLoadFailed()
-        showLoadMoreErrorSnackbar(e) { loadMore() }
+        notificationAdapter.finishLoadMore()
+        showLoadMoreErrorSnackbar(e) { notificationAdapter.requestLoadMore() }
     }
 
     override fun disableLoading() = notificationAdapter.disableLoading()

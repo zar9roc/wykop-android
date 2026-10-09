@@ -289,7 +289,12 @@ internal class EntryDetailsFragment :
             ui.comments
                 .map { response ->
                     mappedComments.getOrPut(response.id) {
-                        EntryCommentMapperV3.map(response, owmContentFilter, entryId = entryId)
+                        EntryCommentMapperV3.map(
+                            response,
+                            owmContentFilter,
+                            entryId = entryId,
+                            entryAuthorNick = entryResponse.author.username,
+                        )
                     }
                 }.filterNot { settingsPreferencesApi.hideBlacklistedViews && it.isBlocked && it.deletedReason == null }
         val newIds = mapped.map { it.id }

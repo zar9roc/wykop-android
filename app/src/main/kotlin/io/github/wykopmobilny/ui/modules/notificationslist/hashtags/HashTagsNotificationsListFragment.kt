@@ -55,11 +55,14 @@ class HashTagsNotificationsListFragment : BaseNotificationsListFragment() {
         if (pagedModel != null && pagedModel.model.isNotEmpty()) {
             binding.loadingView.isVisible = false
             presenter.page = pagedModel.page
+            presenter.restoreLoaded(pagedModel.model)
             notificationAdapter.addData(pagedModel.model, true)
-            notificationAdapter.disableLoading()
+            // Stopka zostaje widoczna - po obrocie ekranu nie wiemy, czy byla to
+            // ostatnia strona, wiec pokazujemy ja optymistycznie (pierwsze pobranie
+            // pustej strony i tak ja zdejmie). Zadnego zapytania sprawdzajacego.
+            markInitialLoadDone()
         } else {
-            binding.loadingView.isVisible = true
-            onRefresh()
+            startInitialLoadIfVisible()
         }
     }
 
@@ -111,14 +114,22 @@ class HashTagsNotificationsListFragment : BaseNotificationsListFragment() {
         return super.onOptionsItemSelected(item)
     }
 
+    /**
+     * Wywolywane WYLACZNIE przez klikniecie stopki "pokaz starsze" - scrollowanie
+     * do konca listy niczego nie doladowuje. Jedno klikniecie = jedna strona,
+     * takze w trybie grupowania (wejscie na ekran zbiera ich wiecej za jednym razem).
+     */
     override fun loadMore() {
-        // W trybie grupowania wszystkie strony sa pobrane z gory - nie ma kolejnych.
-        if (!settingsApi.groupNotifications) presenter.loadData(false)
+        if (settingsApi.groupNotifications) {
+            presenter.loadMoreGrouped()
+        } else {
+            presenter.loadData(false)
+        }
     }
 
     override fun onRefresh() {
         if (settingsApi.groupNotifications) {
-            presenter.loadAllNotifications(true)
+            presenter.loadGrouped(true)
         } else {
             presenter.loadData(true)
         }
@@ -135,7 +146,4 @@ class HashTagsNotificationsListFragment : BaseNotificationsListFragment() {
         super.onSaveInstanceState(outState)
         entryFragmentData.data = PagedDataModel(presenter.page, notificationAdapter.data)
     }
-
-    override fun showTooManyNotifications() =
-        Toast.makeText(context, "Zbyt wiele powiadomień, funkcja grupowania wyłączona", Toast.LENGTH_LONG).show()
 }

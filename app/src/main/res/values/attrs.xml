@@ -45,6 +45,7 @@
     <attr name="dotsDrawable" format="reference" />
     <attr name="replyDrawable" format="reference" />
     <attr name="quoteDrawable" format="reference" />
+    <attr name="threadContextDrawable" format="reference" />
     <attr name="reportDrawable" format="reference" />
     <attr name="relatedDrawable" format="reference" />
     <attr name="sharebtnDrawable" format="reference" />

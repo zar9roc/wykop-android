@@ -35,14 +35,21 @@ class NotificationsListFragment : BaseNotificationsListFragment() {
 
     private lateinit var entryFragmentData: DataFragment<PagedDataModel<List<Notification>>>
 
+    /**
+     * Wywolywane WYLACZNIE przez klikniecie stopki "pokaz starsze" - scrollowanie
+     * do konca listy niczego nie doladowuje. Jedno klikniecie = jedna strona.
+     */
     override fun loadMore() {
-        // W trybie grupowania wszystkie strony sa pobrane z gory - nie ma kolejnych.
-        if (!settingsApi.groupNotifications) presenter.loadData(false)
+        if (settingsApi.groupNotifications) {
+            presenter.loadGrouped(false)
+        } else {
+            presenter.loadData(false)
+        }
     }
 
     override fun onRefresh() {
         if (settingsApi.groupNotifications) {
-            presenter.loadAllGrouped(true)
+            presenter.loadGrouped(true)
         } else {
             presenter.loadData(true)
         }
@@ -59,11 +66,17 @@ class NotificationsListFragment : BaseNotificationsListFragment() {
         if (entryFragmentData.data != null && entryFragmentData.data!!.model.isNotEmpty()) {
             binding.loadingView.isVisible = false
             presenter.page = entryFragmentData.data!!.page
+            // Prezenter odzyskuje surowe powiadomienia (bez wierszy zbiorczych),
+            // zeby stan po obrocie ekranu zgadzal sie z tym, co pokazuje lista -
+            // i zeby odtworzenie nie kosztowalo dodatkowego zapytania.
+            presenter.restoreLoaded(entryFragmentData.data!!.model)
             notificationAdapter.addData(entryFragmentData.data!!.model, true)
-            notificationAdapter.disableLoading()
+            // Stopka zostaje widoczna - po obrocie ekranu nie wiemy, czy byla to
+            // ostatnia strona, wiec pokazujemy ja optymistycznie (pierwsze pobranie
+            // pustej strony i tak ja zdejmie). Zadnego zapytania sprawdzajacego.
+            markInitialLoadDone()
         } else {
-            binding.loadingView.isVisible = true
-            onRefresh()
+            startInitialLoadIfVisible()
         }
     }
 
@@ -82,9 +95,5 @@ class NotificationsListFragment : BaseNotificationsListFragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         entryFragmentData.data = PagedDataModel(presenter.page, notificationAdapter.data)
-    }
-
-    override fun showTooManyNotifications() {
-        // Do nothing
     }
 }

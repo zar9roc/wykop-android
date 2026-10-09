@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Strzalka "w gore" miedzy pozycjami: ta ponizej jest odpowiedzia na te powyzej.
+    Na gorze linia separatora - ekran nie ma dekoratora listy (prepareNoDivider),
+    wiec granice pozycji rysujemy tutaj, tym samym kolorem i gruboscia co
+    ViewHolderDependentItemDecorator w pozostalych listach.
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    >
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/separator_normal"
+        android:background="?attr/lineColor"
+        />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/padding_dp_large"
+        android:layout_marginTop="@dimen/padding_dp_small"
+        android:layout_marginBottom="@dimen/padding_dp_small"
+        android:alpha="0.5"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_chevron_up"
+        android:tint="?android:attr/textColorSecondary"
+        />
+
+</LinearLayout>

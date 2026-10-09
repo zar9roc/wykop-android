@@ -5,6 +5,7 @@ import io.github.wykopmobilny.models.dataclass.Author
 import io.github.wykopmobilny.models.dataclass.EntryComment
 import io.github.wykopmobilny.ui.fragments.entrycomments.EntryCommentActionListener
 import io.github.wykopmobilny.ui.fragments.entrycomments.EntryCommentInteractor
+import io.github.wykopmobilny.ui.adapters.viewholders.EntryListener
 import io.github.wykopmobilny.ui.fragments.entrycomments.EntryCommentViewListener
 import io.github.wykopmobilny.ui.modules.NewNavigator
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -57,6 +58,31 @@ class TopCommentsViewListener(
     override fun quoteComment(comment: EntryComment) =
         navigator.openEntryDetailsAndQuote(comment.entryId, comment.id, comment.author.nick, comment.body)
 
-    // Wpisy na listach nie maja przycisku odpowiedzi (replyListener = null).
+    // Dotyczy tylko paska odpowiedzi na ekranie wpisu - na listach wpis ma wlasne
+    // listenery (entryReplyListener/entryQuoteListener ponizej).
     override fun addReplyToAuthor(author: Author) = Unit
 }
+
+/**
+ * "Odpowiedz" pod WPISEM na liscie - jak dla komentarza, tylko bez kotwicy:
+ * ekran wpisu otwiera sie normalnie od gory, z adresatem w polu odpowiedzi.
+ */
+fun entryReplyListener(navigator: NewNavigator): EntryListener =
+    { entry ->
+        navigator.openEntryDetailsAndReply(
+            entryId = entry.id,
+            commentId = null,
+            replyToAuthor = entry.author.nick,
+        )
+    }
+
+/** "Cytuj" pod WPISEM na liscie - ekran wpisu z wklejonym cytatem jego tresci. */
+fun entryQuoteListener(navigator: NewNavigator): EntryListener =
+    { entry ->
+        navigator.openEntryDetailsAndQuote(
+            entryId = entry.id,
+            commentId = null,
+            quoteAuthor = entry.author.nick,
+            quoteBody = entry.body,
+        )
+    }

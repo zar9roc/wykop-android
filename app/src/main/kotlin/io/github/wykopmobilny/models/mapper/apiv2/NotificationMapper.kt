@@ -7,7 +7,8 @@ import io.github.wykopmobilny.models.mapper.Mapper
 object NotificationMapper : Mapper<NotificationResponse, Notification> {
     override fun map(value: NotificationResponse) =
         Notification(
-            id = value.id,
+            // API v2 ma identyfikatory liczbowe - model trzyma je jako tekst.
+            id = value.id.toString(),
             author = value.author?.let(AuthorMapper::map),
             body = value.body,
             date = value.date,

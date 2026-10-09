@@ -22,6 +22,13 @@ import io.github.wykopmobilny.api.toRequestBody
 import io.github.wykopmobilny.models.dataclass.EntryVotePublishModel
 import io.github.wykopmobilny.models.mapper.apiv2.SurveyMapper
 import io.github.wykopmobilny.models.mapper.apiv3.EntryCommentMapperV3
+import io.github.wykopmobilny.api.endpoints.v3.EntriesV3RetrofitApi
+import io.github.wykopmobilny.models.dataclass.EntryListRow
+import io.github.wykopmobilny.models.dataclass.ThreadBranchState
+import io.github.wykopmobilny.models.dataclass.ThreadChunk
+import io.github.wykopmobilny.models.dataclass.ThreadContext
+import io.github.wykopmobilny.models.dataclass.ThreadDescendant
+import io.github.wykopmobilny.models.mapper.apiv3.ThreadContextMapperV3
 import io.github.wykopmobilny.models.mapper.apiv3.filterEntriesV3
 import io.github.wykopmobilny.models.mapper.apiv3.filterEntryV3
 import io.reactivex.subjects.PublishSubject
@@ -657,10 +664,278 @@ class EntriesRepository
                     }
                 FilteredData(
                     totalCount = response.pagination?.total ?: data.size,
+                    // Endpoint oddaje same komentarze - nicka autora wpisu nie ma skad wziac,
+                    // wiec adnotacja o usunieciu zdegraduje sie do wersji bez nicka.
                     filtered = data.map { comment -> EntryCommentMapperV3.map(comment, owmContentFilter, entryId = id) },
                     nextPage = nextPage,
                 )
             }
+
+        /**
+         * Kontekst watku: sciezka przodkow + sam komentarz, a pod nim TYLKO ta czesc
+         * poddrzewa, ktora API odda od razu. Wszystko mapujemy na modele domenowe
+         * (wpis/komentarz), zeby ekran kontekstu mogl je wyrenderowac tymi samymi
+         * viewholderami co zwykla lista.
+         *
+         * Strategia pobierania: DWA zapytania i koniec - sciezka w gore oraz komentarz
+         * docelowy z `comments_expanded=true` (ekspansja oddaje przy okazji spory kawalek
+         * poddrzewa). Reszta galezi nie jest tu dociagana; zamiast tego zwracamy ich opis
+         * w [ThreadContext.pendingBranches], a widok dociaga je leniwie przez
+         * [getThreadBranch], gdy wejda w pole widzenia. Dzieki temu uzytkownik widzi wpis,
+         * sciezke i komentarz docelowy natychmiast, a nie po kilkunastu round-tripach.
+         */
+        override fun getThreadContext(
+            entryId: Long,
+            commentId: Long,
+        ) = rxSingle {
+            val ancestors = entriesApiV3.getCommentAncestors(entryId = entryId, commentId = commentId).data.orEmpty()
+            val target =
+                entriesApiV3
+                    .getThreadComment(
+                        entryId = entryId,
+                        commentId = commentId,
+                        commentsLimit = EntriesV3RetrofitApi.THREAD_MAX_LIMIT,
+                        commentsExpanded = true,
+                    ).data
+
+            // Wpis jest pierwszym elementem sciezki - stad nick autora watku dla
+            // adnotacji o komentarzu usunietym przez autora wpisu.
+            val entryAuthorNick = ancestors.firstOrNull { it.isEntry }?.author?.username
+
+            val path =
+                (ancestors + listOfNotNull(target))
+                    .map {
+                        ThreadContextMapperV3.mapRow(
+                            it,
+                            entryId = entryId,
+                            owmContentFilter = owmContentFilter,
+                            entryAuthorNick = entryAuthorNick,
+                        )
+                    }
+            // Wpis ma nesting = 1, wiec komentarz docelowy bez tego pola traktujemy
+            // jako lezacy tuz pod koncem sciezki przodkow.
+            val targetNesting = target?.nesting ?: (ancestors.size + 1)
+            val descendants = mutableListOf<ThreadDescendant>()
+            val pending = mutableListOf<ThreadBranchState>()
+            flattenExpandedReplies(
+                entryId = entryId,
+                parentId = commentId,
+                parentNesting = targetNesting,
+                childDepth = 1,
+                replies = target?.expandedReplies.orEmpty(),
+                knownReplyCount = target?.replyTotal,
+                entryAuthorNick = entryAuthorNick,
+                descendants = descendants,
+                pending = pending,
+            )
+
+            ThreadContext(path = path, targetNesting = targetNesting, descendants = descendants, pendingBranches = pending)
+        }.retryWhen(userTokenRefresher)
+
+        /**
+         * JEDNA strona brakujacych odpowiedzi jednego komentarza - tyle, ile widok poprosi,
+         * bez schodzenia rekurencyjnie po calym poddrzewie.
+         *
+         * Paginacja jest kursorowa: `sort=oldest` + `id` ostatniej posiadanej odpowiedzi
+         * (kursor wykluczajacy, oddaje elementy o wiekszym id), wiec odpowiedzi przyslane
+         * wczesniej w ekspansji NIE sa pobierane drugi raz. `expanded=true` sprawia, ze ta
+         * sama strona przynosi od razu kawalek glebszych poziomow - rozpakowuje go
+         * [flattenExpandedReplies], dopisujac do [ThreadChunk.pendingBranches] te galezie,
+         * ktorych ekspansja nie domknela.
+         *
+         * Zwrocone galezie (kontynuacja tego samego rodzica + niepelne ekspansje nowych
+         * komentarzy) sa dla widoku jedynym zrodlem informacji "tu jeszcze czegos brakuje".
+         */
+        override fun getThreadBranch(
+            entryId: Long,
+            branch: ThreadBranchState,
+            entryAuthorNick: String?,
+        ) = rxSingle {
+            val page =
+                entriesApiV3
+                    .getThreadSubcomments(
+                        entryId = entryId,
+                        commentId = branch.parentId,
+                        cursor = branch.cursor,
+                        limit = EntriesV3RetrofitApi.THREAD_MAX_LIMIT,
+                        expanded = true,
+                    ).data
+            val items = page?.items.orEmpty()
+            val total = page?.total ?: page?.count ?: branch.total
+            val loaded = branch.loaded + items.size
+            val descendants = mutableListOf<ThreadDescendant>()
+            val pending = mutableListOf<ThreadBranchState>()
+
+            // Kontynuacja tej samej galezi. Pelna strona i brakujace elementy = jest co
+            // dociagac; pusta albo niepelna strona konczy kolekcje. Kursor MUSI sie
+            // przesunac, inaczej kolejne zadanie powtorzyloby to samo zapytanie.
+            val nextCursor = items.lastOrNull()?.id
+            val hasMore =
+                nextCursor != null &&
+                    items.size >= EntriesV3RetrofitApi.THREAD_MAX_LIMIT &&
+                    (total == null || loaded < total)
+            if (hasMore) {
+                pending +=
+                    branch.copy(
+                        cursor = nextCursor,
+                        loaded = loaded,
+                        total = total,
+                    )
+            }
+
+            items.forEach { reply ->
+                val mapped =
+                    ThreadContextMapperV3.mapRow(
+                        reply,
+                        entryId = entryId,
+                        owmContentFilter = owmContentFilter,
+                        entryAuthorNick = entryAuthorNick,
+                    )
+                val row = mapped as? EntryListRow.CommentRow ?: return@forEach
+                val nesting = reply.nesting ?: (branch.parentNesting + 1)
+                descendants += ThreadDescendant(row = row, depth = branch.childDepth, nesting = nesting)
+                flattenExpandedReplies(
+                    entryId = entryId,
+                    parentId = reply.id,
+                    parentNesting = nesting,
+                    childDepth = branch.childDepth + 1,
+                    replies = reply.expandedReplies,
+                    knownReplyCount = reply.replyTotal,
+                    entryAuthorNick = entryAuthorNick,
+                    descendants = descendants,
+                    pending = pending,
+                )
+            }
+
+            ThreadChunk(parentId = branch.parentId, descendants = descendants, pendingBranches = pending)
+        }.retryWhen(userTokenRefresher)
+
+        /**
+         * Rozpakowuje poddrzewo PRZYSLANE JUZ przez API (ekspansja) do plaskiej listy
+         * preorder - dziecko, potem cale jego poddrzewo. Nie wysyla ani jednego zapytania:
+         * dane z ekspansji konsumujemy z tego, co mamy, i nigdy nie pobieramy ich drugi raz.
+         *
+         * Galaz trafia do [pending] (czyli "do dociagniecia"), gdy API mowi, ze odpowiedzi
+         * jest wiecej niz przyslalo. [knownReplyCount] to `comments.total` rodzica - liczba
+         * zawsze policzona poprawnie, niezaleznie od ekspansji. Zero znaczy "galaz pusta",
+         * rownosc "mamy ja w calosci" - w obu wypadkach zadne zapytanie nie poleci; `null`
+         * (API nie podalo licznika) traktujemy jak "nie wiadomo" i galaz zostaje do dopytania.
+         * Komentarz na ostatnim dozwolonym poziomie zagniezdzenia nie ma juz dzieci.
+         */
+        private fun flattenExpandedReplies(
+            entryId: Long,
+            parentId: Long,
+            parentNesting: Int,
+            childDepth: Int,
+            replies: List<io.github.wykopmobilny.api.responses.v3.entries.ThreadAncestorResponseV3>,
+            knownReplyCount: Int?,
+            entryAuthorNick: String?,
+            descendants: MutableList<ThreadDescendant>,
+            pending: MutableList<ThreadBranchState>,
+        ) {
+            // Ekspansja i dopytania chodza tym samym sortowaniem (oldest = rosnaco po id),
+            // ale sklejamy dwa zrodla, wiec na wszelki wypadek pilnujemy unikalnosci id.
+            val seenIds = mutableSetOf<Long>()
+            val unique = replies.filter { seenIds.add(it.id) }
+
+            val hasMore =
+                parentNesting < EntriesV3RetrofitApi.THREAD_MAX_NESTING &&
+                    knownReplyCount != 0 &&
+                    (knownReplyCount == null || unique.size < knownReplyCount)
+            if (hasMore) {
+                pending +=
+                    ThreadBranchState(
+                        parentId = parentId,
+                        parentNesting = parentNesting,
+                        childDepth = childDepth,
+                        cursor = unique.lastOrNull()?.id,
+                        loaded = unique.size,
+                        total = knownReplyCount,
+                    )
+            }
+
+            unique.forEach { reply ->
+                val mapped =
+                    ThreadContextMapperV3.mapRow(
+                        reply,
+                        entryId = entryId,
+                        owmContentFilter = owmContentFilter,
+                        entryAuthorNick = entryAuthorNick,
+                    )
+                val row = mapped as? EntryListRow.CommentRow ?: return@forEach
+                val nesting = reply.nesting ?: (parentNesting + 1)
+                descendants += ThreadDescendant(row = row, depth = childDepth, nesting = nesting)
+                flattenExpandedReplies(
+                    entryId = entryId,
+                    parentId = reply.id,
+                    parentNesting = nesting,
+                    childDepth = childDepth + 1,
+                    replies = reply.expandedReplies,
+                    knownReplyCount = reply.replyTotal,
+                    entryAuthorNick = entryAuthorNick,
+                    descendants = descendants,
+                    pending = pending,
+                )
+            }
+        }
+
+        override fun addThreadReply(
+            body: String,
+            entryId: Long,
+            parentCommentId: Long,
+            embed: String?,
+            plus18: Boolean,
+            embedUrl: String?,
+        ) = rxSingle {
+            val media = mediaApiV3.resolveAttachments(photoUrl = embed, embedUrl = embedUrl)
+            entriesApiV3.addThreadReply(
+                entryId = entryId,
+                parentCommentId = parentCommentId,
+                request =
+                    WykopApiRequestV3(
+                        CreateUpdateCommentRequestV3(
+                            content = body,
+                            photo = media.photoKey,
+                            embed = media.embedKey,
+                            adult = plus18,
+                        ),
+                    ),
+            )
+        }.retryWhen(userTokenRefresher)
+            .compose(
+                ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.ThreadAncestorResponseV3>(
+                    errorBodyParser,
+                ),
+            ).map { it.id }
+
+        override fun addThreadReply(
+            body: String,
+            entryId: Long,
+            parentCommentId: Long,
+            wykopImageFile: WykopImageFile,
+            plus18: Boolean,
+            embedUrl: String?,
+        ) = rxSingle {
+            val media = mediaApiV3.resolveAttachments(photoKey = uploadPhotoAndGetKey(wykopImageFile), embedUrl = embedUrl)
+            entriesApiV3.addThreadReply(
+                entryId = entryId,
+                parentCommentId = parentCommentId,
+                request =
+                    WykopApiRequestV3(
+                        CreateUpdateCommentRequestV3(
+                            content = body,
+                            photo = media.photoKey,
+                            embed = media.embedKey,
+                            adult = plus18,
+                        ),
+                    ),
+            )
+        }.retryWhen(userTokenRefresher)
+            .compose(
+                ErrorHandlerTransformerV3<io.github.wykopmobilny.api.responses.v3.entries.ThreadAncestorResponseV3>(
+                    errorBodyParser,
+                ),
+            ).map { it.id }
 
         override fun getEntryVoters(id: Long) =
             rxSingle { entriesApiV3.getEntryVoters(id) }
@@ -701,3 +976,4 @@ class EntriesRepository
     }
 
 internal fun String.allowImageOnly() = ifEmpty { " " }
+

@@ -4,10 +4,10 @@ import io.github.wykopmobilny.api.notifications.NotificationsApi
 import io.github.wykopmobilny.base.BasePresenter
 import io.github.wykopmobilny.base.Schedulers
 import io.github.wykopmobilny.models.dataclass.Notification
-import io.github.wykopmobilny.models.dataclass.NotificationHeader
+import io.github.wykopmobilny.models.dataclass.NotificationGroup
+import io.github.wykopmobilny.models.dataclass.NotificationTargetKind
 import io.github.wykopmobilny.ui.modules.notificationslist.NotificationsListView
 import io.github.wykopmobilny.utils.intoComposite
-import io.reactivex.Single
 
 class NotificationsListPresenter(
     val schedulers: Schedulers,
@@ -15,80 +15,128 @@ class NotificationsListPresenter(
 ) : BasePresenter<NotificationsListView>() {
     var page = 1
 
-    fun loadData(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = 1
+    // Rozmiar pierwszej strony - wzorzec "pelnej" strony. API nie mowi, ile stron
+    // jest, wiec koniec listy rozpoznajemy po odpowiedzi pustej albo krotszej.
+    private var fullPageSize = 0
+
+    // Powiadomienia pobrane dotad (surowe, przed grupowaniem). Grupy sklejamy
+    // z tego, co juz mamy - rozwijanie wiersza NIE wysyla zapytania.
+    private val loaded = arrayListOf<Notification>()
+    private val loadedIds = hashSetOf<String>()
+
+    /** Tryb plaski - kolejna strona dochodzi do juz pokazanych pozycji. */
+    fun loadData(shouldRefresh: Boolean) =
+        fetchPage(shouldRefresh) { data ->
+            // Lista publikowana takze gdy jest pusta - inaczej ekran zostawalby
+            // z krecacym sie wskaznikiem ladowania przy zerze powiadomien.
+            view?.addNotifications(data, shouldRefresh)
+        }
+
+    /**
+     * Tryb grupowania: powiadomienia prowadzace do tego samego wpisu lub znaleziska
+     * skladaja sie w JEDEN wiersz zbiorczy. Nowa strona wchodzi do puli i cala lista
+     * jest przegrupowywana od nowa - dzieki temu nowe powiadomienia wpadaja do
+     * istniejacego wiersza zbiorczego zamiast tworzyc drugi wiersz tego samego celu.
+     * Licznik "N innych osob" moze po doladowaniu urosnac - tak ma byc.
+     */
+    fun loadGrouped(shouldRefresh: Boolean) =
+        fetchPage(shouldRefresh) { data ->
+            data.forEach { if (loadedIds.add(it.id)) loaded.add(it) }
+            view?.addNotifications(groupByTarget(loaded), true)
+        }
+
+    /**
+     * Jedno zapytanie = jedna strona. Wejscie na ekran i odswiezenie pobieraja
+     * strone 1; kolejne strony wylacznie po klinieciu stopki "pokaz starsze"
+     * (scroll niczego nie wyzwala). Po ostatniej stronie stopka znika na dobre.
+     */
+    private fun fetchPage(
+        shouldRefresh: Boolean,
+        publish: (List<Notification>) -> Unit,
+    ) {
+        if (shouldRefresh) {
+            page = 1
+            fullPageSize = 0
+            loaded.clear()
+            loadedIds.clear()
+        }
+        val requestedPage = page
         notificationsApi
-            .getNotifications(page)
+            .getNotifications(requestedPage)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
-                {
-                    if (it.isNotEmpty()) {
-                        page++
-                        view?.addNotifications(it, shouldRefresh)
-                    } else {
-                        view?.disableLoading()
-                    }
+                { data ->
+                    if (requestedPage == 1) fullPageSize = data.size
+                    page = requestedPage + 1
+                    publish(data)
+                    // Pusta albo niepelna strona = dalej nic nie ma, chowamy stopke.
+                    if (data.isEmpty() || data.size < fullPageSize) view?.disableLoading()
                 },
                 { if (shouldRefresh) view?.showErrorDialog(it) else view?.showLoadMoreError(it) },
             ).intoComposite(compositeObservable)
     }
 
     /**
-     * Tryb grupowania: powiadomienia prowadzace do tego samego widoku (ten sam wpis
-     * lub znalezisko) trafiaja pod wspolny naglowek-akordeon, jak w zakladce tagow.
+     * Odtworzenie stanu po obrocie ekranu - adapter trzyma liste juz pogrupowana,
+     * wiec zdejmujemy z niej wiersze zbiorcze i wracamy do surowych powiadomien.
      */
-    fun loadAllGrouped(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = 1
-        val allData = arrayListOf<Notification>()
-        var fetchedPages = 0
-        var done = false
-        Single
-            .defer { notificationsApi.getNotifications(page) }
-            .subscribeOn(schedulers.backgroundThread())
-            .observeOn(schedulers.mainThread())
-            .repeatUntil { done }
-            .subscribe(
-                { data ->
-                    allData.addAll(data)
-                    fetchedPages++
-                    if (data.isEmpty() || fetchedPages >= MAX_GROUPED_PAGES) {
-                        done = true
-                        view?.addNotifications(groupByTarget(allData), true)
-                        view?.disableLoading()
-                    } else {
-                        page++
-                    }
-                },
-                { if (shouldRefresh) view?.showErrorDialog(it) else view?.showLoadMoreError(it) },
-            ).intoComposite(compositeObservable)
+    fun restoreLoaded(notifications: List<Notification>) {
+        loaded.clear()
+        loadedIds.clear()
+        notifications
+            .filterNot { it is NotificationGroup }
+            .forEach { if (loadedIds.add(it.id)) loaded.add(it) }
     }
 
     private fun groupByTarget(all: List<Notification>): List<Notification> {
         val result = arrayListOf<Notification>()
         all
-            .groupBy { it.url?.substringBefore("/#comment-") ?: "no-target-${it.id}" }
-            .forEach { (target, group) ->
+            .groupBy(::groupKeyOf)
+            .forEach { (key, group) ->
                 if (group.size == 1) {
-                    result.add(group.first())
+                    // Pojedynczy kontekst - zwykly wiersz z dotychczasowa trescia,
+                    // bez licznika i bez chevronu.
+                    result.addAll(group)
                 } else {
-                    // Akordeon jak w zakladce tagow: naglowek celu + rozgrupowane
-                    // powiadomienia. Dzieci zachowuja kotwice #comment - klikniecie
-                    // nawiguje do widoku i scrolluje do konkretnego komentarza.
-                    group.forEach { it.tag = target }
-                    val newest = group.first()
+                    // Od najnowszych - taka tez jest kolejnosc po rozwinieciu chevronem.
+                    val sorted = group.sortedByDescending { it.date }
+                    val newest = sorted.first()
+                    val nick = newest.author?.nick ?: newest.body.substringBefore(" ")
+                    sorted.forEach { it.tag = key }
                     result.add(
-                        NotificationHeader(
-                            body = target,
-                            notificationsCount = group.count { it.new },
-                            title = newest.body.substringAfter(": ", newest.body).take(HEADER_TITLE_LENGTH),
-                            navigationUrl = newest.url?.let { target },
+                        NotificationGroup(
+                            newest = newest,
+                            // Najstarsze NIEPRZECZYTANE, a gdy wszystkie przeczytane - najnowsze.
+                            navigationTarget = sorted.lastOrNull { it.new } ?: newest,
+                            othersCount =
+                                sorted
+                                    .mapNotNull { it.author?.nick }
+                                    .filterNot { it == nick }
+                                    .distinct()
+                                    .size,
+                            unreadCount = sorted.count { it.new },
+                            groupKey = key,
                         ),
                     )
-                    result.addAll(group)
+                    result.addAll(sorted)
                 }
             }
         return result
+    }
+
+    /**
+     * Klucz grupy = URL celu bez kotwicy komentarza. Powiadomienia bez kontekstu tresci
+     * (systemowe, nowy obserwujacy, odznaka) dostaja klucz unikalny, zeby nigdy nie
+     * trafialy do wspolnego wiersza - "odpowiedziano we wpisie" nie mialoby dla nich sensu.
+     */
+    private fun groupKeyOf(notification: Notification): String {
+        val url = notification.url
+        return if (notification.targetKind == NotificationTargetKind.OTHER || url == null) {
+            "no-target-${notification.id}"
+        } else {
+            url.substringBefore("/#comment-")
+        }
     }
 
     fun readNotifications() {
@@ -98,11 +146,5 @@ class NotificationsListPresenter(
             .observeOn(schedulers.mainThread())
             .subscribe({ view?.showReadToast() }, { view?.showErrorDialog(it) })
             .intoComposite(compositeObservable)
-    }
-
-    companion object {
-        // 13 stron x 25 = 325 powiadomien - gorna granica trybu grupowania.
-        private const val MAX_GROUPED_PAGES = 13
-        private const val HEADER_TITLE_LENGTH = 60
     }
 }

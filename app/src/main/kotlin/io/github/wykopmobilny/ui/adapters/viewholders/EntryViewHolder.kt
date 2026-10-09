@@ -40,6 +40,12 @@ class EntryViewHolder(
     private val linkHandler: WykopLinkHandler,
     private val entryActionListener: EntryActionListener,
     private val replyListener: EntryListener?,
+    // "Odpowiedz"/"Cytuj" dla wpisu na LISTACH. Osobne od replyListener, bo ten ostatni
+    // przelacza viewholder w tryb ekranu szczegolow (wiersz przestaje byc klikalny,
+    // tresc nie jest skracana). Na ekranie szczegolow sa null - naglowek wpisu zostaje
+    // bez zmian (sam przycisk "Odpowiedz" z paska odpowiedzi).
+    private val listReplyListener: EntryListener? = null,
+    private val listQuoteListener: EntryListener? = null,
 ) : RecyclableViewHolder(binding.root) {
     companion object {
         const val TYPE_SURVEY = 4
@@ -59,15 +65,19 @@ class EntryViewHolder(
             linkHandler: WykopLinkHandler,
             entryActionListener: EntryActionListener,
             replyListener: EntryListener?,
+            listReplyListener: EntryListener? = null,
+            listQuoteListener: EntryListener? = null,
         ): EntryViewHolder {
             val view =
                 EntryViewHolder(
-                    EntryListItemBinding.inflate(parent.layoutInflater, parent, false),
-                    userManagerApi,
-                    navigator,
-                    linkHandler,
-                    entryActionListener,
-                    replyListener,
+                    binding = EntryListItemBinding.inflate(parent.layoutInflater, parent, false),
+                    userManagerApi = userManagerApi,
+                    navigator = navigator,
+                    linkHandler = linkHandler,
+                    entryActionListener = entryActionListener,
+                    replyListener = replyListener,
+                    listReplyListener = listReplyListener,
+                    listQuoteListener = listQuoteListener,
                 )
 
             view.itemView.tag =
@@ -155,10 +165,16 @@ class EntryViewHolder(
             }
         }
 
-        // Only show reply view in entry details
-        binding.replyTextView.isVisible =
-            replyListener != null && userManagerApi.isUserAuthorized() && entry.isCommentingPossible
-        binding.replyTextView.setOnClickListener { replyListener?.invoke(entry) }
+        // "Odpowiedz": na ekranie wpisu uzupelnia pasek odpowiedzi (replyListener),
+        // na listach przenosi na ekran wpisu z gotowym polem (listReplyListener).
+        val replyAction = replyListener ?: listReplyListener
+        val canComment = userManagerApi.isUserAuthorized() && entry.isCommentingPossible
+        binding.replyTextView.isVisible = replyAction != null && canComment
+        binding.replyTextView.setOnClickListener { replyAction?.invoke(entry) }
+
+        // "Cytuj" tylko na listach - ekran wpisu ma cytowanie w pasku odpowiedzi.
+        binding.quoteTextView.isVisible = listQuoteListener != null && canComment
+        binding.quoteTextView.setOnClickListener { listQuoteListener?.invoke(entry) }
 
         itemView.setOnClickListener {
             handleClick(entry)

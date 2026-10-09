@@ -30,8 +30,40 @@
         android:textSize="?attr/textSizeNormal"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toRightOf="@id/avatarView"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/groupUnreadCount"
         tools:text="feelfee wysłał Ci prywatną wiadomość."
+        />
+
+    <!-- Licznik nieprzeczytanych i chevron - tylko wiersz zbiorczy ("Do mnie").
+         W zwyklym wierszu oba sa GONE i tresc siega do prawej krawedzi. -->
+    <TextView
+        android:id="@+id/groupUnreadCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/padding_dp_tiny"
+        android:textColor="#00a645"
+        android:textSize="?attr/textSizeNormal"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/groupCollapseButton"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="3"
+        tools:visibility="visible"
+        />
+
+    <ImageView
+        android:id="@+id/groupCollapseButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/notification_group_toggle"
+        android:paddingLeft="@dimen/margin_dp_small"
+        android:paddingRight="@dimen/margin_dp_small"
+        android:src="?attr/expandDrawable"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible"
         />
 
     <TextView

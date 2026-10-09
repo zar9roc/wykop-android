@@ -10,6 +10,7 @@ import io.github.wykopmobilny.api.responses.v3.notifications.NotificationRespons
 import io.github.wykopmobilny.api.responses.v3.notifications.NotificationStatusResponseV3
 import io.github.wykopmobilny.api.responses.v3.notifications.NotificationTagResponseV3
 import io.github.wykopmobilny.models.dataclass.Notification
+import io.github.wykopmobilny.models.dataclass.NotificationTargetKind
 import io.github.wykopmobilny.models.mapper.apiv3.AuthorMapperV3
 import io.github.wykopmobilny.utils.textview.removeHtml
 import kotlinx.coroutines.rx2.rxSingle
@@ -26,14 +27,69 @@ private val apiTimeZone = TimeZone.of("Europe/Warsaw")
  */
 private fun NotificationResponseV3.toNotification() =
     Notification(
-        id = id.toLongOrNull() ?: 0L,
+        // Identyfikator z API v3 jest tekstowy (hash) - trzymamy go bez konwersji;
+        // probowanie toLong() dawalo 0 dla kazdego powiadomienia.
+        id = id,
         author = user?.let(AuthorMapperV3::map),
         body = buildBody(),
         date = runCatching { LocalDateTime.parse(createdAt.replace(' ', 'T')).toInstant(apiTimeZone) }.getOrNull(),
         type = type,
         url = buildUrl(),
         new = (read ?: 0) == 0,
+        targetKind = targetKind(),
+        targetSlug = targetSlug(),
+        targetTitle = targetTitle(),
     )
+
+/**
+ * Rodzaj celu powiadomienia. API v3 nie mowi wprost, czy chodzi o wpis czy znalezisko -
+ * rozroznia to dolaczony obiekt `entry` / `link`.
+ */
+private fun NotificationResponseV3.targetKind(): NotificationTargetKind =
+    when (this) {
+        is NotificationEntryResponseV3 ->
+            when {
+                entry != null -> NotificationTargetKind.ENTRY
+                link != null -> NotificationTargetKind.LINK
+                else -> NotificationTargetKind.OTHER
+            }
+
+        else -> NotificationTargetKind.OTHER
+    }
+
+/** Slug celu - fallback tresci wiersza zbiorczego zakladki "Do mnie". */
+private fun NotificationResponseV3.targetSlug(): String? =
+    when (this) {
+        is NotificationEntryResponseV3 -> (entry?.slug ?: link?.slug)?.takeIf { it.isNotBlank() }
+        else -> null
+    }
+
+/**
+ * Tresc celu - wlasciwa tresc wiersza zbiorczego zakladki "Do mnie" (slug jest
+ * tylko fallbackiem). Dla wpisu bierzemy jego tresc, dla znaleziska tytul.
+ */
+private fun NotificationResponseV3.targetTitle(): String? =
+    when (this) {
+        is NotificationEntryResponseV3 -> excerptOf(entry?.content ?: link?.title)
+        else -> null
+    }
+
+/**
+ * Oczyszczenie i przyciecie tresci: bez HTML, bez lamania wierszy i wielokrotnych
+ * spacji, z wielokropkiem gdy tekst zostal urwany.
+ */
+private fun excerptOf(raw: String?): String? {
+    val clean =
+        raw
+            ?.removeHtml()
+            ?.replace(whitespaceRegex, " ")
+            ?.trim()
+            ?.takeIf { it.isNotBlank() }
+            ?: return null
+    return if (clean.length <= EXCERPT_LENGTH) clean else clean.take(EXCERPT_LENGTH).trimEnd() + "\u2026"
+}
+
+private val whitespaceRegex = "\\s+".toRegex()
 
 /**
  * API v3 wypelnia pole `url` tylko dla powiadomien systemowych - dla pozostalych
@@ -53,7 +109,7 @@ private fun NotificationResponseV3.buildUrl(): String? =
                 entry != null -> entryUrl(entry.id, comment?.id)
                 link != null -> linkUrl(link.id, comment?.id)
                 type == "new_follower" && username != null -> "https://wykop.pl/ludzie/$username"
-                else -> url
+                else -> url.toAbsoluteWykopUrl()
             }
         }
 
@@ -71,6 +127,24 @@ private fun NotificationResponseV3.buildUrl(): String? =
 
         else -> null
     }
+
+/**
+ * Pole `url` z API bywa adresem WZGLEDNYM - powiadomienie systemowe "Sprawdz nowosci
+ * w changelogu!" przysyla "/changelog". Taki tekst po Uri.parse nie ma schematu, wiec
+ * ACTION_VIEW nie ma czym go otworzyc. Doklejamy domene Wykopu, a pusty tekst
+ * traktujemy jak brak celu.
+ */
+private fun String?.toAbsoluteWykopUrl(): String? {
+    val raw = this?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+    return when {
+        raw.contains("://") -> raw
+        raw.startsWith("//") -> "https:$raw"
+        raw.startsWith("/") -> WYKOP_BASE_URL + raw
+        else -> "$WYKOP_BASE_URL/$raw"
+    }
+}
+
+private const val WYKOP_BASE_URL = "https://wykop.pl"
 
 private fun entryUrl(
     entryId: Long,
@@ -98,6 +172,26 @@ private fun NotificationResponseV3.buildBody(): String =
                     "new_comment_in_link" -> "skomentował(a) znalezisko"
                     "new_link" -> "dodał(a) znalezisko"
                     "new_follower" -> "obserwuje Cię"
+                    // Generyczna odpowiedz na moja tresc - API nie mowi wprost czy chodzi
+                    // o wpis czy znalezisko, wiec rozrozniamy po dolaczonym obiekcie.
+                    "new_reply_to_my_content" ->
+                        when {
+                            entry != null -> "odpowiedział(a) Ci we wpisie"
+                            link != null -> "odpowiedział(a) Ci w znalezisku"
+                            else -> "odpowiedział(a) na Twoją treść"
+                        }
+
+                    else -> null
+                }
+            // Typy bez autora akcji (dotycza mojej tresci) - uzywane dopiero gdy API
+            // nie przyslalo wlasnej tresci w `message`.
+            val selfAction =
+                when (type) {
+                    "link_in_upcoming" -> "Twoje znalezisko trafiło do wykopalisk"
+                    "link_on_homepage" -> "Twoje znalezisko trafiło na stronę główną"
+                    "link_was_buried" -> "Twoje znalezisko zostało zakopane"
+                    "moderation_action" -> "Akcja moderacyjna dotycząca Twojej treści"
+                    "new_issue_response" -> "Odpowiedź na Twoje zgłoszenie"
                     else -> null
                 }
             val username = user?.username
@@ -112,7 +206,13 @@ private fun NotificationResponseV3.buildBody(): String =
 
                 badgeName != null -> "Otrzymano odznakę: $badgeName"
 
-                else -> type
+                selfAction != null -> selfAction
+
+                // Nigdy nie pokazujemy surowej wartosci `type` - nieznany typ dostaje
+                // neutralna tresc, a nick (jesli jest) zostaje na pierwszej pozycji.
+                username != null -> "$username — nowa aktywność"
+
+                else -> "Nowe powiadomienie"
             }
         }
 

@@ -31,6 +31,8 @@ fun constructEntryOrCommentViewHolder(
     commentActionListener: EntryCommentActionListener,
     commentViewListener: EntryCommentViewListener,
     onBlockedRevealed: (Int) -> Unit,
+    listReplyListener: EntryListener? = null,
+    listQuoteListener: EntryListener? = null,
 ): RecyclerView.ViewHolder =
     when (viewType) {
         EntryViewHolder.TYPE_BLOCKED, EntryCommentViewHolder.TYPE_BLOCKED ->
@@ -57,6 +59,8 @@ fun constructEntryOrCommentViewHolder(
                 linkHandler = linkHandler,
                 entryActionListener = entryActionListener,
                 replyListener = replyListener,
+                listReplyListener = listReplyListener,
+                listQuoteListener = listQuoteListener,
             )
     }
 

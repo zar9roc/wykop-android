@@ -7,7 +7,6 @@ import io.github.wykopmobilny.models.dataclass.Notification
 import io.github.wykopmobilny.models.dataclass.NotificationHeader
 import io.github.wykopmobilny.ui.modules.notificationslist.NotificationsListView
 import io.github.wykopmobilny.utils.intoComposite
-import io.reactivex.Single
 
 class HashTagsNotificationsListPresenter(
     val schedulers: Schedulers,
@@ -15,20 +14,35 @@ class HashTagsNotificationsListPresenter(
 ) : BasePresenter<NotificationsListView>() {
     var page = 1
 
+    // Rozmiar pierwszej strony - wzorzec "pelnej" strony. API nie mowi, ile stron
+    // jest, wiec koniec listy rozpoznajemy po odpowiedzi pustej albo krotszej.
+    private var fullPageSize = 0
+
+    // Pula trybu grupowania - wszystkie dotad pobrane powiadomienia. Doladowanie
+    // dokleja do niej kolejna strone i przegrupowuje calosc.
+    private val groupedData = arrayListOf<Notification>()
+    private val groupedIds = hashSetOf<String>()
+
+    /**
+     * Tryb plaski - jedno zapytanie na wejscie/odswiezenie, kolejne strony wylacznie
+     * po klinieciu stopki "pokaz starsze" (scroll niczego nie wyzwala).
+     */
     fun loadData(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = 1
+        if (shouldRefresh) {
+            page = 1
+            fullPageSize = 0
+        }
+        val requestedPage = page
         notificationsApi
-            .getHashTagNotifications(page)
+            .getHashTagNotifications(requestedPage)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(
-                {
-                    if (it.isNotEmpty()) {
-                        page++
-                        view?.addNotifications(it, shouldRefresh)
-                    } else {
-                        view?.disableLoading()
-                    }
+                { data ->
+                    if (requestedPage == 1) fullPageSize = data.size
+                    page = requestedPage + 1
+                    view?.addNotifications(data, shouldRefresh)
+                    hideFooterWhenLastPage(data)
                 },
                 { if (shouldRefresh) view?.showErrorDialog(it) else view?.showLoadMoreError(it) },
             ).intoComposite(compositeObservable)
@@ -43,28 +57,51 @@ class HashTagsNotificationsListPresenter(
             .intoComposite(compositeObservable)
     }
 
-    fun loadAllNotifications(shouldRefresh: Boolean) = fetchAllPages(shouldRefresh)
+    /**
+     * Tryb grupowania - wejscie na ekran i odswiezenie pobieraja DOKLADNIE JEDNA
+     * strone, dokladnie jak zakladka "Do mnie". Wczesniej ten tryb dociagal z gory
+     * do 13 stron tylko po to, zeby skleic naglowki tagow po stronie klienta.
+     * Grupy skladaja sie wiec z tego, co faktycznie pobrano, i rosna po doladowaniu.
+     */
+    fun loadGrouped(shouldRefresh: Boolean) {
+        if (shouldRefresh) {
+            page = 1
+            fullPageSize = 0
+            groupedData.clear()
+            groupedIds.clear()
+        }
+        fetchGroupedPage(shouldRefresh)
+    }
 
-    private fun fetchAllPages(shouldRefresh: Boolean) {
-        if (shouldRefresh) page = 1
-        val allData = arrayListOf<Notification>()
-        var fetchedPages = 0
-        var done = false
-        Single
-            .defer { notificationsApi.getHashTagNotifications(page) }
+    /** Klikniecie stopki w trybie grupowania - kolejna strona do tej samej puli. */
+    fun loadMoreGrouped() = fetchGroupedPage(shouldRefresh = false)
+
+    /**
+     * Odtworzenie puli po obrocie ekranu - z listy w adapterze zdejmujemy naglowki
+     * i wracamy do surowych powiadomien, zeby doladowanie doklejalo do nich kolejna
+     * strone zamiast podmienic cala liste tym, co wlasnie przyszlo.
+     */
+    fun restoreLoaded(notifications: List<Notification>) {
+        groupedData.clear()
+        groupedIds.clear()
+        notifications
+            .filterNot { it is NotificationHeader }
+            .forEach { if (groupedIds.add(it.id)) groupedData.add(it) }
+    }
+
+    private fun fetchGroupedPage(shouldRefresh: Boolean) {
+        val requestedPage = page
+        notificationsApi
+            .getHashTagNotifications(requestedPage)
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
-            .repeatUntil { done }
             .subscribe(
                 { data ->
-                    allData.addAll(data)
-                    fetchedPages++
-                    if (data.isEmpty() || fetchedPages >= MAX_GROUPED_PAGES) {
-                        done = true
-                        publishGrouped(allData)
-                    } else {
-                        page++
-                    }
+                    if (requestedPage == 1) fullPageSize = data.size
+                    page = requestedPage + 1
+                    data.forEach { if (groupedIds.add(it.id)) groupedData.add(it) }
+                    publishGrouped()
+                    hideFooterWhenLastPage(data)
                 },
                 { if (shouldRefresh) view?.showErrorDialog(it) else view?.showLoadMoreError(it) },
             ).intoComposite(compositeObservable)
@@ -72,21 +109,21 @@ class HashTagsNotificationsListPresenter(
 
     // Grupuje WSZYSTKIE powiadomienia po tagu (nie tylko nieprzeczytane - w API v3
     // wiekszosc jest przeczytana i filtr po nieprzeczytanych dawal pusta zakladke).
-    private fun publishGrouped(allData: List<Notification>) {
+    private fun publishGrouped() {
         val sortedData = arrayListOf<Notification>()
-        for (tag in allData.map { it.tag }.distinct()) {
-            val group = allData.filter { it.tag == tag }
+        for (tag in groupedData.map { it.tag }.distinct()) {
+            val group = groupedData.filter { it.tag == tag }
             // Licznik w naglowku = tylko NIEPRZECZYTANE wpisy w grupie.
             sortedData.add(NotificationHeader(tag, group.count { it.new }))
             sortedData.addAll(group)
         }
+        // Cala lista budowana od nowa - nowa strona ma wpasc pod istniejacy naglowek
+        // taga, a nie utworzyc drugi naglowek tego samego taga.
         view?.addNotifications(sortedData, true)
-        view?.disableLoading()
     }
 
-    companion object {
-        // 13 stron x 25 = 325 powiadomien - gorna granica trybu grupowania,
-        // zeby nie stronicowac calej historii powiadomien.
-        private const val MAX_GROUPED_PAGES = 13
+    /** Pusta albo niepelna strona = dalej nic nie ma, stopka znika na dobre. */
+    private fun hideFooterWhenLastPage(data: List<Notification>) {
+        if (data.isEmpty() || data.size < fullPageSize) view?.disableLoading()
     }
 }

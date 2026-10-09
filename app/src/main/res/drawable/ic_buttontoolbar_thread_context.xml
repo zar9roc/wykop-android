@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    "Kontekst watku" - hierarchia (drzewo) watku: wezel nadrzedny u gory po lewej,
+    pionowy pien i dwa odgalezienia do dwoch wezlow potomnych po prawej.
+
+    Ikona jest pelna (solid), nie konturowa - tak jak pozostale ikony paska pod
+    komentarzem (udostepnij, cytuj, odpowiedz, plus, kropki), ktore sa jednolitymi
+    brylami. Wczesniejsza wersja konturowa + duzy znak zapytania zajmowala cale
+    pole 24x24 (bbox 22x22) i byla o polowe wieksza oraz dwa razy ciezsza optycznie
+    od sasiadow; znak zapytania czytal sie pierwszy, przez co ikona wygladala jak
+    "pomoc/FAQ", a nie "pokaz hierarchie". Tu bbox to ok. 12.9x15.3, srodek masy
+    (11.6, 12.6), grubosc lacznikow 2.2, wezly 4.16 - mieszcza sie w tej samej
+    obwiedni co ic_buttontoolbar_share (13.4x14.9) i ic_buttontoolbar_reply
+    (16.1x13.4), wiec ikona siada na tej samej linii optycznej.
+
+    Monochromatyczna, barwiona tintem z motywu. Jednopoziomowa - bez <group> i bez
+    skalowania: wszystkie sciezki sa od razu w docelowej siatce 24x24. Same bryly
+    wypelnione, bez otworow, wiec domyslny fillType="nonZero" wystarcza i nie ma
+    ryzyka zlego kierunku nawijania.
+
+    Wariant ze znakiem zapytania (badge w prawym gornym rogu) zostal przygotowany
+    i odrzucony po porownaniu zrzutami - szczegoly w raporcie.
+-->
+<vector
+    android:tint="?android:attr/textColorPrimary"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24.0"
+    android:viewportHeight="24.0"
+    >
+
+    <!-- Wezel nadrzedny (lewy gorny) -->
+    <path
+        android:fillColor="#cc000000"
+        android:pathData="M5.5,4.05H9.66V8.21H5.5Z"
+        />
+
+    <!-- Pien -->
+    <path
+        android:fillColor="#cc000000"
+        android:pathData="M6.47,8.21H8.68V18.27H6.47Z"
+        />
+
+    <!-- Odgalezienie i gorny wezel potomny -->
+    <path
+        android:fillColor="#cc000000"
+        android:pathData="M6.47,10.18H14.34V12.39H6.47Z"
+        />
+    <path
+        android:fillColor="#cc000000"
+        android:pathData="M14.34,9.21H18.5V13.37H14.34Z"
+        />
+
+    <!-- Odgalezienie i dolny wezel potomny -->
+    <path
+        android:fillColor="#cc000000"
+        android:pathData="M6.47,16.06H14.34V18.27H6.47Z"
+        />
+    <path
+        android:fillColor="#cc000000"
+        android:pathData="M14.34,15.19H18.5V19.35H14.34Z"
+        />
+
+</vector>

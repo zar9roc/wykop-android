@@ -54,6 +54,8 @@
     <string name="user_not_logged_in">Aby tego dokonać, musisz się zalogować.</string>
     <string name="votes_count">%1$d</string>
     <string name="date_with_user_app">%1$s via %2$s</string>
+    <!-- Ekran kontekstu watku (przodkowie komentarza) -->
+    <string name="thread_context_title">Kontekst wątku</string>
     <string name="votePercentageCount">%1$d%% (%2$d głosów)</string>
 
     <string name="searchNoResults">Ehh, pusto tu…</string>
@@ -64,6 +66,8 @@
          bo tresc juz wczytana zostaje na ekranie. -->
     <string name="load_more_failed">Nie udało się wczytać kolejnej strony</string>
     <string name="load_more_retry">Ponów</string>
+    <!-- Adres, ktorego nie da sie otworzyc: pusty/wzgledny albo brak przegladarki na urzadzeniu. -->
+    <string name="link_open_failed">Nie udało się otworzyć tego adresu</string>
     <string name="nav_drawer_open">Nawigacja otwarta</string>
     <string name="nav_drawer_closed">Nawigacja zamknięta</string>
     <string name="reply">Odpowiedz</string>
@@ -131,6 +135,8 @@
     <string name="comment_deleted_by_moderator">Komentarz usunięty przez moderację</string>
     <string name="comment_deleted_by_author">Komentarz usunięty przez autora</string>
     <string name="comment_deleted_generic">Komentarz usunięty</string>
+    <string name="comment_deleted_by_thread_author_nick">Komentarz usunięty przez autora wpisu (@%1$s)</string>
+    <string name="comment_deleted_by_own_author_nick">Komentarz usunięty przez jego autora (@%1$s)</string>
     <string name="deleted_comment_content">Treść usuniętego komentarza</string>
     <string name="click_to_see_content">Kliknij aby zobaczyć treść</string>
 
@@ -242,5 +248,25 @@
     <string name="insert_photo_camera">Zrób zdjęcie aparatem</string>
     <string name="support_app">Wesprzyj rozwój aplikacji</string>
     <string name="became_patron">Zostań patronem na patronite.pl</string>
+
+    <!-- Wiersz zbiorczy powiadomien "Do mnie": jeden wpis/znalezisko = jeden wiersz. -->
+    <string name="notification_group_toggle">Rozwiń lub zwiń powiadomienia wątku</string>
+    <plurals name="notification_group_others">
+        <item quantity="one">i %d innej osoby</item>
+        <item quantity="few">i %d innych osób</item>
+        <item quantity="many">i %d innych osób</item>
+        <item quantity="other">i %d innych osób</item>
+    </plurals>
+    <!-- %1$s = nick, %2$s = "i N innych osób" -->
+    <string name="notification_group_subject_many">%1$s (%2$s) odpowiedziało</string>
+    <string name="notification_group_subject_one">%1$s odpowiedział(a)</string>
+    <!-- %1$s = podmiot z powyższych, %2$s = slug lub fragment treści celu -->
+    <string name="notification_group_in_entry">%1$s we wpisie „%2$s”</string>
+    <string name="notification_group_in_entry_unknown">%1$s we wpisie</string>
+    <string name="notification_group_in_link">%1$s w znalezisku „%2$s”</string>
+    <string name="notification_group_in_link_unknown">%1$s w znalezisku</string>
+
+    <!-- Stopka listy powiadomien - jawne doladowanie kolejnej strony przez klikniecie. -->
+    <string name="notifications_load_more">Wczytaj więcej</string>
 
 </resources>

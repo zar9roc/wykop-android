@@ -18,7 +18,7 @@ object MediaMapperV3 {
         value: MediaResponseV3,
         adult: Boolean,
     ): Embed? {
-        val photo = value.photo
+        val photo = value.photo ?: value.photos?.firstOrNull()
         val embed = value.embed
         return when {
             photo != null -> mapPhoto(photo, adult)

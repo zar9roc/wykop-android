@@ -59,6 +59,10 @@ class EntriesAdapter
             TopCommentsActionListener(entryCommentInteractor, navigator, disposables, ::updateComment)
         private val commentViewListener = TopCommentsViewListener(navigator)
 
+        // "Odpowiedz"/"Cytuj" pod wpisem na liscie - przejscie na ekran wpisu z gotowym polem.
+        private val listReplyListener = entryReplyListener(navigator)
+        private val listQuoteListener = entryQuoteListener(navigator)
+
         /** Same wpisy (bez wierszy komentarzy) - do podmiany stanu glosu z zewnatrz. */
         val entries: List<Entry>
             get() = data.filterIsInstance<EntryListRow.EntryRow>().map { it.entry }
@@ -95,6 +99,8 @@ class EntriesAdapter
                 commentActionListener = commentActionListener,
                 commentViewListener = commentViewListener,
                 onBlockedRevealed = ::notifyItemChanged,
+                listReplyListener = listReplyListener,
+                listQuoteListener = listQuoteListener,
             )
 
         override fun bindHolder(

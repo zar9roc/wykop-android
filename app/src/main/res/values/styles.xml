@@ -53,6 +53,7 @@
         <item name="dotsDrawable">@drawable/ic_buttontoolbar_dots</item>
         <item name="replyDrawable">@drawable/ic_buttontoolbar_reply</item>
         <item name="quoteDrawable">@drawable/ic_buttontoolbar_quote</item>
+        <item name="threadContextDrawable">@drawable/ic_buttontoolbar_thread_context</item>
         <item name="relatedDrawable">@drawable/ic_buttontoolbar_related</item>
         <item name="sharebtnDrawable">@drawable/ic_buttontoolbar_share</item>
         <item name="reportDrawable">@drawable/ic_buttontoolbar_report</item>
@@ -199,6 +200,7 @@
         <item name="dotsDrawable">@drawable/ic_buttontoolbar_dots</item>
         <item name="replyDrawable">@drawable/ic_buttontoolbar_reply</item>
         <item name="quoteDrawable">@drawable/ic_buttontoolbar_quote</item>
+        <item name="threadContextDrawable">@drawable/ic_buttontoolbar_thread_context</item>
         <item name="relatedDrawable">@drawable/ic_buttontoolbar_related</item>
         <item name="sharebtnDrawable">@drawable/ic_buttontoolbar_share</item>
         <item name="reportDrawable">@drawable/ic_buttontoolbar_report</item>
