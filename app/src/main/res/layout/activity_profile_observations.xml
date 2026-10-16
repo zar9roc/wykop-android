@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/backgroundColor"
+    >
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/backgroundColor"
+        app:elevation="0dp"
+        >
+
+        <include
+            android:id="@+id/toolbar"
+            layout="@layout/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayout"
+            style="@style/TabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:tabGravity="fill"
+            app:tabMode="fixed"
+            />
+
+        <!-- Drugi rzad zakladek - tylko dla "Obserwowane" (Uzytkownicy / Tagi). Ten sam
+             cienki pasek co podzakladki Mikroblogu w profilu (profile_subtab_layout). -->
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/subTabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            style="@style/TabLayoutProfileDetail"
+            android:visibility="gone"
+            app:tabMode="scrollable"
+            app:tabGravity="fill"
+            app:tabTextAppearance="@style/TabTextAppearanceProfileDetail"
+            />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/separator_normal"
+            android:background="?attr/lineColor"
+            />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <FrameLayout
+        android:id="@+id/pagesContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

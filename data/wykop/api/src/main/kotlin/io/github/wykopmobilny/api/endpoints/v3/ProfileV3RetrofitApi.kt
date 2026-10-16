@@ -112,6 +112,24 @@ interface ProfileV3RetrofitApi {
         @Path("username") username: String,
     ): WykopApiResponseV3<List<ShortTagResponseV3>>
 
+    @GET("v3/profile/users/{username}/observed/tags")
+    suspend fun getObservedTags(
+        @Path("username") username: String,
+        @Query("page") page: Int,
+    ): WykopApiResponseV3<List<ShortTagResponseV3>>
+
+    @GET("v3/profile/users/{username}/observed/users/followers")
+    suspend fun getFollowers(
+        @Path("username") username: String,
+        @Query("page") page: Int,
+    ): WykopApiResponseV3<List<UserShortResponseV3>>
+
+    @GET("v3/profile/users/{username}/observed/users/following")
+    suspend fun getFollowing(
+        @Path("username") username: String,
+        @Query("page") page: Int,
+    ): WykopApiResponseV3<List<UserShortResponseV3>>
+
     @POST("v3/observed/users/{username}")
     suspend fun observeUser(
         @Path("username") username: String,

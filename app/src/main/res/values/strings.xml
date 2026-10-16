@@ -240,6 +240,16 @@
 
     <string name="private_message">Wiadomość prywatna</string>
     <string name="followers">%1$d obserwujących</string>
+    <string name="following">%1$d obserwowanych</string>
+    <string name="observations_followers">Obserwujący</string>
+    <string name="observations_following">Obserwowane</string>
+    <string name="observations_users">Użytkownicy</string>
+    <string name="observations_tags">Tagi</string>
+    <string name="observations_empty_followers">Nikt jeszcze nie obserwuje</string>
+    <string name="observations_empty_users">Brak obserwowanych użytkowników</string>
+    <string name="observations_empty_tags">Brak obserwowanych tagów</string>
+    <string name="observations_load_error">Nie udało się wczytać listy</string>
+    <string name="observations_tags_private">Lista obserwowanych tagów tego użytkownika jest prywatna</string>
     <string name="observe_user">Obserwuj</string>
     <string name="unobserve_user">Nie obserwuj</string>
     <string name="block_user">Zablokuj</string>

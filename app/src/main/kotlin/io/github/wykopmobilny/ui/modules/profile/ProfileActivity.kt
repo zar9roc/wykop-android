@@ -146,6 +146,13 @@ class ProfileActivity :
             binding.followers.isVisible = true
             binding.followers.text = getString(R.string.followers, followers)
         }
+        val followingUsers = profileResponse.summary?.followingUsers ?: 0
+        binding.following.isVisible = true
+        binding.following.text = getString(R.string.following, followingUsers)
+        binding.observationsClickArea.isVisible = true
+        binding.observationsClickArea.setOnClickListener {
+            startActivity(ProfileObservationsActivity.createIntent(this, profileResponse.username))
+        }
         val rankPosition = profileResponse.rank?.position ?: 0
         if (rankPosition != 0) {
             binding.rank.isVisible = true

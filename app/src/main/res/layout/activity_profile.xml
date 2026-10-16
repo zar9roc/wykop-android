@@ -120,6 +120,44 @@
                 tools:text="12 obserwujących"
                 />
 
+            <!-- Pod "x obserwujacych"; widok obserwujacych nie jest zmieniany (pozycja i
+                 czcionka bez zmian). -->
+            <TextView
+                android:id="@+id/following"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="2dp"
+                android:textSize="12sp"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/followers"
+                tools:text="34 obserwowanych"
+                />
+
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/observationsStartBarrier"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierDirection="start"
+                app:constraint_referenced_ids="followers,following"
+                />
+
+            <!-- Jeden niewidoczny obszar klikalny nad oboma tekstami (bez widocznego
+                 przycisku - tylko ripple przy dotyku); otwiera liste obserwacji. -->
+            <View
+                android:id="@+id/observationsClickArea"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:background="?attr/selectableItemBackground"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@id/following"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@id/observationsStartBarrier"
+                app:layout_constraintTop_toTopOf="@id/followers"
+                />
+
             <TextView
                 android:id="@+id/nickname"
                 android:layout_width="wrap_content"

@@ -172,6 +172,10 @@
             android:windowSoftInputMode="stateUnchanged|adjustResize"
             />
         <activity
+            android:name=".ui.modules.profile.ProfileObservationsActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            />
+        <activity
             android:name=".ui.modules.profile.ProfileActivityV2"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:launchMode="singleTop"

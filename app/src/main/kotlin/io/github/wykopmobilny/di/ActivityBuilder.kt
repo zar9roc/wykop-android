@@ -33,6 +33,7 @@ import io.github.wykopmobilny.ui.modules.photoview.PhotoViewActivity
 import io.github.wykopmobilny.ui.modules.pm.conversation.ConversationActivity
 import io.github.wykopmobilny.ui.modules.pm.conversation.ConversationActivityModule
 import io.github.wykopmobilny.ui.modules.profile.ProfileActivity
+import io.github.wykopmobilny.ui.modules.profile.ProfileObservationsActivity
 import io.github.wykopmobilny.ui.modules.profile.ProfileFragmentProvider
 import io.github.wykopmobilny.ui.modules.profile.ProfileModule
 import io.github.wykopmobilny.ui.modules.tag.TagActivity
@@ -76,6 +77,9 @@ internal abstract class ActivityBuilder {
 
     @ContributesAndroidInjector(modules = [ProfileModule::class, ProfileFragmentProvider::class])
     abstract fun bindProfileActivity(): ProfileActivity
+
+    @ContributesAndroidInjector
+    abstract fun bindProfileObservationsActivity(): ProfileObservationsActivity
 
     @ContributesAndroidInjector(modules = [LinkCommentEditModule::class])
     abstract fun bindLinkEditCommentActivity(): LinkCommentEditActivity
