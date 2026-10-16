@@ -1,15 +1,16 @@
 # Wydania tego forka. Osobny plik od publish_release.yml (ten nalezy do upstreamu
 # i celowo go nie ruszamy, zeby merge'e z upstreamu nie konfliktowaly).
 #
-# Wyzwalacz to tag "zar-v*", ktory NIE pasuje do "v*" z publish_release.yml,
+# Wyzwalacz to tag "owm3-v*", ktory NIE pasuje do "v*" z publish_release.yml,
 # wiec oba workflow nigdy nie odpala sie jednoczesnie. Plugin wersjonujacy
-# i tak wyciaga z tagu sam numer semver, wiec "zar-v1.5.1" daje wersje 1.5.1.
+# i tak wyciaga z tagu sam numer semver (pierwsze X.Y.Z), wiec "owm3-v1.5.1"
+# daje wersje 1.5.1 - cyfra w prefiksie nie przeszkadza. Dawniej prefiks "zar-v".
 name: Release (fork)
 
 on:
   push:
     tags:
-      - 'zar-v*'
+      - 'owm3-v*'
 
 # Potrzebne, zeby GITHUB_TOKEN mogl utworzyc Release i podpiac APK.
 permissions:
@@ -79,8 +80,8 @@ jobs:
             echo "BRAK sekretu WYKOP_V3_APPKEY - aplikacja nie zaloguje sie do API v3."
             exit 1
           fi
-          # Wersja w nazwie APK musi zgadzac sie z tagiem (zar-v1.5.1 -> 1.5.1).
-          TAG_VERSION="${GITHUB_REF_NAME#zar-v}"
+          # Wersja w nazwie APK musi zgadzac sie z tagiem (owm3-v1.5.1 -> 1.5.1).
+          TAG_VERSION="${GITHUB_REF_NAME#owm3-v}"
           case "$(basename "$APK")" in
             *-"$TAG_VERSION".[0-9][0-9][0-9].apk) ;;
             *) echo "Wersja APK nie zgadza sie z tagiem $GITHUB_REF_NAME (oczekiwano $TAG_VERSION)."; exit 1 ;;

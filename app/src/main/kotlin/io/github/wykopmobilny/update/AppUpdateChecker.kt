@@ -19,7 +19,7 @@ import java.net.URL
 import java.util.concurrent.TimeUnit
 
 /**
- * Wydania forka na GitHubie (tagi zar-vX.Y.Z, workflow release_fork.yml):
+ * Wydania forka na GitHubie (tagi owm3-vX.Y.Z, workflow release_fork.yml):
  * reczne sprawdzenie z ustawien i harmonogram [UpdateCheckWorker].
  *
  * /releases/latest pomija drafty i prerelease'y, wiec nowa wersja jest widoczna
@@ -134,7 +134,7 @@ class AppUpdateChecker(
 
         internal fun versionOf(text: String): List<Int>? = VERSION_REGEX.find(text)?.groupValues?.drop(1)?.map(String::toInt)
 
-        /** "zar-v1.5.2" vs "1.5.1" -> true. Sufiksy (-SNAPSHOT, -debug, licznik) sa ignorowane. */
+        /** "owm3-v1.5.2" vs "1.5.1" -> true. Sufiksy (-SNAPSHOT, -debug, licznik) sa ignorowane. */
         internal fun isNewerRelease(
             tag: String,
             installedVersion: String,
