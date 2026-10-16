@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.util.TypedValue
 import androidx.cardview.widget.CardView
+import com.bumptech.glide.Glide
 import androidx.core.app.ShareCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
@@ -48,6 +49,16 @@ class RelatedWidget(
         presenter = relatedWidgetPresenter
         binding.title.text = related.title
         binding.urlTextView.text = related.url
+        binding.thumbnailImageView.isVisible = related.previewImageUrl != null
+        if (related.previewImageUrl != null) {
+            Glide
+                .with(binding.thumbnailImageView)
+                .load(related.previewImageUrl)
+                .centerCrop()
+                .into(binding.thumbnailImageView)
+        } else {
+            Glide.with(binding.thumbnailImageView).clear(binding.thumbnailImageView)
+        }
         presenter.subscribe(this)
         presenter.relatedId = relatedItem.id
         presenter.linkId = linkId

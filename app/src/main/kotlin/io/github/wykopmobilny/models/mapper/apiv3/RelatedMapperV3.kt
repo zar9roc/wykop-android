@@ -1,5 +1,6 @@
 package io.github.wykopmobilny.models.mapper.apiv3
 
+import io.github.wykopmobilny.utils.withImageParams
 import io.github.wykopmobilny.api.responses.v3.links.RelatedResponseV3
 import io.github.wykopmobilny.models.dataclass.Related
 import io.github.wykopmobilny.models.mapper.Mapper
@@ -13,5 +14,6 @@ object RelatedMapperV3 : Mapper<RelatedResponseV3, Related> {
             author = AuthorMapperV3.map(value.author),
             title = value.title.orEmpty(),
             userVote = value.voted ?: 0,
+            previewImageUrl = value.media?.photo?.url?.withImageParams("w400"),
         )
 }
