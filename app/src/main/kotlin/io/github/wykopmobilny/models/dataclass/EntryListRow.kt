@@ -15,6 +15,21 @@ sealed interface EntryListRow {
         val comment: EntryComment,
     ) : EntryListRow
 
+    /**
+     * Komentarz znaleziska na liscie mieszanej (profil). [isReply] = odpowiedz w watku
+     * (szablon odpowiedzi z wcieciem), inaczej komentarz glowny.
+     */
+    data class LinkCommentRow(
+        val comment: LinkCommentV3Item,
+        val isReply: Boolean,
+    ) : EntryListRow
+
+    /** Powiazane dodane do znaleziska [linkId] (profil > Znaleziska > Powiazane). */
+    data class RelatedRow(
+        val related: Related,
+        val linkId: Long,
+    ) : EntryListRow
+
     /** Wiersz list mieszanych wpis+znalezisko (MyWykop, profil > Akcje). */
     data class LinkRow(
         val entryLink: EntryLink,

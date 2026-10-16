@@ -11,7 +11,16 @@ import io.github.wykopmobilny.models.dataclass.EntryLink
 import io.github.wykopmobilny.models.dataclass.EntryListRow
 import io.github.wykopmobilny.models.dataclass.Link
 import io.github.wykopmobilny.storage.api.SettingsPreferencesApi
+import io.github.wykopmobilny.databinding.LinkRelatedListItemBinding
+import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
+import io.github.wykopmobilny.ui.adapters.viewholders.BaseLinkCommentViewHolder
 import io.github.wykopmobilny.ui.adapters.viewholders.BlockedViewHolder
+import io.github.wykopmobilny.ui.adapters.viewholders.LinkCommentViewHolder
+import io.github.wykopmobilny.ui.adapters.viewholders.RelatedViewHolder
+import io.github.wykopmobilny.ui.adapters.viewholders.TopLinkCommentViewHolder
+import io.github.wykopmobilny.ui.fragments.linkcomments.LinkCommentInteractor
+import io.github.wykopmobilny.ui.widgets.link.related.RelatedWidgetPresenterFactory
+import io.github.wykopmobilny.utils.layoutInflater
 import io.github.wykopmobilny.ui.adapters.viewholders.EntryCommentViewHolder
 import io.github.wykopmobilny.ui.adapters.viewholders.EntryViewHolder
 import io.github.wykopmobilny.ui.adapters.viewholders.LinkViewHolder
@@ -35,6 +44,8 @@ class EntryLinksAdapter
         private val appStorage: AppStorage,
         private val linksApi: LinksApi,
         entryCommentInteractor: EntryCommentInteractor,
+        linkCommentInteractor: LinkCommentInteractor,
+        private val relatedWidgetPresenterFactory: RelatedWidgetPresenterFactory,
     ) : EndlessProgressAdapter<ViewHolder, EntryListRow>() {
         // Required field, interacts with presenter. Otherwise will throw exception
         lateinit var entryActionListener: EntryActionListener
@@ -64,6 +75,9 @@ class EntryLinksAdapter
         private val topCommentsActionListener =
             TopCommentsActionListener(entryCommentInteractor, navigator, disposables, ::updateComment)
         private val topCommentsViewListener = TopCommentsViewListener(navigator)
+        private val linkCommentActionListener =
+            ListLinkCommentActionListener(linkCommentInteractor, navigator, disposables, ::updateLinkComment)
+        private val linkCommentViewListener = ListLinkCommentViewListener(navigator)
 
         // "Odpowiedz"/"Cytuj" pod wpisem na liscie - przejscie na ekran wpisu z gotowym polem.
         private val listReplyListener = entryReplyListener(navigator)
@@ -83,12 +97,17 @@ class EntryLinksAdapter
                     hideBlacklistedViews && isBlocked
                 }.flatMap { entryLink ->
                     val entry = entryLink.entry
+                    // Wiersze dolaczone do elementu (komentarze/powiazane uzytkownika na profilu).
+                    val attachedRows =
+                        entryLink.rows.filterNot {
+                            hideBlacklistedViews && it is EntryListRow.LinkCommentRow && it.comment.isBlocked
+                        }
                     if (entry != null && showTopComments) {
                         // Komentarze wpisu jako osobne wiersze zaraz pod nim.
                         listOf(EntryListRow.LinkRow(entryLink)) +
                             entry.comments.filterNot { it.isBlocked }.map(EntryListRow::CommentRow)
                     } else {
-                        listOf(EntryListRow.LinkRow(entryLink))
+                        listOf(EntryListRow.LinkRow(entryLink)) + attachedRows
                     }
                 },
             shouldClearAdapter,
@@ -98,6 +117,9 @@ class EntryLinksAdapter
             when (val row = dataset[position]!!) {
                 is EntryListRow.CommentRow -> EntryCommentViewHolder.getViewTypeForEntryComment(row.comment)
                 is EntryListRow.EntryRow -> EntryViewHolder.getViewTypeForEntry(row.entry)
+                is EntryListRow.LinkCommentRow ->
+                    BaseLinkCommentViewHolder.getViewTypeForComment(row.comment, forceTop = !row.isReply)
+                is EntryListRow.RelatedRow -> RelatedViewHolder.TYPE_RELATED
                 is EntryListRow.LinkRow ->
                     if (row.entryLink.dataType == EntryLink.TYPE_ENTRY) {
                         EntryViewHolder.getViewTypeForEntry(row.entryLink.entry!!)
@@ -129,7 +151,42 @@ class EntryLinksAdapter
                     )
                 }
 
-                EntryViewHolder.TYPE_BLOCKED, LinkViewHolder.TYPE_BLOCKED, EntryCommentViewHolder.TYPE_BLOCKED -> {
+                TopLinkCommentViewHolder.TYPE_TOP_EMBED, TopLinkCommentViewHolder.TYPE_TOP_NORMAL -> {
+                    TopLinkCommentViewHolder.inflateView(
+                        parent = parent,
+                        viewType = viewType,
+                        userManagerApi = userManagerApi,
+                        navigator = navigator,
+                        linkHandler = linkHandler,
+                        commentActionListener = linkCommentActionListener,
+                        commentViewListener = linkCommentViewListener,
+                    )
+                }
+
+                LinkCommentViewHolder.TYPE_EMBED, LinkCommentViewHolder.TYPE_NORMAL -> {
+                    LinkCommentViewHolder.inflateView(
+                        parent = parent,
+                        viewType = viewType,
+                        userManagerApi = userManagerApi,
+                        navigator = navigator,
+                        linkHandler = linkHandler,
+                        commentActionListener = linkCommentActionListener,
+                        commentViewListener = linkCommentViewListener,
+                    )
+                }
+
+                RelatedViewHolder.TYPE_RELATED -> {
+                    RelatedViewHolder(
+                        null,
+                        LinkRelatedListItemBinding.inflate(parent.layoutInflater, parent, false),
+                        userManagerApi,
+                        relatedWidgetPresenterFactory.create(),
+                    )
+                }
+
+                EntryViewHolder.TYPE_BLOCKED, LinkViewHolder.TYPE_BLOCKED, EntryCommentViewHolder.TYPE_BLOCKED,
+                LinkCommentViewHolder.TYPE_BLOCKED, TopLinkCommentViewHolder.TYPE_TOP_BLOCKED,
+                -> {
                     BlockedViewHolder.inflateView(parent, ::notifyItemChanged)
                 }
 
@@ -184,6 +241,27 @@ class EntryLinksAdapter
                 }
                 return
             }
+            if (row is EntryListRow.LinkCommentRow) {
+                when (holder) {
+                    is BaseLinkCommentViewHolder ->
+                        holder.bindView(
+                            linkComment = row.comment,
+                            isAuthorComment = false,
+                            openSpoilersDialog = openSpoilersDialog,
+                            enableYoutubePlayer = enableYoutubePlayer,
+                            enableEmbedPlayer = enableEmbedPlayer,
+                            showAdultContent = showAdultContent,
+                            hideNsfw = hideNsfw,
+                        )
+
+                    is BlockedViewHolder -> holder.bindView(row.comment)
+                }
+                return
+            }
+            if (row is EntryListRow.RelatedRow) {
+                (holder as RelatedViewHolder).bindView(row.related, row.linkId)
+                return
+            }
             val entryLink = (row as EntryListRow.LinkRow).entryLink
             when (holder) {
                 is EntryViewHolder -> {
@@ -227,6 +305,13 @@ class EntryLinksAdapter
             val position = dataset.indexOfFirst { it is EntryListRow.CommentRow && it.comment.id == comment.id }
             if (position < 0) return
             dataset[position] = EntryListRow.CommentRow(comment)
+            notifyItemChanged(position)
+        }
+
+        private fun updateLinkComment(comment: LinkCommentV3Item) {
+            val position = dataset.indexOfFirst { it is EntryListRow.LinkCommentRow && it.comment.id == comment.id }
+            if (position < 0) return
+            dataset[position] = (dataset[position] as EntryListRow.LinkCommentRow).copy(comment = comment)
             notifyItemChanged(position)
         }
 

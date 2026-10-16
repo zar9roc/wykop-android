@@ -152,7 +152,8 @@ internal class ThreadContextAdapter(
                 when (val row = item.row) {
                     is EntryListRow.EntryRow -> EntryViewHolder.getViewTypeForEntry(row.entry)
                     is EntryListRow.CommentRow -> EntryCommentViewHolder.getViewTypeForEntryComment(row.comment)
-                    is EntryListRow.LinkRow -> error("Kontekst watku nie zawiera znalezisk")
+                    is EntryListRow.LinkRow, is EntryListRow.LinkCommentRow, is EntryListRow.RelatedRow ->
+                        error("Kontekst watku nie zawiera znalezisk")
                 }
             }
         }
@@ -234,7 +235,7 @@ internal class ThreadContextAdapter(
                 }
             }
 
-            is EntryListRow.LinkRow -> {
+            is EntryListRow.LinkRow, is EntryListRow.LinkCommentRow, is EntryListRow.RelatedRow -> {
                 error("Kontekst watku nie zawiera znalezisk")
             }
         }

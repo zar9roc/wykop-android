@@ -4,13 +4,15 @@ import android.content.res.Resources
 import android.util.SparseArray
 import android.view.ViewGroup
 import io.github.wykopmobilny.R
+import io.github.wykopmobilny.ui.modules.profile.actions.ActionsFragment
+import io.github.wykopmobilny.ui.modules.profile.actions.ActionsFragmentPresenter
 import io.github.wykopmobilny.ui.modules.profile.links.added.ProfileLinksFragment
-import io.github.wykopmobilny.ui.modules.profile.links.comments.ProfileLinkCommentsFragment
-import io.github.wykopmobilny.ui.modules.profile.links.related.ProfileRelatedFragment
 
 class LinksPagerAdapter(
     val resources: Resources,
     fragmentManager: androidx.fragment.app.FragmentManager,
+    // "Zakopywane" sa dostepne tylko dla wlasnego profilu - dla innych API zwraca 400.
+    private val showBuried: Boolean,
 ) : androidx.fragment.app.FragmentPagerAdapter(fragmentManager) {
     val registeredFragments = SparseArray<androidx.fragment.app.Fragment>()
 
@@ -18,13 +20,13 @@ class LinksPagerAdapter(
         when (position) {
             0 -> ProfileLinksFragment.newInstance(ProfileLinksFragment.TYPE_ADDED)
             1 -> ProfileLinksFragment.newInstance(ProfileLinksFragment.TYPE_PUBLISHED)
-            2 -> ProfileLinkCommentsFragment.newInstance()
-            3 -> ProfileRelatedFragment.newInstance()
+            2 -> ActionsFragment.newInstance(ActionsFragmentPresenter.Source.LINK_COMMENTS)
+            3 -> ActionsFragment.newInstance(ActionsFragmentPresenter.Source.LINK_RELATED)
             4 -> ProfileLinksFragment.newInstance(ProfileLinksFragment.TYPE_DIGGED)
             else -> ProfileLinksFragment.newInstance(ProfileLinksFragment.TYPE_BURRIED)
         }
 
-    override fun getCount() = 6
+    override fun getCount() = if (showBuried) 6 else 5
 
     override fun instantiateItem(
         container: ViewGroup,

@@ -7,11 +7,21 @@ import io.github.wykopmobilny.ui.modules.profile.ProfileActivity
 import io.github.wykopmobilny.utils.usermanager.UserManagerApi
 import javax.inject.Inject
 
+/**
+ * Lista mieszana profilu: wpisy/znaleziska z wierszami pod nimi (komentarze, powiazane).
+ * Ten sam ekran obsluguje zakladke Akcje oraz podzakladki Znaleziska > Komentarze
+ * i Powiazane - roznia sie tylko zrodlem danych ([ActionsFragmentPresenter.Source]).
+ */
 class ActionsFragment :
     BaseEntryLinkFragment(),
     ActionsView {
     companion object {
-        fun newInstance() = ActionsFragment()
+        private const val ARG_SOURCE = "SOURCE"
+
+        fun newInstance(source: ActionsFragmentPresenter.Source = ActionsFragmentPresenter.Source.ACTIONS) =
+            ActionsFragment().apply {
+                arguments = android.os.Bundle().apply { putString(ARG_SOURCE, source.name) }
+            }
     }
 
     @Inject
@@ -30,6 +40,11 @@ class ActionsFragment :
         super.onViewCreated(view, savedInstanceState)
         presenter.subscribe(this)
         presenter.username = username
+        presenter.source =
+            arguments
+                ?.getString(ARG_SOURCE)
+                ?.let(ActionsFragmentPresenter.Source::valueOf)
+                ?: ActionsFragmentPresenter.Source.ACTIONS
         // Na profilu podglad najlepszych komentarzy jest zawsze wlaczony (bez ustawienia).
         entriesAdapter.forceShowTopComments = true
         entriesAdapter.entryActionListener = presenter

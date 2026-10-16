@@ -118,7 +118,8 @@ internal class MicroblogFeedAdapter(
             when (val row = rows[position]) {
                 is EntryListRow.EntryRow -> EntryViewHolder.getViewTypeForEntry(row.entry)
                 is EntryListRow.CommentRow -> EntryCommentViewHolder.getViewTypeForEntryComment(row.comment)
-                is EntryListRow.LinkRow -> error("Feed mikrobloga nie zawiera znalezisk")
+                is EntryListRow.LinkRow, is EntryListRow.LinkCommentRow, is EntryListRow.RelatedRow ->
+                    error("Feed mikrobloga nie zawiera znalezisk")
             }
         }
 

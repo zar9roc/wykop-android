@@ -8,8 +8,6 @@ import io.github.wykopmobilny.models.dataclass.Entry
 import io.github.wykopmobilny.models.dataclass.EntryListRow
 import io.github.wykopmobilny.models.dataclass.EntryLink
 import io.github.wykopmobilny.models.dataclass.Link
-import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
-import io.github.wykopmobilny.models.dataclass.Related
 import io.reactivex.Single
 
 interface ProfileApi {
@@ -40,10 +38,11 @@ interface ProfileApi {
         page: String? = null,
     ): Single<FilteredData<Link>>
 
+    // Mieszana lista: znalezisko + komentarz(e) uzytkownika pod nim (EntryLink.rows).
     fun getLinkComments(
         username: String,
         page: Int,
-    ): Single<List<LinkCommentV3Item>>
+    ): Single<List<EntryLink>>
 
     fun getEntries(
         username: String,
@@ -63,10 +62,11 @@ interface ProfileApi {
         page: Int,
     ): Single<List<EntryListRow>>
 
+    // Mieszana lista: znalezisko + dodane przez uzytkownika powiazane (EntryLink.rows).
     fun getRelated(
         username: String,
         page: Int,
-    ): Single<List<Related>>
+    ): Single<List<EntryLink>>
 
     fun getBadges(
         username: String,

@@ -4,6 +4,12 @@ class EntryLink(
     var link: Link?,
     var entry: Entry?,
 ) {
+    /**
+     * Wiersze renderowane zaraz pod elementem na liscie mieszanej - np. komentarze
+     * uzytkownika pod znaleziskiem albo dodane przez niego powiazane (profil).
+     */
+    var rows: List<EntryListRow> = emptyList()
+
     override fun equals(other: Any?): Boolean =
         if (other !is EntryLink) {
             false

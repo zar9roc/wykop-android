@@ -3,6 +3,10 @@ package io.github.wykopmobilny.ui.adapters
 import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.models.dataclass.Author
 import io.github.wykopmobilny.models.dataclass.EntryComment
+import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
+import io.github.wykopmobilny.ui.fragments.linkcomments.LinkCommentActionListener
+import io.github.wykopmobilny.ui.fragments.linkcomments.LinkCommentInteractor
+import io.github.wykopmobilny.ui.fragments.linkcomments.LinkCommentViewListener
 import io.github.wykopmobilny.ui.fragments.entrycomments.EntryCommentActionListener
 import io.github.wykopmobilny.ui.fragments.entrycomments.EntryCommentInteractor
 import io.github.wykopmobilny.ui.adapters.viewholders.EntryListener
@@ -86,3 +90,48 @@ fun entryQuoteListener(navigator: NewNavigator): EntryListener =
             quoteBody = entry.body,
         )
     }
+
+/**
+ * Akcje komentarzy znalezisk na listach mieszanych (profil). Glosowanie przez
+ * [LinkCommentInteractor]; usuwanie ma potwierdzenie i UI na ekranie znaleziska.
+ */
+class ListLinkCommentActionListener(
+    private val interactor: LinkCommentInteractor,
+    private val navigator: NewNavigator,
+    private val disposables: CompositeDisposable,
+    private val onCommentUpdated: (LinkCommentV3Item) -> Unit,
+) : LinkCommentActionListener {
+    override fun digComment(comment: LinkCommentV3Item) = interactor.commentVoteUp(comment).apply()
+
+    override fun buryComment(comment: LinkCommentV3Item) = interactor.commentVoteDown(comment).apply()
+
+    override fun removeVote(comment: LinkCommentV3Item) = interactor.commentVoteCancel(comment).apply()
+
+    override fun deleteComment(comment: LinkCommentV3Item) = navigator.openLinkDetailsActivity(comment.linkId, comment.id)
+
+    private fun io.reactivex.Single<LinkCommentV3Item>.apply() {
+        subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { onCommentUpdated(it) },
+                { Napier.w("Nie udalo sie zaglosowac na komentarz znaleziska", it) },
+            ).let(disposables::add)
+    }
+}
+
+/**
+ * "Odpowiedz"/"Cytuj" pod komentarzem znaleziska na liscie - pasek odpowiedzi jest na
+ * ekranie znaleziska, wiec tam przenosimy (zakotwiczone na komentarzu).
+ */
+class ListLinkCommentViewListener(
+    private val navigator: NewNavigator,
+) : LinkCommentViewListener {
+    override fun replyComment(comment: LinkCommentV3Item) = navigator.openLinkDetailsActivity(comment.linkId, comment.id)
+
+    override fun quoteComment(comment: LinkCommentV3Item) = navigator.openLinkDetailsActivity(comment.linkId, comment.id)
+
+    override fun setCollapsed(
+        comment: LinkCommentV3Item,
+        isCollapsed: Boolean,
+    ) = Unit
+}

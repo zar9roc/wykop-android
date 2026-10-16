@@ -22,13 +22,19 @@ class ActionsFragmentPresenter(
 ) : BasePresenter<ActionsView>(),
     LinkActionListener,
     EntryActionListener {
+    enum class Source { ACTIONS, LINK_COMMENTS, LINK_RELATED }
+
     var page = 1
     lateinit var username: String
+    var source = Source.ACTIONS
 
     fun getActions(shouldRefresh: Boolean) {
         if (shouldRefresh) page = 1
-        profileApi
-            .getActions(username, page)
+        when (source) {
+            Source.ACTIONS -> profileApi.getActions(username, page)
+            Source.LINK_COMMENTS -> profileApi.getLinkComments(username, page)
+            Source.LINK_RELATED -> profileApi.getRelated(username, page)
+        }
             .subscribeOn(schedulers.backgroundThread())
             .observeOn(schedulers.mainThread())
             .subscribe(

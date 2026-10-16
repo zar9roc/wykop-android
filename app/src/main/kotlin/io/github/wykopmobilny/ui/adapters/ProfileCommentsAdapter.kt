@@ -49,7 +49,8 @@ class ProfileCommentsAdapter
             when (val row = dataset[position]!!) {
                 is EntryListRow.EntryRow -> EntryViewHolder.getViewTypeForEntry(row.entry)
                 is EntryListRow.CommentRow -> EntryCommentViewHolder.getViewTypeForEntryComment(row.comment)
-                is EntryListRow.LinkRow -> error("Zakladka komentarzy nie zawiera znalezisk")
+                is EntryListRow.LinkRow, is EntryListRow.LinkCommentRow, is EntryListRow.RelatedRow ->
+                    error("Zakladka komentarzy nie zawiera znalezisk")
             }
 
         override fun addData(
@@ -65,7 +66,7 @@ class ProfileCommentsAdapter
                     is EntryListRow.EntryRow -> row.entry.isBlocked
                     // Usuniete komentarze zostaja - maja wlasna adnotacje zamiast tresci.
                     is EntryListRow.CommentRow -> row.comment.isBlocked && row.comment.deletedReason == null
-                    is EntryListRow.LinkRow -> false
+                    is EntryListRow.LinkRow, is EntryListRow.LinkCommentRow, is EntryListRow.RelatedRow -> false
                 }
 
         override fun constructViewHolder(

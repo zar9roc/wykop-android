@@ -131,6 +131,7 @@ fun bindEntryOrCommentHolder(
                 is BlockedViewHolder -> holder.bindView(row.comment)
             }
 
-        is EntryListRow.LinkRow -> error("Wiersz znaleziska ma wlasna obsluge w EntryLinksAdapter")
+        is EntryListRow.LinkRow, is EntryListRow.LinkCommentRow, is EntryListRow.RelatedRow ->
+            error("Wiersze znalezisk maja wlasna obsluge w EntryLinksAdapter")
     }
 }

@@ -12,7 +12,15 @@ class RelatedViewHolder(
     private val userManagerApi: UserManagerApi,
     private val relatedWidgetPresenter: RelatedWidgetPresenter,
 ) : RecyclerView.ViewHolder(binding.root) {
-    fun bindView(related: Related) {
+    /** [linkId] nadpisuje znalezisko z konstruktora - na listach mieszanych kazdy wiersz ma wlasne. */
+    fun bindView(
+        related: Related,
+        linkId: Long? = this.linkId,
+    ) {
         binding.relatedView.setRelatedData(linkId, related, userManagerApi, relatedWidgetPresenter)
+    }
+
+    companion object {
+        const val TYPE_RELATED = 23
     }
 }

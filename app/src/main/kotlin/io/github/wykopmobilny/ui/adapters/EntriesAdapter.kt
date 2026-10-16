@@ -81,7 +81,8 @@ class EntriesAdapter
             when (val row = dataset[position]!!) {
                 is EntryListRow.EntryRow -> EntryViewHolder.getViewTypeForEntry(row.entry)
                 is EntryListRow.CommentRow -> EntryCommentViewHolder.getViewTypeForEntryComment(row.comment)
-                is EntryListRow.LinkRow -> error("Lista wpisow nie zawiera znalezisk")
+                is EntryListRow.LinkRow, is EntryListRow.LinkCommentRow, is EntryListRow.RelatedRow ->
+                    error("Lista wpisow nie zawiera znalezisk")
             }
 
         override fun constructViewHolder(

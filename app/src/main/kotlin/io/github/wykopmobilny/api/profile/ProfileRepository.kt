@@ -14,14 +14,11 @@ import io.github.wykopmobilny.api.responses.v3.entries.EntryResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkCommentResponseV3
 import io.github.wykopmobilny.api.responses.v3.observed.ObservedItemV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
-import io.github.wykopmobilny.api.responses.v3.links.RelatedResponseV3
 import io.github.wykopmobilny.api.responses.v3.profile.BadgeResponseV3
 import io.github.wykopmobilny.api.responses.v3.user.UserFullResponseV3
 import io.github.wykopmobilny.data.storage.api.AppStorage
 import io.github.wykopmobilny.models.dataclass.EntryListRow
 import io.github.wykopmobilny.models.dataclass.EntryLink
-import io.github.wykopmobilny.models.dataclass.LinkCommentV3Item
-import io.github.wykopmobilny.models.dataclass.Related
 import io.github.wykopmobilny.models.mapper.apiv3.EntryCommentMapperV3
 import io.github.wykopmobilny.models.mapper.apiv3.LinkCommentMapperV3
 import io.github.wykopmobilny.models.mapper.apiv3.RelatedMapperV3
@@ -30,6 +27,13 @@ import io.github.wykopmobilny.models.mapper.apiv3.filterEntryV3
 import io.github.wykopmobilny.models.mapper.apiv3.filterLinksV3
 import io.github.wykopmobilny.models.mapper.apiv3.toEntryLink
 import io.reactivex.Single
+import io.github.aakira.napier.Napier
+import io.github.wykopmobilny.api.endpoints.v3.LinksV3RetrofitApi
+import io.github.wykopmobilny.models.mapper.apiv3.filterLinkV3
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.rx2.rxSingle
 import javax.inject.Inject
 
@@ -37,6 +41,7 @@ class ProfileRepository
     @Inject
     constructor(
         private val profileApiV3: ProfileV3RetrofitApi,
+        private val linksApiV3: LinksV3RetrofitApi,
         private val userTokenRefresher: UserTokenRefresher,
         private val owmContentFilter: OWMContentFilter,
         private val appStorage: AppStorage,
@@ -63,10 +68,20 @@ class ProfileRepository
             rxSingle { profileApiV3.getUserActions(username, page) }
                 .retryWhen(userTokenRefresher)
                 .compose(ErrorHandlerTransformerV3<List<ObservedItemV3>>(errorBodyParser))
-                .map { items ->
+                .flatMap { items ->
                     // Mieszane wpisy i znaleziska - kazdy element mapowany na wlasny
-                    // szablon (Entry albo Link) wg dyskryminatora resource.
-                    items.map { it.toEntryLink(owmContentFilter) }
+                    // szablon (Entry albo Link) wg dyskryminatora resource. Komentarze
+                    // uzytkownika pod znaleziskiem ida jako wiersze pod nim (wpisy maja
+                    // je w entry.comments, rozwijane przez adapter).
+                    rxSingle {
+                        items.map { item ->
+                            item.toEntryLink(owmContentFilter).apply {
+                                if (item is ObservedItemV3.LinkItem) {
+                                    rows = userLinkCommentRows(item.link.id, item.link.comments.items.orEmpty())
+                                }
+                            }
+                        }
+                    }
                 }
 
         override fun getPublished(
@@ -128,18 +143,19 @@ class ProfileRepository
         override fun getLinkComments(
             username: String,
             page: Int,
-        ): Single<List<LinkCommentV3Item>> =
+        ): Single<List<EntryLink>> =
             rxSingle { profileApiV3.getUserLinksCommented(username, page) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<LinkCommentResponseV3>>(errorBodyParser))
-                .map {
-                    it.map { response ->
-                        val linkId =
-                            response.resource
-                                .substringAfter("/links/")
-                                .substringBefore("/")
-                                .toLongOrNull() ?: 0L
-                        LinkCommentMapperV3.map(response, owmContentFilter, linkId)
+                .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>(errorBodyParser))
+                .flatMap { links ->
+                    // Endpoint oddaje ZNALEZISKA z komentarzami uzytkownika w srodku -
+                    // lista mieszana: znalezisko, a pod nim komentarz / odpowiedz.
+                    rxSingle {
+                        links.map { response ->
+                            EntryLink(link = response.filterLinkV3(owmContentFilter), entry = null).apply {
+                                rows = userLinkCommentRows(response.id, response.comments.items.orEmpty())
+                            }
+                        }
                     }
                 }
 
@@ -172,11 +188,64 @@ class ProfileRepository
         override fun getRelated(
             username: String,
             page: Int,
-        ): Single<List<Related>> =
+        ): Single<List<EntryLink>> =
             rxSingle { profileApiV3.getUserLinksRelated(username, page) }
                 .retryWhen(userTokenRefresher)
-                .compose(ErrorHandlerTransformerV3<List<RelatedResponseV3>>(errorBodyParser))
-                .map { it.map { response -> RelatedMapperV3.map(response) } }
+                .compose(ErrorHandlerTransformerV3<List<LinkResponseV3>>(errorBodyParser))
+                .map { links ->
+                    // Znalezisko, a pod nim powiazane dodane przez uzytkownika.
+                    links.map { response ->
+                        EntryLink(link = response.filterLinkV3(owmContentFilter), entry = null).apply {
+                            rows =
+                                response.related
+                                    ?.items
+                                    .orEmpty()
+                                    .map { EntryListRow.RelatedRow(RelatedMapperV3.map(it), linkId = response.id) }
+                        }
+                    }
+                }
+
+        /**
+         * Komentarze uzytkownika pod znaleziskiem jako wiersze listy mieszanej. Odpowiedz
+         * w watku idzie pod komentarzem, na ktory odpowiada - API podaje tylko jego id,
+         * wiec tresc dociagamy (rownolegle, raz na watek). Gdy sie nie uda (np. komentarz
+         * usuniety), odpowiedz zostaje sama.
+         */
+        private suspend fun userLinkCommentRows(
+            linkId: Long,
+            comments: List<LinkCommentResponseV3>,
+        ): List<EntryListRow.LinkCommentRow> =
+            coroutineScope {
+                val threads = LinkedHashMap<Long, MutableList<LinkCommentResponseV3>>()
+                comments.forEach { comment -> threads.getOrPut(comment.parentId ?: comment.id) { mutableListOf() } += comment }
+                val ownIds = comments.mapTo(HashSet()) { it.id }
+                val fetchedParents =
+                    threads.keys
+                        .filterNot { it in ownIds }
+                        .map { parentId ->
+                            async {
+                                try {
+                                    linksApiV3.getLinkComment(linkId = linkId, commentId = parentId).data
+                                } catch (failure: CancellationException) {
+                                    throw failure
+                                } catch (failure: Exception) {
+                                    Napier.w("Nie udalo sie pobrac komentarza-rodzica $parentId", failure)
+                                    null
+                                }
+                            }
+                        }.awaitAll()
+                        .filterNotNull()
+                        .associateBy { it.id }
+
+                fun LinkCommentResponseV3.toRow(isReply: Boolean) =
+                    EntryListRow.LinkCommentRow(LinkCommentMapperV3.map(this, owmContentFilter, linkId), isReply)
+
+                threads.flatMap { (threadId, items) ->
+                    val parent = items.firstOrNull { it.id == threadId } ?: fetchedParents[threadId]
+                    val replies = items.filter { it.id != threadId }.sortedBy { it.createdAt }
+                    listOfNotNull(parent?.toRow(isReply = false)) + replies.map { it.toRow(isReply = true) }
+                }
+            }
 
         override fun observe(tag: String) =
             rxSingle { profileApiV3.observeUser(tag) }
