@@ -94,3 +94,9 @@ WHERE linkCommentsEntity.linkId = ?;
 deleteByLinkId:
 DELETE FROM linkCommentsEntity
 WHERE linkId = ?;
+
+-- Pelne przeladowanie watku: odpowiedzi, ktorych juz nie ma w API (usuniete),
+-- znikaja z cache zamiast wisiec do ponownego otwarcia znaleziska.
+deleteThreadRepliesExcept:
+DELETE FROM linkCommentsEntity
+WHERE linkId = :linkId AND parentId = :parentId AND id != :parentId AND id NOT IN :keepIds;

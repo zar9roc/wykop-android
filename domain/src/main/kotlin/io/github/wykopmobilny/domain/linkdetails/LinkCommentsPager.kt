@@ -11,6 +11,11 @@ import io.github.wykopmobilny.domain.linkdetails.di.LinkDetailsScope
 import io.github.wykopmobilny.domain.utils.safeKeyed
 import io.github.wykopmobilny.kotlin.AppScopes
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withContext
+import io.github.wykopmobilny.kotlin.AppDispatchers
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
@@ -29,7 +34,8 @@ import javax.inject.Inject
  *
  * Dedup: [requestedReplyThreads] gwarantuje jeden fetch odpowiedzi na wątek,
  * [isLoadingMore] jeden fetch kolejnej strony naraz. [generation] unieważnia
- * doładowania w locie po odświeżeniu (nowy fetchFirstPage).
+ * doładowania w locie po odświeżeniu (nowy fetchFirstPage) i — przez [refreshes] —
+ * sygnalizuje widokowi, że odpowiedzi widocznych wątków trzeba pobrać od nowa.
  */
 @LinkDetailsScope
 class LinkCommentsPager
@@ -45,6 +51,10 @@ class LinkCommentsPager
         private val isLoadingMore = AtomicBoolean(false)
         private val generation = AtomicLong(0)
         private val requestedReplyThreads = ConcurrentHashMap.newKeySet<Long>()
+        private val refreshCounter = MutableStateFlow(0L)
+
+        /** Zmienia sie po kazdym pobraniu pierwszej strony (otwarcie / swipe-refresh / nowy komentarz). */
+        val refreshes: StateFlow<Long> = refreshCounter.asStateFlow()
 
         suspend fun fetchFirstPage(linkId: Long): WykopApiResponseV3<List<LinkCommentResponseV3>> {
             val currentGeneration = generation.incrementAndGet()
@@ -52,6 +62,9 @@ class LinkCommentsPager
             isLoadingMore.set(false)
             val response = retrofitApi.getLinkComments(linkId = linkId, sortBy = "oldest", page = null)
             val parents = response.data.orEmpty()
+            // Odpowiedzi juz zaladowanych watkow tez sa nieaktualne - widok pobierze je
+            // ponownie dla watkow w viewporcie (dedup wyczyszczony wyzej).
+            refreshCounter.value = currentGeneration
             nextPage = nextPageOrNull(currentPage = 1, received = parents.size, perPage = response.pagination?.perPage)
 
             val priorityCommentId = key.initialCommentId
@@ -101,6 +114,27 @@ class LinkCommentsPager
             }
         }
 
+        /**
+         * Komentarz dodany przez uzytkownika trafia od razu do cache (bez czekania na
+         * odswiezenie, ktore i tak nie obejmuje odpowiedzi ani dalszych stron watkow),
+         * a wątek, w którym odpowiedział, pobieramy od nowa.
+         */
+        fun onCommentPosted(
+            linkId: Long,
+            comment: LinkCommentResponseV3,
+            parentId: Long?,
+        ) {
+            val posted = if (comment.parentId == null && parentId != null) comment.copy(parentId = parentId) else comment
+            appScopes.safeKeyed<LinkDetailsScope>(key) {
+                persistLinkComments(cache, linkId, listOf(posted))
+                if (parentId != null) {
+                    requestedReplyThreads.add(parentId)
+                    val currentGeneration = generation.get()
+                    loadRepliesInternal(linkId, parentId) { generation.get() == currentGeneration }
+                }
+            }
+        }
+
         private suspend fun loadRepliesInternal(
             linkId: Long,
             commentId: Long,
@@ -111,8 +145,15 @@ class LinkCommentsPager
                     fetchAllPages { page ->
                         retrofitApi.getLinkCommentReplies(linkId = linkId, commentId = commentId, page = page)
                     }
-                if (isCurrent() && replies.isNotEmpty()) {
-                    persistLinkComments(cache, linkId, replies)
+                if (isCurrent()) {
+                    if (replies.isNotEmpty()) persistLinkComments(cache, linkId, replies)
+                    withContext(AppDispatchers.IO) {
+                        cache.linkCommentsQueries.deleteThreadRepliesExcept(
+                            linkId = linkId,
+                            parentId = commentId,
+                            keepIds = replies.map { it.id },
+                        )
+                    }
                 }
                 true
             } catch (failure: CancellationException) {

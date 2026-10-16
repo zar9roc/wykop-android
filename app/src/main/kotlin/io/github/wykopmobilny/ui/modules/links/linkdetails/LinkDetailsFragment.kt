@@ -74,6 +74,7 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
 
     private var inputToolbar: InputToolbar? = null
     private var commentsRefreshAction: (() -> Unit)? = null
+    private var commentsPager: LinkCommentsPager? = null
     private var cameraPhotoUri: Uri? = null
 
     // null = komentarz poleci na poziom glowny znaleziska; inaczej odpowiedz w watku.
@@ -113,6 +114,7 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
         }
         val getLinkDetails = viewModel.dependency.getLinkDetails()
         val pager = viewModel.dependency.linkCommentsPager()
+        commentsPager = pager
         val binding = ActivityLinkDetailsBinding.bind(view)
         val toolbar = binding.toolbar.root as Toolbar
         toolbar.bindBackButton(activity = activity)
@@ -208,6 +210,13 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
                             } else {
                                 Napier.w("Couldn't find target comment key=$key within timeout")
                             }
+                        }
+                    }
+                    // Po odswiezeniu (swipe / nowy komentarz) lista moze sie nie zmienic, wiec
+                    // submitList nie odpali - odpowiedzi widocznych watkow pobieramy na sygnal pagera.
+                    launch {
+                        pager.refreshes.collect {
+                            triggerLazyCommentLoads(binding.recyclerView, adapter, pager)
                         }
                     }
                     adapterList.collect {
@@ -337,7 +346,8 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
         toolbar.showProgress(true)
         viewLifecycleOwner.lifecycleScope.launch {
             runCatching { request().subscribeOn(io.reactivex.schedulers.Schedulers.io()).await() }
-                .onSuccess {
+                .onSuccess { posted ->
+                    commentsPager?.onCommentPosted(linkId, posted.response, replyThread?.parentId)
                     toolbar.resetState()
                     setReplyThread(null)
                     // Odswiezenie listy przez akcje domeny (ta sama co swipe-refresh).
@@ -422,7 +432,9 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
         val first = layoutManager.findFirstVisibleItemPosition().coerceAtLeast(0)
         for (position in first..last) {
             val item = adapter.currentList.getOrNull(position)
-            if (item is LinkDetailsListItem.ParentComment && !item.hasReplies) {
+            // Takze watki z odpowiedziami w cache - po odswiezeniu moga byc nieaktualne.
+            // Pager pobiera kazdy watek raz na odswiezenie.
+            if (item is LinkDetailsListItem.ParentComment) {
                 pager.loadReplies(linkId, item.id)
             }
         }
