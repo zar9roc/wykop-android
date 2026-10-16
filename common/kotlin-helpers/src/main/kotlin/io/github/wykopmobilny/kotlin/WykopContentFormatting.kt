@@ -1,5 +1,10 @@
 package io.github.wykopmobilny.kotlin
 
+private val italicRegex =
+    Regex("(?<![\\p{L}\\p{N}_@#])_(?=[^\\s_])(.+?)(?<=[^\\s_])_(?![\\p{L}\\p{N}_])")
+
+private val urlRegex = Regex("https?://[^\\s<>\"]+")
+
 /**
  * Converts Wykop v3 markdown-like content to HTML for display.
  * Handles: line breaks, **bold**, _italic_, `code`, [text](url),
@@ -68,10 +73,17 @@ fun String.convertWykopContentToHtml(): String {
     // Bold: **text**
     html = Regex("\\*\\*(.+?)\\*\\*").replace(html) { "<b>${it.groupValues[1]}</b>" }
 
-    // Italic: _text_ (only at word boundaries to avoid matching inside URLs/identifiers)
+    // Italic: _text_. Znaki specjalne (nawiasy, cudzyslowy, interpunkcja, znaczniki HTML)
+    // traktujemy jak bialy znak - "(_tekst_)" jest kursywa, ale "tekst_tekst_tekst",
+    // "__init__", "@_nick_" i podkreslenia w URL-ach zostaja nietkniete.
+    val urlRanges = urlRegex.findAll(html).map { it.range }.toList()
     html =
-        Regex("(^|[\\s>])_(.+?)_([\\s<.,;:!?]|$)", RegexOption.MULTILINE).replace(html) {
-            "${it.groupValues[1]}<i>${it.groupValues[2]}</i>${it.groupValues[3]}"
+        italicRegex.replace(html) { match ->
+            if (urlRanges.any { it.first <= match.range.last && match.range.first <= it.last }) {
+                match.value
+            } else {
+                "<i>${match.groupValues[1]}</i>"
+            }
         }
 
     // Link: [text](url)

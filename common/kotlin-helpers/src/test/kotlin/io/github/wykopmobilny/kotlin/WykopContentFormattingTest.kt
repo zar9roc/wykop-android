@@ -80,4 +80,30 @@ class WykopContentFormattingTest {
             "[opis](https://x.pl)".convertWykopContentToHtml(),
         )
     }
+
+    @Test
+    fun `italic next to special characters`() {
+        assertEquals("(<i>kursywa</i>)", "(_kursywa_)".convertWykopContentToHtml())
+        assertEquals("\"<i>cytat</i>\"", "\"_cytat_\"".convertWykopContentToHtml())
+        assertEquals("a <i>b</i> c <i>d</i>.", "a _b_ c _d_.".convertWykopContentToHtml())
+    }
+
+    @Test
+    fun `underscores inside words are not italic`() {
+        assertEquals("text_text_text", "text_text_text".convertWykopContentToHtml())
+        assertEquals("__init__", "__init__".convertWykopContentToHtml())
+        assertEquals("snake_case i <i>kursywa</i>", "snake_case i _kursywa_".convertWykopContentToHtml())
+    }
+
+    @Test
+    fun `italic combined with bold`() {
+        assertEquals("<i><b>tekst</b></i>", "_**tekst**_".convertWykopContentToHtml())
+        assertEquals("<b><i>tekst</i></b>", "**_tekst_**".convertWykopContentToHtml())
+    }
+
+    @Test
+    fun `underscores in urls and mentions are not italic`() {
+        assertEquals("https://x.pl/_a_/b", "https://x.pl/_a_/b".convertWykopContentToHtml())
+        assertEquals("@_nick_ hej", "@_nick_ hej".convertWykopContentToHtml())
+    }
 }
