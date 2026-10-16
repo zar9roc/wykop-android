@@ -7,6 +7,9 @@ import io.github.wykopmobilny.models.dataclass.PMMessage
 interface ConversationView : BaseView {
     fun showConversation(conversation: FullConversation)
 
+    // Blad pelnego ladowania rozmowy - chowa spinner odswiezania/ladowania.
+    fun showConversationLoadError(e: Throwable)
+
     // Optymistyczne doklejenie wiadomości zwróconej z 201 po wysłaniu.
     fun appendMessage(message: PMMessage)
 

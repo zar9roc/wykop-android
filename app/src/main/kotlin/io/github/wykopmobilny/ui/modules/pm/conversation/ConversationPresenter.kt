@@ -61,7 +61,7 @@ class ConversationPresenter
                 .observeOn(schedulers.mainThread())
                 .subscribe(
                     { view?.showConversation(it) },
-                    { view?.showErrorDialog(it) },
+                    { view?.showConversationLoadError(it) },
                 ).intoComposite(compositeObservable)
         }
 

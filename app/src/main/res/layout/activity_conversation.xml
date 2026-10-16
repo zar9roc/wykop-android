@@ -36,6 +36,19 @@
             android:layout_marginEnd="@dimen/conversation_avatar_margin_end"
             android:visibility="visible"
             />
+
+        <!-- Widoki z gravity=end Toolbar uklada od prawej w kolejnosci deklaracji,
+             wiec przycisk odswiezania (deklarowany po avatarze) laduje na lewo od niego. -->
+        <ImageButton
+            android:id="@+id/refreshButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="end|center_vertical"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/refresh"
+            android:src="@drawable/ic_refresh"
+            app:tint="?attr/colorControlNormal"
+            />
     </androidx.appcompat.widget.Toolbar>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout

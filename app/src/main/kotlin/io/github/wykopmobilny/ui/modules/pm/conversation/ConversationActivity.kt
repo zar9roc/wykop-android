@@ -91,6 +91,10 @@ class ConversationActivity :
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = user
         binding.swiperefresh.setOnRefreshListener { presenter.loadConversation() }
+        binding.refreshButton.setOnClickListener {
+            binding.swiperefresh.isRefreshing = true
+            presenter.loadConversation()
+        }
         binding.inputToolbar.setCustomHint(getString(R.string.reply))
 
         presenter.subscribe(this)
@@ -153,6 +157,12 @@ class ConversationActivity :
         binding.recyclerView.invalidate()
         // Seed kluczy granicznych (prev/next) z aktualnie pokazanej pelnej rozmowy.
         presenter.onConversationShown(conversation.messages)
+    }
+
+    override fun showConversationLoadError(e: Throwable) {
+        binding.loadingView.isVisible = false
+        binding.swiperefresh.isRefreshing = false
+        showErrorDialog(e)
     }
 
     override fun prependOlderMessages(messages: List<PMMessage>) {
