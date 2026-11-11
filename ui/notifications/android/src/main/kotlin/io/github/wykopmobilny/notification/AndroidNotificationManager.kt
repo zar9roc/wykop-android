@@ -37,7 +37,7 @@ internal class AndroidNotificationManager
     @Inject
     constructor(
         private val context: Context,
-        private val interopIntentHandler: @JvmSuppressWildcards (String?) -> Intent,
+        private val interopIntentHandler: @JvmSuppressWildcards (String?) -> List<Intent>,
     ) : NotificationsManager {
         private val manager = context.getSystemService<NotificationManager>().let(::checkNotNull)
 
@@ -228,10 +228,8 @@ internal class AndroidNotificationManager
             interopUrl: String?,
         ) {
             runCatching {
-                val intent =
-                    interopIntentHandler(interopUrl)
-                        .setAction(Intent.ACTION_VIEW)
-                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                // ShortcutInfo wymaga akcji na kazdym intencie back-stacku.
+                val intents = backStack(interopUrl).onEach { it.setAction(Intent.ACTION_VIEW) }
                 ShortcutManagerCompat.pushDynamicShortcut(
                     context,
                     ShortcutInfoCompat
@@ -239,7 +237,7 @@ internal class AndroidNotificationManager
                         .setShortLabel(user)
                         .setPerson(person)
                         .setLongLived(true)
-                        .setIntent(intent)
+                        .setIntents(intents)
                         .build(),
                 )
             }.onFailure { Napier.w("Failed to push conversation shortcut", it) }
@@ -263,12 +261,23 @@ internal class AndroidNotificationManager
             requestCode: Int,
             interopUrl: String?,
         ): PendingIntent =
-            PendingIntent.getActivity(
+            PendingIntent.getActivities(
                 context,
                 requestCode,
-                interopIntentHandler(interopUrl).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                backStack(interopUrl),
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
             )
+
+        // Syntetyczny back-stack (jak TaskStackBuilder): dno = ekran glowny w nowym, czystym
+        // tasku, na wierzchu cel. Wczesniej cel byl jedynym ekranem taska i "wstecz" zamykalo app.
+        private fun backStack(interopUrl: String?): Array<Intent> =
+            interopIntentHandler(interopUrl)
+                .toTypedArray()
+                .also { intents ->
+                    intents.first().addFlags(
+                        Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_TASK_ON_HOME,
+                    )
+                }
 
         // Awatar z CDN na potrzeby largeIcon/Person - synchronicznie na watku workera,
         // z twardym timeoutem Glide; blad/brak = po prostu bez awatara.

@@ -281,15 +281,18 @@ open class WykopApp :
     protected open val notifications by lazy {
         DaggerNotificationsComponent.factory().create(
             context = this,
+            // Back-stack: ekran glowny (domyslna zakladka) pod celem - "wstecz" z ekranu
+            // otwartego z powiadomienia wraca do aplikacji zamiast ja zamykac.
             interopIntentHandler = { interopUrl ->
-                if (interopUrl != null) {
-                    WykopLinkHandler.getLinkIntent(interopUrl, this)
-                        ?: MainNavigationActivity
-                            .getIntent(this)
-                            .also { Napier.e("Invalid deeplink for url=$interopUrl") }
-                } else {
-                    Intent(applicationContext, NotificationsListActivity::class.java)
-                }
+                val main = MainNavigationActivity.getIntent(this)
+                val target =
+                    if (interopUrl != null) {
+                        WykopLinkHandler.getLinkIntent(interopUrl, this)
+                            ?: null.also { Napier.e("Invalid deeplink for url=$interopUrl") }
+                    } else {
+                        Intent(applicationContext, NotificationsListActivity::class.java)
+                    }
+                listOfNotNull(main, target)
             },
             dependencies =
                 object : NotificationDependencies {

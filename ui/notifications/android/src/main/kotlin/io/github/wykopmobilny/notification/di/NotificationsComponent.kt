@@ -14,8 +14,10 @@ interface NotificationsComponent : NotificationsApi {
         fun create(
             @BindsInstance context: Context,
             @BindsInstance dependencies: NotificationDependencies,
-            // interopUrl (null = lista powiadomien) -> Intent
-            @BindsInstance interopIntentHandler: @JvmSuppressWildcards (String?) -> Intent,
+            // interopUrl (null = lista powiadomien) -> back-stack intentow: pierwszy = ekran
+            // glowny (dno taska), ostatni = cel. Dzieki temu "wstecz" z ekranu otwartego
+            // z powiadomienia wraca do ekranu glownego zamiast zamykac aplikacje.
+            @BindsInstance interopIntentHandler: @JvmSuppressWildcards (String?) -> List<Intent>,
         ): NotificationsComponent
     }
 }
