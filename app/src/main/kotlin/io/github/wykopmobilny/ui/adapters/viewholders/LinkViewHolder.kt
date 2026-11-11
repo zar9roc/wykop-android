@@ -213,6 +213,7 @@ class LinkViewHolder(
                 linksApi = linksApi,
                 userManagerApi = userManagerApi,
                 onBury = if (userManagerApi.isUserAuthorized()) linkActionListener::bury else null,
+                onUnbury = if (userManagerApi.isUserAuthorized()) linkActionListener::removeVote else null,
             )
         }
         itemView.setOnClickListener {

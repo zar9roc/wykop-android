@@ -38,6 +38,8 @@ internal fun openLinkOptionsMenu(
     linksApi: LinksApi,
     userManagerApi: UserManagerApi,
     onBury: ((Link, Int) -> Unit)? = null,
+    // Juz zakopane znalezisko: zamiast "Zakop" pozycja "Cofnij zakopanie" (cofa glos).
+    onUnbury: ((Link) -> Unit)? = null,
 ) {
     val activityContext = anchor.getActivityContext()!!
     val dialog = BottomSheetDialog(activityContext)
@@ -69,11 +71,14 @@ internal fun openLinkOptionsMenu(
             dialog.dismiss()
         }
 
+        val isBuried = link.userVote == "bury" && onUnbury != null
         linkBury.isVisible = onBury != null
+        linkBuryLabel.setText(if (isBuried) R.string.unbury else R.string.bury)
         linkBury.setOnClickListener {
             dialog.dismiss()
-            if (onBury != null) {
-                openLinkBuryReasonMenu(anchor, link, onBury)
+            when {
+                isBuried -> onUnbury?.invoke(link)
+                onBury != null -> openLinkBuryReasonMenu(anchor, link, onBury)
             }
         }
 

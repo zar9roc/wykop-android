@@ -135,6 +135,7 @@
     <string name="voters">Plusujący</string>
     <string name="voters_list">Lista plusujących</string>
     <string name="bury">Zakop</string>
+    <string name="unbury">Cofnij zakopanie</string>
     <string name="bury_list">Lista zakopujących (%1$d)</string>
     <string name="dig_list">Lista wykopujących (%1$d)</string>
     <string name="copy_content">Kopiuj treść</string>

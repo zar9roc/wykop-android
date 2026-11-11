@@ -228,42 +228,51 @@ internal class GetLinkDetailsQuery
                                                         listOf(
                                                             // "Zakop" jako pierwsza pozycja - jak w widoku listy znalezisk:
                                                             // otwiera picker z powodami i wola v3 LinksRepository.voteDown(reason).
-                                                            OptionPickerUi.Option(
-                                                                label = Strings.Link.MORE_OPTION_BURY,
-                                                                icon = Drawable.Bury,
-                                                                clickAction =
-                                                                    safeCallback {
-                                                                        viewStateStorage.update { viewState ->
-                                                                            viewState.copy(
-                                                                                picker =
-                                                                                    OptionPickerUi(
-                                                                                        title = Strings.Link.BURY_REASON_TITLE,
-                                                                                        reasons =
-                                                                                            VoteDownReason.entries.map { reason ->
-                                                                                                OptionPickerUi.Option(
-                                                                                                    label = reason.label,
-                                                                                                    clickAction =
-                                                                                                        safeCallback {
-                                                                                                            linksRepository.voteDown(
-                                                                                                                link.id,
-                                                                                                                reason,
-                                                                                                            )
-                                                                                                        },
-                                                                                                )
-                                                                                            },
-                                                                                        dismissAction =
-                                                                                            safeCallback {
-                                                                                                viewStateStorage.update {
-                                                                                                    it.copy(
-                                                                                                        picker = null,
+                                                            // Juz zakopane -> "Cofnij zakopanie" (removeVote), jak strzalka w naglowku.
+                                                            if (link.userAction == UserVote.Down) {
+                                                                OptionPickerUi.Option(
+                                                                    label = Strings.Link.MORE_OPTION_UNBURY,
+                                                                    icon = Drawable.Bury,
+                                                                    clickAction = safeCallback { linksRepository.removeVote(link.id) },
+                                                                )
+                                                            } else {
+                                                                OptionPickerUi.Option(
+                                                                    label = Strings.Link.MORE_OPTION_BURY,
+                                                                    icon = Drawable.Bury,
+                                                                    clickAction =
+                                                                        safeCallback {
+                                                                            viewStateStorage.update { viewState ->
+                                                                                viewState.copy(
+                                                                                    picker =
+                                                                                        OptionPickerUi(
+                                                                                            title = Strings.Link.BURY_REASON_TITLE,
+                                                                                            reasons =
+                                                                                                VoteDownReason.entries.map { reason ->
+                                                                                                    OptionPickerUi.Option(
+                                                                                                        label = reason.label,
+                                                                                                        clickAction =
+                                                                                                            safeCallback {
+                                                                                                                linksRepository.voteDown(
+                                                                                                                    link.id,
+                                                                                                                    reason,
+                                                                                                                )
+                                                                                                            },
                                                                                                     )
-                                                                                                }
-                                                                                            },
-                                                                                    ),
-                                                                            )
-                                                                        }
-                                                                    },
-                                                            ),
+                                                                                                },
+                                                                                            dismissAction =
+                                                                                                safeCallback {
+                                                                                                    viewStateStorage.update {
+                                                                                                        it.copy(
+                                                                                                            picker = null,
+                                                                                                        )
+                                                                                                    }
+                                                                                                },
+                                                                                        ),
+                                                                                )
+                                                                            }
+                                                                        },
+                                                                )
+                                                            },
                                                             OptionPickerUi.Option(
                                                                 label = Strings.Link.MORE_OPTION_SHARE,
                                                                 icon = Drawable.Share,
