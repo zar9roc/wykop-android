@@ -40,14 +40,24 @@ SET
   userVote = :userVote
 WHERE id = :id;
 
+-- Zmiana glosu przenosi go miedzy licznikami: wykop po zakopie zdejmuje zakop (i odwrotnie),
+-- a ponowny glos w te sama strone nic nie dolicza. Wczesniej zakop po wykopie dodawal tylko
+-- zakop - licznik wykopow (wynik znaleziska) nie spadal az do odswiezenia.
+-- W UPDATE wszystkie wyrazenia widza STARE wartosci wiersza, wiec CASE patrzy na poprzedni glos.
 voteUpOptimistic:
 UPDATE linkEntity
-SET voteCount = voteCount + 1, userVote = :userVote
+SET
+  voteCount = CASE WHEN userVote = :up THEN voteCount ELSE voteCount + 1 END,
+  buryCount = CASE WHEN userVote = :down THEN MAX(buryCount - 1, 0) ELSE buryCount END,
+  userVote = :up
 WHERE id = :id;
 
 voteDownOptimistic:
 UPDATE linkEntity
-SET buryCount = buryCount + 1, userVote = :userVote
+SET
+  buryCount = CASE WHEN userVote = :down THEN buryCount ELSE buryCount + 1 END,
+  voteCount = CASE WHEN userVote = :up THEN MAX(voteCount - 1, 0) ELSE voteCount END,
+  userVote = :down
 WHERE id = :id;
 
 removeVoteOptimistic:

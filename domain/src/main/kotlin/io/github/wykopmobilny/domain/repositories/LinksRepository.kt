@@ -74,7 +74,8 @@ internal class LinksRepository
             withContext(AppDispatchers.IO) {
                 appCache.linksQueries.voteUpOptimistic(
                     id = linkId,
-                    userVote = UserVote.Up,
+                    up = UserVote.Up,
+                    down = UserVote.Down,
                 )
             }
         }
@@ -98,7 +99,8 @@ internal class LinksRepository
             withContext(AppDispatchers.IO) {
                 appCache.linksQueries.voteDownOptimistic(
                     id = linkId,
-                    userVote = UserVote.Down,
+                    up = UserVote.Up,
+                    down = UserVote.Down,
                 )
             }
         }
