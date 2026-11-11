@@ -51,8 +51,16 @@ object Strings {
         const val COMMENTS_SORT_OLD = "Najstarsze"
         const val COMMENTS_SORT_TITLE = "Sortuj komentarze"
 
-        const val COMMENT_DELETED_BY_MODERATOR = "Komentarz usunięty przez moderatora"
+        // Brzmienie jak w mikroblogu (comment_deleted_* w strings.xml aplikacji); "host" to
+        // tu autor znaleziska zamiast autora wpisu.
+        const val COMMENT_DELETED_BY_MODERATOR = "Komentarz usunięty przez moderację"
+        const val COMMENT_DELETED_BY_HOST = "Komentarz usunięty przez autora znaleziska"
+        const val COMMENT_DELETED_BY_AUTHOR = "Komentarz usunięty przez autora"
         const val COMMENT_DELETED = "Komentarz usunięty"
+
+        fun commentDeletedByHost(nick: String) = "Komentarz usunięty przez autora znaleziska (@$nick)"
+
+        fun commentDeletedByOwnAuthor(nick: String) = "Komentarz usunięty przez jego autora (@$nick)"
 
         fun upvotesPercentage(value: Int) = "$value% wykopało"
 
@@ -65,6 +73,7 @@ object Strings {
 
     object Comment {
         const val SPOILER_DIALOG_TITLE = "Spoiler"
+        const val DELETED_CONTENT_DIALOG_TITLE = "Treść usuniętego komentarza"
     }
 
     object Profile {

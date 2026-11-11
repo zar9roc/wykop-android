@@ -22,6 +22,8 @@ data class LinkDetailsViewState(
     val generalResource: Resource = Resource.idle(),
     val relatedResource: Resource = Resource.idle(),
     val spoilerDialog: CharSequence? = null,
+    // Tresc (slug) usunietego komentarza pokazywana po tapnieciu w adnotacje.
+    val deletedContentDialog: String? = null,
     val expandedComments: Set<Long> = emptySet(),
     val collapsedIds: Set<Long> = emptySet(),
     val optionsVisibleIds: Set<Long> = emptySet(),

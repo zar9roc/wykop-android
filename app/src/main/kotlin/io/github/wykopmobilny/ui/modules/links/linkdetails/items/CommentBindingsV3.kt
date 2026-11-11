@@ -151,6 +151,7 @@ internal fun TopLinkCommentLayoutBinding.bindParentCommentV3(
     // Spany z domeny (wzmianki/tagi/URL-e) potrzebuja movement method, zeby dostawac
     // klikniecia; dotyk poza linkiem propaguje sie do klikniecia wiersza.
     BetterLinkMovementMethod.linkifyHtml(commentContentTextView)
+    commentContentTextView.bindBodyClick(data.body.clickAction)
 
     // Embed
     bindEmbedV3(root, wykopEmbedView, data.embed)
@@ -241,6 +242,7 @@ internal fun LinkCommentLayoutBinding.bindReplyCommentV3(
     commentContentTextView.text = comment.body.content
     commentContentTextView.isVisible = comment.body.content != null
     BetterLinkMovementMethod.linkifyHtml(commentContentTextView)
+    commentContentTextView.bindBodyClick(comment.body.clickAction)
 
     // Embed
     bindEmbedV3(root, wykopEmbedView, comment.embed)
@@ -357,4 +359,18 @@ internal fun LinkCommentLayoutBinding.bindHiddenReplyV3(comment: LinkCommentUi.H
     minusVoteButton.isVisible = false
     moreOptionsTextView.isVisible = false
     hideEmbedV3(root)
+}
+
+/**
+ * Usuniety komentarz: tapniecie w adnotacje "Komentarz usuniety" pokazuje slug (tresc
+ * oryginalu), jak w mikroblogu. Celowo NIE setOnClick(null) - ten ustawia isEnabled=false,
+ * a wylaczony TextView szarzeje i nie przekazuje dotyku do movement method (linki martwe).
+ * Wiersze sa recyklingowane, wiec listener zawsze nadpisujemy.
+ */
+private fun TextView.bindBodyClick(clickAction: (() -> Unit)?) {
+    // setOnClickListener (nawet z null) wymusza isClickable=true - dla zwyklego komentarza
+    // przywracamy stan sprzed wywolania, zeby dotyk poza linkiem dalej trafial do wiersza.
+    val wasClickable = isClickable
+    setOnClickListener(clickAction?.let { action -> android.view.View.OnClickListener { action() } })
+    if (clickAction == null) isClickable = wasClickable
 }

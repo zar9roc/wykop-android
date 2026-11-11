@@ -21,7 +21,14 @@ internal data class LinkComment(
     val userFavorite: Boolean,
     // np. "moderator" - komentarz usuniety, API zwraca pusta tresc
     val deletedReason: String?,
+    // Przy usunietym komentarzu API dalej zwraca slug - skrocona tresc oryginalu.
+    // Tapniecie w adnotacje "Komentarz usuniety" pokazuje ja w dialogu (jak w mikroblogu).
+    val slug: String?,
 ) {
+    /** Tresc usunietego komentarza do podgladu/kopiowania; null gdy komentarz nie jest usuniety albo brak sluga. */
+    val deletedContent: String?
+        get() = slug?.takeIf { deletedReason != null && body.isBlank() && it.isNotBlank() }
+
     val totalCount = plusCount - minusCount
 }
 

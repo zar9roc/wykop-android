@@ -453,6 +453,12 @@ internal class GetLinkDetailsQuery
                                 message = it,
                                 dismissAction = safeCallback { viewStateStorage.update { it.copy(spoilerDialog = null) } },
                             )
+                        } ?: viewState.deletedContentDialog?.let {
+                            InfoDialogUi(
+                                title = Strings.Comment.DELETED_CONTENT_DIALOG_TITLE,
+                                message = it,
+                                dismissAction = safeCallback { viewStateStorage.update { it.copy(deletedContentDialog = null) } },
+                            )
                         },
                     contextMenuOptions =
                         listOfNotNull(
@@ -676,12 +682,28 @@ internal class GetLinkDetailsQuery
                                     // Usuniety komentarz przychodzi z API z pusta trescia -
                                     // bez adnotacji wiersz wygladal jak pusty wpis.
                                     // Kursywa jak w klasycznym "usuniety przez autora".
+                                    // Logika jak w mikroblogu (EntryCommentViewHolder.setupDeletedBody):
+                                    // nick osoby usuwajacej w nawiasie, gdy go znamy; moderatora API
+                                    // nie ujawnia. "host" = autor znaleziska.
                                     val notice =
                                         when (deletedReason) {
+                                            "host" ->
+                                                link.author.profileId
+                                                    .takeIf { it.isNotBlank() }
+                                                    ?.let(Strings.Link::commentDeletedByHost)
+                                                    ?: Strings.Link.COMMENT_DELETED_BY_HOST
+
                                             "moderator" -> Strings.Link.COMMENT_DELETED_BY_MODERATOR
+                                            "author" ->
+                                                author.profileId
+                                                    .takeIf { it.isNotBlank() }
+                                                    ?.let(Strings.Link::commentDeletedByOwnAuthor)
+                                                    ?: Strings.Link.COMMENT_DELETED_BY_AUTHOR
+
                                             else -> Strings.Link.COMMENT_DELETED
                                         }
-                                    textUtils.parseHtml("<i>$notice</i>")
+                                    // Nick z API trafia do HTML - escapujemy na wszelki wypadek.
+                                    textUtils.parseHtml("<i>${notice.htmlEscaped()}</i>")
                                 } else {
                                     body.toCommentBody(
                                         textUtils = textUtils,
@@ -709,6 +731,11 @@ internal class GetLinkDetailsQuery
                                             expandedComments = it.expandedComments + id,
                                         )
                                     }
+                                },
+                            // Tapniecie w "Komentarz usuniety" pokazuje slug (tresc oryginalu) - jak w mikroblogu.
+                            clickAction =
+                                deletedContent?.let { content ->
+                                    safeCallback { viewStateStorage.update { it.copy(deletedContentDialog = content) } }
                                 },
                         ),
                     author =
@@ -831,7 +858,8 @@ internal class GetLinkDetailsQuery
                                                         icon = Drawable.Copy,
                                                         clickAction =
                                                             safeCallback {
-                                                                clipboardService.copy(body.copyableText(textUtils))
+                                                                // Usuniety komentarz ma pusta tresc - kopiujemy slug (jak w mikroblogu).
+                                                                clipboardService.copy(deletedContent ?: body.copyableText(textUtils))
                                                                 showSnackbar(Strings.COPIED_TO_CLIPBOARD)
                                                             },
                                                     ),
@@ -947,3 +975,8 @@ private data class CommentPreferences(
     val cutLongComments: Boolean,
     val mediaPreferences: MediaPlayerPreferences,
 )
+
+private fun String.htmlEscaped() =
+    replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")

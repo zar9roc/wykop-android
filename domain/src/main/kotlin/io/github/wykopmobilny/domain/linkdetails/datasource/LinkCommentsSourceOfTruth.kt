@@ -140,6 +140,7 @@ private fun SelectByLinkId.toContent() =
         id = id,
         body = body,
         deletedReason = deletedReason,
+        slug = slug,
         postedAt = postedAt,
         author =
             UserInfo(
