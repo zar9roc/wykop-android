@@ -27,7 +27,14 @@ suspend fun Flow<OptionPickerUi?>.collectOptionPicker(context: Context) {
     distinctUntilChangedBy { it?.reasons?.map(OptionPickerUi.Option::label) }
         .flowOn(AppDispatchers.Default)
         .collect { picker ->
-            dialog?.dismiss()
+            // Zamkniecie wymuszone zmiana stanu (np. picker "Wiecej" -> picker powodow zakopania)
+            // NIE moze wolac dismissAction starego pickera - ten ustawia picker = null
+            // i nadpisuje swiezo ustawiony nastepny picker (miga i znika).
+            dialog?.apply {
+                setOnDismissListener(null)
+                dismiss()
+            }
+            dialog = null
             if (picker != null) {
                 dialog =
                     OptionPickerBottomSheet(picker, context).apply {
