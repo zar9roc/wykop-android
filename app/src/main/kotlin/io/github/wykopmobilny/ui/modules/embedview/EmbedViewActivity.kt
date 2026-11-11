@@ -12,6 +12,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
@@ -23,6 +24,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.AudioAttributes
+import androidx.media3.ui.PlayerView
 import androidx.media3.ui.PlayerView.SHOW_BUFFERING_WHEN_PLAYING
 import io.github.aakira.napier.Napier
 import io.github.wykopmobilny.R
@@ -31,6 +33,7 @@ import io.github.wykopmobilny.base.WykopSchedulers
 import io.github.wykopmobilny.databinding.ActivityEmbedviewBinding
 import io.github.wykopmobilny.storage.api.SettingsPreferencesApi
 import io.github.wykopmobilny.ui.modules.NewNavigator
+import io.github.wykopmobilny.ui.modules.photoview.MediaChromeController
 import io.github.wykopmobilny.ui.modules.photoview.PhotoViewActions
 import io.github.wykopmobilny.utils.ClipboardHelperApi
 import io.github.wykopmobilny.utils.openBrowser
@@ -119,6 +122,13 @@ class EmbedViewActivity :
                 }
         binding.videoView.controllerAutoShow = false
         binding.videoView.setShowBuffering(SHOW_BUFFERING_WHEN_PLAYING)
+        // Tapniecie w player przelacza jego kontrolki - toolbar i paski systemowe
+        // chowaja sie/pokazuja razem z nimi (rowniez przy auto-ukryciu po timeoucie).
+        val chrome = MediaChromeController(this, binding.toolbar.toolbar)
+        binding.videoView.setControllerVisibilityListener(
+            PlayerView.ControllerVisibilityListener { visibility -> chrome.setVisible(visibility == View.VISIBLE) },
+        )
+        binding.videoView.showController()
     }
 
     override fun onPause() {

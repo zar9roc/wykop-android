@@ -28,7 +28,6 @@ internal class PhotoViewActivity : BaseActivity() {
         const val URLS_EXTRA = "URLS"
         const val INDEX_EXTRA = "INDEX"
         const val LABELS_EXTRA = "LABELS"
-        const val SHARE_REQUEST_CODE = 1
 
         fun createIntent(
             context: Context,
@@ -75,7 +74,8 @@ internal class PhotoViewActivity : BaseActivity() {
         binding.toolbar.toolbar.setBackgroundResource(BaseR.drawable.gradient_toolbar_up)
         urls = intent.getStringArrayListExtra(URLS_EXTRA)?.takeIf { it.isNotEmpty() } ?: return finish()
         labels = intent.getStringArrayListExtra(LABELS_EXTRA).orEmpty()
-        binding.pager.adapter = PhotoPagesAdapter(this, urls)
+        val chrome = MediaChromeController(this, binding.toolbar.toolbar)
+        binding.pager.adapter = PhotoPagesAdapter(this, urls, onTap = chrome::toggle)
         binding.pager.setCurrentItem(intent.getIntExtra(INDEX_EXTRA, 0).coerceIn(urls.indices), false)
         updateTitle()
         binding.pager.registerOnPageChangeCallback(

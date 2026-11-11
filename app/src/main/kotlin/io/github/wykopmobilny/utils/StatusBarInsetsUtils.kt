@@ -23,7 +23,9 @@ import io.github.wykopmobilny.debug.DiagnosticCheckpoint
  */
 fun View.applyStatusBarInsets() {
     ViewCompat.setOnApplyWindowInsetsListener(this) { view, windowInsets ->
-        val statusBarInsets = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars())
+        // IgnoringVisibility: w podgladzie mediow status bar bywa chowany tapnieciem
+        // (MediaChromeController) - padding nie moze wtedy skakac do 0 i z powrotem.
+        val statusBarInsets = windowInsets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.statusBars())
         view.setPadding(
             view.paddingLeft,
             statusBarInsets.top,

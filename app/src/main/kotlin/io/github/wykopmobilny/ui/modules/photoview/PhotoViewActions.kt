@@ -1,6 +1,7 @@
 package io.github.wykopmobilny.ui.modules.photoview
 
 import android.Manifest
+import android.content.ClipData
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -41,48 +42,46 @@ class PhotoViewActions(
 ) : PhotoViewCallbacks {
     companion object {
         const val SAVED_FOLDER = "wykopmobilny"
-        const val SHARED_FOLDER = "udostępnione"
+        private const val SHARE_CACHE_DIR = "shared_media"
     }
 
     private val photoView = context as PhotoViewActivity
 
     override fun shareImage(url: String) {
-        if (!checkForWriteReadPermission()) {
-            return
-        }
-
+        // Plik do udostepnienia ladujemy w cache aplikacji (cache-path w provider_paths):
+        // bez uprawnien do pamieci i bez zasmiecania galerii. Dawniej kopia szla do
+        // Pictures/wykopmobilny/udostepnione pod nazwa url.substringAfterLast("/") - z query
+        // stringiem CDN ("x.jpg?author=..&auth=..") zapis padal (MediaProvider odrzuca '?'
+        // w nazwie), a blad byl tylko logowany - przycisk "nic nie robil".
         Single
             .fromCallable {
-                val file =
+                val source =
                     Glide
                         .with(context)
                         .downloadOnly()
                         .load(url)
                         .submit()
                         .get()
-                val newFile =
-                    File(
-                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                        "$SAVED_FOLDER/$SHARED_FOLDER/" + url.substringAfterLast("/"),
-                    )
-                file.copyTo(newFile, true)
-                newFile
+                val dir = File(context.cacheDir, SHARE_CACHE_DIR)
+                // Poprzednio udostepnione pliki - odbiorca dawno je przeczytal.
+                dir.deleteRecursively()
+                dir.mkdirs()
+                File(dir, savedFileName(url, null).replace(FORBIDDEN_FILE_NAME_CHARS, "_").ifEmpty { "image" })
+                    .also { source.copyTo(it, overwrite = true) }
             }.subscribeOn(WykopSchedulers().backgroundThread())
             .observeOn(WykopSchedulers().mainThread())
             .subscribe(
                 { file ->
-                    addImageToGallery(file.path, context)
-
-                    val url = FileProvider.getUriForFile(context, context.applicationContext.packageName + ".fileprovider", file)
-                    val share = Intent(Intent.ACTION_SEND)
-                    share.type = getMimeType(url.path!!)
-                    share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    share.putExtra(Intent.EXTRA_STREAM, url)
-                    share.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    photoView.startActivityForResult(
-                        Intent.createChooser(share, "Udostępnij obrazek"),
-                        PhotoViewActivity.SHARE_REQUEST_CODE,
-                    )
+                    val uri = FileProvider.getUriForFile(context, context.applicationContext.packageName + ".fileprovider", file)
+                    val share =
+                        Intent(Intent.ACTION_SEND).apply {
+                            type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.extension.lowercase()) ?: "image/*"
+                            putExtra(Intent.EXTRA_STREAM, uri)
+                            // ClipData - zeby uprawnienie do odczytu przeszlo przez chooser na wybrana aplikacje.
+                            clipData = ClipData.newRawUri(null, uri)
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                    photoView.startActivity(Intent.createChooser(share, "Udostępnij obrazek"))
                 },
                 {
                     if (it is IOException) {
@@ -90,6 +89,7 @@ class PhotoViewActions(
                     } else {
                         Napier.e("Failed to share image $url", throwable = it)
                     }
+                    showToastMessage("Nie udało się udostępnić obrazka")
                 },
             )
     }
