@@ -14,7 +14,6 @@ import io.github.wykopmobilny.models.dataclass.NotificationGroup
 import io.github.wykopmobilny.models.dataclass.NotificationTargetKind
 import io.github.wykopmobilny.utils.api.getGroupColor
 import io.github.wykopmobilny.utils.linkhandler.WykopLinkHandler
-import io.github.wykopmobilny.utils.textview.removeHtml
 import io.github.wykopmobilny.utils.toPrettyDate
 
 /**
@@ -42,7 +41,8 @@ class NotificationGroupViewHolder(
     ) {
         binding.apply {
             val text = buildText(group)
-            body.setText(text.removeHtml(), TextView.BufferType.SPANNABLE)
+            // Tekst jest juz czysty (excerpt z repozytorium) - ponowny fromHtml gubil "<".
+            body.setText(text, TextView.BufferType.SPANNABLE)
             date.text = group.date?.toPrettyDate()
 
             val author = group.author

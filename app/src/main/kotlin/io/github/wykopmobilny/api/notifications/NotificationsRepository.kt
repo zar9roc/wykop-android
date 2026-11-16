@@ -9,6 +9,7 @@ import io.github.wykopmobilny.api.responses.v3.notifications.NotificationEntryRe
 import io.github.wykopmobilny.api.responses.v3.notifications.NotificationResponseV3
 import io.github.wykopmobilny.api.responses.v3.notifications.NotificationStatusResponseV3
 import io.github.wykopmobilny.api.responses.v3.notifications.NotificationTagResponseV3
+import io.github.wykopmobilny.kotlin.decodeHtmlEntities
 import io.github.wykopmobilny.models.dataclass.Notification
 import io.github.wykopmobilny.models.dataclass.NotificationTargetKind
 import io.github.wykopmobilny.models.mapper.apiv3.AuthorMapperV3
@@ -81,7 +82,7 @@ private fun NotificationResponseV3.targetTitle(): String? =
 private fun excerptOf(raw: String?): String? {
     val clean =
         raw
-            ?.removeHtml()
+            ?.decodeHtmlEntities()
             ?.replace(whitespaceRegex, " ")
             ?.trim()
             ?.takeIf { it.isNotBlank() }
@@ -197,12 +198,14 @@ private fun NotificationResponseV3.buildBody(): String =
             val username = user?.username
             val systemMessage = message
             val badgeName = badge?.name
-            val excerpt = (entry?.content ?: link?.title)?.removeHtml()?.take(EXCERPT_LENGTH)
+            val excerpt = (entry?.content ?: link?.title)?.decodeHtmlEntities()?.take(EXCERPT_LENGTH)
             when {
                 username != null && action != null ->
                     "$username $action" + if (excerpt.isNullOrBlank() || type == "new_follower") "" else ": $excerpt"
 
-                !systemMessage.isNullOrBlank() -> systemMessage
+                // Jedyny fragment, ktory moze niesc znaczniki z API - reszta body to czysty tekst
+                // (viewholdery nie parsuja juz HTML-a ponownie).
+                !systemMessage.isNullOrBlank() -> systemMessage.removeHtml()
 
                 badgeName != null -> "Otrzymano odznakę: $badgeName"
 

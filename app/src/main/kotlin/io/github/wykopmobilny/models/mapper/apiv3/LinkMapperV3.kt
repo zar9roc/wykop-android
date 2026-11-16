@@ -4,16 +4,16 @@ import io.github.wykopmobilny.api.entries.FilteredData
 import io.github.wykopmobilny.api.filters.OWMContentFilter
 import io.github.wykopmobilny.api.responses.v3.common.PaginationResponseV3
 import io.github.wykopmobilny.api.responses.v3.links.LinkResponseV3
+import io.github.wykopmobilny.kotlin.decodeHtmlEntities
 import io.github.wykopmobilny.models.dataclass.Link
 import io.github.wykopmobilny.utils.api.stripImageCompression
-import io.github.wykopmobilny.utils.textview.removeHtml
 
 fun LinkResponseV3.filterLinkV3(owmContentFilter: OWMContentFilter) =
     owmContentFilter.filterLink(
         Link(
             id = id,
-            title = title?.removeHtml().orEmpty(),
-            description = description?.removeHtml().orEmpty(),
+            title = title?.decodeHtmlEntities().orEmpty(),
+            description = description?.decodeHtmlEntities().orEmpty(),
             tags = tags?.joinToString(" ") { "#$it" }.orEmpty(),
             sourceUrl = source?.url.orEmpty(),
             sourceLabel = source?.label,

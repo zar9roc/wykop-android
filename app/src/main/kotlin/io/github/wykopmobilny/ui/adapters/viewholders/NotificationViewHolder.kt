@@ -8,9 +8,8 @@ import io.github.wykopmobilny.databinding.NotificationsListItemBinding
 import io.github.wykopmobilny.debug.DiagnosticCheckpoint
 import io.github.wykopmobilny.models.dataclass.Notification
 import io.github.wykopmobilny.utils.api.getGroupColor
-import io.github.wykopmobilny.utils.textview.removeHtml
-import io.github.wykopmobilny.utils.toPrettyDate
 import io.github.wykopmobilny.utils.linkhandler.WykopLinkHandler
+import io.github.wykopmobilny.utils.toPrettyDate
 
 class NotificationViewHolder(
     private val binding: NotificationsListItemBinding,
@@ -20,7 +19,8 @@ class NotificationViewHolder(
     fun bindNotification(notification: Notification) {
         binding.apply {
             // Setup widgets
-            body.setText(notification.body.removeHtml(), TextView.BufferType.SPANNABLE)
+            // body jest juz czystym tekstem (NotificationsRepository) - ponowny fromHtml gubil "<".
+            body.setText(notification.body, TextView.BufferType.SPANNABLE)
             date.text = notification.date?.toPrettyDate()
             unreadLine.isVisible = notification.new
             unreadMark.isVisible = notification.new

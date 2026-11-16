@@ -3,7 +3,45 @@ package io.github.wykopmobilny.kotlin
 private val italicRegex =
     Regex("(?<![\\p{L}\\p{N}_@#])_(?=[^\\s_])(.+?)(?<=[^\\s_])_(?![\\p{L}\\p{N}_])")
 
-private val urlRegex = Regex("https?://[^\\s<>\"]+")
+// URL konczy sie tez na zescapowanym "<" / ">" (&lt; / &gt;) - inaczej "<https://x.pl>"
+// dalby link z doklejonym "&gt;".
+private const val URL_PATTERN = "https?://(?:(?!&[lg]t;)[^\\s<>\"])+"
+
+private val urlRegex = Regex(URL_PATTERN)
+
+/**
+ * Tresc z API v3 to markdown, NIE HTML: "<" i ">" przychodza surowe (cytat to linia
+ * zaczynajaca sie od ">"). Bez escapowania Html.fromHtml bral "<cokolwiek>" - a nawet
+ * samotne "<" - za znacznik i tekst znikal. "&" zostawiamy: API przysyla encje
+ * (np. "&#39;"), ktore parser ma dalej dekodowac.
+ */
+private fun String.escapeAngleBrackets() = replace("<", "&lt;").replace(">", "&gt;")
+
+private val htmlEntityRegex = Regex("&(#[0-9]+|#[xX][0-9a-fA-F]+|amp|lt|gt|quot|apos|nbsp);")
+
+/**
+ * Czysty tekst z API (tytul/opis znaleziska, zajawki powiadomien) -> tekst do wyswietlenia.
+ * Taki tekst nie zawiera znacznikow, tylko encje (np. "&#39;"), wiec zamiast Html.fromHtml
+ * (ktory bral surowe "<cos>" za znacznik i gubil tekst) dekodujemy same encje.
+ */
+fun String.decodeHtmlEntities(): String {
+    if ('&' !in this) return this
+    return htmlEntityRegex.replace(this) { match ->
+        when (val entity = match.groupValues[1]) {
+            "amp" -> "&"
+            "lt" -> "<"
+            "gt" -> ">"
+            "quot" -> "\""
+            "apos" -> "'"
+            "nbsp" -> " "
+            else -> {
+                val code =
+                    if (entity[1] == 'x' || entity[1] == 'X') entity.substring(2).toIntOrNull(16) else entity.substring(1).toIntOrNull()
+                code?.takeIf(Character::isValidCodePoint)?.let { String(Character.toChars(it)) } ?: match.value
+            }
+        }
+    }
+}
 
 /**
  * Converts Wykop v3 markdown-like content to HTML for display.
@@ -38,8 +76,9 @@ fun String.convertWykopContentToHtml(): String {
     for ((index, line) in lines.withIndex()) {
         val trimmed = line.trimStart()
         when {
+            // Znacznik cytatu wykrywamy na surowej linii, escapujemy dopiero jej tresc.
             trimmed.startsWith(">") -> {
-                quoteBuffer += trimmed.removePrefix(">").trim()
+                quoteBuffer += trimmed.removePrefix(">").trim().escapeAngleBrackets()
             }
 
             // Pusta linia miedzy liniami cytatu nalezy do cytatu - nie rozbija bloku.
@@ -51,13 +90,13 @@ fun String.convertWykopContentToHtml(): String {
 
             trimmed.startsWith("!") && trimmed.length > 1 -> {
                 flushQuote()
-                val spoilerContent = trimmed.removePrefix("!").trim()
+                val spoilerContent = trimmed.removePrefix("!").trim().escapeAngleBrackets()
                 htmlLines += "<spoiler>$spoilerContent</spoiler>"
             }
 
             else -> {
                 flushQuote()
-                htmlLines += line
+                htmlLines += line.escapeAngleBrackets()
             }
         }
     }
@@ -94,7 +133,7 @@ fun String.convertWykopContentToHtml(): String {
 
     // Restore code blocks
     for (i in codeBlocks.indices) {
-        html = html.replace("\u0000CODE$i\u0000", "<code>${codeBlocks[i]}</code>")
+        html = html.replace("\u0000CODE$i\u0000", "<code>${codeBlocks[i].escapeAngleBrackets()}</code>")
     }
 
     return html
@@ -130,7 +169,7 @@ fun String.linkifyTagsAndMentions(): String {
 // (?<!&) - encje ("&#39;") nie sa poprzedzone bialym znakiem, wiec nie lapia sie.
 private val linkableRegex =
     Regex(
-        "(https?://[^\\s<>\"]+)" +
+        "($URL_PATTERN)" +
             "|(?<![^\\s>])(#)(\\w+)" +
             "|(?<![^\\s>])(@)([\\w-]+)",
     )

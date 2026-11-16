@@ -102,6 +102,47 @@ class WykopContentFormattingTest {
     }
 
     @Test
+    fun `angle brackets in content are escaped, not parsed as tags`() {
+        // Html.fromHtml bral "<cos>" i samotne "<" za znacznik - tekst znikal.
+        assertEquals("a &lt;b&gt; c", "a <b> c".convertWykopContentToHtml())
+        assertEquals("2 &lt; 3 i dalej", "2 < 3 i dalej".convertWykopContentToHtml())
+        assertEquals("&lt;3 &gt;_&lt;", "<3 >_<".convertWykopContentToHtml())
+    }
+
+    @Test
+    fun `quote marker still detected while its content is escaped`() {
+        assertEquals("<blockquote>a &lt;b&gt;</blockquote>", "> a <b>".convertWykopContentToHtml())
+        assertEquals("<blockquote>&gt; zagniezdzony</blockquote>", ">> zagniezdzony".convertWykopContentToHtml())
+    }
+
+    @Test
+    fun `angle brackets escaped in spoilers and code`() {
+        assertEquals("<spoiler>x &lt;y&gt;</spoiler>", "! x <y>".convertWykopContentToHtml())
+        assertEquals("<code>List&lt;String&gt;</code>", "`List<String>`".convertWykopContentToHtml())
+    }
+
+    @Test
+    fun `entities from api are kept for the html parser`() {
+        assertEquals("to &#39;nic&#39; &amp; tyle", "to &#39;nic&#39; &amp; tyle".convertWykopContentToHtml())
+    }
+
+    @Test
+    fun `url wrapped in angle brackets does not swallow the bracket`() {
+        assertEquals(
+            """&lt;<a href="https://x.pl/a">https://x.pl/a</a>&gt;""",
+            "<https://x.pl/a>".convertWykopContentToHtml().linkifyTagsAndMentions(),
+        )
+    }
+
+    @Test
+    fun `plain api text decodes entities and keeps angle brackets`() {
+        assertEquals("Ceny <spadaja> & 'rosna'", "Ceny <spadaja> &amp; &#39;rosna&#39;".decodeHtmlEntities())
+        assertEquals("2 < 3 \"x\" é", "2 &lt; 3 &quot;x&quot; &#xE9;".decodeHtmlEntities())
+        // Nieznane/niepelne encje i samotny "&" zostaja nietkniete.
+        assertEquals("A & B &foo; &#;", "A & B &foo; &#;".decodeHtmlEntities())
+    }
+
+    @Test
     fun `underscores in urls and mentions are not italic`() {
         assertEquals("https://x.pl/_a_/b", "https://x.pl/_a_/b".convertWykopContentToHtml())
         assertEquals("@_nick_ hej", "@_nick_ hej".convertWykopContentToHtml())

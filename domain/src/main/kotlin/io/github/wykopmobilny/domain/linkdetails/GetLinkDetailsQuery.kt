@@ -44,6 +44,7 @@ import io.github.wykopmobilny.storage.api.LoggedUserInfo
 import io.github.wykopmobilny.storage.api.UserInfoStorage
 import io.github.wykopmobilny.kotlin.AppDispatchers
 import io.github.wykopmobilny.kotlin.AppScopes
+import io.github.wykopmobilny.kotlin.decodeHtmlEntities
 import io.github.wykopmobilny.ui.base.FailedAction
 import io.github.wykopmobilny.ui.base.Resource
 import io.github.wykopmobilny.ui.base.components.ContextMenuOptionUi
@@ -115,8 +116,8 @@ internal class GetLinkDetailsQuery
                         LinkDetailsHeaderUi.Loading
                     } else {
                         LinkDetailsHeaderUi.WithData(
-                            title = textUtils.parseHtml(link.title).toString(),
-                            body = textUtils.parseHtml(link.description).toString(),
+                            title = link.title.decodeHtmlEntities(),
+                            body = link.description.decodeHtmlEntities(),
                             domain =
                                 link.sourceUrl
                                     .takeIf { it.isNotEmpty() }
