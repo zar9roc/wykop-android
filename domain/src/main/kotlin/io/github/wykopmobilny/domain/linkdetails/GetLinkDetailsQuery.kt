@@ -126,7 +126,9 @@ internal class GetLinkDetailsQuery
                             badge = ColorConst.LinkBadgeHot.takeIf { link.isHot },
                             voteCount =
                                 TwoActionsCounterUi(
-                                    count = link.voteCount,
+                                    // Wynik = wykopy - zakopy, spojnie z listami (LinkMapperV3). Liczniki
+                                    // w cache trzymamy osobno, wiec zakop od razu obniza wynik.
+                                    count = link.voteCount - link.buryCount,
                                     color =
                                         when (link.userAction) {
                                             UserVote.Up -> ColorConst.CounterUpvoted
