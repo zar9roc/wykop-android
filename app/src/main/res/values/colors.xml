@@ -72,6 +72,9 @@
 
     <color name="colorBadgeOwn">#3498db</color>
     <color name="colorBadgeAuthors">#F75616</color>
+    <!-- Tlo komentarza, do ktorego prowadzi link (/komentarz/{id}, #comment-{id}) -
+         wspolne dla komentarzy wpisow i znalezisk. ~15% bursztynu, czytelne w kazdym motywie. -->
+    <color name="linkedCommentBackground">#26FFC107</color>
     <color name="colorBadgeHot">#f71e16</color>
 
     <color name="linkItemClicked">#f3f3f3</color>

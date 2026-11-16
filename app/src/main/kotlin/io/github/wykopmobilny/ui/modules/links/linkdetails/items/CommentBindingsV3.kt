@@ -24,10 +24,6 @@ import io.github.wykopmobilny.utils.textview.BetterLinkMovementMethod
 import androidx.appcompat.R as AppcompatR
 import io.github.wykopmobilny.ui.base.android.R as BaseR
 
-// Delikatne zolte tlo komentarza docelowego (nawigacja z powiadomienia) - ~15% alpha,
-// czytelne na jasnym i ciemnym motywie.
-private val linkedCommentBackground = 0x26FFC107.toInt()
-
 // Layouty komentarzy maja ViewStub z domyslnym WykopEmbedView (@layout/stub_embed).
 // Renderujemy embed 1:1 jak na mikroblogu (miniatura + ikona dostawcy w rogu, badge
 // GIF, zaslona 18+/nsfw). Klikniecie deleguje do akcji z domeny (clickAction), wiec
@@ -115,7 +111,7 @@ internal fun TopLinkCommentLayoutBinding.bindParentCommentV3(
             root.context.readColorAttr(AppcompatR.attr.colorControlHighlight).defaultColor,
         )
     } else if (data.badge == ColorConst.CommentLinked) {
-        root.setBackgroundColor(linkedCommentBackground)
+        root.setBackgroundColor(root.context.getColor(R.color.linkedCommentBackground))
     } else {
         root.background = null
     }
@@ -216,7 +212,7 @@ internal fun LinkCommentLayoutBinding.bindReplyCommentV3(
             root.context.readColorAttr(AppcompatR.attr.colorControlHighlight).defaultColor,
         )
     } else if (comment.badge == ColorConst.CommentLinked) {
-        root.setBackgroundColor(linkedCommentBackground)
+        root.setBackgroundColor(root.context.getColor(R.color.linkedCommentBackground))
     } else {
         root.background = null
     }

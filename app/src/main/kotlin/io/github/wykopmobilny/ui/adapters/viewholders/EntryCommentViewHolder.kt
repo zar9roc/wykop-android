@@ -447,9 +447,15 @@ class EntryCommentViewHolder(
             binding.authorBadgeStrip.isVisible = false
         }
 
+        // Komentarz z linku (/wpis/{id}/komentarz/{commentId}): zielony pasek + zolte tlo calego
+        // wiersza - jak w komentarzach znalezisk (CommentBindingsV3). Sam pasek byl ledwo widoczny.
+        // Wiersze sa recyklingowane, wiec tlo zawsze ustawiamy albo zerujemy.
         if (commentId == comment.id) {
             binding.authorBadgeStrip.isVisible = true
             binding.authorBadgeStrip.setBackgroundColor(ContextCompat.getColor(itemView.context, R.color.plusPressedColor))
+            itemView.setBackgroundColor(ContextCompat.getColor(itemView.context, R.color.linkedCommentBackground))
+        } else {
+            itemView.background = null
         }
     }
 }
