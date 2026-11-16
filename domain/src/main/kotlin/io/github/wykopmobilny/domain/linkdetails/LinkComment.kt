@@ -42,13 +42,6 @@ internal fun Embed.toUi(
 ) = EmbedMediaUi(
     content =
         when (type) {
-            EmbedType.AnimatedImage -> {
-                EmbedMediaUi.Content.PlayableMedia(
-                    previewImage = preview,
-                    domain = "Gif",
-                )
-            }
-
             EmbedType.Video -> {
                 EmbedMediaUi.Content.PlayableMedia(
                     previewImage = preview,
@@ -56,6 +49,10 @@ internal fun Embed.toUi(
                 )
             }
 
+            // GIF to obrazek ze znacznikiem w rogu (isAnimated + rozmiar) - jak w komentarzach
+            // wpisow. Jako PlayableMedia trafial do WykopEmbedView jako "video" i znacznika nie bylo.
+            // Klikniecie i tak idzie przez MediaHandler (AnimatedImage -> ShowGif).
+            EmbedType.AnimatedImage,
             EmbedType.StaticImage,
             EmbedType.Unknown,
             -> {

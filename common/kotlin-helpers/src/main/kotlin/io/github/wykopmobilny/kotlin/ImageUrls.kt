@@ -19,3 +19,18 @@ fun String.withImageParams(params: String?): String {
         this
     }
 }
+
+private const val BYTES_IN_KILOBYTE = 1024L
+private const val BYTES_IN_MEGABYTE = 1024L * 1024L
+private const val HALF_KB = 512L
+
+/**
+ * Czytelny rozmiar pliku do znacznika GIF-a w rogu miniatury ("390 KB", "2.4 MB").
+ * Wspolny dla wpisow (MediaMapperV3) i komentarzy znalezisk - badge ma wygladac tak samo.
+ */
+fun formatFileSize(bytes: Long): String =
+    if (bytes < BYTES_IN_MEGABYTE) {
+        "${(bytes + HALF_KB) / BYTES_IN_KILOBYTE} KB"
+    } else {
+        String.format(java.util.Locale.getDefault(), "%.1f MB", bytes.toDouble() / BYTES_IN_MEGABYTE)
+    }

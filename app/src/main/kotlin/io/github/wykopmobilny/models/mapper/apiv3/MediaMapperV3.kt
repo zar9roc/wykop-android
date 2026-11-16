@@ -3,12 +3,9 @@ package io.github.wykopmobilny.models.mapper.apiv3
 import io.github.wykopmobilny.api.responses.v3.media.EmbedResponseV3
 import io.github.wykopmobilny.api.responses.v3.media.MediaResponseV3
 import io.github.wykopmobilny.api.responses.v3.media.PhotoResponseV3
+import io.github.wykopmobilny.kotlin.formatFileSize
 import io.github.wykopmobilny.models.dataclass.Embed
 import io.github.wykopmobilny.utils.withImageParams
-
-private const val BYTES_IN_KILOBYTE = 1024L
-private const val BYTES_IN_MEGABYTE = 1024L * 1024L
-private const val HALF_KB = 512L
 
 object MediaMapperV3 {
     // Flaga 18+ (adult) jest na poziomie tresci (wpis/komentarz), a NIE na zdjeciu -
@@ -58,13 +55,6 @@ object MediaMapperV3 {
             size = photo.size?.let(::formatFileSize).orEmpty(),
             label = photo.label?.trim()?.takeIf { it.isNotEmpty() },
         )
-
-    private fun formatFileSize(bytes: Long): String =
-        if (bytes < BYTES_IN_MEGABYTE) {
-            "${(bytes + HALF_KB) / BYTES_IN_KILOBYTE} KB"
-        } else {
-            String.format(java.util.Locale.getDefault(), "%.1f MB", bytes.toDouble() / BYTES_IN_MEGABYTE)
-        }
 
     private fun mapEmbed(
         embed: EmbedResponseV3,

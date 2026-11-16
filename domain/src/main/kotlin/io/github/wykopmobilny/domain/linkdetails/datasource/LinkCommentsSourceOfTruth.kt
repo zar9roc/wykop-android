@@ -16,6 +16,7 @@ import io.github.wykopmobilny.domain.profile.datasource.upsertV3
 import io.github.wykopmobilny.domain.profile.toColorDomain
 import io.github.wykopmobilny.domain.profile.toGenderDomain
 import io.github.wykopmobilny.kotlin.AppDispatchers
+import io.github.wykopmobilny.kotlin.formatFileSize
 import io.github.wykopmobilny.kotlin.withImageParams
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -73,12 +74,15 @@ internal suspend fun persistLinkComments(
                 cache.embedQueries.insertOrReplace(
                     Embed(
                         id = photo.url,
-                        type = EmbedType.StaticImage,
+                        // GIF rozpoznajemy po mime_type - jak we wpisach (MediaMapperV3). Wczesniej
+                        // kazde zdjecie bylo StaticImage i GIF nie mial znacznika w rogu.
+                        type = if (photo.mimeType == "image/gif") EmbedType.AnimatedImage else EmbedType.StaticImage,
                         fileName = photo.source,
                         // Wariant w400 z CDN do wyswietlania na liscie - pelna
                         // rozdzielczosc (id) tylko w pelnoekranowym podgladzie.
                         preview = photo.url.withImageParams("w400"),
-                        size = null,
+                        // Rozmiar pliku do znacznika GIF-a ("390 KB"), sformatowany jak we wpisach.
+                        size = photo.size?.let(::formatFileSize),
                         // Flaga 18+ jest na komentarzu (adult), nie na zdjeciu - schemat Photo
                         // w API nie ma plus18, wiec dawniej hasAdultContent bylo zawsze false.
                         hasAdultContent = comment.adult ?: false,
