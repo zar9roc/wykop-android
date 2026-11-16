@@ -23,6 +23,7 @@ import io.github.wykopmobilny.ui.modules.input.entry.edit.EditEntryActivity
 import io.github.wykopmobilny.ui.modules.input.link.edit.LinkCommentEditActivity
 import io.github.wykopmobilny.ui.modules.links.downvoters.DownvotersActivity
 import io.github.wykopmobilny.ui.modules.links.linkdetails.LinkDetailsActivityV2
+import io.github.wykopmobilny.ui.modules.links.linkdetails.PendingLinkReply
 import io.github.wykopmobilny.ui.modules.links.relatedlinks.RelatedLinksActivity
 import io.github.wykopmobilny.ui.modules.links.upvoters.UpvotersActivity
 import io.github.wykopmobilny.ui.modules.loginscreen.LoginScreenActivity
@@ -210,6 +211,14 @@ class NewNavigator
             linkId: Long,
             commentId: Long = -1L,
         ) = context.startActivity(LinkDetailsActivityV2.createIntent(context, linkId, if (commentId != -1L) commentId else null))
+
+        // "Odpowiedz"/"Cytuj" pod komentarzem znaleziska na liscie - ekran znaleziska
+        // zakotwiczony na komentarzu, z ustawionym watkiem i wypelnionym polem odpowiedzi.
+        internal fun openLinkDetailsAndReply(
+            linkId: Long,
+            commentId: Long,
+            reply: PendingLinkReply,
+        ) = context.startActivity(LinkDetailsActivityV2.createIntent(context, linkId, commentId, reply))
 
         fun openLinkDownvotersActivity(linkId: Long) = context.startActivity(DownvotersActivity.createIntent(linkId, context))
 

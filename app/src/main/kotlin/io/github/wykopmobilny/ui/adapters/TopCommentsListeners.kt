@@ -12,6 +12,7 @@ import io.github.wykopmobilny.ui.fragments.entrycomments.EntryCommentInteractor
 import io.github.wykopmobilny.ui.adapters.viewholders.EntryListener
 import io.github.wykopmobilny.ui.fragments.entrycomments.EntryCommentViewListener
 import io.github.wykopmobilny.ui.modules.NewNavigator
+import io.github.wykopmobilny.ui.modules.links.linkdetails.PendingLinkReply
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -120,18 +121,46 @@ class ListLinkCommentActionListener(
 }
 
 /**
- * "Odpowiedz"/"Cytuj" pod komentarzem znaleziska na liscie - pasek odpowiedzi jest na
- * ekranie znaleziska, wiec tam przenosimy (zakotwiczone na komentarzu).
+ * Komentarze znalezisk na listach mieszanych (profil: Znalezisko -> komentarz -> odpowiedz).
+ * Tapniecie otwiera znalezisko zakotwiczone na komentarzu (przewiniecie + zolte tlo).
+ * "Odpowiedz"/"Cytuj" - pasek odpowiedzi jest na ekranie znaleziska, wiec tam przenosimy
+ * razem z watkiem i wypelnionym polem (wczesniej ekran otwieral sie z pustym polem).
+ *
+ * [threadAuthorOf] - autor komentarza glownego watku (do paska "w watku @nick"); dla
+ * odpowiedzi szukany w wierszu rodzica na liscie, null gdy go tam nie ma.
  */
 class ListLinkCommentViewListener(
     private val navigator: NewNavigator,
+    private val threadAuthorOf: (LinkCommentV3Item) -> String?,
 ) : LinkCommentViewListener {
-    override fun replyComment(comment: LinkCommentV3Item) = navigator.openLinkDetailsActivity(comment.linkId, comment.id)
+    override fun openComment(comment: LinkCommentV3Item) = navigator.openLinkDetailsActivity(comment.linkId, comment.id)
 
-    override fun quoteComment(comment: LinkCommentV3Item) = navigator.openLinkDetailsActivity(comment.linkId, comment.id)
+    override fun replyComment(comment: LinkCommentV3Item) =
+        navigator.openLinkDetailsAndReply(
+            linkId = comment.linkId,
+            commentId = comment.id,
+            reply = PendingLinkReply(comment.threadId, threadAuthorOf(comment), replyToAuthor = comment.author.nick),
+        )
+
+    override fun quoteComment(comment: LinkCommentV3Item) =
+        navigator.openLinkDetailsAndReply(
+            linkId = comment.linkId,
+            commentId = comment.id,
+            reply =
+                PendingLinkReply(
+                    comment.threadId,
+                    threadAuthorOf(comment),
+                    quoteAuthor = comment.author.nick,
+                    quoteBody = comment.body.orEmpty(),
+                ),
+        )
 
     override fun setCollapsed(
         comment: LinkCommentV3Item,
         isCollapsed: Boolean,
     ) = Unit
 }
+
+/** Id komentarza glownego watku - odpowiedz ma parentId, komentarz glowny nie (null). */
+private val LinkCommentV3Item.threadId: Long
+    get() = parentId ?: id

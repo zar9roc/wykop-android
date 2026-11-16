@@ -77,7 +77,7 @@ class EntryLinksAdapter
         private val topCommentsViewListener = TopCommentsViewListener(navigator)
         private val linkCommentActionListener =
             ListLinkCommentActionListener(linkCommentInteractor, navigator, disposables, ::updateLinkComment)
-        private val linkCommentViewListener = ListLinkCommentViewListener(navigator)
+        private val linkCommentViewListener = ListLinkCommentViewListener(navigator, ::threadAuthorOf)
 
         // "Odpowiedz"/"Cytuj" pod wpisem na liscie - przejscie na ekran wpisu z gotowym polem.
         private val listReplyListener = entryReplyListener(navigator)
@@ -306,6 +306,15 @@ class EntryLinksAdapter
             if (position < 0) return
             dataset[position] = EntryListRow.CommentRow(comment)
             notifyItemChanged(position)
+        }
+
+        // Autor komentarza glownego watku: dla komentarza glownego on sam, dla odpowiedzi -
+        // wiersz rodzica na tej liscie (profil pokazuje Znalezisko -> komentarz -> odpowiedz).
+        private fun threadAuthorOf(comment: LinkCommentV3Item): String? {
+            val parentId = comment.parentId?.takeIf { it != comment.id } ?: return comment.author.nick
+            return dataset
+                .firstOrNull { it is EntryListRow.LinkCommentRow && it.comment.id == parentId }
+                ?.let { (it as EntryListRow.LinkCommentRow).comment.author.nick }
         }
 
         private fun updateLinkComment(comment: LinkCommentV3Item) {

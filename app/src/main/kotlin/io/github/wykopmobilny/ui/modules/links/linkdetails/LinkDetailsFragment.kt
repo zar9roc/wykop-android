@@ -50,6 +50,7 @@ import io.github.wykopmobilny.utils.bindings.drawableRes
 import io.github.wykopmobilny.utils.longArgument
 import io.github.wykopmobilny.utils.recyclerview.ViewHolderDependentItemDecorator
 import io.github.wykopmobilny.utils.longArgumentNullable
+import io.github.wykopmobilny.utils.stringArgumentNullable
 import io.github.wykopmobilny.utils.viewModelWrapperFactoryKeyed
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
@@ -91,6 +92,15 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
 
     var linkId by longArgument("linkId")
     var commentId by longArgumentNullable("commentId")
+
+    // Wejscie z listy (np. profil) przez "Odpowiedz"/"Cytuj" pod komentarzem: watek, do ktorego
+    // poleci odpowiedz, i tresc do wstawienia w pole - jak na ekranie wpisu (EntryDetailsFragment).
+    // Stosowane raz przy konfiguracji paska, potem czyszczone (nie wracaja po obrocie).
+    private var replyThreadId by longArgumentNullable("replyThreadId")
+    private var replyThreadAuthor by stringArgumentNullable("replyThreadAuthor")
+    private var replyToAuthor by stringArgumentNullable("replyToAuthor")
+    private var quoteAuthor by stringArgumentNullable("quoteAuthor")
+    private var quoteBody by stringArgumentNullable("quoteBody")
 
     private val key
         get() =
@@ -315,6 +325,7 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
                     cameraCapture.launch(uri)
                 }
             }
+        applyPendingReply(toolbar)
         return LinkDetailsAdapterV3(
             onReplyComment = { author, thread ->
                 setReplyThread(thread)
@@ -328,12 +339,35 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
     }
 
     /**
+     * "Odpowiedz"/"Cytuj" przekazane z listy: ustawia watek i wstawia adresata albo cytat -
+     * dokladnie to, co robia przyciski pod komentarzem na tym ekranie.
+     */
+    private fun applyPendingReply(toolbar: InputToolbar) {
+        val threadId = replyThreadId ?: return
+        setReplyThread(LinkCommentThread(parentId = threadId, parentAuthor = replyThreadAuthor.orEmpty()))
+        val quotedAuthor = quoteAuthor
+        val quotedBody = quoteBody
+        val repliedAuthor = replyToAuthor
+        when {
+            quotedAuthor != null && quotedBody != null -> toolbar.addQuoteText(quotedBody, quotedAuthor)
+            repliedAuthor != null -> toolbar.addAddressant(repliedAuthor)
+        }
+        replyThreadId = null
+        replyThreadAuthor = null
+        replyToAuthor = null
+        quoteAuthor = null
+        quoteBody = null
+    }
+
+    /**
      * Ustawia watek, do ktorego poleci komentarz, i pokazuje pasek nad polem
      * tekstowym. "X" na pasku wraca do komentarza glownego.
      */
     private fun setReplyThread(thread: LinkCommentThread?) {
         replyThread = thread
-        inputToolbar?.setReplyContext(thread?.parentAuthor) { setReplyThread(null) }
+        // Autor watku moze byc nieznany (wejscie z listy bez wiersza rodzica) - wtedy
+        // odpowiedz i tak trafia do watku, tylko bez paska "w watku @nick".
+        inputToolbar?.setReplyContext(thread?.parentAuthor?.takeIf { it.isNotBlank() }) { setReplyThread(null) }
     }
 
     private fun sendComment(
@@ -452,10 +486,18 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
         fun newInstance(
             linkId: Long,
             commentId: Long?,
+            reply: PendingLinkReply? = null,
         ): LinkDetailsFragment =
             LinkDetailsFragment().apply {
                 this.linkId = linkId
                 this.commentId = commentId
+                if (reply != null) {
+                    replyThreadId = reply.threadId
+                    replyThreadAuthor = reply.threadAuthor
+                    replyToAuthor = reply.replyToAuthor
+                    quoteAuthor = reply.quoteAuthor
+                    quoteBody = reply.quoteBody
+                }
             }
     }
 }

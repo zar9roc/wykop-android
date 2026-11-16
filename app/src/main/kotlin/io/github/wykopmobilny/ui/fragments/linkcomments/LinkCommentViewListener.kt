@@ -11,4 +11,10 @@ interface LinkCommentViewListener {
         comment: LinkCommentV3Item,
         isCollapsed: Boolean,
     )
+
+    /**
+     * Tapniecie w komentarz/odpowiedz. Domyslnie nic - na ekranie z komentarzami jestesmy
+     * juz na miejscu; listy (profil) przenosza do znaleziska zakotwiczonego na komentarzu.
+     */
+    fun openComment(comment: LinkCommentV3Item) = Unit
 }

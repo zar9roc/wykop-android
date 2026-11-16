@@ -222,9 +222,13 @@ abstract class BaseLinkCommentViewHolder(
     }
 
     private fun handleClick(comment: LinkCommentV3Item) {
-        // Register click listener for comments list
-        if (commentViewListener == null) {
+        // Bez listenera - nawigacja wprost; z listenerem decyduje on (listy mieszane, np. profil,
+        // otwieraja znalezisko na tym komentarzu). Dawniej z listenerem tapniecie nic nie robilo.
+        val listener = commentViewListener
+        if (listener == null) {
             navigator.openLinkDetailsActivity(comment.linkId, comment.id)
+        } else {
+            listener.openComment(comment)
         }
     }
 
