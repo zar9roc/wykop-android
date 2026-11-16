@@ -24,6 +24,9 @@ internal data class LinkComment(
     // Przy usunietym komentarzu API dalej zwraca slug - skrocona tresc oryginalu.
     // Tapniecie w adnotacje "Komentarz usuniety" pokazuje ja w dialogu (jak w mikroblogu).
     val slug: String?,
+    // Uprawnienia zalogowanego z API v3 (null = API nie podalo).
+    val editable: Boolean?,
+    val deletable: Boolean?,
 ) {
     /** Tresc usunietego komentarza do podgladu/kopiowania; null gdy komentarz nie jest usuniety albo brak sluga. */
     val deletedContent: String?

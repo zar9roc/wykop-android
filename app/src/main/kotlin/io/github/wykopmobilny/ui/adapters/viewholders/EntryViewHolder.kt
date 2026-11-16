@@ -363,9 +363,10 @@ class EntryViewHolder(
                 dialog.dismiss()
             }
 
-            val canUserEdit = isAuthorized && entry.author.nick == userManagerApi.getUserCredentials()?.login
-            entryMenuDelete.isVisible = canUserEdit
-            entryMenuEdit.isVisible = canUserEdit
+            // O edycji/usuwaniu decyduje backend (editable/deletable) - uwzglednia autorstwo
+            // i np. wygasanie edycji po czasie. Brak flagi = brak uprawnienia.
+            entryMenuDelete.isVisible = entry.deletable == true
+            entryMenuEdit.isVisible = entry.editable == true
         }
 
         val mBehavior = BottomSheetBehavior.from(bottomSheetView.root.parent as View)

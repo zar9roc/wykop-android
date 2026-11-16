@@ -133,6 +133,8 @@ internal suspend fun persistLinkComments(
                     deletedReason = comment.deleted,
                     slug = comment.slug,
                     authorHasNote = if (comment.author.username in noNoteOverrides) false else comment.author.note ?: false,
+                    editable = comment.editable,
+                    deletable = comment.deletable,
                 ),
             )
         }
@@ -145,6 +147,8 @@ private fun SelectByLinkId.toContent() =
         body = body,
         deletedReason = deletedReason,
         slug = slug,
+        editable = editable,
+        deletable = deletable,
         postedAt = postedAt,
         author =
             UserInfo(

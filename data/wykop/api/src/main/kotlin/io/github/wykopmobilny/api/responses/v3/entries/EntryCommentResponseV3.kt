@@ -18,6 +18,7 @@ data class EntryCommentResponseV3(
     @field:Json(name = "media") val media: MediaResponseV3?,
     @field:Json(name = "adult") val adult: Boolean?,
     @field:Json(name = "deletable") val deletable: Boolean?,
+    @field:Json(name = "editable") val editable: Boolean?,
     @field:Json(name = "votes") val votes: VotesResponseV3,
     @field:Json(name = "parent_id") val parentId: Long?,
     @field:Json(name = "resource") val resource: String,

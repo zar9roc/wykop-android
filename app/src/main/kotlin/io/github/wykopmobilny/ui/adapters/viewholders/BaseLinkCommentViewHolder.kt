@@ -386,9 +386,9 @@ abstract class BaseLinkCommentViewHolder(
                 dialog.dismiss()
             }
 
-            val canUserEdit = comment.author.nick == userManagerApi.getUserCredentials()?.login
-            commentMenuDelete.isVisible = !isDeleted && canUserEdit
-            commentMenuEdit.isVisible = !isDeleted && canUserEdit
+            // O edycji/usuwaniu decyduje backend (editable/deletable). Brak flagi = nie.
+            commentMenuDelete.isVisible = !isDeleted && comment.deletable == true
+            commentMenuEdit.isVisible = !isDeleted && comment.editable == true
         }
 
         val mBehavior = BottomSheetBehavior.from(bottomSheetView.root.parent as View)

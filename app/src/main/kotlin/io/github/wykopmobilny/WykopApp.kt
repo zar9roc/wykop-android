@@ -633,6 +633,13 @@ open class WykopApp :
                     is InteropRequest.EditNote -> {
                         editNote(context, it.username)
                     }
+
+                    is InteropRequest.EditLinkComment -> {
+                        // startActivityForResult z biezacej aktywnosci (LinkDetailsActivityV2) -
+                        // po powrocie (EDIT_LINK_COMMENT) ekran znaleziska przeladowuje komentarze.
+                        NewNavigator(context, settingsPreferencesApi.get())
+                            .openEditLinkCommentActivity(commentId = it.commentId, body = it.body, linkId = it.linkId)
+                    }
                 }.run { }
             }
         }

@@ -92,7 +92,6 @@ class EntryCommentViewHolder(
     private val isUserAuthorized = userCredentials != null
     var type: Int = TYPE_NORMAL
     private var isAuthorComment: Boolean = false
-    private var isOwnEntry: Boolean = false
     lateinit var embedView: WykopEmbedView
 
     private val isEmbedViewResized: Boolean
@@ -119,7 +118,6 @@ class EntryCommentViewHolder(
             showAdultContent = showAdultContent,
             hideNsfw = hideNsfw,
         )
-        isOwnEntry = entryAuthor?.nick == userCredentials?.login
         isAuthorComment = entryAuthor?.nick == comment.author.nick
         setStyleForComment(comment, highlightCommentId)
     }
@@ -408,11 +406,10 @@ class EntryCommentViewHolder(
                 dialog.dismiss()
             }
 
-            val canUserEdit =
-                isUserAuthorized &&
-                    comment.author.nick == userCredentials?.login
-            entryCommentMenuDelete.isVisible = !isDeleted && (canUserEdit || isOwnEntry)
-            entryCommentMenuEdit.isVisible = !isDeleted && canUserEdit
+            // O edycji/usuwaniu decyduje backend (editable/deletable) - uwzglednia autorstwo,
+            // prawo autora wpisu do usuwania cudzych komentarzy i wygasanie edycji. Brak flagi = nie.
+            entryCommentMenuDelete.isVisible = !isDeleted && comment.deletable == true
+            entryCommentMenuEdit.isVisible = !isDeleted && comment.editable == true
         }
 
         val mBehavior = BottomSheetBehavior.from(bottomSheetView.root.parent as View)

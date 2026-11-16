@@ -23,6 +23,9 @@ CREATE TABLE linkCommentsEntity (
     deletedReason TEXT,
     slug TEXT,
     authorHasNote INTEGER AS Boolean NOT NULL DEFAULT 0,
+    -- Uprawnienia zalogowanego z API v3 (null = API nie podalo).
+    editable INTEGER AS Boolean,
+    deletable INTEGER AS Boolean,
     FOREIGN KEY (profileId) REFERENCES profileEntity(id),
     FOREIGN KEY (parentId) REFERENCES linkCommentsEntity(id),
     FOREIGN KEY (embedId) REFERENCES embed(id)
@@ -61,6 +64,13 @@ SET
   voteCount = CASE WHEN userVote = :wasUp THEN voteCount - 1 WHEN userVote = :wasDown THEN voteCount - 1 ELSE voteCount END,
   voteCountPlus = CASE WHEN userVote = :wasUp THEN MAX(voteCountPlus - 1, 0) ELSE voteCountPlus END,
   userVote = NULL
+WHERE id = :id AND linkId = :linkId;
+
+-- Po udanym DELETE: komentarz zostaje w watku jako "usuniety przez autora" (tak samo
+-- przysle go API przy nastepnym pobraniu), bez tresci i bez dalszych uprawnien.
+markDeleted:
+UPDATE linkCommentsEntity
+SET body = '', deletedReason = 'author', isBlocked = 1, editable = 0, deletable = 0
 WHERE id = :id AND linkId = :linkId;
 
 favorite:

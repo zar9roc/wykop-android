@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import io.github.wykopmobilny.base.ThemableActivity
 import io.github.wykopmobilny.databinding.ActivityContainerBinding
+import io.github.wykopmobilny.ui.modules.input.BaseInputActivity
 import io.github.wykopmobilny.utils.viewBinding
 
 /**
@@ -59,6 +60,21 @@ internal class LinkDetailsActivityV2 : ThemableActivity() {
                     binding.fragmentContainer.id,
                     LinkDetailsFragment.newInstance(linkId = linkId, commentId = commentId, reply = pendingReply),
                 ).commit()
+        }
+    }
+
+    // Edycja komentarza wraca przez startActivityForResult (NewNavigator startuje z biezacej
+    // aktywnosci) - przeladowanie komentarzy delegujemy do fragmentu, jak w EntryActivityV2.
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK && requestCode == BaseInputActivity.EDIT_LINK_COMMENT) {
+            supportFragmentManager.fragments
+                .filterIsInstance<LinkDetailsFragment>()
+                .forEach(LinkDetailsFragment::onCommentEdited)
         }
     }
 

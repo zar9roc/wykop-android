@@ -20,6 +20,7 @@ data class EntryResponseV3(
     @field:Json(name = "tags") val tags: List<String>?,
     @field:Json(name = "favourite") val favourite: Boolean?,
     @field:Json(name = "deletable") val deletable: Boolean?,
+    @field:Json(name = "editable") val editable: Boolean?,
     @field:Json(name = "slug") val slug: String?,
     @field:Json(name = "votes") val votes: VotesResponseV3,
     @field:Json(name = "comments") val comments: CommentsResponseV3,

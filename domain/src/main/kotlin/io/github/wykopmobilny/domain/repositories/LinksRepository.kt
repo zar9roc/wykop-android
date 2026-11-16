@@ -69,6 +69,21 @@ internal class LinksRepository
             }
         }
 
+        /**
+         * Usuniecie wlasnego komentarza. API zwraca 204; lokalnie oznaczamy komentarz jako
+         * usuniety przez autora (zostaje w watku, jak po ponownym pobraniu), wiec lista
+         * odswieza sie od razu przez flowSourceOfTruth.
+         */
+        suspend fun deleteComment(
+            linkId: Long,
+            commentId: Long,
+        ) {
+            linksV3Api.deleteLinkComment(linkId = linkId, commentId = commentId).requireSuccessful()
+            withContext(AppDispatchers.IO) {
+                appCache.linkCommentsQueries.markDeleted(id = commentId, linkId = linkId)
+            }
+        }
+
         suspend fun voteUp(linkId: Long) {
             linksV3Api.voteUp(linkId)
             withContext(AppDispatchers.IO) {

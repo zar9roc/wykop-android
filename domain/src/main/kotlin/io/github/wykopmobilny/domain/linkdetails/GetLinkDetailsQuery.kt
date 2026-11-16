@@ -875,6 +875,31 @@ internal class GetLinkDetailsQuery
                                                                 showSnackbar(Strings.COPIED_TO_CLIPBOARD)
                                                             },
                                                     ),
+                                                    // Edycja/usuwanie: decyduje backend (editable/deletable - uwzglednia
+                                                    // autorstwo i wygasanie edycji). Brak flagi = nie. Usuniety komentarz
+                                                    // nie ma juz akcji.
+                                                    OptionPickerUi
+                                                        .Option(
+                                                            label = Strings.Link.MORE_OPTION_EDIT,
+                                                            icon = Drawable.Edit,
+                                                            clickAction =
+                                                                safeCallback {
+                                                                    interopRequests.request(
+                                                                        InteropRequest.EditLinkComment(linkId = link.id, commentId = id, body = body),
+                                                                    )
+                                                                },
+                                                        ).takeIf { deletedReason == null && editable == true },
+                                                    OptionPickerUi
+                                                        .Option(
+                                                            label = Strings.Link.MORE_OPTION_DELETE,
+                                                            icon = Drawable.Delete,
+                                                            clickAction =
+                                                                safeCallback {
+                                                                    viewStateStorage.update {
+                                                                        it.copy(picker = deleteConfirmationPicker(linkId = link.id, commentId = id))
+                                                                    }
+                                                                },
+                                                        ).takeIf { deletedReason == null && deletable == true },
                                                     OptionPickerUi.Option(
                                                         label = Strings.Link.MORE_OPTION_OPEN_IN_BROWSER,
                                                         icon = Drawable.Browser,
@@ -894,6 +919,32 @@ internal class GetLinkDetailsQuery
                 )
             }
         }
+
+        // Potwierdzenie usuniecia jako drugi picker (zamiast dialogu z UI) - jedno tapniecie
+        // w "Usun" w menu nie kasuje komentarza bez pytania.
+        private fun deleteConfirmationPicker(
+            linkId: Long,
+            commentId: Long,
+        ) = OptionPickerUi(
+            title = Strings.Link.DELETE_COMMENT_CONFIRM_TITLE,
+            reasons =
+                listOf(
+                    OptionPickerUi.Option(
+                        label = Strings.Link.DELETE_COMMENT_CONFIRM,
+                        icon = Drawable.Delete,
+                        clickAction =
+                            safeCallback {
+                                linksRepository.deleteComment(linkId = linkId, commentId = commentId)
+                                showSnackbar(Strings.Link.COMMENT_DELETED_SNACKBAR)
+                            },
+                    ),
+                    OptionPickerUi.Option(
+                        label = Strings.Link.DELETE_COMMENT_CANCEL,
+                        clickAction = safeCallback { },
+                    ),
+                ),
+            dismissAction = safeCallback { viewStateStorage.update { it.copy(picker = null) } },
+        )
 
         private fun showError(message: String) {
             viewStateStorage.update {

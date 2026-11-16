@@ -74,6 +74,16 @@ sealed class InteropRequest {
         val url: String,
     ) : InteropRequest()
 
+    /**
+     * Edycja wlasnego komentarza znaleziska na wspolnym ekranie edycji. [body] to surowa tresc
+     * (markdown z API). Ekran znaleziska przeladowuje komentarze po powrocie (onActivityResult).
+     */
+    data class EditLinkComment(
+        val linkId: Long,
+        val commentId: Long,
+        val body: String,
+    ) : InteropRequest()
+
     class ShowGif(
         val url: String,
     ) : InteropRequest()

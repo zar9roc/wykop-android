@@ -20,6 +20,10 @@ class LinkCommentV3Item(
     val parentId: Long? get() = response.parentId
     val deletedReason: String? get() = response.deleted
     val slug: String? get() = response.slug
+
+    // Uprawnienia zalogowanego z API v3 (backend uwzglednia autorstwo); null = brak uprawnienia.
+    val editable: Boolean? get() = response.editable
+    val deletable: Boolean? get() = response.deletable
     var voteCountPlus: Int = response.votes.up
     var voteCountMinus: Int = response.votes.down
     var voteCount: Int = voteCountPlus - voteCountMinus

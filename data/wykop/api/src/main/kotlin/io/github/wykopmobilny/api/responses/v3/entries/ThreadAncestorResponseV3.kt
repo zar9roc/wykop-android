@@ -38,6 +38,9 @@ data class ThreadAncestorResponseV3(
     // (JsonDataException: Expected a string but was BOOLEAN at $.data[0].deleted).
     @field:Json(name = "deleted") val deleted: Any?,
     @field:Json(name = "comments") val comments: ThreadCountsResponseV3?,
+    // Uprawnienia zalogowanego do tego elementu (jak w Entry/EntryComment).
+    @field:Json(name = "editable") val editable: Boolean? = null,
+    @field:Json(name = "deletable") val deletable: Boolean? = null,
 ) {
     val isEntry: Boolean
         get() = resource == RESOURCE_ENTRY

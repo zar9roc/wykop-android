@@ -14,4 +14,6 @@ enum class Drawable {
     Minus,
     Bury,
     Note,
+    Edit,
+    Delete,
 }

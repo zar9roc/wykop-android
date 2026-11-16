@@ -20,4 +20,6 @@ val Drawable.drawableRes: Int
             Drawable.Minus -> R.drawable.ic_minus
             Drawable.Bury -> R.drawable.ic_bury
             Drawable.Note -> R.drawable.ic_note
+            Drawable.Edit -> R.drawable.ic_edit
+            Drawable.Delete -> R.drawable.ic_delete_option
         }

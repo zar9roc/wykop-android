@@ -338,6 +338,11 @@ internal class LinkDetailsFragment : Fragment(R.layout.activity_link_details) {
         )
     }
 
+    /** Wolane przez LinkDetailsActivityV2 po powrocie z edycji komentarza - ta sama akcja co swipe-refresh. */
+    fun onCommentEdited() {
+        commentsRefreshAction?.invoke()
+    }
+
     /**
      * "Odpowiedz"/"Cytuj" przekazane z listy: ustawia watek i wstawia adresata albo cytat -
      * dokladnie to, co robia przyciski pod komentarzem na tym ekranie.

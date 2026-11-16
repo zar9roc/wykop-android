@@ -26,6 +26,10 @@ class EntryComment(
     // Wszystkie zalaczniki (do 4 zdjec + embed). Gdy jest ich wiecej niz jeden,
     // WykopEmbedView pokazuje galerie zamiast samego [embed].
     var attachments: List<Embed> = emptyList(),
+    // Uprawnienia zalogowanego z API v3 - backend sam uwzglednia autorstwo.
+    // Menu pokazuje edycje/usuwanie tylko przy true (null = brak uprawnienia).
+    val editable: Boolean? = null,
+    val deletable: Boolean? = null,
 ) {
     override fun equals(other: Any?): Boolean =
         if (other !is EntryComment) {
